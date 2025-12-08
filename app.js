@@ -7,13 +7,9 @@ const timeDisplay = document.getElementById('time');
 const game = document.getElementById('game');
 const endScreen = document.getElementById('end-screen');
 const finalScore = document.getElementById('finalScore');
+const scoreDisplay = document.getElementById('score');
 
-// Add score display dynamically if not in HTML
-const scoreDisplay = document.createElement('div');
-scoreDisplay.id = 'score';
-game.prepend(scoreDisplay);
-
-
+// Game variables
 let questions = [];           // all questions fetched once
 let remainingQuestions = [];  // questions left to ask
 let currentQuestion = null;
@@ -28,15 +24,16 @@ startBtn.onclick = startGame;
 async function startGame() {
   score = 0;
   questionsAnswered = 0;
-  document.getElementById('start-screen').classList.add('hidden');
   game.classList.remove('hidden');
-  document.getElementById('end-screen').classList.add('hidden');
+  endScreen.classList.add('hidden');
+  startBtn.parentElement.classList.add('hidden'); // hide start screen
   updateScore();
 
-  // Fetch all questions at once
+  // Fetch all questions from Supabase
   const { data, error } = await supabase.from('questions').select('*');
   if (error || !data || data.length === 0) {
     console.error('Error fetching questions:', error);
+    alert('Could not load questions!');
     return;
   }
 
@@ -46,7 +43,7 @@ async function startGame() {
 }
 
 async function loadQuestion() {
-  nextBtn?.classList.add('hidden');
+  nextBtn.classList.add('hidden');
   answersBox.innerHTML = '';
 
   if (remainingQuestions.length === 0 || questionsAnswered >= totalQuestions) {
@@ -55,7 +52,7 @@ async function loadQuestion() {
 
   // Pick a random question from remaining
   const index = Math.floor(Math.random() * remainingQuestions.length);
-  currentQuestion = remainingQuestions.splice(index, 1)[0]; // remove from remaining
+  currentQuestion = remainingQuestions.splice(index, 1)[0];
 
   // Show question
   questionBox.textContent = currentQuestion.question;
@@ -134,8 +131,8 @@ function updateScore() {
 
 async function endGame() {
   game.classList.add('hidden');
-  document.getElementById('end-screen').classList.remove('hidden');
-  document.getElementById('finalScore').textContent = score;
+  endScreen.classList.remove('hidden');
+  finalScore.textContent = score;
   await submitScore();
 }
 
@@ -148,4 +145,3 @@ async function submitScore() {
     score,
   });
 }
-
