@@ -2,6 +2,7 @@ import { supabase } from './supabase.js';
 
 // HTML element references
 const startBtn = document.getElementById('startBtn');
+const playAgainBtn = document.getElementById('playAgainBtn'); // new button
 const nextBtn = document.getElementById('nextBtn');
 const questionBox = document.getElementById('question');
 const answersBox = document.getElementById('answers');
@@ -21,7 +22,9 @@ let timeLeft = 15;
 let totalQuestions = 10; // questions per game
 let questionsAnswered = 0;
 
-startBtn.onclick = startGame;
+// Attach event listeners
+startBtn.addEventListener('click', startGame);
+playAgainBtn.addEventListener('click', startGame);
 
 async function startGame() {
   score = 0;
@@ -71,7 +74,7 @@ async function loadQuestion() {
     const btn = document.createElement('button');
     btn.textContent = ans;
     btn.classList.add('answer-btn');
-    btn.onclick = () => checkAnswer(i + 1, btn);
+    btn.addEventListener('click', () => checkAnswer(i + 1, btn));
     answersBox.appendChild(btn);
   });
 
@@ -147,11 +150,3 @@ async function submitScore() {
     score,
   });
 }
-
-// Attach the function to buttons
-const startBtn = document.getElementById('startBtn');
-const playAgainBtn = document.getElementById('playAgainBtn');
-
-startBtn.addEventListener('click', startGame);
-playAgainBtn.addEventListener('click', startGame);
-
