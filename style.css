@@ -12,7 +12,8 @@ background: white;
 padding: 20px;
 border-radius: 10px;
 box-shadow: 0 0 10px rgba(0,0,0,0.1);
-width: 300px;
+width: 400px;
+max-width: 90%;      /* responsive on mobile */
 text-align: center;
 }
 
@@ -27,7 +28,6 @@ cursor: pointer;
 
 .hidden { display: none; }
 
-
 #answers button {
 display: block;
 width: 100%;
@@ -36,17 +36,34 @@ margin: 5px 0;
 }
 
 #game {
-  background-image: url('images/background.png'); /* path to your image */
-  background-size: cover;        /* make it fill the whole container */
-  background-position: center;   /* center it */
-  background-repeat: no-repeat;  /* don’t tile */
-  padding: 20px;                 /* optional padding for content */
-  border-radius: 10px;           /* optional rounded corners */
+  position: relative;            /* add this */
+  background-image: url('images/background.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+#game::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.3); /* semi-transparent overlay */
+  z-index: 0;
+  border-radius: 10px;
+}
+
+#game > * {
+  position: relative;
+  z-index: 1; /* put text/buttons above overlay */
 }
 
 .correct { background-color: #4caf50; color: white; }
 .wrong { background-color: #f44336; color: white; }
 .answer-btn { margin: 5px; padding: 10px; }
 .hidden { display: none; }
+
 
 
