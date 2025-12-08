@@ -97,8 +97,6 @@ async function loadQuestion() {
   currentQuestion = remainingQuestions.splice(index, 1)[0];
 
   // ---- DISPLAY QUESTION TEXT AND IMAGE ----
-  const questionText = document.getElementById('questionText');
-  const questionImage = document.getElementById('questionImage');
 
   questionText.textContent = currentQuestion.question_text;
 
@@ -203,5 +201,6 @@ async function submitScore() {
 
 // Load user on page load
 loadCurrentUser();
+
 
 
