@@ -6,42 +6,69 @@
 <title>OSRS Trivia Login / Sign Up</title>
 <link rel="stylesheet" href="style.css">
 <style>
-  /* ====== FORM ELEMENTS ====== */
-  input {
+  /* Center the inputs and buttons */
+  #username,
+  #password {
+    display: block;
     width: 100%;
-    padding: 8px;
-    margin: 6px 0; /* smaller spacing */
+    padding: 10px;
+    margin: 8px 0;
+    font-size: 1rem;
     border-radius: 6px;
     border: 1px solid #ccc;
-    font-size: 1rem;
     box-sizing: border-box;
-    display: block;
   }
 
-  /* ====== BUTTONS WRAPPER ====== */
-  .buttons-wrapper {
-    max-width: 360px; /* controls width of buttons row */
-    margin: 0 auto;
-  }
-
-  /* ====== BUTTONS ROW ====== */
+  /* Row for Sign Up / Log In buttons */
   .btn-row {
     display: flex;
-    justify-content: center;
-    gap: 8px; /* smaller gap between buttons */
-    margin: 8px 0; /* smaller vertical margin */
+    justify-content: space-between;
+    gap: 10px;
+    margin: 12px 0;
+    max-width: 360px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
-  .btn-row button {
-    flex: 1; /* make both buttons same width */
-  }
-
-  /* ====== BACK TO GAME BUTTON ====== */
-  .back-btn {
-    width: 100%;
-    display: block;
+  /* Small buttons */
+  .btn-small {
+    flex: 1;
+    padding: 10px 16px;
+    font-size: 1rem;
+    border-radius: 8px;
+    background: rgba(0,0,0,0.6);
+    color: #ffd700;
+    border: 2px solid #ffd700;
+    cursor: pointer;
+    transition: 0.2s;
     text-align: center;
-    margin-top: 8px; /* smaller space above back button */
+  }
+
+  .btn-small:hover {
+    background: rgba(0,0,0,0.85);
+    border-color: #ffea8a;
+  }
+
+  /* Back to Game button bigger and centered */
+  a.btn-back {
+    display: block;
+    width: 100%;
+    max-width: 360px;
+    margin: 10px auto;
+    padding: 12px 0;
+    font-size: 1.05rem;
+    border-radius: 8px;
+    background: rgba(0,0,0,0.6);
+    color: #ffd700;
+    border: 2px solid #ffd700;
+    text-decoration: none;
+    text-align: center;
+    transition: 0.2s;
+  }
+
+  a.btn-back:hover {
+    background: rgba(0,0,0,0.85);
+    border-color: #ffea8a;
   }
 </style>
 </head>
@@ -49,21 +76,15 @@
 <div class="container">
   <h1>OSRS Trivia</h1>
 
-  <!-- Input Fields -->
   <input id="username" placeholder="Username" />
   <input id="password" type="password" placeholder="Password" />
 
-  <!-- Buttons Wrapper -->
-  <div class="buttons-wrapper">
-    <!-- Buttons Side by Side -->
-    <div class="btn-row">
-      <button id="signupBtn" class="btn-small">Sign Up</button>
-      <button id="loginBtn" class="btn-small">Log In</button>
-    </div>
-
-    <!-- Back to Game Button -->
-    <a href="index.html" class="btn-small back-btn">Back to Game</a>
+  <div class="btn-row">
+    <button id="signupBtn" class="btn-small">Sign Up</button>
+    <button id="loginBtn" class="btn-small">Log In</button>
   </div>
+
+  <a href="index.html" class="btn-back">Back to Game</a>
 </div>
 
 <script type="module">
