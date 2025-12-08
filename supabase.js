@@ -6,7 +6,7 @@ const supabaseKey = import.meta.env.SUPABASE_KEY;
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
-);
+
 
 
 
