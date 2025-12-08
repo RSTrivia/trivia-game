@@ -24,15 +24,12 @@ body {
   text-align: center;
 }
 
-/* ====== RESET BUTTON DEFAULTS (fix blue buttons) ====== */
+/* ====== BUTTON DEFAULTS ====== */
 button {
-  appearance: none;
-  -webkit-appearance: none;
-  background: none;
-  border: none;
-  cursor: pointer;
   font-family: inherit;
+  cursor: pointer;
 }
+
 
 /* ====== GAME ANSWER BUTTONS ====== */
 .answer-btn {
@@ -109,3 +106,4 @@ button {
   background: rgba(0, 0, 0, 0.85);
   border-color: #ffea8a;
 }
+
