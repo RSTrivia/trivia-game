@@ -107,28 +107,27 @@ async function loadLeaderboard() {
 
   data.forEach((entry, i) => {
     const li = document.createElement('li');
-
+  
     const left = document.createElement('span');
-    left.textContent = `${i + 1}. ${entry.username}`;
-
+    let medal = '';
+    if (i === 0) medal = '🥇 ';
+    else if (i === 1) medal = '🥈 ';
+    else if (i === 2) medal = '🥉 ';
+  
+    left.textContent = medal + `${i + 1}. ${entry.username}`;
+  
     const right = document.createElement('span');
     right.textContent = entry.score;
-
-    // Highlight top 3 players
-    if (i === 0) li.style.backgroundColor = '#FFD700'; // Gold
-    else if (i === 1) li.style.backgroundColor = '#C0C0C0'; // Silver
-    else if (i === 2) li.style.backgroundColor = '#CD7F32'; // Bronze
-
-    // Optional: bold text for top 3
-    if (i < 3) li.style.fontWeight = 'bold';
-
+  
     li.appendChild(left);
     li.appendChild(right);
     leaderboard.appendChild(li);
   });
+
 }
 
 loadLeaderboard();
 </script>
 </body>
 </html>
+
