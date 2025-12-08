@@ -36,7 +36,7 @@ margin: 5px 0;
 }
 
 #game {
-  background-image: url('images/background.jpg'); /* path to your image */
+  background-image: url('images/background.png'); /* path to your image */
   background-size: cover;        /* make it fill the whole container */
   background-position: center;   /* center it */
   background-repeat: no-repeat;  /* don’t tile */
@@ -48,4 +48,5 @@ margin: 5px 0;
 .wrong { background-color: #f44336; color: white; }
 .answer-btn { margin: 5px; padding: 10px; }
 .hidden { display: none; }
+
 
