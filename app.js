@@ -11,6 +11,7 @@ const game = document.getElementById('game');
 const endScreen = document.getElementById('end-screen');
 const finalScore = document.getElementById('finalScore');
 const scoreDisplay = document.getElementById('score');
+const userDisplay = document.getElementById('userDisplay');
 
 // Game variables
 let questions = [];
@@ -21,10 +22,34 @@ let timer;
 let timeLeft = 15;
 let totalQuestions = 10;
 let questionsAnswered = 0;
+let username = ''; // store the logged-in username
 
 // Attach event listeners to buttons
 startBtn.addEventListener('click', startGame);
 playAgainBtn.addEventListener('click', startGame);
+
+// Fetch the currently logged-in user's username
+async function loadCurrentUser() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const { data: profile, error } = await supabase
+    .from('profiles')
+    .select('username')
+    .eq('id', user.id)
+    .single();
+
+  if (error) {
+    console.error('Failed to get username:', error);
+    return;
+  }
+
+  username = profile.username;
+  console.log('Logged in as:', username);
+  
+  // Show username in game
+  if (userDisplay) userDisplay.textContent = `Player: ${username}`;
+}
 
 async function startGame() {
   score = 0;
@@ -144,8 +169,22 @@ async function submitScore() {
   const user = (await supabase.auth.getUser()).data.user;
   if (!user) return;
 
+  // Make sure username is set
+  if (!username) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('id', user.id)
+      .single();
+    username = profile?.username || 'Unknown';
+  }
+
   await supabase.from('scores').insert({
     user_id: user.id,
-    score,
+    username, // <-- add this
+    score
   });
 }
+
+// CALL IT ON PAGE LOAD
+loadCurrentUser();
