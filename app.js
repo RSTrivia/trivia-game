@@ -88,6 +88,17 @@ async function startGame() {
 
 async function loadQuestion() {
   answersBox.innerHTML = '';
+  const questionText = document.getElementById('questionText');
+  const questionImage = document.getElementById('questionImage');
+
+  questionText.textContent = currentQuestion.question_text;
+  
+  if (currentQuestion.question_image) {
+    questionImage.src = currentQuestion.question_image;
+    questionImage.style.display = 'block';
+  } else {
+    questionImage.style.display = 'none';
+  }
 
   if (remainingQuestions.length === 0 || questionsAnswered >= totalQuestions) {
     return endGame();
@@ -197,3 +208,4 @@ async function submitScore() {
 
 // Load user on page load
 loadCurrentUser();
+
