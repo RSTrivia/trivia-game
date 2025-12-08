@@ -126,5 +126,13 @@ button.btn {
   border: none;
 }
 
+button.btn {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background: rgba(0, 0, 0, 0.6) !important;
+  color: #ffd700 !important;
+  border: 2px solid #ffd700 !important;
+}
+
 
 
