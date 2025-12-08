@@ -71,3 +71,30 @@ button {
   width: 100%;
   margin: 5px 0;
 }
+
+#leaderboard {
+  list-style: none; /* remove the bullets */
+  padding: 0;
+}
+
+#leaderboard li {
+  font-size: 18px;
+  margin: 5px 0;
+  padding: 5px;
+  text-align: left;
+}
+
+.top-1 {
+  font-weight: bold;
+  color: gold;
+}
+
+.top-2 {
+  font-weight: bold;
+  color: silver;
+}
+
+.top-3 {
+  font-weight: bold;
+  color: #cd7f32; /* bronze */
+}
