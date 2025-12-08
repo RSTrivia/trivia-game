@@ -1,3 +1,16 @@
+button,
+button:focus,
+button:active,
+button:hover {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background: none !important;
+  color: inherit !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 /* ====== BODY ====== */
 body {
   font-family: Arial, sans-serif;
@@ -104,3 +117,4 @@ button {
   background: rgba(0, 0, 0, 0.85);
   border-color: #ffea8a;
 }
+
