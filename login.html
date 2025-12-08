@@ -3,18 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login / Sign Up</title>
+<title>OSRS Trivia Login / Sign Up</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="container">
-  <h1>OSRS Trivia Login</h1>
+  <h1>OSRS Trivia</h1>
 
   <input id="username" placeholder="Username" />
   <input id="password" type="password" placeholder="Password" />
 
-  <button id="loginBtn">Login</button>
   <button id="signupBtn">Sign Up</button>
+  <button id="loginBtn">Log In</button>
 
   <a href="index.html">Back to Game</a>
 </div>
@@ -27,18 +27,22 @@ const passwordInput = document.getElementById('password');
 const loginBtn = document.getElementById('loginBtn');
 const signupBtn = document.getElementById('signupBtn');
 
+// -------------------------
+// SIGN UP
+// -------------------------
 signupBtn.addEventListener('click', async () => {
   const username = usernameInput.value.trim();
   const password = passwordInput.value;
 
   if (!username || !password) {
-    alert('Enter username and password');
+    alert('Enter a username and password');
     return;
   }
 
+  // Fake email for Supabase Auth
   const email = username.toLowerCase() + '@example.com';
 
-  // Sign up with Supabase
+  // Sign up
   const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
 
   if (signUpError) {
@@ -47,7 +51,6 @@ signupBtn.addEventListener('click', async () => {
     return;
   }
 
-  // Make sure user exists
   const user = signUpData.user;
   if (!user) {
     alert('Sign-up failed: no user returned');
@@ -55,10 +58,9 @@ signupBtn.addEventListener('click', async () => {
   }
 
   // Insert into profiles table
-  const { error: profileError } = await supabase.from('profiles').insert({
-    id: user.id,
-    username
-  });
+  const { error: profileError } = await supabase
+    .from('profiles')
+    .insert({ id: user.id, username });
 
   if (profileError) {
     alert('Profile creation failed: ' + profileError.message);
@@ -69,23 +71,30 @@ signupBtn.addEventListener('click', async () => {
   alert('Account created! You can now log in.');
 });
 
+// -------------------------
 // LOGIN
+// -------------------------
 loginBtn.addEventListener('click', async () => {
   const username = usernameInput.value.trim();
   const password = passwordInput.value;
 
   if (!username || !password) {
-    alert('Enter username and password');
+    alert('Enter a username and password');
     return;
   }
 
   const email = username.toLowerCase() + '@example.com';
 
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({ email, password });
 
-  if (error) {
-    alert('Login failed: ' + error.message);
-    console.error(error);
+  if (loginError) {
+    alert('Login failed: ' + loginError.message);
+    console.error(loginError);
+    return;
+  }
+
+  if (!loginData.user) {
+    alert('Login failed: no user returned');
     return;
   }
 
@@ -95,4 +104,3 @@ loginBtn.addEventListener('click', async () => {
 </script>
 </body>
 </html>
-
