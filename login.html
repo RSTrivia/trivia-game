@@ -27,7 +27,6 @@ const passwordInput = document.getElementById('password');
 const loginBtn = document.getElementById('loginBtn');
 const signupBtn = document.getElementById('signupBtn');
 
-// SIGN UP
 signupBtn.addEventListener('click', async () => {
   const username = usernameInput.value.trim();
   const password = passwordInput.value;
@@ -37,21 +36,27 @@ signupBtn.addEventListener('click', async () => {
     return;
   }
 
-  // Generate fake email for Supabase Auth
   const email = username.toLowerCase() + '@example.com';
 
   // Sign up with Supabase
-  const { data, error } = await supabase.auth.signUp({ email, password });
+  const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
 
-  if (error) {
-    alert('Sign-up failed: ' + error.message);
-    console.error(error);
+  if (signUpError) {
+    alert('Sign-up failed: ' + signUpError.message);
+    console.error(signUpError);
+    return;
+  }
+
+  // Make sure user exists
+  const user = signUpData.user;
+  if (!user) {
+    alert('Sign-up failed: no user returned');
     return;
   }
 
   // Insert into profiles table
   const { error: profileError } = await supabase.from('profiles').insert({
-    id: data.user.id,
+    id: user.id,
     username
   });
 
@@ -90,3 +95,4 @@ loginBtn.addEventListener('click', async () => {
 </script>
 </body>
 </html>
+
