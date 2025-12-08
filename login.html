@@ -9,8 +9,8 @@
   /* ====== FORM ELEMENTS ====== */
   input {
     width: 100%;
-    padding: 10px;
-    margin: 8px 0;
+    padding: 8px;
+    margin: 6px 0; /* smaller spacing */
     border-radius: 6px;
     border: 1px solid #ccc;
     font-size: 1rem;
@@ -18,12 +18,18 @@
     display: block;
   }
 
+  /* ====== BUTTONS WRAPPER ====== */
+  .buttons-wrapper {
+    max-width: 360px; /* controls width of buttons row */
+    margin: 0 auto;
+  }
+
   /* ====== BUTTONS ROW ====== */
   .btn-row {
     display: flex;
     justify-content: center;
-    gap: 10px; /* space between buttons */
-    margin: 10px 0;
+    gap: 8px; /* smaller gap between buttons */
+    margin: 8px 0; /* smaller vertical margin */
   }
 
   .btn-row button {
@@ -33,8 +39,9 @@
   /* ====== BACK TO GAME BUTTON ====== */
   .back-btn {
     width: 100%;
-    margin-top: 10px;
+    display: block;
     text-align: center;
+    margin-top: 8px; /* smaller space above back button */
   }
 </style>
 </head>
@@ -46,14 +53,17 @@
   <input id="username" placeholder="Username" />
   <input id="password" type="password" placeholder="Password" />
 
-  <!-- Buttons Side by Side -->
-  <div class="btn-row">
-    <button id="signupBtn" class="btn-small">Sign Up</button>
-    <button id="loginBtn" class="btn-small">Log In</button>
-  </div>
+  <!-- Buttons Wrapper -->
+  <div class="buttons-wrapper">
+    <!-- Buttons Side by Side -->
+    <div class="btn-row">
+      <button id="signupBtn" class="btn-small">Sign Up</button>
+      <button id="loginBtn" class="btn-small">Log In</button>
+    </div>
 
-  <!-- Back to Game Button -->
-  <a href="index.html" class="btn-small back-btn">Back to Game</a>
+    <!-- Back to Game Button -->
+    <a href="index.html" class="btn-small back-btn">Back to Game</a>
+  </div>
 </div>
 
 <script type="module">
