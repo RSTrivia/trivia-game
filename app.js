@@ -1,3 +1,19 @@
+// HTML element references
+const startBtn = document.getElementById('startBtn');
+const nextBtn = document.getElementById('nextBtn');
+const questionBox = document.getElementById('question');
+const answersBox = document.getElementById('answers');
+const timeDisplay = document.getElementById('time');
+const game = document.getElementById('game');
+const endScreen = document.getElementById('end-screen');
+const finalScore = document.getElementById('finalScore');
+
+// Add score display dynamically if not in HTML
+const scoreDisplay = document.createElement('div');
+scoreDisplay.id = 'score';
+game.prepend(scoreDisplay);
+
+
 let questions = [];           // all questions fetched once
 let remainingQuestions = [];  // questions left to ask
 let currentQuestion = null;
@@ -132,3 +148,4 @@ async function submitScore() {
     score,
   });
 }
+
