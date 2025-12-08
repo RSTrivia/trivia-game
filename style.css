@@ -1,16 +1,3 @@
-button,
-button:focus,
-button:active,
-button:hover {
-  appearance: none !important;
-  -webkit-appearance: none !important;
-  background: none !important;
-  color: inherit !important;
-  border: none !important;
-  outline: none !important;
-  box-shadow: none !important;
-}
-
 /* ====== BODY ====== */
 body {
   font-family: Arial, sans-serif;
@@ -37,16 +24,15 @@ body {
   text-align: center;
 }
 
-/* ====== RESET (safe) ====== */
+/* ====== RESET BUTTONS ====== */
 button {
-  appearance: none;
-  -webkit-appearance: none;
   font-family: inherit;
   cursor: pointer;
   border: none;
+  outline: none;
 }
 
-/* ====== ANSWER BUTTONS ====== */
+/* ====== ANSWER BUTTONS (game) ====== */
 .answer-btn {
   background: #ffffff;
   border: 2px solid #000;
@@ -61,7 +47,7 @@ button {
   background: #f2f2f2;
 }
 
-/* ====== GAME ====== */
+/* ====== GAME SCREEN ====== */
 #game {
   position: relative;
   padding: 20px;
@@ -100,18 +86,20 @@ button {
   text-align: left;
 }
 
-/* ====== GOLD OSRS BUTTON STYLE ====== */
-/* ====== GENERAL OSRS BUTTON STYLE ====== */
+/* ====== BIG GOLD BUTTONS (game start / play again / main menu) ====== */
 .btn {
   background: rgba(0, 0, 0, 0.6);
   color: #ffd700;
-  padding: 14px 22px;       /* default bigger buttons */
+  padding: 14px 22px;
   border: 2px solid #ffd700;
   border-radius: 8px;
   cursor: pointer;
   font-size: 1.1rem;
   width: 100%;
   transition: 0.2s;
+  display: block;
+  text-align: center;
+  text-decoration: none;
 }
 
 .btn:hover {
@@ -119,32 +107,27 @@ button {
   border-color: #ffea8a;
 }
 
-/* ====== SMALLER BUTTONS (for login & leaderboard) ====== */
+/* ====== SMALL BUTTONS (login / signup / view leaderboard) ====== */
 .btn-small {
-  padding: 10px 16px;    /* smaller padding */
-  font-size: 1rem;       /* smaller font */
-  width: auto;           /* not full width */
+  padding: 10px 16px;
+  font-size: 1rem;
+  width: auto;
   display: inline-block;
+  margin: 5px;
 }
 
-
-a, a:visited, a:hover, a:active {
-  color: #ffd700;               /* gold */
-  background: rgba(0, 0, 0, 0.6);
-  padding: 14px 22px;
+/* ====== LINKS styled like buttons ====== */
+a.btn, a.btn-small {
+  text-decoration: none;
+  text-align: center;
+  color: #ffd700;
+  background: rgba(0,0,0,0.6);
   border: 2px solid #ffd700;
   border-radius: 8px;
-  text-decoration: none;
-  display: inline-block;
-  width: 100%;
-  font-size: 1.1rem;
   transition: 0.2s;
 }
 
-a:hover {
+a.btn:hover, a.btn-small:hover {
   background: rgba(0,0,0,0.85);
   border-color: #ffea8a;
 }
-
-
-
