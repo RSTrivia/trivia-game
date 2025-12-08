@@ -1,71 +1,73 @@
+/* ====== BODY ====== */
 body {
-font-family: Arial, sans-serif;
-background: #f2f2f2;
-display: flex;
-justify-content: center;
-padding: 40px;
-}
-
-
-.container {
-background: white;
-padding: 20px;
-border-radius: 10px;
-box-shadow: 0 0 10px rgba(0,0,0,0.1);
-width: 400px;
-max-width: 90%;      /* responsive on mobile */
-text-align: center;
-}
-
-
-button {
-padding: 10px;
-margin-top: 10px;
-width: 100%;
-cursor: pointer;
-}
-
-
-.hidden { display: none; }
-
-#answers button {
-display: block;
-width: 100%;
-margin: 5px 0;
-
-}
-
-#game {
-  position: relative;            /* add this */
-  background-image: url('images/background.png');
+  font-family: Arial, sans-serif;
+  background-image: url('images/background.png'); /* always visible background */
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  padding: 20px;
-  border-radius: 10px;
-  min-height: 200px; /* temporary for testing */
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px;
+  margin: 0;
 }
 
+/* ====== CONTAINER ====== */
+.container {
+  background: rgba(255, 255, 255, 0.9); /* semi-transparent to see background */
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  width: 400px;
+  max-width: 90%;      /* responsive */
+  text-align: center;
+}
+
+/* ====== BUTTONS ====== */
+button {
+  padding: 10px;
+  margin-top: 10px;
+  width: 100%;
+  cursor: pointer;
+}
+
+.answer-btn {
+  margin: 5px 0;
+  padding: 10px;
+}
+
+/* ====== GAME SCREEN ====== */
+#game {
+  position: relative;  
+  padding: 20px;
+  border-radius: 10px;
+}
+
+/* overlay inside game so text/buttons stand out */
 #game::before {
   content: "";
   position: absolute;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  background: rgba(0,0,0,0.3); /* semi-transparent overlay */
+  background: rgba(0,0,0,0.3); /* dark overlay */
   z-index: 0;
   border-radius: 10px;
 }
 
 #game > * {
   position: relative;
-  z-index: 1; /* put text/buttons above overlay */
+  z-index: 1; /* content above overlay */
 }
+
+/* ====== SCORE & HIDDEN ====== */
+.hidden { display: none; }
 
 .correct { background-color: #4caf50; color: white; }
 .wrong { background-color: #f44336; color: white; }
-.answer-btn { margin: 5px; padding: 10px; }
-.hidden { display: none; }
 
-
-
-
+#answers button {
+  display: block;
+  width: 100%;
+  margin: 5px 0;
+}
