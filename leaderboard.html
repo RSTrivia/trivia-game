@@ -5,6 +5,40 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Leaderboard</title>
 <link rel="stylesheet" href="style.css">
+<style>
+  /* Leaderboard specific styles */
+  #leaderboard {
+    list-style: none;   /* remove bullets */
+    padding: 0;
+    margin: 0;
+  }
+
+  #leaderboard li {
+    display: flex;
+    justify-content: space-between; /* align number/username on left, score on right */
+    padding: 8px 10px;
+    background: #f2f2f2;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    font-family: Arial, sans-serif;
+  }
+
+  #leaderboard li:nth-child(odd) {
+    background: #e0e0e0; /* alternate row color for readability */
+  }
+
+  a {
+    display: inline-block;
+    margin-top: 15px;
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+</style>
 </head>
 <body>
 <div class="container">
@@ -33,7 +67,17 @@ async function loadLeaderboard() {
   leaderboard.innerHTML = '';
   data.forEach((entry, i) => {
     const li = document.createElement('li');
-    li.textContent = `${i + 1}. ${entry.username} - ${entry.score}`;
+
+    // Create number + username on left
+    const left = document.createElement('span');
+    left.textContent = `${i + 1}. ${entry.username}`;
+
+    // Score on the right
+    const right = document.createElement('span');
+    right.textContent = entry.score;
+
+    li.appendChild(left);
+    li.appendChild(right);
     leaderboard.appendChild(li);
   });
 }
