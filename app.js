@@ -1,3 +1,7 @@
+const { data, error } = await supabase.from('questions').select('*');
+console.log('Fetch error:', error);
+console.log('Fetched questions:', data);
+
 // HTML element references
 const startBtn = document.getElementById('startBtn');
 const nextBtn = document.getElementById('nextBtn');
@@ -145,3 +149,4 @@ async function submitScore() {
     score,
   });
 }
+
