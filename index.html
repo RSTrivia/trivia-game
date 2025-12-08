@@ -1,10 +1,25 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>OSRS Trivia</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css" />
+<style>
+  /* Optional: ensure question images don't overflow */
+  #questionImage {
+    max-width: 100%;
+    max-height: 300px;
+    margin: 10px 0;
+    display: none; /* hidden by default if no image */
+    border-radius: 8px;
+  }
+
+  #questionText {
+    font-size: 1.2rem;
+    margin: 10px 0;
+  }
+</style>
 </head>
 <body>
 <div class="container">
@@ -14,10 +29,13 @@
   <div id="game" class="hidden">
     <div id="userDisplay"></div>
     <div id="score">Score: 0</div>
+
+    <!-- Question area -->
     <div id="question">
       <p id="questionText"></p>
-      <img id="questionImage" src="" alt="Question Image" style="max-width: 100%; border-radius: 6px; margin-top: 10px; display: none;" />
+      <img id="questionImage" src="" alt="Question image">
     </div>
+
     <div id="answers"></div>
     <div id="timer">Time: <span id="time">15</span>s</div>
   </div>
@@ -43,4 +61,3 @@
 <script type="module" src="app.js"></script>
 </body>
 </html>
-
