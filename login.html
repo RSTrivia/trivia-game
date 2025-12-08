@@ -39,11 +39,13 @@ signupBtn.addEventListener('click', async () => {
     return;
   }
 
-  // Fake email for Supabase Auth
+  // Create a fake email for Supabase Auth
   const email = username.toLowerCase() + '@example.com';
 
-  // Sign up
-  const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
+  const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+    email,
+    password
+  });
 
   if (signUpError) {
     alert('Sign-up failed: ' + signUpError.message);
@@ -57,7 +59,7 @@ signupBtn.addEventListener('click', async () => {
     return;
   }
 
-  // Insert into profiles table
+  // Insert username into profiles table
   const { error: profileError } = await supabase
     .from('profiles')
     .insert({ id: user.id, username });
@@ -85,7 +87,10 @@ loginBtn.addEventListener('click', async () => {
 
   const email = username.toLowerCase() + '@example.com';
 
-  const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({ email, password });
+  const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+    email,
+    password
+  });
 
   if (loginError) {
     alert('Login failed: ' + loginError.message);
