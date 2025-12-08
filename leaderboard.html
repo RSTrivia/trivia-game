@@ -96,7 +96,7 @@ async function loadLeaderboard() {
     .from('scores')
     .select('username, score')
     .order('score', { ascending: false })
-    .limit(10);
+    .limit(10); // top 10 scores
 
   if (error) {
     console.error(error);
@@ -104,6 +104,7 @@ async function loadLeaderboard() {
   }
 
   leaderboard.innerHTML = '';
+
   data.forEach((entry, i) => {
     const li = document.createElement('li');
 
@@ -112,6 +113,14 @@ async function loadLeaderboard() {
 
     const right = document.createElement('span');
     right.textContent = entry.score;
+
+    // Highlight top 3 players
+    if (i === 0) li.style.backgroundColor = '#FFD700'; // Gold
+    else if (i === 1) li.style.backgroundColor = '#C0C0C0'; // Silver
+    else if (i === 2) li.style.backgroundColor = '#CD7F32'; // Bronze
+
+    // Optional: bold text for top 3
+    if (i < 3) li.style.fontWeight = 'bold';
 
     li.appendChild(left);
     li.appendChild(right);
