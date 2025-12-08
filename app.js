@@ -1,6 +1,4 @@
-const { data, error } = await supabase.from('questions').select('*');
-console.log('Fetch error:', error);
-console.log('Fetched questions:', data);
+import { supabase } from './supabase.js';
 
 // HTML element references
 const startBtn = document.getElementById('startBtn');
@@ -149,4 +147,5 @@ async function submitScore() {
     score,
   });
 }
+
 
