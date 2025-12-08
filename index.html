@@ -8,37 +8,33 @@
 </head>
 <body>
 <div class="container">
-<h1>OSRS Trivia</h1>
+  <h1>OSRS Trivia</h1>
 
+  <!-- Game Screen -->
+  <div id="game" class="hidden">
+    <div id="score">Score: 0</div>
+    <div id="question"></div>
+    <div id="answers"></div>
+    <div id="timer">Time: <span id="time">15</span>s</div>
+    <button id="nextBtn" class="hidden">Next Question</button>
+  </div>
 
-<div id="game" class="hidden">
-<div id="question"></div>
+  <!-- Start Screen -->
+  <div id="start-screen">
+    <button id="startBtn">Start Game</button>
+    <a href="leaderboard.html">View Leaderboard</a>
+    <a href="login.html">Log In</a>
+  </div>
 
-
-<div id="answers"></div>
-
-
-<div id="timer">Time: <span id="time">15</span></div>
-
-
-<button id="nextBtn" class="hidden">Next Question</button>
+  <!-- End Screen -->
+  <div id="end-screen" class="hidden">
+    <h2>Game Over!</h2>
+    <p>Your final score: <span id="finalScore"></span></p>
+    <button onclick="startGame()">Play Again</button>
+  </div>
 </div>
-
-
-<div id="start-screen">
-<button id="startBtn">Start Game</button>
-<a href="leaderboard.html">View Leaderboard</a>
-<a href="login.html">Log In</a>
-</div>
-
-
-<div id="result" class="hidden"></div>
-</div>
-
 
 <script src="supabase.js"></script>
 <script src="app.js"></script>
 </body>
-
 </html>
-
