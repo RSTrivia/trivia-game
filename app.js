@@ -2,7 +2,8 @@ import { supabase } from './supabase.js';
 
 const startBtn = document.getElementById('startBtn');
 const playAgainBtn = document.getElementById('playAgainBtn');
-const questionBox = document.getElementById('question');
+const questionText = document.getElementById('questionText'); // NEW: text element
+const questionImage = document.getElementById('questionImage'); // NEW: image element
 const answersBox = document.getElementById('answers');
 const timeDisplay = document.getElementById('time');
 const game = document.getElementById('game');
@@ -24,37 +25,24 @@ let username = '';
 
 // Event listeners
 startBtn.addEventListener('click', startGame);
-
 playAgainBtn.addEventListener('click', () => {
-  // Reset game variables
   score = 0;
   questionsAnswered = 0;
   questions = [];
   remainingQuestions = [];
   currentQuestion = null;
-
-  startGame(); // start a fresh game
+  startGame();
 });
-
 mainMenuBtn.addEventListener('click', () => {
-  // Stop any running timer
   clearInterval(timer);
-
-  // Hide game and end screens
   game.classList.add('hidden');
   endScreen.classList.add('hidden');
-
-  // Show start screen
   startBtn.parentElement.classList.remove('hidden');
-
-  // Reset game variables
   score = 0;
   questionsAnswered = 0;
   questions = [];
   remainingQuestions = [];
   currentQuestion = null;
-
-  // Reset score display
   updateScore();
 });
 
@@ -69,16 +57,15 @@ async function loadCurrentUser() {
     .eq('id', user.id)
     .single();
 
-  if (error) {
-    console.error('Failed to get username:', error);
-    return;
-  }
+  if (error) { console.error('Failed to get username:', error); return; }
 
   username = profile.username;
   if (userDisplay) userDisplay.textContent = `Player: ${username}`;
 }
 
+// -------------------------
 // Game functions
+// -------------------------
 async function startGame() {
   score = 0;
   questionsAnswered = 0;
@@ -109,7 +96,14 @@ async function loadQuestion() {
   const index = Math.floor(Math.random() * remainingQuestions.length);
   currentQuestion = remainingQuestions.splice(index, 1)[0];
 
-  questionBox.textContent = currentQuestion.question;
+  // ---- NEW: Display question text and image ----
+  questionText.textContent = currentQuestion.question;
+  if (currentQuestion.image_url) {
+    questionImage.src = currentQuestion.image_url;
+    questionImage.style.display = 'block';
+  } else {
+    questionImage.style.display = 'none';
+  }
 
   const answers = [
     currentQuestion.answer_a,
@@ -203,5 +197,3 @@ async function submitScore() {
 
 // Load user on page load
 loadCurrentUser();
-
-
