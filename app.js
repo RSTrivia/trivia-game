@@ -2,7 +2,7 @@ import { supabase } from './supabase.js';
 
 // HTML element references
 const startBtn = document.getElementById('startBtn');
-const playAgainBtn = document.getElementById('playAgainBtn'); // new button
+const playAgainBtn = document.getElementById('playAgainBtn');
 const nextBtn = document.getElementById('nextBtn');
 const questionBox = document.getElementById('question');
 const answersBox = document.getElementById('answers');
@@ -13,16 +13,16 @@ const finalScore = document.getElementById('finalScore');
 const scoreDisplay = document.getElementById('score');
 
 // Game variables
-let questions = [];           // all questions fetched once
-let remainingQuestions = [];  // questions left to ask
+let questions = [];
+let remainingQuestions = [];
 let currentQuestion = null;
 let score = 0;
 let timer;
 let timeLeft = 15;
-let totalQuestions = 10; // questions per game
+let totalQuestions = 10;
 let questionsAnswered = 0;
 
-// Attach event listeners
+// Attach event listeners to buttons
 startBtn.addEventListener('click', startGame);
 playAgainBtn.addEventListener('click', startGame);
 
@@ -43,7 +43,7 @@ async function startGame() {
   }
 
   questions = data;
-  remainingQuestions = [...questions]; // copy all questions
+  remainingQuestions = [...questions];
   await loadQuestion();
 }
 
@@ -55,11 +55,10 @@ async function loadQuestion() {
     return endGame();
   }
 
-  // Pick a random question from remaining
+  // Pick a random question
   const index = Math.floor(Math.random() * remainingQuestions.length);
   currentQuestion = remainingQuestions.splice(index, 1)[0];
 
-  // Show question
   questionBox.textContent = currentQuestion.question;
 
   const answers = [
