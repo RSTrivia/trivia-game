@@ -5,18 +5,55 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OSRS Trivia Login / Sign Up</title>
 <link rel="stylesheet" href="style.css">
+<style>
+  /* ====== FORM ELEMENTS ====== */
+  input {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    box-sizing: border-box;
+    display: block;
+  }
+
+  /* ====== BUTTONS ROW ====== */
+  .btn-row {
+    display: flex;
+    justify-content: center;
+    gap: 10px; /* space between buttons */
+    margin: 10px 0;
+  }
+
+  .btn-row button {
+    flex: 1; /* make both buttons same width */
+  }
+
+  /* ====== BACK TO GAME BUTTON ====== */
+  .back-btn {
+    width: 100%;
+    margin-top: 10px;
+    text-align: center;
+  }
+</style>
 </head>
 <body>
 <div class="container">
   <h1>OSRS Trivia</h1>
 
+  <!-- Input Fields -->
   <input id="username" placeholder="Username" />
   <input id="password" type="password" placeholder="Password" />
 
-  <button id="signupBtn" class="btn-small">Sign Up</button>
-  <button id="loginBtn" class="btn-small">Log In</button>
+  <!-- Buttons Side by Side -->
+  <div class="btn-row">
+    <button id="signupBtn" class="btn-small">Sign Up</button>
+    <button id="loginBtn" class="btn-small">Log In</button>
+  </div>
 
-  <a href="index.html" class="btn-small">Back to Game</a>
+  <!-- Back to Game Button -->
+  <a href="index.html" class="btn-small back-btn">Back to Game</a>
 </div>
 
 <script type="module">
@@ -98,7 +135,6 @@ loginBtn.addEventListener('click', async () => {
     return;
   }
 
-  // Redirect to game
   window.location.href = 'index.html';
 });
 </script>
