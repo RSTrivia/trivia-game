@@ -98,3 +98,22 @@ button {
   font-weight: bold;
   color: #cd7f32; /* bronze */
 }
+
+/* button style */
+.btn {
+  display: inline-block;
+  margin: 10px 0;
+  padding: 10px 15px;
+  background: #f2f2f2;
+  color: #333;
+  font-weight: bold;
+  text-decoration: none;
+  border: none;           /* remove default border */
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.btn:hover {
+  background: #ddd;      /* same hover effect as Back to Game */
+}
