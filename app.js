@@ -88,18 +88,7 @@ async function startGame() {
 
 async function loadQuestion() {
   answersBox.innerHTML = '';
-  const questionText = document.getElementById('questionText');
-  const questionImage = document.getElementById('questionImage');
-
-  questionText.textContent = currentQuestion.question_text;
   
-  if (currentQuestion.question_image) {
-    questionImage.src = currentQuestion.question_image;
-    questionImage.style.display = 'block';
-  } else {
-    questionImage.style.display = 'none';
-  }
-
   if (remainingQuestions.length === 0 || questionsAnswered >= totalQuestions) {
     return endGame();
   }
@@ -107,15 +96,20 @@ async function loadQuestion() {
   const index = Math.floor(Math.random() * remainingQuestions.length);
   currentQuestion = remainingQuestions.splice(index, 1)[0];
 
-  // ---- NEW: Display question text and image ----
-  questionText.textContent = currentQuestion.question;
-  if (currentQuestion.image_url) {
-    questionImage.src = currentQuestion.image_url;
+  // ---- DISPLAY QUESTION TEXT AND IMAGE ----
+  const questionText = document.getElementById('questionText');
+  const questionImage = document.getElementById('questionImage');
+
+  questionText.textContent = currentQuestion.question_text;
+
+  if (currentQuestion.question_image) {
+    questionImage.src = currentQuestion.question_image;
     questionImage.style.display = 'block';
   } else {
     questionImage.style.display = 'none';
   }
 
+  // ---- CREATE ANSWER BUTTONS ----
   const answers = [
     currentQuestion.answer_a,
     currentQuestion.answer_b,
@@ -131,6 +125,7 @@ async function loadQuestion() {
     answersBox.appendChild(btn);
   });
 
+  // ---- TIMER SETUP ----
   timeLeft = 15;
   timeDisplay.textContent = timeLeft;
   clearInterval(timer);
@@ -208,4 +203,5 @@ async function submitScore() {
 
 // Load user on page load
 loadCurrentUser();
+
 
