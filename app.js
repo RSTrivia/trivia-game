@@ -24,14 +24,38 @@ let username = '';
 
 // Event listeners
 startBtn.addEventListener('click', startGame);
-playAgainBtn.addEventListener('click', startGame);
+
+playAgainBtn.addEventListener('click', () => {
+  // Reset game variables
+  score = 0;
+  questionsAnswered = 0;
+  questions = [];
+  remainingQuestions = [];
+  currentQuestion = null;
+
+  startGame(); // start a fresh game
+});
+
 mainMenuBtn.addEventListener('click', () => {
+  // Stop any running timer
+  clearInterval(timer);
+
   // Hide game and end screens
   game.classList.add('hidden');
   endScreen.classList.add('hidden');
 
   // Show start screen
   startBtn.parentElement.classList.remove('hidden');
+
+  // Reset game variables
+  score = 0;
+  questionsAnswered = 0;
+  questions = [];
+  remainingQuestions = [];
+  currentQuestion = null;
+
+  // Reset score display
+  updateScore();
 });
 
 // Load currently logged-in user
@@ -179,4 +203,5 @@ async function submitScore() {
 
 // Load user on page load
 loadCurrentUser();
+
 
