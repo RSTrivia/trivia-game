@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Trivia Game</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="container">
+<h1>Trivia Game</h1>
+
+
+<div id="game" class="hidden">
+<div id="question"></div>
+
+
+<div id="answers"></div>
+
+
+<div id="timer">Time: <span id="time">15</span></div>
+
+
+<button id="nextBtn" class="hidden">Next Question</button>
+</div>
+
+
+<div id="start-screen">
+<button id="startBtn">Start Game</button>
+<a href="leaderboard.html">View Leaderboard</a>
+<a href="login.html">Log In</a>
+</div>
+
+
+<div id="result" class="hidden"></div>
+</div>
+
+
+<script src="supabase.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

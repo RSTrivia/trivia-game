@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Login</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="container">
+<h1>Login</h1>
+
+
+<input id="email" placeholder="Email" />
+<input id="password" type="password" placeholder="Password" />
+
+
+<button id="loginBtn">Login</button>
+<button id="signupBtn">Sign Up</button>
+
+
+<a href="index.html">Back</a>
+</div>
+
+
+<script src="supabase.js"></script>
+<script>
+const email = document.querySelector('#email');
+const password = document.querySelector('#password');
+
+
+document.querySelector('#loginBtn').onclick = async () => {
+await supabase.auth.signInWithPassword({ email: email.value, password: password.value });
+window.location.href = 'index.html';
+};
+
+
+document.querySelector('#signupBtn').onclick = async () => {
+await supabase.auth.signUp({ email: email.value, password: password.value });
+alert('Account created! Now log in.');
+};
+</script>
+</body>
+</html>

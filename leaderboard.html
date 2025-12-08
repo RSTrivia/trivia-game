@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Leaderboard</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="container">
+<h1>Leaderboard</h1>
+<ul id="leaderboard"></ul>
+<a href="index.html">Back</a>
+</div>
+
+
+<script src="supabase.js"></script>
+<script>
+async function loadLeaderboard() {
+const { data } = await supabase
+.from('scores')
+.select('score, user_id, created_at')
+.order('score', { ascending: false })
+.limit(20);
+
+
+const list = document.getElementById('leaderboard');
+list.innerHTML = '';
+
+
+data.forEach(item => {
+const li = document.createElement('li');
+li.textContent = `${item.user_id} — ${item.score} pts`;
+list.appendChild(li);
+});
+}
+
+
+loadLeaderboard();
+</script>
+</body>
+</html>
