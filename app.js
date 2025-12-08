@@ -10,6 +10,7 @@ const endScreen = document.getElementById('end-screen');
 const finalScore = document.getElementById('finalScore');
 const scoreDisplay = document.getElementById('score');
 const userDisplay = document.getElementById('userDisplay');
+const mainMenuBtn = document.getElementById('mainMenuBtn');
 
 let questions = [];
 let remainingQuestions = [];
@@ -24,6 +25,14 @@ let username = '';
 // Event listeners
 startBtn.addEventListener('click', startGame);
 playAgainBtn.addEventListener('click', startGame);
+mainMenuBtn.addEventListener('click', () => {
+  // Hide game and end screens
+  game.classList.add('hidden');
+  endScreen.classList.add('hidden');
+
+  // Show start screen
+  startBtn.parentElement.classList.remove('hidden');
+});
 
 // Load currently logged-in user
 async function loadCurrentUser() {
@@ -170,3 +179,4 @@ async function submitScore() {
 
 // Load user on page load
 loadCurrentUser();
+
