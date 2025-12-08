@@ -96,7 +96,7 @@ button {
   color: #cd7f32; /* bronze */
 }
 
-/* Universal button style */
+
 .btn {
   background: rgba(0, 0, 0, 0.6);
   color: #ffd700;
@@ -110,26 +110,11 @@ button {
   transition: 0.2s;
 }
 
-/* Hover effect */
 .btn:hover {
   background: rgba(0, 0, 0, 0.85);
   border-color: #ffea8a;
 }
 
-/* Remove default button appearance from browsers */
-button.btn {
-  appearance: none;
-  -webkit-appearance: none;
-  border: none;
-}
-
-button.btn {
-  appearance: none !important;
-  -webkit-appearance: none !important;
-  background: rgba(0, 0, 0, 0.6) !important;
-  color: #ffd700 !important;
-  border: 2px solid #ffd700 !important;
-}
 
 
 
