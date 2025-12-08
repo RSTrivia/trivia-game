@@ -11,7 +11,7 @@
 <h1>Login</h1>
 
 
-<input id="email" placeholder="Email" />
+<input id="username" placeholder="username" />
 <input id="password" type="password" placeholder="Password" />
 
 
@@ -25,20 +25,21 @@
 
 <script src="supabase.js"></script>
 <script>
-const email = document.querySelector('#email');
+const username = document.querySelector('#username');
 const password = document.querySelector('#password');
 
 
 document.querySelector('#loginBtn').onclick = async () => {
-await supabase.auth.signInWithPassword({ email: email.value, password: password.value });
+await supabase.auth.signInWithPassword({ username: username.value, password: password.value });
 window.location.href = 'index.html';
 };
 
 
 document.querySelector('#signupBtn').onclick = async () => {
-await supabase.auth.signUp({ email: email.value, password: password.value });
+await supabase.auth.signUp({ username: username.value, password: password.value });
 alert('Account created! Now log in.');
 };
 </script>
 </body>
+
 </html>
