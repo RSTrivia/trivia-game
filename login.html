@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Login / Sign Up</title>
-<link rel="stylesheet" href="style.css" />
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="container">
-  <h1>Login / Sign Up</h1>
+  <h1>OSRS Trivia Login</h1>
 
   <input id="username" placeholder="Username" />
   <input id="password" type="password" placeholder="Password" />
@@ -16,7 +16,7 @@
   <button id="loginBtn">Login</button>
   <button id="signupBtn">Sign Up</button>
 
-  <a href="index.html">Back</a>
+  <a href="index.html">Back to Game</a>
 </div>
 
 <script type="module">
@@ -27,25 +27,20 @@ const passwordInput = document.getElementById('password');
 const loginBtn = document.getElementById('loginBtn');
 const signupBtn = document.getElementById('signupBtn');
 
-// Helper: generate fake email from username (for Supabase Auth)
-function usernameToEmail(username) {
-  return `${username}@example.com`.toLowerCase();
-}
-
-// Sign Up
+// SIGN UP
 signupBtn.addEventListener('click', async () => {
   const username = usernameInput.value.trim();
   const password = passwordInput.value;
 
   if (!username || !password) {
-    alert('Please enter username and password');
+    alert('Enter username and password');
     return;
   }
 
-  // Generate fake email from username
-  const email = `${username}@example.com`.toLowerCase();
+  // Generate fake email for Supabase Auth
+  const email = username.toLowerCase() + '@example.com';
 
-  // Sign up in Supabase Auth
+  // Sign up with Supabase
   const { data, error } = await supabase.auth.signUp({ email, password });
 
   if (error) {
@@ -54,21 +49,6 @@ signupBtn.addEventListener('click', async () => {
     return;
   }
 
-  // Insert username into profiles table
-  const { error: profileError } = await supabase.from('profiles').insert({
-    id: data.user.id,
-    username
-  });
-
-  if (profileError) {
-    alert('Failed to save username: ' + profileError.message);
-    console.error(profileError);
-    return;
-  }
-
-  alert('Account created! You can now log in.');
-});
-
   // Insert into profiles table
   const { error: profileError } = await supabase.from('profiles').insert({
     id: data.user.id,
@@ -76,7 +56,7 @@ signupBtn.addEventListener('click', async () => {
   });
 
   if (profileError) {
-    alert('Failed to save username: ' + profileError.message);
+    alert('Profile creation failed: ' + profileError.message);
     console.error(profileError);
     return;
   }
@@ -84,17 +64,17 @@ signupBtn.addEventListener('click', async () => {
   alert('Account created! You can now log in.');
 });
 
-// Login
+// LOGIN
 loginBtn.addEventListener('click', async () => {
   const username = usernameInput.value.trim();
   const password = passwordInput.value;
 
   if (!username || !password) {
-    alert('Please enter username and password');
+    alert('Enter username and password');
     return;
   }
 
-  const email = usernameToEmail(username);
+  const email = username.toLowerCase() + '@example.com';
 
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
@@ -104,10 +84,9 @@ loginBtn.addEventListener('click', async () => {
     return;
   }
 
-  alert('Logged in successfully!');
+  // Redirect to game
   window.location.href = 'index.html';
 });
 </script>
 </body>
 </html>
-
