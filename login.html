@@ -3,44 +3,94 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Login</title>
+<title>Login / Sign Up</title>
 <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 <div class="container">
-<h1>Login</h1>
+  <h1>Login / Sign Up</h1>
 
+  <input id="username" placeholder="Username" />
+  <input id="password" type="password" placeholder="Password" />
 
-<input id="username" placeholder="Username" />
-<input id="password" type="password" placeholder="Password" />
+  <button id="loginBtn">Login</button>
+  <button id="signupBtn">Sign Up</button>
 
-
-<button id="loginBtn">Login</button>
-<button id="signupBtn">Sign Up</button>
-
-
-<a href="index.html">Back</a>
+  <a href="index.html">Back</a>
 </div>
 
+<script type="module">
+import { supabase } from './supabase.js';
 
-<script src="supabase.js"></script>
-<script>
-const username = document.querySelector('#username');
-const password = document.querySelector('#password');
+const usernameInput = document.getElementById('username');
+const passwordInput = document.getElementById('password');
+const loginBtn = document.getElementById('loginBtn');
+const signupBtn = document.getElementById('signupBtn');
 
+// Helper: generate fake email from username (for Supabase Auth)
+function usernameToEmail(username) {
+  return `${username}@example.com`.toLowerCase();
+}
 
-document.querySelector('#loginBtn').onclick = async () => {
-await supabase.auth.signInWithPassword({ username: username.value, password: password.value });
-window.location.href = 'index.html';
-};
+// Sign Up
+signupBtn.addEventListener('click', async () => {
+  const username = usernameInput.value.trim();
+  const password = passwordInput.value;
 
+  if (!username || !password) {
+    alert('Please enter username and password');
+    return;
+  }
 
-document.querySelector('#signupBtn').onclick = async () => {
-await supabase.auth.signUp({ username: username.value, password: password.value });
-alert('Account created! Now log in.');
-};
+  const email = usernameToEmail(username);
+
+  // Sign up in Supabase Auth
+  const { data, error } = await supabase.auth.signUp({ email, password });
+
+  if (error) {
+    alert('Sign-up failed: ' + error.message);
+    console.error(error);
+    return;
+  }
+
+  // Insert into profiles table
+  const { error: profileError } = await supabase.from('profiles').insert({
+    id: data.user.id,
+    username
+  });
+
+  if (profileError) {
+    alert('Failed to save username: ' + profileError.message);
+    console.error(profileError);
+    return;
+  }
+
+  alert('Account created! You can now log in.');
+});
+
+// Login
+loginBtn.addEventListener('click', async () => {
+  const username = usernameInput.value.trim();
+  const password = passwordInput.value;
+
+  if (!username || !password) {
+    alert('Please enter username and password');
+    return;
+  }
+
+  const email = usernameToEmail(username);
+
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    alert('Login failed: ' + error.message);
+    console.error(error);
+    return;
+  }
+
+  alert('Logged in successfully!');
+  window.location.href = 'index.html';
+});
 </script>
 </body>
-
 </html>
-
