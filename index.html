@@ -33,8 +33,16 @@
     <button onclick="startGame()">Play Again</button>
   </div>
 </div>
-
+  
+<div id="score">Score: 0</div>
+<div id="end-screen" class="hidden">
+  <h2>Game Over!</h2>
+  <p>Your final score: <span id="finalScore"></span></p>
+  <button onclick="startGame()">Play Again</button>
+</div>
+  
 <script src="supabase.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
+
