@@ -148,4 +148,10 @@ async function submitScore() {
   });
 }
 
+// Attach the function to buttons
+const startBtn = document.getElementById('startBtn');
+const playAgainBtn = document.getElementById('playAgainBtn');
+
+startBtn.addEventListener('click', startGame);
+playAgainBtn.addEventListener('click', startGame);
 
