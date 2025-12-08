@@ -5,6 +5,93 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Leaderboard</title>
 <link rel="stylesheet" href="style.css">
+<style>
+  /* ====== BODY & CONTAINER ====== */
+  body {
+    font-family: Arial, sans-serif;
+    background-image: url('images/background.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    margin: 0;
+    padding: 40px;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+    position: relative;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.3); /* dark overlay */
+    z-index: 0;
+  }
+
+  .container {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    width: 400px;
+    max-width: 90%;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  h1 {
+    margin-top: 0;
+  }
+
+  /* ====== LEADERBOARD LIST ====== */
+  #leaderboard {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+  }
+
+  #leaderboard li {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 12px;
+    background: #f2f2f2;
+    border-radius: 5px;
+    margin-bottom: 6px;
+    font-size: 1rem;
+  }
+
+  #leaderboard li:nth-child(odd) {
+    background: #e0e0e0;
+  }
+
+  /* Top 3 highlight */
+  .top-1 { color: gold; font-weight: bold; }
+  .top-2 { color: silver; font-weight: bold; }
+  .top-3 { color: #cd7f32; font-weight: bold; }
+
+  /* ====== SMALL GOLD BUTTON FOR BACK LINK ====== */
+  a.btn-small {
+    background: rgba(0,0,0,0.6);
+    color: #ffd700;
+    padding: 10px 16px;
+    border: 2px solid #ffd700;
+    border-radius: 8px;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 1rem;
+    transition: 0.2s;
+    margin-top: 10px;
+  }
+
+  a.btn-small:hover {
+    background: rgba(0,0,0,0.85);
+    border-color: #ffea8a;
+  }
+
+</style>
 </head>
 <body>
 <div class="container">
@@ -25,22 +112,25 @@ async function loadLeaderboard() {
     .order('score', { ascending: false })
     .limit(10);
 
-  if (error) return console.error(error);
+  if (error) {
+    console.error(error);
+    return;
+  }
 
   leaderboard.innerHTML = '';
 
   data.forEach((entry, i) => {
     const li = document.createElement('li');
-
+  
     const left = document.createElement('span');
-    if (i === 0) left.textContent = `🥇 ${entry.username}`;
-    else if (i === 1) left.textContent = `🥈 ${entry.username}`;
-    else if (i === 2) left.textContent = `🥉 ${entry.username}`;
-    else left.textContent = `${i+1}. ${entry.username}`;
-
+    if (i === 0) { left.textContent = `🥇 ${entry.username}`; left.classList.add('top-1'); }
+    else if (i === 1) { left.textContent = `🥈 ${entry.username}`; left.classList.add('top-2'); }
+    else if (i === 2) { left.textContent = `🥉 ${entry.username}`; left.classList.add('top-3'); }
+    else left.textContent = `${i + 1}. ${entry.username}`;
+  
     const right = document.createElement('span');
     right.textContent = entry.score;
-
+  
     li.appendChild(left);
     li.appendChild(right);
     leaderboard.appendChild(li);
