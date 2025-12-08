@@ -13,10 +13,10 @@
   <input id="username" placeholder="Username" />
   <input id="password" type="password" placeholder="Password" />
 
-  <button id="signupBtn" class="btn btn-small">Sign Up</button>
-  <button id="loginBtn" class="btn btn-small">Log In</button>
+  <button id="signupBtn" class="btn-small">Sign Up</button>
+  <button id="loginBtn" class="btn-small">Log In</button>
 
-  <a href="index.html">Back to Game</a>
+  <a href="index.html" class="btn-small">Back to Game</a>
 </div>
 
 <script type="module">
@@ -39,7 +39,6 @@ signupBtn.addEventListener('click', async () => {
     return;
   }
 
-  // Create a fake email for Supabase Auth
   const email = username.toLowerCase() + '@example.com';
 
   const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
@@ -49,7 +48,6 @@ signupBtn.addEventListener('click', async () => {
 
   if (signUpError) {
     alert('Sign-up failed: ' + signUpError.message);
-    console.error(signUpError);
     return;
   }
 
@@ -59,14 +57,12 @@ signupBtn.addEventListener('click', async () => {
     return;
   }
 
-  // Insert username into profiles table
   const { error: profileError } = await supabase
     .from('profiles')
     .insert({ id: user.id, username });
 
   if (profileError) {
     alert('Profile creation failed: ' + profileError.message);
-    console.error(profileError);
     return;
   }
 
@@ -94,7 +90,6 @@ loginBtn.addEventListener('click', async () => {
 
   if (loginError) {
     alert('Login failed: ' + loginError.message);
-    console.error(loginError);
     return;
   }
 
@@ -103,11 +98,8 @@ loginBtn.addEventListener('click', async () => {
     return;
   }
 
-  // Redirect to game
   window.location.href = 'index.html';
 });
 </script>
 </body>
 </html>
-
-
