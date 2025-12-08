@@ -1,40 +1,42 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Leaderboard</title>
-<link rel="stylesheet" href="style.css" />
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="container">
-<h1>Leaderboard</h1>
-<ul id="leaderboard"></ul>
-<a href="index.html">Back</a>
+  <h1>Leaderboard</h1>
+  <ul id="leaderboard"></ul>
+  <a href="index.html">Back to Game</a>
 </div>
 
+<script type="module">
+import { supabase } from './supabase.js';
 
-<script src="supabase.js"></script>
-<script>
+const leaderboard = document.getElementById('leaderboard');
+
 async function loadLeaderboard() {
-const { data } = await supabase
-.from('scores')
-.select('score, user_id, created_at')
-.order('score', { ascending: false })
-.limit(20);
+  const { data, error } = await supabase
+    .from('scores')
+    .select('username, score')
+    .order('score', { ascending: false })
+    .limit(10);
 
+  if (error) {
+    console.error(error);
+    return;
+  }
 
-const list = document.getElementById('leaderboard');
-list.innerHTML = '';
-
-
-data.forEach(item => {
-const li = document.createElement('li');
-li.textContent = `${item.user_id} — ${item.score} pts`;
-list.appendChild(li);
-});
+  leaderboard.innerHTML = '';
+  data.forEach((entry, i) => {
+    const li = document.createElement('li');
+    li.textContent = `${i + 1}. ${entry.username} - ${entry.score}`;
+    leaderboard.appendChild(li);
+  });
 }
-
 
 loadLeaderboard();
 </script>
