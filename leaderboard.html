@@ -5,85 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Leaderboard</title>
 <link rel="stylesheet" href="style.css">
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    background-image: url('images/background.png'); /* same background as game */
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    margin: 0;
-    padding: 40px;
-    display: flex;
-    justify-content: center;
-    min-height: 100vh;
-  }
-
-  body::before {
-    content: "";
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.3); /* dark overlay */
-    z-index: 0;
-  }
-
-  .container {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.2);
-    width: 400px;
-    max-width: 90%;
-    text-align: center;
-    position: relative;
-    z-index: 1;
-  }
-
-  h1 {
-    margin-top: 0;
-  }
-
-  #leaderboard {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  #leaderboard li {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 10px;
-    background: #f2f2f2;
-    border-radius: 5px;
-    margin-bottom: 5px;
-  }
-
-  #leaderboard li:nth-child(odd) {
-    background: #e0e0e0;
-  }
-
-  a {
-    display: inline-block;
-    margin-top: 15px;
-    text-decoration: none;
-    color: #333;
-    font-weight: bold;
-    background: #f2f2f2;
-    padding: 8px 12px;
-    border-radius: 5px;
-  }
-
-  a:hover {
-    background: #ddd;
-  }
-</style>
 </head>
 <body>
 <div class="container">
   <h1>Leaderboard</h1>
   <ul id="leaderboard"></ul>
-  <a href="index.html">Back to Game</a>
+  <a href="index.html" class="btn-small">Back to Game</a>
 </div>
 
 <script type="module">
@@ -96,41 +23,31 @@ async function loadLeaderboard() {
     .from('scores')
     .select('username, score')
     .order('score', { ascending: false })
-    .limit(10); // top 10 scores
+    .limit(10);
 
-  if (error) {
-    console.error(error);
-    return;
-  }
+  if (error) return console.error(error);
 
   leaderboard.innerHTML = '';
 
   data.forEach((entry, i) => {
     const li = document.createElement('li');
-  
+
     const left = document.createElement('span');
-    let text = '';
-    if (i === 0) text = `🥇 ${entry.username}`;
-    else if (i === 1) text = `🥈 ${entry.username}`;
-    else if (i === 2) text = `🥉 ${entry.username}`;
-    else text = `${i + 1}. ${entry.username}`; // numbers for everyone else
-  
-    left.textContent = text;
-  
+    if (i === 0) left.textContent = `🥇 ${entry.username}`;
+    else if (i === 1) left.textContent = `🥈 ${entry.username}`;
+    else if (i === 2) left.textContent = `🥉 ${entry.username}`;
+    else left.textContent = `${i+1}. ${entry.username}`;
+
     const right = document.createElement('span');
     right.textContent = entry.score;
-  
+
     li.appendChild(left);
     li.appendChild(right);
     leaderboard.appendChild(li);
   });
-
-
 }
 
 loadLeaderboard();
 </script>
 </body>
 </html>
-
-
