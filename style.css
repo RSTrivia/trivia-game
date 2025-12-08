@@ -32,4 +32,10 @@ cursor: pointer;
 display: block;
 width: 100%;
 margin: 5px 0;
+
 }
+
+.correct { background-color: #4caf50; color: white; }
+.wrong { background-color: #f44336; color: white; }
+.answer-btn { margin: 5px; padding: 10px; }
+.hidden { display: none; }
