@@ -42,7 +42,8 @@ signupBtn.addEventListener('click', async () => {
     return;
   }
 
-  const email = usernameToEmail(username);
+  // Generate fake email from username
+  const email = `${username}@example.com`.toLowerCase();
 
   // Sign up in Supabase Auth
   const { data, error } = await supabase.auth.signUp({ email, password });
@@ -52,6 +53,21 @@ signupBtn.addEventListener('click', async () => {
     console.error(error);
     return;
   }
+
+  // Insert username into profiles table
+  const { error: profileError } = await supabase.from('profiles').insert({
+    id: data.user.id,
+    username
+  });
+
+  if (profileError) {
+    alert('Failed to save username: ' + profileError.message);
+    console.error(profileError);
+    return;
+  }
+
+  alert('Account created! You can now log in.');
+});
 
   // Insert into profiles table
   const { error: profileError } = await supabase.from('profiles').insert({
@@ -94,3 +110,4 @@ loginBtn.addEventListener('click', async () => {
 </script>
 </body>
 </html>
+
