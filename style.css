@@ -101,25 +101,30 @@ button {
 
 /* Universal button style */
 .btn {
-  display: inline-block;
-  margin: 10px 0;
-  padding: 12px 15px;
-  width: 100%;
-  background: #f2f2f2;
-  color: #333;
-  font-weight: bold;
-  text-decoration: none;
-  border: none;
-  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #ffd700;
+  padding: 12px 20px;
+  border: 2px solid #ffd700;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background 0.25s, transform 0.1s;
+  font-size: 1.1rem;
+  text-align: center;
+  width: 100%;
+  transition: 0.2s;
 }
 
+/* Hover effect */
 .btn:hover {
-  background: #ddd;
+  background: rgba(0, 0, 0, 0.85);
+  border-color: #ffea8a;
 }
 
-.btn:active {
-  transform: scale(0.97);
+/* Remove default button appearance from browsers */
+button.btn {
+  appearance: none;
+  -webkit-appearance: none;
+  border: none;
 }
+
+
 
