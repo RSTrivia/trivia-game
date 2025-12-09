@@ -14,20 +14,22 @@
     margin-bottom: 25px;
     text-align: center;
     letter-spacing: 2px;
-
-    /* Stone + gold gradient */
-    background: linear-gradient(#e8e0c5, #ba9b4a, #7a602b);
+  
+    /* Rich gold gradient */
+    background: linear-gradient(135deg, #fffaf0, #ffd700 40%, #b8860b 80%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-
-    /* Strong OSRS-style shadow + glow */
+  
+    /* Shadow + glow for OSRS feel */
     text-shadow:
       0 0 6px rgba(0,0,0,0.7),
       2px 2px 0 #000,
-      4px 4px 6px rgba(0,0,0,0.6);
-
-    filter: drop-shadow(0 0 8px rgba(255, 215, 100, 0.4));
+      4px 4px 6px rgba(0,0,0,0.6),
+      0 0 12px rgba(255, 215, 0, 0.7);
+  
+    filter: drop-shadow(0 0 10px rgba(255, 223, 0, 0.6));
   }
+
 
   /* ====== BODY & CONTAINER ====== */
   body {
@@ -174,5 +176,6 @@ loadLeaderboard();
 </script>
 </body>
 </html>
+
 
 
