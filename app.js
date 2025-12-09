@@ -204,10 +204,19 @@ function updateScore() {
 async function endGame() {
   game.classList.add('hidden');
   endScreen.classList.remove('hidden');
+
+  // Check if the player answered all questions correctly
+  if (remainingQuestions.length === 0 && score === questions.length) {
+    endScreen.querySelector('h2').textContent = "gz"; // show "gz" instead of Game Over
+  } else {
+    endScreen.querySelector('h2').textContent = "Game Over!";
+  }
+
   finalScore.textContent = score;
 
   submitScore().catch(err => console.error(err)); // async save, doesn't block UI
 }
+
 
 
 async function submitScore() {
@@ -240,6 +249,7 @@ supabase.auth.onAuthStateChange((event, session) => {
 });
 
 loadCurrentUser();
+
 
 
 
