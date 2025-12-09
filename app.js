@@ -228,7 +228,7 @@ async function submitScore() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
-  // Make sure we have the username
+  // Get the username if not already set
   if (!username) {
     const { data: profile, error } = await supabase
       .from('profiles')
@@ -236,29 +236,30 @@ async function submitScore() {
       .eq('id', user.id)
       .single();
 
-    username = profile?.username || 'Unknown';
     if (error) console.error('Error fetching username:', error);
+
+    username = profile?.username || 'Unknown';
   }
 
   try {
-    // 1. Get the current score for this user
+    // Check existing score for this user
     const { data: existing, error: fetchError } = await supabase
       .from('scores')
       .select('score')
       .eq('user_id', user.id)
       .single();
 
-    if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 = no rows found
+    if (fetchError && fetchError.code !== 'PGRST116') {
       console.error('Error fetching existing score:', fetchError);
       return;
     }
 
-    // 2. Only upsert if new score is higher or if user has no existing score
+    // Upsert only if new score is higher or if user has no existing score
     if (!existing || score > existing.score) {
       const { data: upsertData, error: upsertError } = await supabase
         .from('scores')
         .upsert(
-          { user_id: user.id, score },
+          { user_id: user.id, username, score }, // include username here!
           { onConflict: 'user_id', ignoreDuplicates: false }
         )
         .select();
@@ -266,12 +267,7 @@ async function submitScore() {
       if (upsertError) console.error('Error saving score:', upsertError);
       else console.log('Score saved/updated:', upsertData);
     } else {
-      console.log('Existing score is higher or equal, not updating.');
-    }
-  } catch (err) {
-    console.error('Error submitting score:', err);
-  }
-}
+      console.l
 
 
 
@@ -284,6 +280,7 @@ supabase.auth.onAuthStateChange((event, session) => {
 });
 
 loadCurrentUser();
+
 
 
 
