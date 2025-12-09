@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OSRS Trivia</title>
+
+<!-- OSRS-style title font -->
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 
@@ -56,7 +58,7 @@ h1 {
 }
 
 #game, #end-screen {
-  display: none;
+  display: none; /* hidden by default */
 }
 
 #questionImage {
@@ -99,8 +101,8 @@ h1 {
 </style>
 </head>
 <body>
-<div class="container">
 
+<div class="container">
   <h1>OSRS Trivia</h1>
 
   <!-- Main Menu -->
@@ -131,7 +133,6 @@ h1 {
     <button id="playAgainBtn" class="btn">Play Again</button>
     <button id="mainMenuBtn" class="btn">Main Menu</button>
   </div>
-
 </div>
 
 <script type="module" src="app.js"></script>
