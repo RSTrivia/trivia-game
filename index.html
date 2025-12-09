@@ -10,94 +10,93 @@
 <link rel="stylesheet" href="style.css">
 
 <style>
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: url('your-background.jpg') no-repeat center center fixed;
-  background-size: cover;
-  color: #ffd700;
-  text-align: center;
-}
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: url('your-background.jpg') no-repeat center center fixed;
+    background-size: cover;
+    color: #ffd700;
+    text-align: center;
+  }
 
-.container {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 20px;
-}
+  .container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+  }
 
-h1 {
-  font-family: 'Cinzel', serif;
-  font-size: 3rem;
-  margin-bottom: 20px;
-  background: linear-gradient(#e8e0c5, #ba9b4a, #7a602b);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-shadow: 0 0 6px rgba(0,0,0,0.7), 2px 2px 0 #000;
-}
+  h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 3rem;
+    margin-bottom: 20px;
+    background: linear-gradient(#e8e0c5, #ba9b4a, #7a602b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 6px rgba(0,0,0,0.7), 2px 2px 0 #000;
+  }
 
-/* Buttons */
-.btn, .btn-small {
-  display: block;
-  width: 100%;
-  max-width: 360px;
-  margin: 10px auto;
-  padding: 12px 0;
-  font-size: 1.05rem;
-  border-radius: 8px;
-  background: rgba(0,0,0,0.6);
-  color: #ffd700;
-  border: 2px solid #ffd700;
-  cursor: pointer;
-  text-decoration: none;
-  transition: 0.2s;
-}
+  .btn, .btn-small {
+    display: block;
+    width: 100%;
+    max-width: 360px;
+    margin: 10px auto;
+    padding: 12px 0;
+    font-size: 1.05rem;
+    border-radius: 8px;
+    background: rgba(0,0,0,0.6);
+    color: #ffd700;
+    border: 2px solid #ffd700;
+    cursor: pointer;
+    text-decoration: none;
+    transition: 0.2s;
+  }
 
-.btn:hover, .btn-small:hover {
-  background: rgba(0,0,0,0.85);
-  border-color: #ffea8a;
-}
+  .btn:hover, .btn-small:hover {
+    background: rgba(0,0,0,0.85);
+    border-color: #ffea8a;
+  }
 
-#game, #end-screen {
-  display: none; /* hidden by default */
-}
+  #game, #end-screen {
+    display: none; /* hidden by default */
+  }
 
-#questionImage {
-  max-width: 100%;
-  max-height: 300px;
-  margin: 10px 0;
-  display: none;
-  border-radius: 8px;
-}
+  #questionImage {
+    max-width: 100%;
+    max-height: 300px;
+    margin: 10px 0;
+    display: none;
+    border-radius: 8px;
+  }
 
-#question {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
+  #question {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
 
-.answer-btn {
-  display: block;
-  width: 100%;
-  max-width: 360px;
-  margin: 5px auto;
-  padding: 10px 0;
-  font-size: 1rem;
-  border-radius: 6px;
-  cursor: pointer;
-  border: 2px solid #ffd700;
-  background: rgba(0,0,0,0.6);
-  color: #ffd700;
-}
+  .answer-btn {
+    display: block;
+    width: 100%;
+    max-width: 360px;
+    margin: 5px auto;
+    padding: 10px 0;
+    font-size: 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 2px solid #ffd700;
+    background: rgba(0,0,0,0.6);
+    color: #ffd700;
+  }
 
-.answer-btn.correct {
-  background: green;
-  border-color: greenyellow;
-}
+  .answer-btn.correct {
+    background: green;
+    border-color: greenyellow;
+  }
 
-.answer-btn.wrong {
-  background: red;
-  border-color: orange;
-}
+  .answer-btn.wrong {
+    background: red;
+    border-color: orange;
+  }
 </style>
 </head>
 <body>
@@ -135,6 +134,208 @@ h1 {
   </div>
 </div>
 
-<script type="module" src="app.js"></script>
+<script type="module">
+import { supabase } from './supabase.js';
+
+document.addEventListener('DOMContentLoaded', () => {
+
+  // --- ELEMENTS ---
+  const startBtn = document.getElementById('startBtn');
+  const playAgainBtn = document.getElementById('playAgainBtn');
+  const mainMenuBtn = document.getElementById('mainMenuBtn');
+  const questionText = document.getElementById('questionText');
+  const questionImage = document.getElementById('questionImage');
+  const answersBox = document.getElementById('answers');
+  const timeDisplay = document.getElementById('time');
+  const game = document.getElementById('game');
+  const endScreen = document.getElementById('end-screen');
+  const finalScore = document.getElementById('finalScore');
+  const scoreDisplay = document.getElementById('score');
+  const userDisplay = document.getElementById('userDisplay');
+  const startScreen = document.getElementById('start-screen');
+
+  // --- VARIABLES ---
+  let questions = [];
+  let remainingQuestions = [];
+  let currentQuestion = null;
+  let score = 0;
+  let timer;
+  let timeLeft = 15;
+  let totalQuestions = 10;
+  let questionsAnswered = 0;
+  let username = '';
+
+  // --- EVENT LISTENERS ---
+  startBtn.addEventListener('click', startGame);
+  playAgainBtn.addEventListener('click', () => {
+    resetGame();
+    startGame();
+  });
+  mainMenuBtn.addEventListener('click', () => {
+    resetGame();
+    game.classList.add('hidden');
+    endScreen.classList.add('hidden');
+    startScreen.classList.remove('hidden');
+  });
+
+  // --- LOAD USER ---
+  async function loadCurrentUser() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('id', user.id)
+      .single();
+
+    if (!error && profile) {
+      username = profile.username;
+      if (userDisplay) userDisplay.textContent = `Player: ${username}`;
+    }
+  }
+
+  // --- GAME FUNCTIONS ---
+  function resetGame() {
+    score = 0;
+    questionsAnswered = 0;
+    questions = [];
+    remainingQuestions = [];
+    currentQuestion = null;
+    updateScore();
+    clearInterval(timer);
+  }
+
+  async function startGame() {
+    startScreen.classList.add('hidden');
+    game.classList.remove('hidden');
+    endScreen.classList.add('hidden');
+    updateScore();
+
+    const { data, error } = await supabase.from('questions').select('*');
+    if (error || !data || data.length === 0) {
+      alert('Could not load questions!');
+      console.error(error);
+      return;
+    }
+
+    questions = data;
+    remainingQuestions = [...questions];
+    await loadQuestion();
+  }
+
+  async function loadQuestion() {
+    answersBox.innerHTML = '';
+
+    if (remainingQuestions.length === 0 || questionsAnswered >= totalQuestions) {
+      return endGame();
+    }
+
+    const index = Math.floor(Math.random() * remainingQuestions.length);
+    currentQuestion = remainingQuestions.splice(index, 1)[0];
+
+    questionText.textContent = currentQuestion.question;
+
+    if (currentQuestion.question_image) {
+      questionImage.src = currentQuestion.question_image;
+      questionImage.style.display = 'block';
+    } else {
+      questionImage.style.display = 'none';
+    }
+
+    const answers = [
+      currentQuestion.answer_a,
+      currentQuestion.answer_b,
+      currentQuestion.answer_c,
+      currentQuestion.answer_d,
+    ];
+
+    answers.forEach((ans, i) => {
+      const btn = document.createElement('button');
+      btn.textContent = ans;
+      btn.classList.add('answer-btn');
+      btn.addEventListener('click', () => checkAnswer(i + 1, btn));
+      answersBox.appendChild(btn);
+    });
+
+    timeLeft = 15;
+    timeDisplay.textContent = timeLeft;
+    clearInterval(timer);
+    timer = setInterval(() => {
+      timeLeft--;
+      timeDisplay.textContent = timeLeft;
+      if (timeLeft <= 0) {
+        clearInterval(timer);
+        highlightCorrectAnswer();
+        nextQuestionDelay();
+      }
+    }, 1000);
+  }
+
+  function checkAnswer(selected, clickedBtn) {
+    clearInterval(timer);
+    document.querySelectorAll('.answer-btn').forEach(btn => btn.disabled = true);
+
+    if (selected === currentQuestion.correct_answer) {
+      clickedBtn.classList.add('correct');
+      score++;
+    } else {
+      clickedBtn.classList.add('wrong');
+      highlightCorrectAnswer();
+    }
+
+    updateScore();
+    nextQuestionDelay();
+  }
+
+  function highlightCorrectAnswer() {
+    document.querySelectorAll('.answer-btn').forEach((btn, i) => {
+      if (i + 1 === currentQuestion.correct_answer) btn.classList.add('correct');
+    });
+  }
+
+  function nextQuestionDelay() {
+    questionsAnswered++;
+    setTimeout(() => {
+      if (questionsAnswered >= totalQuestions) endGame();
+      else loadQuestion();
+    }, 1500);
+  }
+
+  function updateScore() {
+    scoreDisplay.textContent = `Score: ${score}`;
+  }
+
+  async function endGame() {
+    game.classList.add('hidden');
+    endScreen.classList.remove('hidden');
+    finalScore.textContent = score;
+    await submitScore();
+  }
+
+  async function submitScore() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    if (!username) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', user.id)
+        .single();
+      username = profile?.username || 'Unknown';
+    }
+
+    await supabase.from('scores').insert({
+      user_id: user.id,
+      username,
+      score
+    });
+  }
+
+  loadCurrentUser();
+});
+</script>
+
 </body>
 </html>
