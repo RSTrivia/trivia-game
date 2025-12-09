@@ -232,6 +232,8 @@ supabase.auth.onAuthStateChange((event, session) => {
   }
 });
 
+loadCurrentUser();
+
 
 
 
