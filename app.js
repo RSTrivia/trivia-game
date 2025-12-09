@@ -79,9 +79,17 @@ async function loadCurrentUser() {
   // Change button to "Log Out"
   authBtn.textContent = 'Log Out';
   authBtn.onclick = async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session?.user) {
+    // Logged in → log out
     await supabase.auth.signOut();
-    loadCurrentUser(); // update UI immediately
-  };
+    loadCurrentUser();
+  } else {
+    // Not logged in → go to login page
+    window.location.href = 'login.html';
+  }
+};
+
 }
 
 
@@ -199,8 +207,10 @@ async function endGame() {
   game.classList.add('hidden');
   endScreen.classList.remove('hidden');
   finalScore.textContent = score;
-  await submitScore();
+
+  submitScore().catch(err => console.error(err)); // async save, doesn't block UI
 }
+
 
 async function submitScore() {
   const { data: { user } } = await supabase.auth.getUser();
@@ -229,6 +239,7 @@ supabase.auth.onAuthStateChange((event, session) => {
     console.log('No user logged in');
   }
 });
+
 
 
 
