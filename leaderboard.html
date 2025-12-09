@@ -152,9 +152,9 @@ async function loadLeaderboard() {
 
   const leaderboardData = data || [];
 
-  // Fill up to 10 entries with placeholders
+  // Fill up to 10 entries with invisible placeholders
   while (leaderboardData.length < 10) {
-    leaderboardData.push({ username: ' ', score: ' ' });
+    leaderboardData.push({ username: '\u00A0', score: '\u00A0' }); // non-breaking space
   }
 
   leaderboard.innerHTML = '';
@@ -163,24 +163,26 @@ async function loadLeaderboard() {
     const li = document.createElement('li');
 
     const left = document.createElement('span');
-    if (i === 0) { 
-      left.textContent = entry.username.trim() === '' ? `${i + 1}. ---` : `🥇 ${entry.username}`; 
-      left.classList.add('top-1'); 
-    }
-    else if (i === 1) { 
-      left.textContent = entry.username.trim() === '' ? `${i + 1}. ---` : `🥈 ${entry.username}`; 
-      left.classList.add('top-2'); 
-    }
-    else if (i === 2) { 
-      left.textContent = entry.username.trim() === '' ? `${i + 1}. ---` : `🥉 ${entry.username}`; 
-      left.classList.add('top-3'); 
-    }
-    else {
-      left.textContent = entry.username.trim() === '' ? `${i + 1}. ---` : `${i + 1}. ${entry.username}`;
+    const right = document.createElement('span');
+
+    // Only add medal emojis for real entries (username not just space)
+    const isReal = entry.username.trim() !== '';
+
+    if (i === 0 && isReal) {
+      left.textContent = `🥇 ${entry.username}`;
+      left.classList.add('top-1');
+    } else if (i === 1 && isReal) {
+      left.textContent = `🥈 ${entry.username}`;
+      left.classList.add('top-2');
+    } else if (i === 2 && isReal) {
+      left.textContent = `🥉 ${entry.username}`;
+      left.classList.add('top-3');
+    } else {
+      left.textContent = `${isReal ? i + 1 + '. ' + entry.username : '\u00A0'}`;
     }
 
-    const right = document.createElement('span');
-    right.textContent = entry.score;
+    // Score column: same, keep space if placeholder
+    right.textContent = isReal ? entry.score : '\u00A0';
 
     li.appendChild(left);
     li.appendChild(right);
@@ -193,6 +195,7 @@ loadLeaderboard();
 </script>
 </body>
 </html>
+
 
 
 
