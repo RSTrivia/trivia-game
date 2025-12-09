@@ -46,22 +46,34 @@ mainMenuBtn.addEventListener('click', () => {
   updateScore();
 });
 
-// Load currently logged-in user
 async function loadCurrentUser() {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
+  const userDisplay = document.getElementById('userDisplay');
 
+  // STEP 1 — Get session immediately, no delay
+  const { data: { session } } = await supabase.auth.getSession();
+
+  if (!session || !session.user) {
+    userDisplay.textContent = "Player: Guest";
+    return;
+  }
+
+  // Show placeholder while loading username
+  userDisplay.textContent = "Player: Loading…";
+
+  // STEP 2 — Fetch username from DB
   const { data: profile, error } = await supabase
     .from('profiles')
     .select('username')
-    .eq('id', user.id)
+    .eq('id', session.user.id)
     .single();
 
   if (!error && profile) {
-    username = profile.username;
-    if (userDisplay) userDisplay.textContent = `Player: ${username}`;
+    userDisplay.textContent = `Player: ${profile.username}`;
+  } else {
+    userDisplay.textContent = "Player: Guest";
   }
 }
+
 
 
 // -------------------------
@@ -210,6 +222,7 @@ supabase.auth.onAuthStateChange((event, session) => {
 
 // Load user on page load
 loadCurrentUser();
+
 
 
 
