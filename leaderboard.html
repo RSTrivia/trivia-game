@@ -150,50 +150,45 @@ async function loadLeaderboard() {
     return;
   }
 
-  const leaderboardData = data || [];
+  // Clone data or empty array
+  const leaderboardData = data ? [...data] : [];
 
-  // Fill up to 10 entries with invisible placeholders
+  // Fill up to 10 rows with placeholders
   while (leaderboardData.length < 10) {
-    leaderboardData.push({ username: '\u00A0', score: '\u00A0', placeholder: true });
+    leaderboardData.push({ username: '', score: '' }); // empty strings for placeholders
   }
 
   leaderboard.innerHTML = '';
 
   leaderboardData.forEach((entry, i) => {
     const li = document.createElement('li');
-    li.style.display = 'flex';
-    li.style.justifyContent = 'space-between';
-    li.style.alignItems = 'center';
 
     const left = document.createElement('span');
     const right = document.createElement('span');
 
-    const isReal = !entry.placeholder;
+    // Real entry?
+    const isReal = entry.username.trim() !== '';
 
-    // LEFT COLUMN: username + medals
-    if (i === 0 && isReal) {
-      left.textContent = `🥇 ${entry.username}`;
-      left.classList.add('top-1');
-    } else if (i === 1 && isReal) {
-      left.textContent = `🥈 ${entry.username}`;
-      left.classList.add('top-2');
-    } else if (i === 2 && isReal) {
-      left.textContent = `🥉 ${entry.username}`;
-      left.classList.add('top-3');
+    // LEFT COLUMN
+    if (isReal) {
+      if (i === 0) {
+        left.textContent = `🥇 ${entry.username}`;
+        left.classList.add('top-1');
+      } else if (i === 1) {
+        left.textContent = `🥈 ${entry.username}`;
+        left.classList.add('top-2');
+      } else if (i === 2) {
+        left.textContent = `🥉 ${entry.username}`;
+        left.classList.add('top-3');
+      } else {
+        left.textContent = `${i + 1}. ${entry.username}`;
+      }
     } else {
-      left.textContent = isReal ? `${i + 1}. ${entry.username}` : '\u00A0';
+      left.textContent = ''; // empty for placeholders
     }
 
-    // RIGHT COLUMN: score
-    right.textContent = isReal ? entry.score : '\u00A0';
-
-    // Only make placeholders invisible
-    if (!isReal) {
-      left.style.color = 'transparent';
-      right.style.color = 'transparent';
-      // Optional: subtle placeholder hover effect
-      li.style.backgroundColor = 'rgba(0,0,0,0.2)';
-    }
+    // RIGHT COLUMN
+    right.textContent = isReal ? entry.score : '';
 
     li.appendChild(left);
     li.appendChild(right);
@@ -202,11 +197,11 @@ async function loadLeaderboard() {
 }
 
 
-
 loadLeaderboard();
 </script>
 </body>
 </html>
+
 
 
 
