@@ -49,16 +49,14 @@ mainMenuBtn.addEventListener('click', () => {
 async function loadCurrentUser() {
   const userDisplay = document.getElementById('userDisplay');
 
-  // STEP 1 — Get session immediately, no delay
+  // STEP 1 — Get session immediately
   const { data: { session } } = await supabase.auth.getSession();
 
   if (!session || !session.user) {
-    userDisplay.textContent = "Player: Guest";
+    // Optionally hide the userDisplay completely if not logged in
+    userDisplay.style.display = 'none';
     return;
   }
-
-  // Show placeholder while loading username
-  userDisplay.textContent = "Player: Loading…";
 
   // STEP 2 — Fetch username from DB
   const { data: profile, error } = await supabase
@@ -69,10 +67,12 @@ async function loadCurrentUser() {
 
   if (!error && profile) {
     userDisplay.textContent = `Player: ${profile.username}`;
+    userDisplay.style.display = 'block'; // make it visible
   } else {
-    userDisplay.textContent = "Player: Guest";
+    userDisplay.style.display = 'none';
   }
 }
+
 
 // -------------------------
 // Game functions
@@ -221,6 +221,7 @@ supabase.auth.onAuthStateChange((event, session) => {
 
 // Load user on page load
 loadCurrentUser();
+
 
 
 
