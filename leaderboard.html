@@ -23,7 +23,6 @@
     position: relative;
   }
 
-  /* dark overlay on background */
   body::before {
     content: "";
     position: fixed;
@@ -33,7 +32,6 @@
     z-index: 0;
   }
 
-  /* ====== CONTAINER ====== */
   .container {
     background-color: rgba(0, 0, 0, 0.85);
     padding: 20px 30px;
@@ -45,36 +43,24 @@
     position: relative;
   }
 
-  /* ====== TITLE ====== */
   h1 {
     font-family: 'Cinzel', serif;
     font-size: 2.2rem;
     margin-bottom: 25px;
     text-align: center;
     letter-spacing: 2px;
-
-    background: linear-gradient(
-      145deg,
-      #fff8dc 0%,   /* bright highlight */
-      #ffdd44 25%,  /* primary gold */
-      #f2b705 50%,  /* mid gold */
-      #c28f0c 75%,  /* darker shadow gold */
-      #a77b0a 100%  /* deep gold for edges */
-    );
+    background: linear-gradient(145deg, #fff8dc 0%, #ffdd44 25%, #f2b705 50%, #c28f0c 75%, #a77b0a 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-
-    text-shadow:
-      0 0 4px rgba(0,0,0,0.8),
-      1px 1px 0 #000,
-      2px 2px 2px rgba(0,0,0,0.6),
-      0 0 8px rgba(255, 223, 0, 0.8),
-      0 -1px 2px rgba(255, 255, 255, 0.4);
+    text-shadow: 0 0 4px rgba(0,0,0,0.8),
+                 1px 1px 0 #000,
+                 2px 2px 2px rgba(0,0,0,0.6),
+                 0 0 8px rgba(255, 223, 0, 0.8),
+                 0 -1px 2px rgba(255, 255, 255, 0.4);
     filter: drop-shadow(0 0 10px rgba(255, 223, 0, 0.7));
     -webkit-font-smoothing: antialiased;
   }
 
-  /* ====== LEADERBOARD ====== */
   #leaderboard {
     list-style: none;
     padding: 0;
@@ -101,12 +87,10 @@
     background: rgba(100, 100, 100, 0.9);
   }
 
-  /* Top 3 highlight */
   .top-1 { color: gold; font-weight: bold; }
   .top-2 { color: silver; font-weight: bold; }
   .top-3 { color: #cd7f32; font-weight: bold; }
 
-  /* ====== BACK BUTTON ====== */
   a.btn-small {
     background: rgba(0,0,0,0.6);
     color: #ffd700;
@@ -140,9 +124,9 @@ const leaderboardEl = document.getElementById('leaderboard');
 
 async function loadLeaderboard() {
   const { data, error } = await supabase
-    .from('public_leaderboard')   // <-- use your view here
+    .from('public_leaderboard')
     .select('*')
-    .order('score', { ascending: false }) // optional if view already ordered
+    .order('score', { ascending: false })
     .limit(10);
 
   if (error) {
@@ -150,62 +134,36 @@ async function loadLeaderboard() {
     return;
   }
 
-  const leaderboardData = data || [];
+  let leaderboardData = data || [];
 
-  const leaderboard = document.getElementById('leaderboard');
-  leaderboard.innerHTML = '';
+  // Fill up to 10 entries if less
+  while (leaderboardData.length < 10) {
+    leaderboardData.push({ username: '', score: 0 });
+  }
+
+  leaderboardEl.innerHTML = '';
 
   leaderboardData.forEach((entry, i) => {
     const li = document.createElement('li');
     const left = document.createElement('span');
     const right = document.createElement('span');
 
-    const isReal = entry.username?.trim() !== '';
+    const posEmoji = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
+    left.textContent = entry.username?.trim() ? `${posEmoji} ${entry.username}` : posEmoji;
 
-    if (i === 0) {
-      left.classList.add('top-1');
-      left.textContent = isReal ? `🥇 ${entry.username}` : '🥇';
-    } else if (i === 1) {
-      left.classList.add('top-2');
-      left.textContent = isReal ? `🥈 ${entry.username}` : '🥈';
-    } else if (i === 2) {
-      left.classList.add('top-3');
-      left.textContent = isReal ? `🥉 ${entry.username}` : '🥉';
-    } else {
-      left.textContent = isReal ? `${i + 1}. ${entry.username}` : `${i + 1}.`;
-    }
+    right.textContent = entry.score ?? 0;
 
-    right.textContent = isReal ? entry.score : '';
+    if (i === 0) left.classList.add('top-1');
+    else if (i === 1) left.classList.add('top-2');
+    else if (i === 2) left.classList.add('top-3');
 
     li.appendChild(left);
     li.appendChild(right);
-    leaderboard.appendChild(li);
+    leaderboardEl.appendChild(li);
   });
 }
 
-const { data, error } = await supabase
-  .from('public_leaderboard')
-  .select('*')
-  .limit(10);
-
-if (error) console.error('Error loading leaderboard:', error);
-  
 loadLeaderboard();
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
