@@ -98,7 +98,7 @@ async function loadQuestion() {
 
   // ---- DISPLAY QUESTION TEXT AND IMAGE ----
 
-  questionText.textContent = currentQuestion.question_text;
+  questionText.textContent = currentQuestion.question;
 
   if (currentQuestion.question_image) {
     questionImage.src = currentQuestion.question_image;
@@ -201,6 +201,7 @@ async function submitScore() {
 
 // Load user on page load
 loadCurrentUser();
+
 
 
 
