@@ -25,6 +25,20 @@
     flex-direction: column;
     align-items: center;
   }
+
+  /* ===== NEW: Align small buttons left & right ===== */
+  .menu-row {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 12px;
+  }
+
+  /* Make both buttons equal size */
+  .menu-row .btn-small {
+    width: 48%;
+    text-align: center;
+  }
 </style>
 </head>
 <body>
@@ -49,8 +63,12 @@
   <!-- Start Screen -->
   <div id="start-screen">
     <button id="startBtn" class="btn">Start Game</button>
-    <a href="leaderboard.html" class="btn-small">View Leaderboard</a>
-    <a href="login.html" class="btn-small">Log In</a>
+
+    <!-- New cleaner button row -->
+    <div class="menu-row">
+      <a href="leaderboard.html" class="btn-small">View Leaderboard</a>
+      <a href="login.html" class="btn-small">Log In</a>
+    </div>
   </div>
 
   <!-- End Screen -->
