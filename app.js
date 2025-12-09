@@ -1,8 +1,8 @@
+// app.js
 import { supabase } from './supabase.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-
-  // Elements
+  // elements
   const startBtn = document.getElementById('startBtn');
   const playAgainBtn = document.getElementById('playAgainBtn');
   const mainMenuBtn = document.getElementById('mainMenuBtn');
@@ -17,52 +17,59 @@ document.addEventListener('DOMContentLoaded', () => {
   const userDisplay = document.getElementById('userDisplay');
   const startScreen = document.getElementById('start-screen');
 
-  // Game state
+  // basic sanity checks
+  if (!startBtn || !answersBox || !game || !startScreen) {
+    console.error('Missing essential DOM elements:', { startBtn, answersBox, game, startScreen });
+    alert('Page did not load correctly — check console for details.');
+    return;
+  }
+
+  // state
   let questions = [];
   let remainingQuestions = [];
   let currentQuestion = null;
   let score = 0;
-  let timer;
+  let timer = null;
   let timeLeft = 15;
-  let totalQuestions = 10;
+  const totalQuestions = 10;
   let questionsAnswered = 0;
   let username = '';
 
-  // Load current user
+  console.log('App initialized');
+
+  // attach listeners
+  startBtn.addEventListener('click', startGame);
+  if (playAgainBtn) playAgainBtn.addEventListener('click', () => { resetGame(); startGame(); });
+  if (mainMenuBtn) mainMenuBtn.addEventListener('click', () => { resetGame(); showStart(); });
+
+  // helper to show start screen
+  function showStart() {
+    game.classList.add('hidden');
+    endScreen.classList.add('hidden');
+    startScreen.classList.remove('hidden');
+  }
+
+  // load user profile (if signed in)
   async function loadCurrentUser() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('username')
-      .eq('id', user.id)
-      .single();
-
-    if (error) { console.error('Failed to get username:', error); return; }
-
-    username = profile.username;
-    if (userDisplay) userDisplay.textContent = `Player: ${username}`;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { console.log('no user logged in'); return; }
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', user.id)
+        .single();
+      if (error) { console.warn('profile load failed', error); return; }
+      username = profile?.username || '';
+      userDisplay.textContent = username ? `Player: ${username}` : '';
+    } catch (err) {
+      console.error('loadCurrentUser error', err);
+    }
   }
 
   loadCurrentUser();
 
-  // Event listeners
-  startBtn.addEventListener('click', startGame);
-
-  playAgainBtn.addEventListener('click', () => {
-    resetGame();
-    startGame();
-  });
-
-  mainMenuBtn.addEventListener('click', () => {
-    resetGame();
-    game.classList.add('hidden');
-    endScreen.classList.add('hidden');
-    startScreen.classList.remove('hidden');
-  });
-
-  // -------------------- Game Functions --------------------
+  // reset game state
   function resetGame() {
     score = 0;
     questionsAnswered = 0;
@@ -71,39 +78,56 @@ document.addEventListener('DOMContentLoaded', () => {
     currentQuestion = null;
     updateScore();
     clearInterval(timer);
+    timer = null;
   }
 
+  // start the game
   async function startGame() {
-    resetGame();
-    game.classList.remove('hidden');
-    startScreen.classList.add('hidden');
-    endScreen.classList.add('hidden');
+    try {
+      resetGame();
+      startScreen.classList.add('hidden');
+      game.classList.remove('hidden');
+      endScreen.classList.add('hidden');
+      updateScore();
 
-    const { data, error } = await supabase.from('questions').select('*');
-    if (error || !data || data.length === 0) {
-      alert('Could not load questions!');
-      console.error(error);
-      return;
+      console.log('Fetching questions from Supabase...');
+      const { data, error } = await supabase.from('questions').select('*');
+      if (error) {
+        console.error('Supabase fetch error:', error);
+        alert('Failed to load questions (check console).');
+        showStart();
+        return;
+      }
+      if (!data || !Array.isArray(data) || data.length === 0) {
+        console.warn('No questions returned from the DB');
+        alert('No questions available in the database.');
+        showStart();
+        return;
+      }
+
+      questions = data;
+      remainingQuestions = [...questions];
+      await loadQuestion();
+    } catch (err) {
+      console.error('startGame error', err);
+      alert('An error occurred (see console).');
+      showStart();
     }
-
-    questions = data;
-    remainingQuestions = [...questions];
-    loadQuestion();
   }
 
+  // load a single question
   async function loadQuestion() {
     answersBox.innerHTML = '';
-
-    if (remainingQuestions.length === 0 || questionsAnswered >= totalQuestions) {
+    if (!remainingQuestions.length || questionsAnswered >= totalQuestions) {
       return endGame();
     }
 
-    const index = Math.floor(Math.random() * remainingQuestions.length);
-    currentQuestion = remainingQuestions.splice(index, 1)[0];
+    const idx = Math.floor(Math.random() * remainingQuestions.length);
+    currentQuestion = remainingQuestions.splice(idx, 1)[0];
 
-    questionText.textContent = currentQuestion.question;
-
-    if (currentQuestion.question_image) {
+    // defensive: ensure fields exist
+    questionText.textContent = currentQuestion?.question ?? 'No question text';
+    if (currentQuestion?.question_image) {
       questionImage.src = currentQuestion.question_image;
       questionImage.style.display = 'block';
     } else {
@@ -111,21 +135,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const answers = [
-      currentQuestion.answer_a,
-      currentQuestion.answer_b,
-      currentQuestion.answer_c,
-      currentQuestion.answer_d,
+      currentQuestion?.answer_a ?? '',
+      currentQuestion?.answer_b ?? '',
+      currentQuestion?.answer_c ?? '',
+      currentQuestion?.answer_d ?? '',
     ];
 
     answers.forEach((ans, i) => {
       const btn = document.createElement('button');
-      btn.textContent = ans;
-      btn.classList.add('answer-btn');
+      btn.type = 'button';
+      btn.className = 'answer-btn';
+      btn.textContent = ans || '(empty)';
       btn.addEventListener('click', () => checkAnswer(i + 1, btn));
       answersBox.appendChild(btn);
     });
 
-    // Timer
+    // start timer
     timeLeft = 15;
     timeDisplay.textContent = timeLeft;
     clearInterval(timer);
@@ -135,16 +160,25 @@ document.addEventListener('DOMContentLoaded', () => {
       if (timeLeft <= 0) {
         clearInterval(timer);
         highlightCorrectAnswer();
-        nextQuestionDelay();
+        setTimeout(() => {
+          questionsAnswered++;
+          if (questionsAnswered >= totalQuestions) endGame(); else loadQuestion();
+        }, 1000);
       }
     }, 1000);
   }
 
+  // answer checking
   function checkAnswer(selected, clickedBtn) {
     clearInterval(timer);
-    document.querySelectorAll('.answer-btn').forEach(btn => btn.disabled = true);
+    document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
 
-    if (selected === currentQuestion.correct_answer) {
+    const correctIndex = Number(currentQuestion?.correct_answer) ?? null;
+    if (correctIndex === null) {
+      console.warn('No correct_answer field on currentQuestion', currentQuestion);
+    }
+
+    if (selected === correctIndex) {
       clickedBtn.classList.add('correct');
       score++;
     } else {
@@ -153,21 +187,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     updateScore();
-    nextQuestionDelay();
+
+    // next question after short delay
+    setTimeout(() => {
+      questionsAnswered++;
+      if (questionsAnswered >= totalQuestions) endGame();
+      else loadQuestion();
+    }, 1000);
   }
 
   function highlightCorrectAnswer() {
-    document.querySelectorAll('.answer-btn').forEach((btn, i) => {
-      if (i + 1 === currentQuestion.correct_answer) btn.classList.add('correct');
+    const buttons = Array.from(document.querySelectorAll('.answer-btn'));
+    buttons.forEach((btn, i) => {
+      if ((i + 1) === Number(currentQuestion?.correct_answer)) btn.classList.add('correct');
     });
-  }
-
-  function nextQuestionDelay() {
-    questionsAnswered++;
-    setTimeout(() => {
-      if (questionsAnswered >= totalQuestions) endGame();
-      else loadQuestion();
-    }, 1500);
   }
 
   function updateScore() {
@@ -175,31 +208,26 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function endGame() {
+    clearInterval(timer);
     game.classList.add('hidden');
     endScreen.classList.remove('hidden');
     finalScore.textContent = score;
-    await submitScore();
-  }
 
-  async function submitScore() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    if (!username) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('id', user.id)
-        .single();
-      username = profile?.username || 'Unknown';
+    // attempt to submit score if logged in
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      if (!username) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('username')
+          .eq('id', user.id)
+          .single();
+        username = profile?.username || 'Unknown';
+      }
+      await supabase.from('scores').insert({ user_id: user.id, username, score });
+    } catch (err) {
+      console.warn('submitScore failed', err);
     }
-
-    await supabase.from('scores').insert({
-      user_id: user.id,
-      username,
-      score
-    });
   }
-
 });
-
