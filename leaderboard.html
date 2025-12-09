@@ -136,66 +136,49 @@
 <script type="module">
 import { supabase } from './supabase.js';
 
-const leaderboard = document.getElementById('leaderboard');
+const leaderboardEl = document.getElementById('leaderboard');
 
 async function loadLeaderboard() {
   const { data, error } = await supabase
     .from('scores')
-    .select('score, profiles(username)')
+    .select('score, username')
     .order('score', { ascending: false })
     .limit(10);
 
-  if (error) {
-    console.error(error);
-    return;
-  }
+  if (error) { console.error(error); return; }
 
   const leaderboardData = data ? [...data] : [];
 
-  // Fill up to 10 rows with placeholders
+  // Fill to 10 rows with placeholders
   while (leaderboardData.length < 10) {
-    leaderboardData.push({ profiles: { username: '' }, score: '' });
+    leaderboardData.push({ username: '', score: '' });
   }
 
-  leaderboard.innerHTML = '';
-
+  leaderboardEl.innerHTML = '';
   leaderboardData.forEach((entry, i) => {
     const li = document.createElement('li');
-
     const left = document.createElement('span');
     const right = document.createElement('span');
 
-    const username = entry.profiles?.username || '';
-    const isReal = username.trim() !== '';
+    const isReal = entry.username?.trim() !== '';
 
-    // LEFT COLUMN: Number + medals for top-3
-    if (i === 0) {
-      left.classList.add('top-1');
-      left.textContent = isReal ? `🥇 ${username}` : '🥇';
-    } else if (i === 1) {
-      left.classList.add('top-2');
-      left.textContent = isReal ? `🥈 ${username}` : '🥈';
-    } else if (i === 2) {
-      left.classList.add('top-3');
-      left.textContent = isReal ? `🥉 ${username}` : '🥉';
-    } else {
-      left.textContent = isReal ? `${i + 1}. ${username}` : `${i + 1}.`;
-    }
+    if (i === 0) { left.classList.add('top-1'); left.textContent = isReal ? `🥇 ${entry.username}` : '🥇'; }
+    else if (i === 1) { left.classList.add('top-2'); left.textContent = isReal ? `🥈 ${entry.username}` : '🥈'; }
+    else if (i === 2) { left.classList.add('top-3'); left.textContent = isReal ? `🥉 ${entry.username}` : '🥉'; }
+    else { left.textContent = isReal ? `${i + 1}. ${entry.username}` : `${i + 1}.`; }
 
-    // RIGHT COLUMN: score if real, blank if placeholder
     right.textContent = isReal ? entry.score : '';
-
     li.appendChild(left);
     li.appendChild(right);
-    leaderboard.appendChild(li);
+    leaderboardEl.appendChild(li);
   });
 }
-
-
+  
 loadLeaderboard();
 </script>
 </body>
 </html>
+
 
 
 
