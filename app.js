@@ -27,8 +27,7 @@ let username = '';
 // Event Listeners
 // -------------------------
 startBtn.addEventListener('click', async () => {
-  // Only show Guest if user is not logged in
-  await loadCurrentUser();
+  await loadCurrentUser(); // ensures user info is loaded
   startGame();
 });
 
@@ -52,7 +51,7 @@ async function loadCurrentUser() {
   const { data: { session } } = await supabase.auth.getSession();
 
   if (!session?.user) {
-    username = ''; // keep empty until someone logs in
+    username = '';
     userDisplay.textContent = 'Player: Guest';
     authBtn.textContent = 'Log In';
     authBtn.onclick = () => { window.location.href = 'login.html'; };
@@ -98,7 +97,6 @@ async function startGame() {
   endScreen.classList.add('hidden');
   updateScore();
 
-  // Load questions from Supabase
   const { data, error } = await supabase.from('questions').select('*');
   if (error || !data?.length) {
     console.error('Error fetching questions:', error);
@@ -162,7 +160,6 @@ async function loadQuestion() {
   }, 1000);
 }
 
-
 function checkAnswer(selected, clickedBtn) {
   clearInterval(timer);
   document.querySelectorAll('.answer-btn').forEach(btn => btn.disabled = true);
@@ -176,10 +173,9 @@ function checkAnswer(selected, clickedBtn) {
     clickedBtn.classList.add('wrong');
     highlightCorrectAnswer();
     updateScore();
-    setTimeout(async () => {
-      await endGame();
-    }, 1000);
+    setTimeout(async () => { await endGame(); }, 1000);
   }
+}
 
 function highlightCorrectAnswer() {
   document.querySelectorAll('.answer-btn').forEach((btn, i) => {
@@ -206,29 +202,23 @@ async function endGame() {
 
   finalScore.textContent = score;
 
-  // await to make sure score is saved before anything else
   await submitScore();
 }
 
 async function submitScore() {
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return; // no need to save for guests
+  if (!user) return;
 
-  // Ensure username is set
   if (!username) {
     const { data: profile, error } = await supabase
       .from('profiles')
       .select('username')
       .eq('id', user.id)
       .single();
-
-    username = !error && profile?.username
-      ? profile.username
-      : `Player-${user.id.slice(0, 5)}`; // fallback display name
+    username = !error && profile?.username ? profile.username : `Player-${user.id.slice(0,5)}`;
   }
 
   try {
-    // Fetch existing score for this user
     const { data: existing, error: fetchError } = await supabase
       .from('scores')
       .select('score')
@@ -240,7 +230,6 @@ async function submitScore() {
       return;
     }
 
-    // Only upsert if score is higher or new
     if (!existing || score > existing.score) {
       const { data: upsertData, error: upsertError } = await supabase
         .from('scores')
@@ -260,12 +249,7 @@ async function submitScore() {
   }
 }
 
-
 // -------------------------
 // Init
 // -------------------------
 loadCurrentUser();
-
-
-
-
