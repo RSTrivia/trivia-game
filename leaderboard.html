@@ -141,7 +141,7 @@ const leaderboard = document.getElementById('leaderboard');
 async function loadLeaderboard() {
   const { data, error } = await supabase
     .from('scores')
-    .select('username, score')
+    .select('score, profiles(username)')
     .order('score', { ascending: false })
     .limit(10);
 
@@ -154,7 +154,7 @@ async function loadLeaderboard() {
 
   // Fill up to 10 rows with placeholders
   while (leaderboardData.length < 10) {
-    leaderboardData.push({ username: '', score: '' });
+    leaderboardData.push({ profiles: { username: '' }, score: '' });
   }
 
   leaderboard.innerHTML = '';
@@ -165,20 +165,21 @@ async function loadLeaderboard() {
     const left = document.createElement('span');
     const right = document.createElement('span');
 
-    const isReal = entry.username.trim() !== '';
+    const username = entry.profiles?.username || '';
+    const isReal = username.trim() !== '';
 
     // LEFT COLUMN: Number + medals for top-3
     if (i === 0) {
       left.classList.add('top-1');
-      left.textContent = isReal ? `🥇 ${entry.username}` : '🥇';
+      left.textContent = isReal ? `🥇 ${username}` : '🥇';
     } else if (i === 1) {
       left.classList.add('top-2');
-      left.textContent = isReal ? `🥈 ${entry.username}` : '🥈';
+      left.textContent = isReal ? `🥈 ${username}` : '🥈';
     } else if (i === 2) {
       left.classList.add('top-3');
-      left.textContent = isReal ? `🥉 ${entry.username}` : '🥉';
+      left.textContent = isReal ? `🥉 ${username}` : '🥉';
     } else {
-      left.textContent = isReal ? `${i + 1}. ${entry.username}` : `${i + 1}.`;
+      left.textContent = isReal ? `${i + 1}. ${username}` : `${i + 1}.`;
     }
 
     // RIGHT COLUMN: score if real, blank if placeholder
@@ -195,6 +196,7 @@ loadLeaderboard();
 </script>
 </body>
 </html>
+
 
 
 
