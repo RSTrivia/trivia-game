@@ -4,7 +4,36 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>OSRS Trivia</title>
+  
+<!-- Fancy OSRS title font -->
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="style.css" />
+  
+<style>
+  /* OSRS Fancy Title */
+  h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 3.2rem;
+    margin-bottom: 25px;
+    text-align: center;
+    letter-spacing: 2px;
+
+    /* Stone + gold gradient */
+    background: linear-gradient(#e8e0c5, #ba9b4a, #7a602b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+
+    /* OSRS-style shadow + glow */
+    text-shadow:
+      0 0 6px rgba(0,0,0,0.7),
+      2px 2px 0 #000,
+      4px 4px 6px rgba(0,0,0,0.6);
+
+    filter: drop-shadow(0 0 8px rgba(255, 215, 100, 0.4));
+  }
+  
 <style>
   /* Ensure question images don't overflow */
   #questionImage {
@@ -85,3 +114,4 @@
 <script type="module" src="app.js"></script>
 </body>
 </html>
+
