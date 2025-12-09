@@ -204,7 +204,7 @@ async function endGame() {
 
 async function submitScore() {
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
+  if (!user) return; // no need to save for guests
 
   // Ensure username is set
   if (!username) {
@@ -214,31 +214,49 @@ async function submitScore() {
       .eq('id', user.id)
       .single();
 
-    username = profile?.username || `Player-${user.id.slice(0,5)}`;
+    username = !error && profile?.username
+      ? profile.username
+      : `Player-${user.id.slice(0, 5)}`; // fallback display name
   }
 
   try {
-    // Upsert the score using the correct user_id (UUID), not username
-    const { data, error: upsertError } = await supabase
+    // Fetch existing score for this user
+    const { data: existing, error: fetchError } = await supabase
       .from('scores')
-      .upsert(
-        { user_id: user.id, username, score }, // <-- user.id is UUID
-        { onConflict: 'user_id' }
-      )
-      .select();
+      .select('score')
+      .eq('user_id', user.id)
+      .single();
 
-    if (upsertError) console.error('Error saving score:', upsertError);
-    else console.log('Score saved/updated:', data);
+    if (fetchError && fetchError.code !== 'PGRST116') {
+      console.error('Error fetching existing score:', fetchError);
+      return;
+    }
+
+    // Only upsert if score is higher or new
+    if (!existing || score > existing.score) {
+      const { data: upsertData, error: upsertError } = await supabase
+        .from('scores')
+        .upsert(
+          { user_id: user.id, username, score },
+          { onConflict: 'user_id' }
+        )
+        .select();
+
+      if (upsertError) console.error('Error saving score:', upsertError);
+      else console.log('Score saved/updated:', upsertData);
+    } else {
+      console.log('Existing score is higher or equal; no update.');
+    }
   } catch (err) {
     console.error('Error submitting score:', err);
   }
 }
 
 
-
 // -------------------------
 // Init
 // -------------------------
 loadCurrentUser();
+
 
 
