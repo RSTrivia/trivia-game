@@ -1,29 +1,28 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OSRS Trivia</title>
 
 <!-- Fancy title font -->
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 
-<link rel="stylesheet" href="style.css" />
 <style>
-  /* Body background */
+  /* Body & background */
   body {
     margin: 0;
     padding: 0;
     font-family: Arial, sans-serif;
-    background: url("https://oldschool.runescape.wiki/images/ScapeMain_%28music%29.png?8343b") center/cover no-repeat fixed;
     min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    color: white;
+    background: url('images/background.png') center/cover no-repeat;
   }
 
-  /* Container with glass effect */
+  /* Overlay for readability */
   .container {
     text-align: center;
     padding: 40px;
@@ -32,13 +31,17 @@
     backdrop-filter: blur(6px);
     width: 90%;
     max-width: 480px;
+    position: relative;
+    z-index: 1;
+    color: white;
   }
 
   /* Fancy OSRS-style title */
   h1 {
     font-family: 'Cinzel', serif;
-    font-size: 3.2rem;
-    margin-bottom: 35px;
+    font-size: 3rem;
+    margin-bottom: 25px;
+    text-align: center;
     letter-spacing: 2px;
     background: linear-gradient(#e8e0c5, #ba9b4a, #7a602b);
     -webkit-background-clip: text;
@@ -50,32 +53,72 @@
     filter: drop-shadow(0 0 8px rgba(255, 215, 100, 0.4));
   }
 
-  /* Buttons layout */
-  .btn-row-1, .btn-row-2 {
+  /* Inputs */
+  #username, #password {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    font-size: 1rem;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+  }
+
+  /* Start screen buttons container */
+  #start-screen {
     display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
   }
 
   /* Start Game button row */
-  .btn-row-1 button {
-    min-width: 220px;
+  .btn-row-1 {
+    width: 100%;
+    margin-bottom: 12px;
   }
 
-  /* Small buttons row */
-  .btn-small {
-    padding: 12px 20px;
-    font-size: 1rem;
+  /* Leaderboard & Login buttons row */
+  .btn-row-2 {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .btn, .btn-small {
     border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: 0.2s;
+    font-weight: bold;
+  }
+
+  /* Big start/play buttons */
+  .btn {
+    width: 100%;
+    padding: 14px 22px;
+    font-size: 1.1rem;
     background: rgba(0,0,0,0.6);
     color: #ffd700;
     border: 2px solid #ffd700;
-    cursor: pointer;
-    text-decoration: none;
-    text-align: center;
-    transition: 0.2s;
+  }
+
+  .btn:hover {
+    background: rgba(0,0,0,0.85);
+    border-color: #ffea8a;
+  }
+
+  /* Small buttons */
+  .btn-small {
+    flex: 1;
+    padding: 10px 16px;
+    font-size: 1rem;
+    background: rgba(0,0,0,0.6);
+    color: #ffd700;
+    border: 2px solid #ffd700;
   }
 
   .btn-small:hover {
@@ -83,7 +126,31 @@
     border-color: #ffea8a;
   }
 
-  /* Game / question area adjustments */
+  /* Back to Game button */
+  a.btn-back {
+    display: block;
+    width: 100%;
+    margin: 12px 0 0;
+    padding: 12px 0;
+    font-size: 1.05rem;
+    background: rgba(0,0,0,0.6);
+    color: #ffd700;
+    border: 2px solid #ffd700;
+    border-radius: 8px;
+    text-decoration: none;
+    text-align: center;
+  }
+
+  a.btn-back:hover {
+    background: rgba(0,0,0,0.85);
+    border-color: #ffea8a;
+  }
+
+  /* Game & End screens */
+  #game.hidden, #end-screen.hidden {
+    display: none;
+  }
+
   #questionImage {
     max-width: 100%;
     max-height: 300px;
@@ -96,20 +163,18 @@
     font-size: 1.2rem;
     margin: 10px 0;
   }
-
-  #question {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
 </style>
 </head>
 <body>
-<div class="container">
 
+<div class="container">
   <h1>OSRS Trivia</h1>
 
-  <!-- Start Screen -->
+  <!-- Inputs for login/signup -->
+  <input id="username" placeholder="Username">
+  <input id="password" type="password" placeholder="Password">
+
+  <!-- Button rows -->
   <div id="start-screen">
     <div class="btn-row-1">
       <button id="startBtn" class="btn">Start Game</button>
@@ -120,16 +185,16 @@
     </div>
   </div>
 
+  <a href="index.html" class="btn-back">Back to Game</a>
+
   <!-- Game Screen -->
   <div id="game" class="hidden">
     <div id="userDisplay"></div>
     <div id="score">Score: 0</div>
-
     <div id="question">
       <p id="questionText"></p>
       <img id="questionImage" src="" alt="Question image">
     </div>
-
     <div id="answers"></div>
     <div id="timer">Time: <span id="time">15</span>s</div>
   </div>
@@ -141,11 +206,11 @@
     <button id="playAgainBtn" class="btn">Play Again</button>
     <button id="mainMenuBtn" class="btn">Main Menu</button>
   </div>
-
 </div>
 
 <!-- Scripts -->
 <script type="module" src="supabase.js"></script>
 <script type="module" src="app.js"></script>
+
 </body>
 </html>
