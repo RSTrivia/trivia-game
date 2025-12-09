@@ -70,27 +70,19 @@ async function loadCurrentUser() {
     .eq('id', session.user.id)
     .single();
 
-  if (!error && profile) {
-    userDisplay.textContent = `Player: ${profile.username}`;
-  } else {
-    userDisplay.textContent = 'Player: Unknown';
-  }
+  userDisplay.textContent = !error && profile
+    ? `Player: ${profile.username}`
+    : 'Player: Unknown';
 
-  // Change button to "Log Out"
+  // Set the button to log out (single button for both)
   authBtn.textContent = 'Log Out';
   authBtn.onclick = async () => {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (session?.user) {
-    // Logged in → log out
     await supabase.auth.signOut();
+    // Update UI but do NOT redirect
     loadCurrentUser();
-  } else {
-    // Not logged in → go to login page
-    window.location.href = 'login.html';
-  }
-};
-
+  };
 }
+
 
 
 // -------------------------
@@ -239,6 +231,7 @@ supabase.auth.onAuthStateChange((event, session) => {
     console.log('No user logged in');
   }
 });
+
 
 
 
