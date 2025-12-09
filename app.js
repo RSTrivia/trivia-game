@@ -23,7 +23,11 @@ let timer;
 let timeLeft = 15;
 let username = '';
 
+// -------------------------
+// Event Listeners
+// -------------------------
 startBtn.addEventListener('click', async () => {
+  // Only show Guest if user is not logged in
   await loadCurrentUser();
   startGame();
 });
@@ -48,6 +52,7 @@ async function loadCurrentUser() {
   const { data: { session } } = await supabase.auth.getSession();
 
   if (!session?.user) {
+    username = ''; // keep empty until someone logs in
     userDisplay.textContent = 'Player: Guest';
     authBtn.textContent = 'Log In';
     authBtn.onclick = () => { window.location.href = 'login.html'; };
@@ -77,13 +82,13 @@ async function loadCurrentUser() {
 function resetGame() {
   clearInterval(timer);
   score = 0;
-  questionsAnswered = 0;
   questions = [];
   remainingQuestions = [];
   currentQuestion = null;
   questionText.textContent = '';
   answersBox.innerHTML = '';
   questionImage.style.display = 'none';
+  timeDisplay.textContent = '15';
 }
 
 async function startGame() {
@@ -93,6 +98,7 @@ async function startGame() {
   endScreen.classList.add('hidden');
   updateScore();
 
+  // Load questions from Supabase
   const { data, error } = await supabase.from('questions').select('*');
   if (error || !data?.length) {
     console.error('Error fetching questions:', error);
@@ -115,7 +121,7 @@ async function loadQuestion() {
   const index = Math.floor(Math.random() * remainingQuestions.length);
   currentQuestion = remainingQuestions.splice(index, 1)[0];
 
-  questionText.textContent = currentQuestion.question;
+  questionText.textContent = currentQuestion.question || 'No question text';
 
   if (currentQuestion.question_image) {
     questionImage.src = currentQuestion.question_image;
@@ -133,7 +139,7 @@ async function loadQuestion() {
 
   answers.forEach((ans, i) => {
     const btn = document.createElement('button');
-    btn.textContent = ans;
+    btn.textContent = ans || '';
     btn.classList.add('answer-btn');
     btn.addEventListener('click', () => checkAnswer(i + 1, btn));
     answersBox.appendChild(btn);
@@ -195,38 +201,28 @@ async function endGame() {
 
   await submitScore();
 }
+
 async function submitScore() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
   if (!username) {
-    const { data: profile, error } = await supabase
+    const { data: profile } = await supabase
       .from('profiles')
       .select('username')
       .eq('id', user.id)
       .single();
-    username = !error && profile ? profile.username : 'Unknown';
+    username = profile?.username || 'Unknown';
   }
 
-  const { data: existing, error: fetchError } = await supabase
+  const { data: existing } = await supabase
     .from('scores')
     .select('score')
     .eq('user_id', user.id)
     .single();
 
-  if (fetchError && fetchError.code !== 'PGRST116') {
-    console.error('Error fetching existing score:', fetchError);
-    return;
-  }
-
   if (!existing || score > existing.score) {
-    const { data: upsertData, error: upsertError } = await supabase
-      .from('scores')
-      .upsert({ user_id: user.id, username, score }, { onConflict: 'user_id' })
-      .select();
-
-    if (upsertError) console.error('Error saving score:', upsertError);
-    else console.log('Score saved/updated:', upsertData);
+    await supabase.from('scores').upsert({ user_id: user.id, username, score }, { onConflict: 'user_id' });
   }
 }
 
