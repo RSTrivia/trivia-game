@@ -5,38 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OSRS Trivia Login / Sign Up</title>
 
-<!-- Fancy title font -->
+<!-- Fancy OSRS title font -->
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 
 <style>
-  body {
-    margin: 0;
-    padding: 0;
-    font-family: Arial, sans-serif;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: url('images/background.png') center/cover no-repeat;
-  }
+  body { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: url('images/background.png') center/cover no-repeat; }
+  .container { text-align: center; padding: 40px; background: rgba(0,0,0,0.45); border-radius: 16px; backdrop-filter: blur(6px); width: 90%; max-width: 400px; color: white; }
 
-  .container {
-    text-align: center;
-    padding: 40px;
-    background: rgba(0,0,0,0.45);
-    border-radius: 16px;
-    backdrop-filter: blur(6px);
-    width: 90%;
-    max-width: 400px;
-    color: white;
-  }
-
+  /* Fancy OSRS title */
   h1 {
     font-family: 'Cinzel', serif;
     font-size: 3rem;
     margin-bottom: 25px;
-    text-align: center;
     letter-spacing: 2px;
     background: linear-gradient(#e8e0c5, #ba9b4a, #7a602b);
     -webkit-background-clip: text;
@@ -48,68 +29,23 @@
     filter: drop-shadow(0 0 8px rgba(255, 215, 100, 0.4));
   }
 
-  input {
-    display: block;
-    width: 100%;
-    padding: 10px;
-    margin: 8px 0;
-    font-size: 1rem;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    box-sizing: border-box;
-  }
+  #username, #password { display: block; width: 100%; padding: 10px; margin: 8px 0; font-size: 1rem; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; }
 
-  .btn-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-    margin: 12px 0;
-  }
+  .btn-row { display: flex; justify-content: space-between; gap: 10px; margin: 12px 0; }
+  .btn-small { flex: 1; padding: 10px 16px; font-size: 1rem; border-radius: 8px; background: rgba(0,0,0,0.6); color: #ffd700; border: 2px solid #ffd700; cursor: pointer; text-align: center; transition: 0.2s; }
+  .btn-small:hover { background: rgba(0,0,0,0.85); border-color: #ffea8a; }
 
-  .btn-small {
-    flex: 1;
-    padding: 10px 16px;
-    font-size: 1rem;
-    background: rgba(0,0,0,0.6);
-    color: #ffd700;
-    border: 2px solid #ffd700;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: 0.2s;
-    text-align: center;
-  }
-
-  .btn-small:hover {
-    background: rgba(0,0,0,0.85);
-    border-color: #ffea8a;
-  }
-
-  a.btn-back {
-    display: block;
-    width: 100%;
-    padding: 12px 0;
-    font-size: 1.05rem;
-    background: rgba(0,0,0,0.6);
-    color: #ffd700;
-    border: 2px solid #ffd700;
-    border-radius: 8px;
-    text-decoration: none;
-    text-align: center;
-    margin-top: 10px;
-  }
-
-  a.btn-back:hover {
-    background: rgba(0,0,0,0.85);
-    border-color: #ffea8a;
-  }
+  a.btn-back { display: block; width: 100%; margin: 10px auto; padding: 12px 0; font-size: 1.05rem; border-radius: 8px; background: rgba(0,0,0,0.6); color: #ffd700; border: 2px solid #ffd700; text-decoration: none; text-align: center; transition: 0.2s; }
+  a.btn-back:hover { background: rgba(0,0,0,0.85); border-color: #ffea8a; }
 </style>
 </head>
 <body>
+
 <div class="container">
   <h1>OSRS Trivia</h1>
 
-  <input id="username" placeholder="Username">
-  <input id="password" type="password" placeholder="Password">
+  <input id="username" placeholder="Username" />
+  <input id="password" type="password" placeholder="Password" />
 
   <div class="btn-row">
     <button id="signupBtn" class="btn-small">Sign Up</button>
@@ -127,36 +63,39 @@ const passwordInput = document.getElementById('password');
 const loginBtn = document.getElementById('loginBtn');
 const signupBtn = document.getElementById('signupBtn');
 
+// SIGN UP
 signupBtn.addEventListener('click', async () => {
   const username = usernameInput.value.trim();
   const password = passwordInput.value;
-  if (!username || !password) return alert('Enter username & password');
-
+  if (!username || !password) { alert('Enter a username and password'); return; }
   const email = username.toLowerCase() + '@example.com';
-  const { data: signUpData, error } = await supabase.auth.signUp({ email, password });
-  if (error) return alert('Sign-up failed: ' + error.message);
+
+  const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
+  if (signUpError) { alert('Sign-up failed: ' + signUpError.message); return; }
 
   const user = signUpData.user;
-  if (!user) return alert('Sign-up failed: no user returned');
+  if (!user) { alert('Sign-up failed: no user returned'); return; }
 
   const { error: profileError } = await supabase.from('profiles').insert({ id: user.id, username });
-  if (profileError) return alert('Profile creation failed: ' + profileError.message);
+  if (profileError) { alert('Profile creation failed: ' + profileError.message); return; }
 
   alert('Account created! You can now log in.');
 });
 
+// LOGIN
 loginBtn.addEventListener('click', async () => {
   const username = usernameInput.value.trim();
   const password = passwordInput.value;
-  if (!username || !password) return alert('Enter username & password');
-
+  if (!username || !password) { alert('Enter a username and password'); return; }
   const email = username.toLowerCase() + '@example.com';
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) return alert('Login failed: ' + error.message);
-  if (!data.user) return alert('Login failed: no user returned');
+
+  const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({ email, password });
+  if (loginError) { alert('Login failed: ' + loginError.message); return; }
+  if (!loginData.user) { alert('Login failed: no user returned'); return; }
 
   window.location.href = 'index.html';
 });
 </script>
+
 </body>
 </html>
