@@ -154,20 +154,23 @@ async function loadLeaderboard() {
 
   // Fill up to 10 entries with invisible placeholders
   while (leaderboardData.length < 10) {
-    leaderboardData.push({ username: '\u00A0', score: '\u00A0' }); // non-breaking space
+    leaderboardData.push({ username: '\u00A0', score: '\u00A0', placeholder: true });
   }
 
   leaderboard.innerHTML = '';
 
   leaderboardData.forEach((entry, i) => {
     const li = document.createElement('li');
+    li.style.display = 'flex';
+    li.style.justifyContent = 'space-between';
+    li.style.alignItems = 'center';
 
     const left = document.createElement('span');
     const right = document.createElement('span');
 
-    // Only add medal emojis for real entries (username not just space)
-    const isReal = entry.username.trim() !== '';
+    const isReal = !entry.placeholder;
 
+    // LEFT COLUMN: username + medals
     if (i === 0 && isReal) {
       left.textContent = `🥇 ${entry.username}`;
       left.classList.add('top-1');
@@ -178,11 +181,17 @@ async function loadLeaderboard() {
       left.textContent = `🥉 ${entry.username}`;
       left.classList.add('top-3');
     } else {
-      left.textContent = `${isReal ? i + 1 + '. ' + entry.username : '\u00A0'}`;
+      left.textContent = isReal ? `${i + 1}. ${entry.username}` : '\u00A0';
     }
 
-    // Score column: same, keep space if placeholder
+    // RIGHT COLUMN: score
     right.textContent = isReal ? entry.score : '\u00A0';
+
+    // Make placeholders fully transparent but keep hover
+    if (!isReal) {
+      li.style.color = 'transparent';   // text invisible
+      li.style.backgroundColor = 'rgba(0,0,0,0.0)'; // optional: fully transparent background
+    }
 
     li.appendChild(left);
     li.appendChild(right);
@@ -195,6 +204,7 @@ loadLeaderboard();
 </script>
 </body>
 </html>
+
 
 
 
