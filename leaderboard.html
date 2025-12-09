@@ -6,42 +6,9 @@
 <title>Leaderboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="style.css" />
+
 <style>
-  h1 {
-  font-family: 'Cinzel', serif;
-  font-size: 2.2rem;
-  margin-bottom: 25px;
-  text-align: center;
-  letter-spacing: 2px;
-
-  /* Metallic gold gradient with highlights */
-  background: linear-gradient(
-    145deg,
-    #fff8dc 0%,   /* bright highlight */
-    #ffdd44 25%,  /* primary gold */
-    #f2b705 50%,  /* mid gold */
-    #c28f0c 75%,  /* darker shadow gold */
-    #a77b0a 100%  /* deep gold for edges */
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-
-  /* OSRS-style shadow + metallic glow */
-  text-shadow:
-    0 0 4px rgba(0,0,0,0.8),    /* base shadow for depth */
-    1px 1px 0 #000,              /* small offset shadow */
-    2px 2px 2px rgba(0,0,0,0.6), /* soft depth shadow */
-    0 0 8px rgba(255, 223, 0, 0.8),  /* outer golden glow */
-    0 -1px 2px rgba(255, 255, 255, 0.4); /* subtle top highlight */
-
-  /* extra polish/glow */
-  filter: drop-shadow(0 0 10px rgba(255, 223, 0, 0.7));
-
-  /* optional smooth edges */
-  -webkit-font-smoothing: antialiased;
-}
-  /* ====== BODY & CONTAINER ====== */
+  /* ====== PAGE & BODY ====== */
   body {
     font-family: Arial, sans-serif;
     background-image: url('images/background.png');
@@ -56,6 +23,7 @@
     position: relative;
   }
 
+  /* dark overlay on background */
   body::before {
     content: "";
     position: fixed;
@@ -65,22 +33,49 @@
     z-index: 0;
   }
 
-    /* Dark transparent overlay for the whole game container */
+  /* ====== CONTAINER ====== */
   .container {
-    background-color: rgba(0, 0, 0, 0.85); /* black with 85% opacity */
-    padding: 20px;
-    border-radius: 10px; /* optional rounded edges */
-    max-width: 900px;    /* optional max width */
-    margin: 20px auto;   /* center horizontally */
-    box-shadow: 0 0 30px rgba(0,0,0,0.5); /* optional soft glow */
-    color: #fff;         /* default text color for visibility */
-  }
-  
-  h1 {
-    margin-top: 0;
+    background-color: rgba(0, 0, 0, 0.85);
+    padding: 20px 30px;
+    border-radius: 12px;
+    max-width: 900px;
+    margin: 20px auto;
+    box-shadow: 0 0 30px rgba(255, 223, 0, 0.5);
+    color: #fff;
+    z-index: 1;
+    position: relative;
   }
 
-  /* ====== LEADERBOARD LIST ====== */
+  /* ====== TITLE ====== */
+  h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 2.2rem;
+    margin-bottom: 25px;
+    text-align: center;
+    letter-spacing: 2px;
+
+    background: linear-gradient(
+      145deg,
+      #fff8dc 0%,   /* bright highlight */
+      #ffdd44 25%,  /* primary gold */
+      #f2b705 50%,  /* mid gold */
+      #c28f0c 75%,  /* darker shadow gold */
+      #a77b0a 100%  /* deep gold for edges */
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+
+    text-shadow:
+      0 0 4px rgba(0,0,0,0.8),
+      1px 1px 0 #000,
+      2px 2px 2px rgba(0,0,0,0.6),
+      0 0 8px rgba(255, 223, 0, 0.8),
+      0 -1px 2px rgba(255, 255, 255, 0.4);
+    filter: drop-shadow(0 0 10px rgba(255, 223, 0, 0.7));
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ====== LEADERBOARD ====== */
   #leaderboard {
     list-style: none;
     padding: 0;
@@ -91,14 +86,20 @@
     display: flex;
     justify-content: space-between;
     padding: 10px 12px;
-    background: #f2f2f2;
+    background: rgba(50, 50, 50, 0.8);
     border-radius: 5px;
     margin-bottom: 6px;
     font-size: 1rem;
+    color: #fff;
+    transition: background 0.2s;
   }
 
   #leaderboard li:nth-child(odd) {
-    background: #e0e0e0;
+    background: rgba(70, 70, 70, 0.8);
+  }
+
+  #leaderboard li:hover {
+    background: rgba(100, 100, 100, 0.9);
   }
 
   /* Top 3 highlight */
@@ -106,7 +107,7 @@
   .top-2 { color: silver; font-weight: bold; }
   .top-3 { color: #cd7f32; font-weight: bold; }
 
-  /* ====== SMALL GOLD BUTTON FOR BACK LINK ====== */
+  /* ====== BACK BUTTON ====== */
   a.btn-small {
     background: rgba(0,0,0,0.6);
     color: #ffd700;
@@ -185,11 +186,3 @@ loadLeaderboard();
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
