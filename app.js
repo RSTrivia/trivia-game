@@ -205,17 +205,24 @@ async function endGame() {
   game.classList.add('hidden');
   endScreen.classList.remove('hidden');
 
+  const endTitle = endScreen.querySelector('h2');
+
+  // Remove previous classes
+  endTitle.classList.remove('gz-title');
+
   // Check if the player answered all questions correctly
   if (remainingQuestions.length === 0 && score === questions.length) {
-    endScreen.querySelector('h2').textContent = "gz"; // show "gz" instead of Game Over
+    endTitle.textContent = "gz";       // show "gz"
+    endTitle.classList.add('gz-title'); // add golden glow styling
   } else {
-    endScreen.querySelector('h2').textContent = "Game Over!";
+    endTitle.textContent = "Game Over!";
   }
 
   finalScore.textContent = score;
 
   submitScore().catch(err => console.error(err)); // async save, doesn't block UI
 }
+
 
 
 
@@ -249,6 +256,7 @@ supabase.auth.onAuthStateChange((event, session) => {
 });
 
 loadCurrentUser();
+
 
 
 
