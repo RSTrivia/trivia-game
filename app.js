@@ -77,6 +77,7 @@ async function loadCurrentUser() {
 // -------------------------
 // Game functions
 // -------------------------
+
 async function startGame() {
   score = 0;
   questionsAnswered = 0;
@@ -220,6 +221,7 @@ supabase.auth.onAuthStateChange((event, session) => {
 
 // Load user on page load
 loadCurrentUser();
+
 
 
 
