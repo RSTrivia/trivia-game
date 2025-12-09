@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OSRS Trivia</title>
 
 <!-- Fancy OSRS title font -->
@@ -10,7 +10,22 @@
 
 <link rel="stylesheet" href="style.css">
 <style>
-  /* Fancy OSRS-style title */
+  body {
+    background: linear-gradient(to bottom, #0a0a0a, #1a1a1a);
+    color: #ffd700;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+  }
+
+  .container {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  /* Fancy OSRS title */
   h1 {
     font-family: 'Cinzel', serif;
     font-size: 3.2rem;
@@ -27,123 +42,139 @@
     filter: drop-shadow(0 0 8px rgba(255, 215, 100, 0.4));
   }
 
-  .container {
-    max-width: 500px;
-    margin: 50px auto;
-    text-align: center;
-  }
-
-  #userDisplay {
+  /* Start Game Button (full width) */
+  #startBtn {
+    display: block;
+    width: 100%;
+    max-width: 360px;
+    margin: 15px auto;
+    padding: 14px 0;
     font-size: 1.2rem;
-    margin-bottom: 20px;
-    color: #ffd700;
-    text-shadow: 1px 1px 2px black;
-  }
-
-  /* Buttons */
-  .btn {
+    border-radius: 8px;
     background: rgba(0,0,0,0.6);
     color: #ffd700;
     border: 2px solid #ffd700;
-    border-radius: 8px;
     cursor: pointer;
-    font-size: 1.1rem;
-    padding: 14px 22px;
-    width: 100%;
-    margin-bottom: 12px;
     transition: 0.2s;
-    display: block;
-    text-decoration: none;
-    text-align: center;
   }
 
-  .btn:hover {
+  #startBtn:hover {
     background: rgba(0,0,0,0.85);
     border-color: #ffea8a;
   }
 
-  /* Row for leaderboard / login */
+  /* Row for Leaderboard / Login buttons */
   .btn-row {
     display: flex;
     justify-content: space-between;
+    margin: 12px 0;
+    max-width: 360px;
+    margin-left: auto;
+    margin-right: auto;
     gap: 10px;
   }
 
   .btn-small {
     flex: 1;
+    padding: 12px 0;
+    font-size: 1rem;
+    border-radius: 8px;
     background: rgba(0,0,0,0.6);
     color: #ffd700;
     border: 2px solid #ffd700;
-    border-radius: 8px;
-    padding: 10px 16px;
+    cursor: pointer;
+    transition: 0.2s;
     text-decoration: none;
     text-align: center;
-    transition: 0.2s;
-    cursor: pointer;
-    font-size: 1rem;
   }
 
   .btn-small:hover {
     background: rgba(0,0,0,0.85);
     border-color: #ffea8a;
   }
+
+  /* Input fields for login / signup */
+  #username,
+  #password {
+    display: block;
+    width: 100%;
+    max-width: 360px;
+    margin: 8px auto;
+    padding: 10px;
+    font-size: 1rem;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+  }
+
+  /* Back to Game button (centered, full width) */
+  a.btn-back {
+    display: block;
+    width: 100%;
+    max-width: 360px;
+    margin: 10px auto;
+    padding: 12px 0;
+    font-size: 1.05rem;
+    border-radius: 8px;
+    background: rgba(0,0,0,0.6);
+    color: #ffd700;
+    border: 2px solid #ffd700;
+    text-decoration: none;
+    text-align: center;
+    transition: 0.2s;
+  }
+
+  a.btn-back:hover {
+    background: rgba(0,0,0,0.85);
+    border-color: #ffea8a;
+  }
+
+  /* Game and End screens hidden by default */
+  #game, #end-screen {
+    display: none;
+  }
 </style>
 </head>
 <body>
+
 <div class="container">
+
   <h1>OSRS Trivia</h1>
 
-  <div id="userDisplay">Player: Guest</div>
-
-  <!-- Start Game button -->
-  <button id="startBtn" class="btn">Start Game</button>
-
-  <!-- Leaderboard / Login Row -->
-  <div class="btn-row">
-    <a href="leaderboard.html" class="btn-small">View Leaderboard</a>
-    <a href="login.html" class="btn-small">Log In</a>
+  <!-- START SCREEN -->
+  <div id="start-screen">
+    <button id="startBtn">Start Game</button>
+    
+    <div class="btn-row">
+      <a href="leaderboard.html" class="btn-small">View Leaderboard</a>
+      <a href="login.html" class="btn-small">Log In / Sign Up</a>
+    </div>
   </div>
-</div>
 
-<!-- Game Screen -->
-<div id="game" class="hidden">
-  <div id="score">Score: 0</div>
-  <div id="question">
-    <p id="questionText"></p>
-    <img id="questionImage" src="" alt="Question image" style="max-width:100%;max-height:300px;margin:10px 0;border-radius:8px;display:none;">
+  <!-- GAME SCREEN -->
+  <div id="game">
+    <div id="userDisplay"></div>
+    <div id="score">Score: 0</div>
+
+    <div id="question">
+      <p id="questionText"></p>
+      <img id="questionImage" src="" alt="Question image" style="max-width:100%; max-height:300px; display:none; border-radius:8px; margin:10px 0;">
+    </div>
+
+    <div id="answers"></div>
+    <div id="timer">Time: <span id="time">15</span>s</div>
   </div>
-  <div id="answers"></div>
-  <div id="timer">Time: <span id="time">15</span>s</div>
+
+  <!-- END SCREEN -->
+  <div id="end-screen">
+    <h2>Game Over!</h2>
+    <p>Your final score: <span id="finalScore"></span></p>
+    <button id="playAgainBtn" class="btn-small">Play Again</button>
+    <button id="mainMenuBtn" class="btn-small">Main Menu</button>
+  </div>
+
 </div>
 
-<!-- End Screen -->
-<div id="end-screen" class="hidden">
-  <h2>Game Over!</h2>
-  <p>Your final score: <span id="finalScore"></span></p>
-  <button id="playAgainBtn" class="btn">Play Again</button>
-  <button id="mainMenuBtn" class="btn">Main Menu</button>
-</div>
-
-<script type="module" src="supabase.js"></script>
 <script type="module" src="app.js"></script>
-<script type="module">
-  import { supabase } from './supabase.js';
-
-  async function loadCurrentUser() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('id', user.id)
-        .single();
-      if (!error && profile?.username) {
-        document.getElementById('userDisplay').textContent = `Player: ${profile.username}`;
-      }
-    }
-  }
-
-  loadCurrentUser();
-</script>
 </body>
 </html>
