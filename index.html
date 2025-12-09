@@ -4,105 +4,103 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OSRS Trivia</title>
-
-<!-- OSRS-style title font -->
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 
 <style>
-  body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: url('your-background.jpg') no-repeat center center fixed;
-    background-size: cover;
-    color: #ffd700;
-    text-align: center;
-  }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: url('your-background.jpg') no-repeat center center fixed;
+  background-size: cover;
+  color: #ffd700;
+  text-align: center;
+}
 
-  .container {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 20px;
-  }
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
 
-  h1 {
-    font-family: 'Cinzel', serif;
-    font-size: 3rem;
-    margin-bottom: 20px;
-    background: linear-gradient(#e8e0c5, #ba9b4a, #7a602b);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 0 0 6px rgba(0,0,0,0.7), 2px 2px 0 #000;
-  }
+h1 {
+  font-family: 'Cinzel', serif;
+  font-size: 3rem;
+  margin-bottom: 20px;
+  background: linear-gradient(#e8e0c5, #ba9b4a, #7a602b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 6px rgba(0,0,0,0.7), 2px 2px 0 #000;
+}
 
-  /* Buttons */
-  .btn, .btn-small {
-    display: block;
-    width: 100%;
-    max-width: 360px;
-    margin: 10px auto;
-    padding: 12px 0;
-    font-size: 1.05rem;
-    border-radius: 8px;
-    background: rgba(0,0,0,0.6);
-    color: #ffd700;
-    border: 2px solid #ffd700;
-    cursor: pointer;
-    text-decoration: none;
-    transition: 0.2s;
-  }
+/* Buttons */
+.btn, .btn-small {
+  display: block;
+  width: 100%;
+  max-width: 360px;
+  margin: 10px auto;
+  padding: 12px 0;
+  font-size: 1.05rem;
+  border-radius: 8px;
+  background: rgba(0,0,0,0.6);
+  color: #ffd700;
+  border: 2px solid #ffd700;
+  cursor: pointer;
+  text-decoration: none;
+  transition: 0.2s;
+}
 
-  .btn:hover, .btn-small:hover {
-    background: rgba(0,0,0,0.85);
-    border-color: #ffea8a;
-  }
+.btn:hover, .btn-small:hover {
+  background: rgba(0,0,0,0.85);
+  border-color: #ffea8a;
+}
 
-  #game, #end-screen {
-    display: none; /* hidden by default */
-  }
+#game, #end-screen {
+  display: none;
+}
 
-  #questionImage {
-    max-width: 100%;
-    max-height: 300px;
-    margin: 10px 0;
-    display: none;
-    border-radius: 8px;
-  }
+#questionImage {
+  max-width: 100%;
+  max-height: 300px;
+  margin: 10px 0;
+  display: none;
+  border-radius: 8px;
+}
 
-  #question {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
+#question {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 
-  .answer-btn {
-    display: block;
-    width: 100%;
-    max-width: 360px;
-    margin: 5px auto;
-    padding: 10px 0;
-    font-size: 1rem;
-    border-radius: 6px;
-    cursor: pointer;
-    border: 2px solid #ffd700;
-    background: rgba(0,0,0,0.6);
-    color: #ffd700;
-  }
+.answer-btn {
+  display: block;
+  width: 100%;
+  max-width: 360px;
+  margin: 5px auto;
+  padding: 10px 0;
+  font-size: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 2px solid #ffd700;
+  background: rgba(0,0,0,0.6);
+  color: #ffd700;
+}
 
-  .answer-btn.correct {
-    background: green;
-    border-color: greenyellow;
-  }
+.answer-btn.correct {
+  background: green;
+  border-color: greenyellow;
+}
 
-  .answer-btn.wrong {
-    background: red;
-    border-color: orange;
-  }
+.answer-btn.wrong {
+  background: red;
+  border-color: orange;
+}
 </style>
 </head>
 <body>
-
 <div class="container">
+
   <h1>OSRS Trivia</h1>
 
   <!-- Main Menu -->
@@ -133,6 +131,7 @@
     <button id="playAgainBtn" class="btn">Play Again</button>
     <button id="mainMenuBtn" class="btn">Main Menu</button>
   </div>
+
 </div>
 
 <script type="module" src="app.js"></script>
