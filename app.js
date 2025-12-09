@@ -242,21 +242,26 @@ function showEndScreen(score, allCorrect = false) {
 
   document.getElementById('finalScore').textContent = score;
 
-  const endTitle = document.getElementById('endTitle');
+  const wrapper = document.getElementById('endTitleWrapper');
+  wrapper.innerHTML = ''; // clear previous
 
   if (allCorrect) {
-    endTitle.textContent = 'gz';
-    endTitle.classList.add('osrs-title');
+    const h1 = document.createElement('h1');
+    h1.textContent = 'gz';
+    wrapper.appendChild(h1);
   } else {
-    endTitle.textContent = 'Game Over!';
-    endTitle.classList.remove('osrs-title');
+    const h2 = document.createElement('h2');
+    h2.textContent = 'Game Over!';
+    wrapper.appendChild(h2);
   }
 }
+
 
 // -------------------------
 // Init
 // -------------------------
 loadCurrentUser();
+
 
 
 
