@@ -16,6 +16,7 @@ const scoreDisplay = document.getElementById('score');
 const userDisplay = document.getElementById('userDisplay');
 const mainMenuBtn = document.getElementById('mainMenuBtn');
 const authBtn = document.getElementById('authBtn');
+const leaderboardEl = document.getElementById('leaderboard');
 
 let questions = [];
 let remainingQuestions = [];
@@ -25,6 +26,7 @@ let timer;
 let timeLeft = 15;
 let totalQuestions = 10;
 let username = '';
+let sessionUser = null;
 
 // -------------------------
 // Event Listeners
@@ -47,18 +49,21 @@ mainMenuBtn.addEventListener('click', () => {
 // -------------------------
 async function loadCurrentUser() {
   const { data: { session } } = await supabase.auth.getSession();
+  sessionUser = session?.user || null;
 
-  if (!session?.user) {
-    userDisplay.textContent = 'Player: Guest';
+  if (!sessionUser) {
+    username = 'Guest';
+    userDisplay.textContent = `Player: ${username}`;
     authBtn.textContent = 'Log In';
     authBtn.onclick = () => { window.location.href = 'login.html'; };
     return;
   }
 
+  // Fetch username from profiles table
   const { data: profile, error } = await supabase
     .from('profiles')
     .select('username')
-    .eq('id', session.user.id)
+    .eq('id', sessionUser.id)
     .single();
 
   username = !error && profile ? profile.username : 'Unknown';
@@ -67,7 +72,8 @@ async function loadCurrentUser() {
   authBtn.textContent = 'Log Out';
   authBtn.onclick = async () => {
     await supabase.auth.signOut();
-    username = '';
+    username = 'Guest';
+    sessionUser = null;
     loadCurrentUser();
   };
 }
@@ -82,6 +88,7 @@ function resetGame() {
   questions = [];
   remainingQuestions = [];
   currentQuestion = null;
+  updateScore();
 }
 
 async function startGame() {
@@ -89,7 +96,6 @@ async function startGame() {
   game.classList.remove('hidden');
   endScreen.classList.add('hidden');
   startBtn.parentElement.classList.add('hidden');
-  updateScore();
 
   const { data, error } = await supabase.from('questions').select('*');
   if (error || !data?.length) {
@@ -199,29 +205,18 @@ async function endGame() {
   finalScore.textContent = score;
 
   await submitScore();
-  await loadLeaderboard(); // auto-refresh leaderboard after game ends
+  await loadLeaderboard(); // refresh leaderboard automatically
 }
 
 async function submitScore() {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
-
-  // Ensure username is set
-  if (!username) {
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('username')
-      .eq('id', user.id)
-      .single();
-    username = !error && profile ? profile.username : 'Unknown';
-  }
+  if (!sessionUser) return;
 
   try {
     // Check existing score
     const { data: existing, error: fetchError } = await supabase
       .from('scores')
       .select('score')
-      .eq('user_id', user.id)
+      .eq('user_id', sessionUser.id)
       .single();
 
     if (fetchError && fetchError.code !== 'PGRST116') {
@@ -229,13 +224,13 @@ async function submitScore() {
       return;
     }
 
-    // Upsert if higher or new
+    // Upsert only if higher or new
     if (!existing || score > existing.score) {
       const { data: upsertData, error: upsertError } = await supabase
         .from('scores')
         .upsert(
-          { user_id: user.id, username, score },
-          { onConflict: 'user_id', ignoreDuplicates: false }
+          { user_id: sessionUser.id, username, score },
+          { onConflict: 'user_id' }
         )
         .select();
 
@@ -252,8 +247,6 @@ async function submitScore() {
 // -------------------------
 // Leaderboard
 // -------------------------
-const leaderboard = document.getElementById('leaderboard');
-
 async function loadLeaderboard() {
   const { data, error } = await supabase
     .from('scores')
@@ -273,33 +266,23 @@ async function loadLeaderboard() {
     leaderboardData.push({ username: '', score: '' });
   }
 
-  leaderboard.innerHTML = '';
+  leaderboardEl.innerHTML = '';
 
   leaderboardData.forEach((entry, i) => {
     const li = document.createElement('li');
     const left = document.createElement('span');
     const right = document.createElement('span');
-
     const isReal = entry.username?.trim() !== '';
 
-    if (i === 0) {
-      left.classList.add('top-1');
-      left.textContent = isReal ? `🥇 ${entry.username}` : '🥇';
-    } else if (i === 1) {
-      left.classList.add('top-2');
-      left.textContent = isReal ? `🥈 ${entry.username}` : '🥈';
-    } else if (i === 2) {
-      left.classList.add('top-3');
-      left.textContent = isReal ? `🥉 ${entry.username}` : '🥉';
-    } else {
-      left.textContent = isReal ? `${i + 1}. ${entry.username}` : `${i + 1}.`;
-    }
+    if (i === 0) { left.classList.add('top-1'); left.textContent = isReal ? `🥇 ${entry.username}` : '🥇'; }
+    else if (i === 1) { left.classList.add('top-2'); left.textContent = isReal ? `🥈 ${entry.username}` : '🥈'; }
+    else if (i === 2) { left.classList.add('top-3'); left.textContent = isReal ? `🥉 ${entry.username}` : '🥉'; }
+    else { left.textContent = isReal ? `${i + 1}. ${entry.username}` : `${i + 1}.`; }
 
     right.textContent = isReal ? entry.score : '';
-
     li.appendChild(left);
     li.appendChild(right);
-    leaderboard.appendChild(li);
+    leaderboardEl.appendChild(li);
   });
 }
 
@@ -307,15 +290,14 @@ async function loadLeaderboard() {
 // Auth State Listener
 // -------------------------
 supabase.auth.onAuthStateChange((event, session) => {
-  if (session?.user) {
-    console.log('User logged in:', session.user.email);
-  } else {
-    console.log('No user logged in');
-  }
+  sessionUser = session?.user || null;
+  loadCurrentUser();
 });
 
 // -------------------------
 // Initialize
 // -------------------------
-loadCurrentUser();
-loadLeaderboard();
+loadCurrentUser().then(() => {
+  startBtn.disabled = false; // enable start button only after user is loaded
+  loadLeaderboard();
+});
