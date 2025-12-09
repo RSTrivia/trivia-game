@@ -121,7 +121,6 @@ button {
   cursor: pointer;
   font-size: 1.1rem;
   width: auto;               /* let width be automatic based on content */
-  max-width: 250px;          /* optional: limits how wide it can get */
   display: block;            /* allows margin auto for centering */
   text-align: center;
   text-decoration: none;
@@ -214,6 +213,7 @@ a.btn:hover, a.btn-small:hover {
   display: block;
   background-color: transparent; /* canvas transparent to show black behind */
 }
+
 
 
 
