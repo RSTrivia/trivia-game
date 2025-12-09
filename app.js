@@ -76,8 +76,8 @@ document.addEventListener('DOMContentLoaded', () => {
   async function startGame() {
     resetGame();
     game.classList.remove('hidden');
-    endScreen.classList.add('hidden');
     startScreen.classList.add('hidden');
+    endScreen.classList.add('hidden');
 
     const { data, error } = await supabase.from('questions').select('*');
     if (error || !data || data.length === 0) {
@@ -202,3 +202,4 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
 });
+
