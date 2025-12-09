@@ -115,7 +115,7 @@ async function loadQuestion() {
   answersBox.innerHTML = '';
 
   if (!remainingQuestions.length) {
-    return endGame();
+    return await endGame();
   }
 
   const index = Math.floor(Math.random() * remainingQuestions.length);
@@ -148,21 +148,25 @@ async function loadQuestion() {
   timeLeft = 15;
   timeDisplay.textContent = timeLeft;
   clearInterval(timer);
+
   timer = setInterval(() => {
     timeLeft--;
     timeDisplay.textContent = timeLeft;
     if (timeLeft <= 0) {
       clearInterval(timer);
       highlightCorrectAnswer();
-      setTimeout(endGame, 1000);
+      setTimeout(async () => {
+        await endGame();
+      }, 1000);
     }
   }, 1000);
 }
 
+
 function checkAnswer(selected, clickedBtn) {
   clearInterval(timer);
   document.querySelectorAll('.answer-btn').forEach(btn => btn.disabled = true);
-
+  
   if (selected === currentQuestion.correct_answer) {
     clickedBtn.classList.add('correct');
     score++;
@@ -172,9 +176,10 @@ function checkAnswer(selected, clickedBtn) {
     clickedBtn.classList.add('wrong');
     highlightCorrectAnswer();
     updateScore();
-    setTimeout(endGame, 1000);
+    setTimeout(async () => {
+      await endGame();
+    }, 1000);
   }
-}
 
 function highlightCorrectAnswer() {
   document.querySelectorAll('.answer-btn').forEach((btn, i) => {
@@ -190,15 +195,18 @@ function updateScore() {
 // End Game & Submit Score
 // -------------------------
 async function endGame() {
+  clearInterval(timer);
   game.classList.add('hidden');
   endScreen.classList.remove('hidden');
 
   const endTitle = endScreen.querySelector('h2');
   endTitle.classList.remove('gz-title');
-  endTitle.textContent = remainingQuestions.length === 0 && score === questions.length ? 'gz' : 'Game Over!';
+  endTitle.textContent = remainingQuestions.length === 0 && score === questions.length
+    ? 'gz' : 'Game Over!';
 
   finalScore.textContent = score;
 
+  // await to make sure score is saved before anything else
   await submitScore();
 }
 
@@ -257,6 +265,7 @@ async function submitScore() {
 // Init
 // -------------------------
 loadCurrentUser();
+
 
 
 
