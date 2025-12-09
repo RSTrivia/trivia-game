@@ -187,10 +187,12 @@ async function loadLeaderboard() {
     // RIGHT COLUMN: score
     right.textContent = isReal ? entry.score : '\u00A0';
 
-    // Make placeholders fully transparent but keep hover
+    // Only make placeholders invisible
     if (!isReal) {
-      li.style.color = 'transparent';   // text invisible
-      li.style.backgroundColor = 'rgba(0,0,0,0.0)'; // optional: fully transparent background
+      left.style.color = 'transparent';
+      right.style.color = 'transparent';
+      // Optional: subtle placeholder hover effect
+      li.style.backgroundColor = 'rgba(0,0,0,0.2)';
     }
 
     li.appendChild(left);
@@ -200,10 +202,12 @@ async function loadLeaderboard() {
 }
 
 
+
 loadLeaderboard();
 </script>
 </body>
 </html>
+
 
 
 
