@@ -121,11 +121,15 @@
   <div id="start-screen">
     <button id="startBtn" class="btn">Start Game</button>
 
-    <!-- New cleaner button row -->
-    <div class="menu-row">
-      <a href="leaderboard.html" class="btn-small">View Leaderboard</a>
-      <a href="login.html" class="btn-small">Log In</a>
-    </div>
+  <!-- Log In / Log Out row -->
+  <div class="menu-row">
+    <a href="login.html" id="loginBtn" class="btn-small">Log In</a>
+    <button id="logoutBtn" class="btn-small" style="display: none;">Log Out</button>
+  </div>
+  
+  <!-- Leaderboard button below -->
+  <div style="margin-top: 12px;">
+    <a href="leaderboard.html" class="btn-small">View Leaderboard</a>
   </div>
 
   <!-- End Screen -->
@@ -142,6 +146,7 @@
 <script type="module" src="app.js"></script>
 </body>
 </html>
+
 
 
 
