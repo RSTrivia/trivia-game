@@ -183,11 +183,18 @@ async function loadLeaderboard() {
   });
 }
 
+const { data, error } = await supabase
+  .from('public_leaderboard')
+  .select('*')
+  .limit(10);
+
+if (error) console.error('Error loading leaderboard:', error);
   
 loadLeaderboard();
 </script>
 </body>
 </html>
+
 
 
 
