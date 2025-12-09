@@ -1,10 +1,7 @@
 import { supabase } from './supabase.js';
 
-// -------------------------
-// DOM Elements
-// -------------------------
+// Elements
 const startBtn = document.getElementById('startBtn');
-const startScreen = document.getElementById('start-screen');
 const playAgainBtn = document.getElementById('playAgainBtn');
 const questionText = document.getElementById('questionText');
 const questionImage = document.getElementById('questionImage');
@@ -17,9 +14,6 @@ const scoreDisplay = document.getElementById('score');
 const userDisplay = document.getElementById('userDisplay');
 const mainMenuBtn = document.getElementById('mainMenuBtn');
 
-// -------------------------
-// Game Variables
-// -------------------------
 let questions = [];
 let remainingQuestions = [];
 let currentQuestion = null;
@@ -30,9 +24,7 @@ let totalQuestions = 10;
 let questionsAnswered = 0;
 let username = '';
 
-// -------------------------
-// Event Listeners
-// -------------------------
+// -------------------- Event Listeners --------------------
 startBtn.addEventListener('click', startGame);
 
 playAgainBtn.addEventListener('click', () => {
@@ -44,12 +36,10 @@ mainMenuBtn.addEventListener('click', () => {
   resetGame();
   game.classList.add('hidden');
   endScreen.classList.add('hidden');
-  startScreen.classList.remove('hidden'); // show main menu
+  document.getElementById('start-screen').classList.remove('hidden');
 });
 
-// -------------------------
-// Load currently logged-in user
-// -------------------------
+// -------------------- Load Logged-in User --------------------
 async function loadCurrentUser() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
@@ -66,42 +56,33 @@ async function loadCurrentUser() {
   if (userDisplay) userDisplay.textContent = `Player: ${username}`;
 }
 
-// -------------------------
-// Game Functions
-// -------------------------
-async function startGame() {
-  resetGame();
-
-  startScreen.classList.add('hidden');
-  game.classList.remove('hidden');
-  endScreen.classList.add('hidden');
-
-  updateScore();
-
-  // Fetch questions
-  const { data, error } = await supabase.from('questions').select('*');
-  if (error || !data || data.length === 0) {
-    console.error('Error fetching questions:', error);
-    alert('Could not load questions!');
-    return;
-  }
-
-  questions = data;
-  remainingQuestions = [...questions];
-
-  await loadQuestion();
-}
-
+// -------------------- Game Functions --------------------
 function resetGame() {
-  clearInterval(timer);
   score = 0;
   questionsAnswered = 0;
   questions = [];
   remainingQuestions = [];
   currentQuestion = null;
-  answersBox.innerHTML = '';
-  timeDisplay.textContent = '15';
   updateScore();
+  clearInterval(timer);
+}
+
+async function startGame() {
+  game.classList.remove('hidden');
+  endScreen.classList.add('hidden');
+  document.getElementById('start-screen').classList.add('hidden');
+  updateScore();
+
+  const { data, error } = await supabase.from('questions').select('*');
+  if (error || !data || data.length === 0) {
+    alert('Could not load questions!');
+    console.error(error);
+    return;
+  }
+
+  questions = data;
+  remainingQuestions = [...questions];
+  await loadQuestion();
 }
 
 async function loadQuestion() {
@@ -115,7 +96,7 @@ async function loadQuestion() {
   currentQuestion = remainingQuestions.splice(index, 1)[0];
 
   // Display text
-  questionText.textContent = currentQuestion.question_text || currentQuestion.question;
+  questionText.textContent = currentQuestion.question;
 
   // Display image if exists
   if (currentQuestion.question_image) {
@@ -141,7 +122,7 @@ async function loadQuestion() {
     answersBox.appendChild(btn);
   });
 
-  // Timer setup
+  // Start timer
   timeLeft = 15;
   timeDisplay.textContent = timeLeft;
   clearInterval(timer);
@@ -183,7 +164,7 @@ function nextQuestionDelay() {
   setTimeout(() => {
     if (questionsAnswered >= totalQuestions) endGame();
     else loadQuestion();
-  }, 2000);
+  }, 1500);
 }
 
 function updateScore() {
@@ -217,7 +198,5 @@ async function submitScore() {
   });
 }
 
-// -------------------------
-// Initialize
-// -------------------------
+// -------------------- Initialize --------------------
 loadCurrentUser();
