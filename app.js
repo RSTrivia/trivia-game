@@ -215,6 +215,7 @@ async function submitScore() {
       .eq('id', user.id)
       .single();
     username = profile?.username || 'Unknown';
+    console.log("Saving score, user = ", user);
   }
 
   await supabase.from('scores').insert({
@@ -233,6 +234,7 @@ supabase.auth.onAuthStateChange((event, session) => {
 });
 
 loadCurrentUser();
+
 
 
 
