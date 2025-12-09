@@ -253,10 +253,12 @@ function showEndScreen(score, allCorrect = false) {
   }
 }
 
+
 // -------------------------
 // Init
 // -------------------------
 loadCurrentUser();
+
 
 
 
