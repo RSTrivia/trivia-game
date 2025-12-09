@@ -112,15 +112,17 @@ async function startGame() {
 async function loadQuestion() {
   answersBox.innerHTML = '';
   
-  if (remainingQuestions.length === 0 || questionsAnswered >= totalQuestions) {
+  // If no questions left, end the game
+  if (remainingQuestions.length === 0) {
+    console.log("gz"); // Player answered all questions correctly
     return endGame();
   }
 
+  // Pick a random question from the remaining ones
   const index = Math.floor(Math.random() * remainingQuestions.length);
   currentQuestion = remainingQuestions.splice(index, 1)[0];
 
   // ---- DISPLAY QUESTION TEXT AND IMAGE ----
-
   questionText.textContent = currentQuestion.question;
 
   if (currentQuestion.question_image) {
@@ -156,10 +158,12 @@ async function loadQuestion() {
     if (timeLeft <= 0) {
       clearInterval(timer);
       highlightCorrectAnswer();
-      nextQuestionDelay();
+      // Time ran out → end the game immediately
+      setTimeout(endGame, 1000);
     }
   }, 1000);
 }
+
 
 function checkAnswer(selected, clickedBtn) {
   clearInterval(timer);
@@ -168,15 +172,17 @@ function checkAnswer(selected, clickedBtn) {
   if (selected === currentQuestion.correct_answer) {
     clickedBtn.classList.add('correct');
     score++;
+    updateScore();
+    // Correct answer → go to next question
+    setTimeout(loadQuestion, 1000);
   } else {
+    // Wrong answer → highlight correct and end game
     clickedBtn.classList.add('wrong');
     highlightCorrectAnswer();
+    updateScore();
+    setTimeout(endGame, 1000);
   }
-
-  updateScore();
-  nextQuestionDelay();
 }
-
 function highlightCorrectAnswer() {
   document.querySelectorAll('.answer-btn').forEach((btn, i) => {
     if (i + 1 === currentQuestion.correct_answer) btn.classList.add('correct');
@@ -234,6 +240,7 @@ supabase.auth.onAuthStateChange((event, session) => {
 });
 
 loadCurrentUser();
+
 
 
 
