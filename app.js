@@ -37,7 +37,7 @@ mainMenuBtn.addEventListener('click', () => {
   clearInterval(timer);
   game.classList.add('hidden');
   endScreen.classList.add('hidden');
-  startBtn.parentElement.classList.remove('hidden');
+  document.getElementById('start-screen').classList.remove('hidden'); // show main menu again
   score = 0;
   questionsAnswered = 0;
   questions = [];
@@ -71,7 +71,7 @@ async function startGame() {
   questionsAnswered = 0;
   game.classList.remove('hidden');
   endScreen.classList.add('hidden');
-  startBtn.parentElement.classList.add('hidden');
+  document.getElementById('start-screen').classList.add('hidden');
   updateScore();
 
   const { data, error } = await supabase.from('questions').select('*');
@@ -201,6 +201,7 @@ async function submitScore() {
 
 // Load user on page load
 loadCurrentUser();
+
 
 
 
