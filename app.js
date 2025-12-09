@@ -57,11 +57,12 @@ async function loadCurrentUser() {
     .eq('id', user.id)
     .single();
 
-  if (error) { console.error('Failed to get username:', error); return; }
-
-  username = profile.username;
-  if (userDisplay) userDisplay.textContent = `Player: ${username}`;
+  if (!error && profile) {
+    username = profile.username;
+    if (userDisplay) userDisplay.textContent = `Player: ${username}`;
+  }
 }
+
 
 // -------------------------
 // Game functions
@@ -199,30 +200,6 @@ async function submitScore() {
   });
 }
 
-async function loadCurrentUser() {
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  if (!user) return;
-
-  const { data: profile, error } = await supabase
-    .from('profiles')
-    .select('username')
-    .eq('id', user.id)
-    .single();
-
-  if (!error && profile) {
-    const userDisplay = document.getElementById('userDisplay');
-    if (userDisplay) {
-      userDisplay.textContent = `Player: ${profile.username}`;
-    }
-  }
-}
-
-// Run it when the page loads
-document.addEventListener('DOMContentLoaded', () => {
-  loadCurrentUser();
-});
-
 supabase.auth.onAuthStateChange((event, session) => {
   if (session?.user) {
     console.log('User logged in:', session.user.email);
@@ -233,6 +210,7 @@ supabase.auth.onAuthStateChange((event, session) => {
 
 // Load user on page load
 loadCurrentUser();
+
 
 
 
