@@ -45,6 +45,22 @@
   /* optional smooth edges */
   -webkit-font-smoothing: antialiased;
 }
+  
+/* Dark transparent overlay for the whole game container */
+.container {
+  background-color: rgba(0, 0, 0, 0.85); /* black with 85% opacity */
+  padding: 20px;
+  border-radius: 10px; /* optional rounded edges */
+  max-width: 900px;    /* optional max width */
+  margin: 20px auto;   /* center horizontally */
+  box-shadow: 0 0 30px rgba(0,0,0,0.5); /* optional soft glow */
+  color: #fff;         /* default text color for visibility */
+}
+
+/* Optional: make all child screens inherit text color */
+#start-screen, #game, #end-screen {
+  color: #fff;
+}
 
 <style>
   /* Ensure question images don't overflow */
@@ -126,6 +142,7 @@
 <script type="module" src="app.js"></script>
 </body>
 </html>
+
 
 
 
