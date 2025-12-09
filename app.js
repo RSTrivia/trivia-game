@@ -1,9 +1,12 @@
 import { supabase } from './supabase.js';
 
+// -------------------------
+// DOM Elements
+// -------------------------
 const startBtn = document.getElementById('startBtn');
 const playAgainBtn = document.getElementById('playAgainBtn');
-const questionText = document.getElementById('questionText'); // NEW: text element
-const questionImage = document.getElementById('questionImage'); // NEW: image element
+const questionText = document.getElementById('questionText');
+const questionImage = document.getElementById('questionImage');
 const answersBox = document.getElementById('answers');
 const timeDisplay = document.getElementById('time');
 const game = document.getElementById('game');
@@ -21,84 +24,75 @@ let score = 0;
 let timer;
 let timeLeft = 15;
 let totalQuestions = 10;
-let questionsAnswered = 0;
 let username = '';
 
-// Event listeners
+// -------------------------
+// Event Listeners
+// -------------------------
 startBtn.addEventListener('click', startGame);
 playAgainBtn.addEventListener('click', () => {
-  score = 0;
-  questionsAnswered = 0;
-  questions = [];
-  remainingQuestions = [];
-  currentQuestion = null;
+  resetGame();
   startGame();
 });
 mainMenuBtn.addEventListener('click', () => {
-  clearInterval(timer);
+  resetGame();
   game.classList.add('hidden');
   endScreen.classList.add('hidden');
   startBtn.parentElement.classList.remove('hidden');
-  score = 0;
-  questionsAnswered = 0;
-  questions = [];
-  remainingQuestions = [];
-  currentQuestion = null;
   updateScore();
 });
 
+// -------------------------
+// User / Auth
+// -------------------------
 async function loadCurrentUser() {
-  const userDisplay = document.getElementById('userDisplay');
-
-  // Get current session
   const { data: { session } } = await supabase.auth.getSession();
 
-  if (!session || !session.user) {
-    // Not logged in
+  if (!session?.user) {
     userDisplay.textContent = 'Player: Guest';
     authBtn.textContent = 'Log In';
-    authBtn.onclick = () => {
-      window.location.href = 'login.html';
-    };
+    authBtn.onclick = () => { window.location.href = 'login.html'; };
     return;
   }
 
-  // Logged in — get username from profiles table
   const { data: profile, error } = await supabase
     .from('profiles')
     .select('username')
     .eq('id', session.user.id)
     .single();
 
-  userDisplay.textContent = !error && profile
-    ? `Player: ${profile.username}`
-    : 'Player: Unknown';
+  username = !error && profile ? profile.username : 'Unknown';
+  userDisplay.textContent = `Player: ${username}`;
 
-  // Set the button to log out (single button for both)
   authBtn.textContent = 'Log Out';
   authBtn.onclick = async () => {
     await supabase.auth.signOut();
-    // Update UI but do NOT redirect
+    username = '';
     loadCurrentUser();
   };
 }
 
-
-
 // -------------------------
-// Game functions
+// Game Functions
 // -------------------------
-
-async function startGame() {
+function resetGame() {
+  clearInterval(timer);
   score = 0;
   questionsAnswered = 0;
+  questions = [];
+  remainingQuestions = [];
+  currentQuestion = null;
+}
+
+async function startGame() {
+  resetGame();
   game.classList.remove('hidden');
   endScreen.classList.add('hidden');
   startBtn.parentElement.classList.add('hidden');
   updateScore();
 
   const { data, error } = await supabase.from('questions').select('*');
-  if (error || !data || data.length === 0) {
+  if (error || !data?.length) {
     console.error('Error fetching questions:', error);
     alert('Could not load questions!');
     return;
@@ -111,18 +105,15 @@ async function startGame() {
 
 async function loadQuestion() {
   answersBox.innerHTML = '';
-  
-  // If no questions left, end the game
-  if (remainingQuestions.length === 0) {
-    console.log("gz"); // Player answered all questions correctly
+
+  if (!remainingQuestions.length) {
+    console.log('gz');
     return endGame();
   }
 
-  // Pick a random question from the remaining ones
   const index = Math.floor(Math.random() * remainingQuestions.length);
   currentQuestion = remainingQuestions.splice(index, 1)[0];
 
-  // ---- DISPLAY QUESTION TEXT AND IMAGE ----
   questionText.textContent = currentQuestion.question;
 
   if (currentQuestion.question_image) {
@@ -132,12 +123,11 @@ async function loadQuestion() {
     questionImage.style.display = 'none';
   }
 
-  // ---- CREATE ANSWER BUTTONS ----
   const answers = [
     currentQuestion.answer_a,
     currentQuestion.answer_b,
     currentQuestion.answer_c,
-    currentQuestion.answer_d,
+    currentQuestion.answer_d
   ];
 
   answers.forEach((ans, i) => {
@@ -148,7 +138,6 @@ async function loadQuestion() {
     answersBox.appendChild(btn);
   });
 
-  // ---- TIMER SETUP ----
   timeLeft = 15;
   timeDisplay.textContent = timeLeft;
   clearInterval(timer);
@@ -158,12 +147,10 @@ async function loadQuestion() {
     if (timeLeft <= 0) {
       clearInterval(timer);
       highlightCorrectAnswer();
-      // Time ran out → end the game immediately
       setTimeout(endGame, 1000);
     }
   }, 1000);
 }
-
 
 function checkAnswer(selected, clickedBtn) {
   clearInterval(timer);
@@ -173,76 +160,64 @@ function checkAnswer(selected, clickedBtn) {
     clickedBtn.classList.add('correct');
     score++;
     updateScore();
-    // Correct answer → go to next question
     setTimeout(loadQuestion, 1000);
   } else {
-    // Wrong answer → highlight correct and end game
     clickedBtn.classList.add('wrong');
     highlightCorrectAnswer();
     updateScore();
     setTimeout(endGame, 1000);
   }
 }
+
 function highlightCorrectAnswer() {
   document.querySelectorAll('.answer-btn').forEach((btn, i) => {
     if (i + 1 === currentQuestion.correct_answer) btn.classList.add('correct');
   });
 }
 
-function nextQuestionDelay() {
-  questionsAnswered++;
-  setTimeout(() => {
-    if (questionsAnswered >= totalQuestions) endGame();
-    else loadQuestion();
-  }, 2000);
-}
-
 function updateScore() {
   scoreDisplay.textContent = `Score: ${score}`;
 }
 
+// -------------------------
+// End Game & Submit Score
+// -------------------------
 async function endGame() {
   game.classList.add('hidden');
   endScreen.classList.remove('hidden');
 
   const endTitle = endScreen.querySelector('h2');
-
-  // Remove previous classes
   endTitle.classList.remove('gz-title');
 
-  // Check if the player answered all questions correctly
-  if (remainingQuestions.length === 0 && score === questions.length) {
-    endTitle.textContent = "gz";       // show "gz"
-    endTitle.classList.add('gz-title'); // add golden glow styling
+  if (!remainingQuestions.length && score === questions.length) {
+    endTitle.textContent = 'gz';
+    endTitle.classList.add('gz-title');
   } else {
-    endTitle.textContent = "Game Over!";
+    endTitle.textContent = 'Game Over!';
   }
 
   finalScore.textContent = score;
 
-  submitScore().catch(err => console.error(err)); // async save, doesn't block UI
+  await submitScore();
+  await loadLeaderboard(); // auto-refresh leaderboard after game ends
 }
-
 
 async function submitScore() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
-  // Get the username if not already set
+  // Ensure username is set
   if (!username) {
     const { data: profile, error } = await supabase
       .from('profiles')
       .select('username')
       .eq('id', user.id)
       .single();
-
-    if (error) console.error('Error fetching username:', error);
-
-    username = profile?.username || 'Unknown';
+    username = !error && profile ? profile.username : 'Unknown';
   }
 
   try {
-    // Check existing score for this user
+    // Check existing score
     const { data: existing, error: fetchError } = await supabase
       .from('scores')
       .select('score')
@@ -254,12 +229,12 @@ async function submitScore() {
       return;
     }
 
-    // Upsert only if new score is higher or if user has no existing score
+    // Upsert if higher or new
     if (!existing || score > existing.score) {
       const { data: upsertData, error: upsertError } = await supabase
         .from('scores')
         .upsert(
-          { user_id: user.id, username, score }, // include username here!
+          { user_id: user.id, username, score },
           { onConflict: 'user_id', ignoreDuplicates: false }
         )
         .select();
@@ -267,10 +242,70 @@ async function submitScore() {
       if (upsertError) console.error('Error saving score:', upsertError);
       else console.log('Score saved/updated:', upsertData);
     } else {
-      console.l
+      console.log('Existing score is higher or equal, not updating.');
+    }
+  } catch (err) {
+    console.error('Error submitting score:', err);
+  }
+}
 
+// -------------------------
+// Leaderboard
+// -------------------------
+const leaderboard = document.getElementById('leaderboard');
 
+async function loadLeaderboard() {
+  const { data, error } = await supabase
+    .from('scores')
+    .select('score, username')
+    .order('score', { ascending: false })
+    .limit(10);
 
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  const leaderboardData = data ? [...data] : [];
+
+  // Fill to 10 rows
+  while (leaderboardData.length < 10) {
+    leaderboardData.push({ username: '', score: '' });
+  }
+
+  leaderboard.innerHTML = '';
+
+  leaderboardData.forEach((entry, i) => {
+    const li = document.createElement('li');
+    const left = document.createElement('span');
+    const right = document.createElement('span');
+
+    const isReal = entry.username?.trim() !== '';
+
+    if (i === 0) {
+      left.classList.add('top-1');
+      left.textContent = isReal ? `🥇 ${entry.username}` : '🥇';
+    } else if (i === 1) {
+      left.classList.add('top-2');
+      left.textContent = isReal ? `🥈 ${entry.username}` : '🥈';
+    } else if (i === 2) {
+      left.classList.add('top-3');
+      left.textContent = isReal ? `🥉 ${entry.username}` : '🥉';
+    } else {
+      left.textContent = isReal ? `${i + 1}. ${entry.username}` : `${i + 1}.`;
+    }
+
+    right.textContent = isReal ? entry.score : '';
+
+    li.appendChild(left);
+    li.appendChild(right);
+    leaderboard.appendChild(li);
+  });
+}
+
+// -------------------------
+// Auth State Listener
+// -------------------------
 supabase.auth.onAuthStateChange((event, session) => {
   if (session?.user) {
     console.log('User logged in:', session.user.email);
@@ -279,24 +314,8 @@ supabase.auth.onAuthStateChange((event, session) => {
   }
 });
 
+// -------------------------
+// Initialize
+// -------------------------
 loadCurrentUser();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+loadLeaderboard();
