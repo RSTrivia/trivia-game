@@ -140,21 +140,21 @@ const leaderboardEl = document.getElementById('leaderboard');
 
 async function loadLeaderboard() {
   const { data, error } = await supabase
-    .from('scores')
-    .select('score, username')
-    .order('score', { ascending: false })
+    .from('public_leaderboard')   // <-- use your view here
+    .select('*')
+    .order('score', { ascending: false }) // optional if view already ordered
     .limit(10);
 
-  if (error) { console.error(error); return; }
-
-  const leaderboardData = data ? [...data] : [];
-
-  // Fill to 10 rows with placeholders
-  while (leaderboardData.length < 10) {
-    leaderboardData.push({ username: '', score: '' });
+  if (error) {
+    console.error('Error loading leaderboard:', error);
+    return;
   }
 
-  leaderboardEl.innerHTML = '';
+  const leaderboardData = data || [];
+
+  const leaderboard = document.getElementById('leaderboard');
+  leaderboard.innerHTML = '';
+
   leaderboardData.forEach((entry, i) => {
     const li = document.createElement('li');
     const left = document.createElement('span');
@@ -162,22 +162,33 @@ async function loadLeaderboard() {
 
     const isReal = entry.username?.trim() !== '';
 
-    if (i === 0) { left.classList.add('top-1'); left.textContent = isReal ? `🥇 ${entry.username}` : '🥇'; }
-    else if (i === 1) { left.classList.add('top-2'); left.textContent = isReal ? `🥈 ${entry.username}` : '🥈'; }
-    else if (i === 2) { left.classList.add('top-3'); left.textContent = isReal ? `🥉 ${entry.username}` : '🥉'; }
-    else { left.textContent = isReal ? `${i + 1}. ${entry.username}` : `${i + 1}.`; }
+    if (i === 0) {
+      left.classList.add('top-1');
+      left.textContent = isReal ? `🥇 ${entry.username}` : '🥇';
+    } else if (i === 1) {
+      left.classList.add('top-2');
+      left.textContent = isReal ? `🥈 ${entry.username}` : '🥈';
+    } else if (i === 2) {
+      left.classList.add('top-3');
+      left.textContent = isReal ? `🥉 ${entry.username}` : '🥉';
+    } else {
+      left.textContent = isReal ? `${i + 1}. ${entry.username}` : `${i + 1}.`;
+    }
 
     right.textContent = isReal ? entry.score : '';
+
     li.appendChild(left);
     li.appendChild(right);
-    leaderboardEl.appendChild(li);
+    leaderboard.appendChild(li);
   });
 }
+
   
 loadLeaderboard();
 </script>
 </body>
 </html>
+
 
 
 
