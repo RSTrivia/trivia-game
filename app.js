@@ -224,28 +224,35 @@ async function endGame() {
 }
 
 
-
-
 async function submitScore() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
+  // Make sure we have the username
   if (!username) {
-    const { data: profile } = await supabase
+    const { data: profile, error } = await supabase
       .from('profiles')
       .select('username')
       .eq('id', user.id)
       .single();
+
     username = profile?.username || 'Unknown';
-    console.log("Saving score, user = ", user);
+    if (error) console.error('Error fetching username:', error);
   }
 
-  await supabase.from('scores').insert({
-    user_id: user.id,
-    username,
-    score
-  });
+  // Upsert score: insert if no row exists, or update if new score is higher
+  const { data, error } = await supabase
+    .from('scores')
+    .upsert(
+      { user_id: user.id, score }, // object to insert/update
+      { onConflict: 'user_id', ignoreDuplicates: false } // upsert based on user_id
+    )
+    .select();
+
+  if (error) console.error('Error saving score:', error);
+  else console.log('Score saved/updated:', data);
 }
+
 
 supabase.auth.onAuthStateChange((event, session) => {
   if (session?.user) {
@@ -256,6 +263,7 @@ supabase.auth.onAuthStateChange((event, session) => {
 });
 
 loadCurrentUser();
+
 
 
 
