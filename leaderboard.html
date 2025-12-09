@@ -41,7 +41,18 @@
   /* optional smooth edges */
   -webkit-font-smoothing: antialiased;
 }
- 
+
+    /* Dark transparent overlay for the whole game container */
+  .container {
+    background-color: rgba(0, 0, 0, 0.85); /* black with 85% opacity */
+    padding: 20px;
+    border-radius: 10px; /* optional rounded edges */
+    max-width: 900px;    /* optional max width */
+    margin: 20px auto;   /* center horizontally */
+    box-shadow: 0 0 30px rgba(0,0,0,0.5); /* optional soft glow */
+    color: #fff;         /* default text color for visibility */
+  }
+  
   /* ====== BODY & CONTAINER ====== */
   body {
     font-family: Arial, sans-serif;
@@ -187,6 +198,7 @@ loadLeaderboard();
 </script>
 </body>
 </html>
+
 
 
 
