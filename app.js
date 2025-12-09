@@ -223,7 +223,16 @@ document.addEventListener('DOMContentLoaded', () => {
   loadCurrentUser();
 });
 
+supabase.auth.onAuthStateChange((event, session) => {
+  if (session?.user) {
+    console.log('User logged in:', session.user.email);
+  } else {
+    console.log('No user logged in');
+  }
+});
+
 // Load user on page load
 loadCurrentUser();
+
 
 
