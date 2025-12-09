@@ -234,56 +234,11 @@ async function submitScore() {
   }
 }
 
-function showEndScreen(score, allCorrect = false) {
-  const startScreen = document.getElementById('start-screen');
-  const gameScreen = document.getElementById('game');
-  const endScreen = document.getElementById('end-screen');
-
-  // Hide other screens
-  startScreen.classList.add('hidden');
-  gameScreen.classList.add('hidden');
-  endScreen.classList.remove('hidden');
-
-  // Update final score
-  document.getElementById('finalScore').textContent = score;
-
-  const titleEl = endScreen.querySelector('h2');
-
-  if (allCorrect) {
-    // Replace "Game Over!" with "gz" styled like main menu
-    titleEl.textContent = 'gz';
-    titleEl.style.fontFamily = "'Cinzel', serif";
-    titleEl.style.fontSize = '3.2rem';
-    titleEl.style.textAlign = 'center';
-    titleEl.style.letterSpacing = '2px';
-    titleEl.style.background = 'linear-gradient(145deg, #fff8dc 0%, #ffdd44 25%, #f2b705 50%, #c28f0c 75%, #a77b0a 100%)';
-    titleEl.style.webkitBackgroundClip = 'text';
-    titleEl.style.webkitTextFillColor = 'transparent';
-    titleEl.style.textShadow = `0 0 4px rgba(0,0,0,0.8),
-                                1px 1px 0 #000,
-                                2px 2px 2px rgba(0,0,0,0.6),
-                                0 0 8px rgba(255, 223, 0, 0.8),
-                                0 -1px 2px rgba(255, 255, 255, 0.4)`;
-    titleEl.style.filter = 'drop-shadow(0 0 10px rgba(255, 223, 0, 0.7))';
-  } else {
-    // Normal Game Over
-    titleEl.textContent = 'Game Over!';
-    titleEl.style = ''; // reset styles
-  }
-}
-
-// Usage examples:
-// Normal end:
-showEndScreen(finalScore);
-
-// All correct:
-showEndScreen(finalScore, true);
-
-
 // -------------------------
 // Init
 // -------------------------
 loadCurrentUser();
+
 
 
 
