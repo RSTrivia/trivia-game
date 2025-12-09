@@ -206,7 +206,7 @@ async function submitScore() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
-  // Ensure we have a proper username
+  // Ensure username is set
   if (!username) {
     const { data: profile, error } = await supabase
       .from('profiles')
@@ -214,37 +214,31 @@ async function submitScore() {
       .eq('id', user.id)
       .single();
 
-    username = profile?.username || `Player-${user.id.slice(0, 5)}`;
+    username = profile?.username || `Player-${user.id.slice(0,5)}`;
   }
 
   try {
-    // Fetch existing score
-    const { data: existing } = await supabase
+    // Upsert the score using the correct user_id (UUID), not username
+    const { data, error: upsertError } = await supabase
       .from('scores')
-      .select('score')
-      .eq('user_id', user.id)
-      .single();
+      .upsert(
+        { user_id: user.id, username, score }, // <-- user.id is UUID
+        { onConflict: 'user_id' }
+      )
+      .select();
 
-    // Only upsert if no existing score or new score is higher
-    if (!existing || score > existing.score) {
-      const { data: upsertData, error: upsertError } = await supabase
-        .from('scores')
-        .upsert({ user_id: user.id, username, score }, { onConflict: 'user_id' })
-        .select();
-
-      if (upsertError) console.error('Error saving score:', upsertError);
-      else console.log('Score saved/updated:', upsertData);
-    } else {
-      console.log('Existing score higher, skipping update');
-    }
+    if (upsertError) console.error('Error saving score:', upsertError);
+    else console.log('Score saved/updated:', data);
   } catch (err) {
     console.error('Error submitting score:', err);
   }
 }
 
 
+
 // -------------------------
 // Init
 // -------------------------
 loadCurrentUser();
+
 
