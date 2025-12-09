@@ -120,12 +120,14 @@ button {
   border-radius: 8px;
   cursor: pointer;
   font-size: 1.1rem;
-  width: 100%;
-  transition: 0.2s;
-  display: block;
+  width: auto;               /* let width be automatic based on content */
+  max-width: 250px;          /* optional: limits how wide it can get */
+  display: block;            /* allows margin auto for centering */
   text-align: center;
   text-decoration: none;
-  margin: 8px 0;
+  margin: 8px auto;          /* centers the button inside container */
+  box-sizing: border-box;    /* ensures padding/border don’t overflow */
+  transition: 0.2s;
 }
 
 .btn:hover {
@@ -212,5 +214,6 @@ a.btn:hover, a.btn-small:hover {
   display: block;
   background-color: transparent; /* canvas transparent to show black behind */
 }
+
 
 
