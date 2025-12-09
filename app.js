@@ -1,9 +1,13 @@
 import { supabase } from './supabase.js';
 
+// -------------------------
+// DOM Elements
+// -------------------------
 const startBtn = document.getElementById('startBtn');
+const startScreen = document.getElementById('start-screen');
 const playAgainBtn = document.getElementById('playAgainBtn');
-const questionText = document.getElementById('questionText'); // NEW: text element
-const questionImage = document.getElementById('questionImage'); // NEW: image element
+const questionText = document.getElementById('questionText');
+const questionImage = document.getElementById('questionImage');
 const answersBox = document.getElementById('answers');
 const timeDisplay = document.getElementById('time');
 const game = document.getElementById('game');
@@ -13,6 +17,9 @@ const scoreDisplay = document.getElementById('score');
 const userDisplay = document.getElementById('userDisplay');
 const mainMenuBtn = document.getElementById('mainMenuBtn');
 
+// -------------------------
+// Game Variables
+// -------------------------
 let questions = [];
 let remainingQuestions = [];
 let currentQuestion = null;
@@ -23,30 +30,26 @@ let totalQuestions = 10;
 let questionsAnswered = 0;
 let username = '';
 
-// Event listeners
+// -------------------------
+// Event Listeners
+// -------------------------
 startBtn.addEventListener('click', startGame);
+
 playAgainBtn.addEventListener('click', () => {
-  score = 0;
-  questionsAnswered = 0;
-  questions = [];
-  remainingQuestions = [];
-  currentQuestion = null;
+  resetGame();
   startGame();
 });
+
 mainMenuBtn.addEventListener('click', () => {
-  clearInterval(timer);
+  resetGame();
   game.classList.add('hidden');
   endScreen.classList.add('hidden');
-  document.getElementById('start-screen').classList.remove('hidden'); // show main menu again
-  score = 0;
-  questionsAnswered = 0;
-  questions = [];
-  remainingQuestions = [];
-  currentQuestion = null;
-  updateScore();
+  startScreen.classList.remove('hidden'); // show main menu
 });
 
+// -------------------------
 // Load currently logged-in user
+// -------------------------
 async function loadCurrentUser() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
@@ -64,16 +67,18 @@ async function loadCurrentUser() {
 }
 
 // -------------------------
-// Game functions
+// Game Functions
 // -------------------------
 async function startGame() {
-  score = 0;
-  questionsAnswered = 0;
+  resetGame();
+
+  startScreen.classList.add('hidden');
   game.classList.remove('hidden');
   endScreen.classList.add('hidden');
-  document.getElementById('start-screen').classList.add('hidden');
+
   updateScore();
 
+  // Fetch questions
   const { data, error } = await supabase.from('questions').select('*');
   if (error || !data || data.length === 0) {
     console.error('Error fetching questions:', error);
@@ -83,12 +88,25 @@ async function startGame() {
 
   questions = data;
   remainingQuestions = [...questions];
+
   await loadQuestion();
+}
+
+function resetGame() {
+  clearInterval(timer);
+  score = 0;
+  questionsAnswered = 0;
+  questions = [];
+  remainingQuestions = [];
+  currentQuestion = null;
+  answersBox.innerHTML = '';
+  timeDisplay.textContent = '15';
+  updateScore();
 }
 
 async function loadQuestion() {
   answersBox.innerHTML = '';
-  
+
   if (remainingQuestions.length === 0 || questionsAnswered >= totalQuestions) {
     return endGame();
   }
@@ -96,10 +114,10 @@ async function loadQuestion() {
   const index = Math.floor(Math.random() * remainingQuestions.length);
   currentQuestion = remainingQuestions.splice(index, 1)[0];
 
-  // ---- DISPLAY QUESTION TEXT AND IMAGE ----
+  // Display text
+  questionText.textContent = currentQuestion.question_text || currentQuestion.question;
 
-  questionText.textContent = currentQuestion.question;
-
+  // Display image if exists
   if (currentQuestion.question_image) {
     questionImage.src = currentQuestion.question_image;
     questionImage.style.display = 'block';
@@ -107,7 +125,7 @@ async function loadQuestion() {
     questionImage.style.display = 'none';
   }
 
-  // ---- CREATE ANSWER BUTTONS ----
+  // Create answer buttons
   const answers = [
     currentQuestion.answer_a,
     currentQuestion.answer_b,
@@ -123,7 +141,7 @@ async function loadQuestion() {
     answersBox.appendChild(btn);
   });
 
-  // ---- TIMER SETUP ----
+  // Timer setup
   timeLeft = 15;
   timeDisplay.textContent = timeLeft;
   clearInterval(timer);
@@ -199,10 +217,7 @@ async function submitScore() {
   });
 }
 
-// Load user on page load
+// -------------------------
+// Initialize
+// -------------------------
 loadCurrentUser();
-
-
-
-
-
