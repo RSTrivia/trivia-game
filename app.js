@@ -240,18 +240,39 @@ async function submitScore() {
     if (error) console.error('Error fetching username:', error);
   }
 
-  // Upsert score: insert if no row exists, or update if new score is higher
-  const { data, error } = await supabase
-    .from('scores')
-    .upsert(
-      { user_id: user.id, score }, // object to insert/update
-      { onConflict: 'user_id', ignoreDuplicates: false } // upsert based on user_id
-    )
-    .select();
+  try {
+    // 1. Get the current score for this user
+    const { data: existing, error: fetchError } = await supabase
+      .from('scores')
+      .select('score')
+      .eq('user_id', user.id)
+      .single();
 
-  if (error) console.error('Error saving score:', error);
-  else console.log('Score saved/updated:', data);
+    if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 = no rows found
+      console.error('Error fetching existing score:', fetchError);
+      return;
+    }
+
+    // 2. Only upsert if new score is higher or if user has no existing score
+    if (!existing || score > existing.score) {
+      const { data: upsertData, error: upsertError } = await supabase
+        .from('scores')
+        .upsert(
+          { user_id: user.id, score },
+          { onConflict: 'user_id', ignoreDuplicates: false }
+        )
+        .select();
+
+      if (upsertError) console.error('Error saving score:', upsertError);
+      else console.log('Score saved/updated:', upsertData);
+    } else {
+      console.log('Existing score is higher or equal, not updating.');
+    }
+  } catch (err) {
+    console.error('Error submitting score:', err);
+  }
 }
+
 
 
 supabase.auth.onAuthStateChange((event, session) => {
@@ -263,6 +284,7 @@ supabase.auth.onAuthStateChange((event, session) => {
 });
 
 loadCurrentUser();
+
 
 
 
