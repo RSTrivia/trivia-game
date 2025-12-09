@@ -150,12 +150,11 @@ async function loadLeaderboard() {
     return;
   }
 
-  // Clone data or empty array
   const leaderboardData = data ? [...data] : [];
 
   // Fill up to 10 rows with placeholders
   while (leaderboardData.length < 10) {
-    leaderboardData.push({ username: '', score: '' }); // empty strings for placeholders
+    leaderboardData.push({ username: '', score: '' });
   }
 
   leaderboard.innerHTML = '';
@@ -166,28 +165,23 @@ async function loadLeaderboard() {
     const left = document.createElement('span');
     const right = document.createElement('span');
 
-    // Real entry?
     const isReal = entry.username.trim() !== '';
 
-    // LEFT COLUMN
-    if (isReal) {
-      if (i === 0) {
-        left.textContent = `🥇 ${entry.username}`;
-        left.classList.add('top-1');
-      } else if (i === 1) {
-        left.textContent = `🥈 ${entry.username}`;
-        left.classList.add('top-2');
-      } else if (i === 2) {
-        left.textContent = `🥉 ${entry.username}`;
-        left.classList.add('top-3');
-      } else {
-        left.textContent = `${i + 1}. ${entry.username}`;
-      }
+    // LEFT COLUMN: Number + medals for top-3
+    if (i === 0) {
+      left.classList.add('top-1');
+      left.textContent = isReal ? `🥇 ${entry.username}` : '🥇';
+    } else if (i === 1) {
+      left.classList.add('top-2');
+      left.textContent = isReal ? `🥈 ${entry.username}` : '🥈';
+    } else if (i === 2) {
+      left.classList.add('top-3');
+      left.textContent = isReal ? `🥉 ${entry.username}` : '🥉';
     } else {
-      left.textContent = ''; // empty for placeholders
+      left.textContent = isReal ? `${i + 1}. ${entry.username}` : `${i + 1}.`;
     }
 
-    // RIGHT COLUMN
+    // RIGHT COLUMN: score if real, blank if placeholder
     right.textContent = isReal ? entry.score : '';
 
     li.appendChild(left);
@@ -201,6 +195,7 @@ loadLeaderboard();
 </script>
 </body>
 </html>
+
 
 
 
