@@ -74,8 +74,6 @@ async function loadCurrentUser() {
   }
 }
 
-
-
 // -------------------------
 // Game functions
 // -------------------------
@@ -222,6 +220,7 @@ supabase.auth.onAuthStateChange((event, session) => {
 
 // Load user on page load
 loadCurrentUser();
+
 
 
 
