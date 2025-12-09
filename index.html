@@ -4,14 +4,40 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>OSRS Trivia</title>
+
+<!-- Fancy title font -->
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
+
 <link rel="stylesheet" href="style.css" />
 <style>
+  /* Fancy OSRS-style title */
+  h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 3.2rem;
+    margin-bottom: 25px;
+    text-align: center;
+    letter-spacing: 2px;
+
+    /* Stone + gold gradient */
+    background: linear-gradient(#e8e0c5, #ba9b4a, #7a602b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+
+    /* Strong OSRS-style shadow + glow */
+    text-shadow:
+      0 0 6px rgba(0,0,0,0.7),
+      2px 2px 0 #000,
+      4px 4px 6px rgba(0,0,0,0.6);
+
+    filter: drop-shadow(0 0 8px rgba(255, 215, 100, 0.4));
+  }
+
   /* Ensure question images don't overflow */
   #questionImage {
     max-width: 100%;
     max-height: 300px;
     margin: 10px 0;
-    display: none; /* hidden by default if no image */
+    display: none;
     border-radius: 8px;
   }
 
@@ -25,24 +51,11 @@
     flex-direction: column;
     align-items: center;
   }
-
-  /* ===== NEW: Align small buttons left & right ===== */
-  .menu-row {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    margin-top: 12px;
-  }
-
-  /* Make both buttons equal size */
-  .menu-row .btn-small {
-    width: 48%;
-    text-align: center;
-  }
 </style>
 </head>
 <body>
 <div class="container">
+
   <h1>OSRS Trivia</h1>
 
   <!-- Game Screen -->
@@ -63,12 +76,8 @@
   <!-- Start Screen -->
   <div id="start-screen">
     <button id="startBtn" class="btn">Start Game</button>
-
-    <!-- New cleaner button row -->
-    <div class="menu-row">
-      <a href="leaderboard.html" class="btn-small">View Leaderboard</a>
-      <a href="login.html" class="btn-small">Log In</a>
-    </div>
+    <a href="leaderboard.html" class="btn-small">View Leaderboard</a>
+    <a href="login.html" class="btn-small">Log In</a>
   </div>
 
   <!-- End Screen -->
