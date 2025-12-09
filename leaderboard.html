@@ -150,26 +150,33 @@ async function loadLeaderboard() {
     return;
   }
 
+  const leaderboardData = data || [];
+
+  // Fill up to 10 entries with placeholders
+  while (leaderboardData.length < 10) {
+    leaderboardData.push({ username: ' ', score: ' ' });
+  }
+
   leaderboard.innerHTML = '';
 
-  data.forEach((entry, i) => {
+  leaderboardData.forEach((entry, i) => {
     const li = document.createElement('li');
 
     const left = document.createElement('span');
     if (i === 0) { 
-      left.textContent = `🥇 ${entry.username}`; 
+      left.textContent = entry.username.trim() === '' ? `${i + 1}. ---` : `🥇 ${entry.username}`; 
       left.classList.add('top-1'); 
     }
     else if (i === 1) { 
-      left.textContent = `🥈 ${entry.username}`; 
+      left.textContent = entry.username.trim() === '' ? `${i + 1}. ---` : `🥈 ${entry.username}`; 
       left.classList.add('top-2'); 
     }
     else if (i === 2) { 
-      left.textContent = `🥉 ${entry.username}`; 
+      left.textContent = entry.username.trim() === '' ? `${i + 1}. ---` : `🥉 ${entry.username}`; 
       left.classList.add('top-3'); 
     }
     else {
-      left.textContent = `${i + 1}. ${entry.username}`;
+      left.textContent = entry.username.trim() === '' ? `${i + 1}. ---` : `${i + 1}. ${entry.username}`;
     }
 
     const right = document.createElement('span');
@@ -181,10 +188,12 @@ async function loadLeaderboard() {
   });
 }
 
+
 loadLeaderboard();
 </script>
 </body>
 </html>
+
 
 
 
