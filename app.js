@@ -12,6 +12,8 @@ const finalScore = document.getElementById('finalScore');
 const scoreDisplay = document.getElementById('score');
 const userDisplay = document.getElementById('userDisplay');
 const mainMenuBtn = document.getElementById('mainMenuBtn');
+const loginBtn = document.getElementById('loginBtn');
+const logoutBtn = document.getElementById('logoutBtn');
 
 let questions = [];
 let remainingQuestions = [];
@@ -48,13 +50,17 @@ mainMenuBtn.addEventListener('click', () => {
 
 async function loadCurrentUser() {
   const userDisplay = document.getElementById('userDisplay');
+  const loginBtn = document.getElementById('loginBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
 
   // STEP 1 — Get session immediately
   const { data: { session } } = await supabase.auth.getSession();
 
   if (!session || !session.user) {
-    // Optionally hide the userDisplay completely if not logged in
+    // No user logged in
     userDisplay.style.display = 'none';
+    if (loginBtn) loginBtn.style.display = 'inline-block';
+    if (logoutBtn) logoutBtn.style.display = 'none';
     return;
   }
 
@@ -67,9 +73,13 @@ async function loadCurrentUser() {
 
   if (!error && profile) {
     userDisplay.textContent = `Player: ${profile.username}`;
-    userDisplay.style.display = 'block'; // make it visible
+    userDisplay.style.display = 'block'; // show player name
+    if (loginBtn) loginBtn.style.display = 'none';
+    if (logoutBtn) logoutBtn.style.display = 'inline-block';
   } else {
     userDisplay.style.display = 'none';
+    if (loginBtn) loginBtn.style.display = 'inline-block';
+    if (logoutBtn) logoutBtn.style.display = 'none';
   }
 }
 
@@ -221,6 +231,12 @@ supabase.auth.onAuthStateChange((event, session) => {
 
 // Load user on page load
 loadCurrentUser();
+
+const logoutBtn = document.getElementById('logoutBtn');
+logoutBtn.addEventListener('click', async () => {
+  await supabase.auth.signOut();
+  loadCurrentUser(); // refresh UI
+});
 
 
 
