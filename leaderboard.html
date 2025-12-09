@@ -9,28 +9,39 @@
 <link rel="stylesheet" href="style.css" />
 <style>
   h1 {
-    font-family: 'Cinzel', serif;
-    font-size: 2.2rem;
-    margin-bottom: 25px;
-    text-align: center;
-    letter-spacing: 2px;
-  
-    /* Rich gold gradient */
-    background: linear-gradient(135deg, #fffaf0, #ffd700 40%, #b8860b 80%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  
-    /* Shadow + glow for OSRS feel */
-    text-shadow:
-      0 0 6px rgba(0,0,0,0.7),
-      2px 2px 0 #000,
-      4px 4px 6px rgba(0,0,0,0.6),
-      0 0 12px rgba(255, 215, 0, 0.7);
-  
-    filter: drop-shadow(0 0 10px rgba(255, 223, 0, 0.6));
-  }
+  font-family: 'Cinzel', serif;
+  font-size: 2.2rem;
+  margin-bottom: 25px;
+  text-align: center;
+  letter-spacing: 2px;
 
+  /* Metallic gold gradient with highlights */
+  background: linear-gradient(
+    145deg,
+    #fff8dc 0%,   /* bright highlight */
+    #ffdd44 25%,  /* primary gold */
+    #f2b705 50%,  /* mid gold */
+    #c28f0c 75%,  /* darker shadow gold */
+    #a77b0a 100%  /* deep gold for edges */
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 
+  /* OSRS-style shadow + metallic glow */
+  text-shadow:
+    0 0 4px rgba(0,0,0,0.8),    /* base shadow for depth */
+    1px 1px 0 #000,              /* small offset shadow */
+    2px 2px 2px rgba(0,0,0,0.6), /* soft depth shadow */
+    0 0 8px rgba(255, 223, 0, 0.8),  /* outer golden glow */
+    0 -1px 2px rgba(255, 255, 255, 0.4); /* subtle top highlight */
+
+  /* extra polish/glow */
+  filter: drop-shadow(0 0 10px rgba(255, 223, 0, 0.7));
+
+  /* optional smooth edges */
+  -webkit-font-smoothing: antialiased;
+}
+ 
   /* ====== BODY & CONTAINER ====== */
   body {
     font-family: Arial, sans-serif;
@@ -176,6 +187,7 @@ loadLeaderboard();
 </script>
 </body>
 </html>
+
 
 
 
