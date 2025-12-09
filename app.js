@@ -234,10 +234,30 @@ async function submitScore() {
   }
 }
 
+function showEndScreen(score, allCorrect = false) {
+  document.getElementById('start-screen').classList.add('hidden');
+  document.getElementById('game').classList.add('hidden');
+  const endScreen = document.getElementById('end-screen');
+  endScreen.classList.remove('hidden');
+
+  document.getElementById('finalScore').textContent = score;
+
+  const endTitle = document.getElementById('endTitle');
+
+  if (allCorrect) {
+    endTitle.textContent = 'gz';
+    endTitle.classList.add('osrs-title');
+  } else {
+    endTitle.textContent = 'Game Over!';
+    endTitle.classList.remove('osrs-title');
+  }
+}
+
 // -------------------------
 // Init
 // -------------------------
 loadCurrentUser();
+
 
 
 
