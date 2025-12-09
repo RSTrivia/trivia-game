@@ -207,33 +207,28 @@ async function endGame() {
 
 async function submitScore() {
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return; // Do not save guest scores
+  if (!user) return; // skip guests
 
-  // Ensure username is set
   if (!username) {
-    const { data: profile, error } = await supabase
+    const { data: profile } = await supabase
       .from('profiles')
       .select('username')
       .eq('id', user.id)
       .single();
-    username = profile?.username || `Player-${user.id.slice(0, 5)}`;
+    username = profile?.username || `Player-${user.id.slice(0,5)}`;
   }
 
   try {
-    // Upsert score only for logged-in users
-    const { data, error: upsertError } = await supabase
+    const { data, error } = await supabase
       .from('scores')
       .upsert(
         { user_id: user.id, username, score },
-        { onConflict: 'user_id' } // user_id must have UNIQUE constraint in DB
+        { onConflict: 'user_id' } // must be UNIQUE
       )
       .select();
 
-    if (upsertError) {
-      console.error('Error saving score:', upsertError);
-    } else {
-      console.log('Score saved/updated:', data);
-    }
+    if (error) console.error('Error saving score:', error);
+    else console.log('Score saved:', data);
   } catch (err) {
     console.error('Error submitting score:', err);
   }
@@ -244,4 +239,5 @@ async function submitScore() {
 // Init
 // -------------------------
 loadCurrentUser();
+
 
