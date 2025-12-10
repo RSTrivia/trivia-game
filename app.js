@@ -195,15 +195,21 @@ async function endGame() {
   game.classList.add('hidden');
   endScreen.classList.remove('hidden');
 
-  const endTitle = endScreen.querySelector('h2');
-  endTitle.classList.remove('gz-title');
-  endTitle.textContent = remainingQuestions.length === 0 && score === questions.length
-    ? 'gz' : 'Game Over!';
+  const endTitle = document.getElementById('end-title');
+  endTitle.className = ''; // reset classes
+
+  if (remainingQuestions.length === 0 && score === questions.length) {
+    endTitle.textContent = 'gz';
+    endTitle.classList.add('osrs-title'); // apply main menu style
+  } else {
+    endTitle.textContent = 'Game Over!';
+  }
 
   finalScore.textContent = score;
 
   await submitScore();
 }
+
 
 async function submitScore() {
   const { data: { user } } = await supabase.auth.getUser();
@@ -260,6 +266,7 @@ function showEndScreen(score, totalQuestions) {
 // Init
 // -------------------------
 loadCurrentUser();
+
 
 
 
