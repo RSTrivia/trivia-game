@@ -200,13 +200,14 @@ async function endGame() {
 
   finalScore.textContent = score;
 
-  // Show "gz" only if player answered ALL questions correctly
   if (score === questions.length && remainingQuestions.length === 0) {
-    gzTitle.classList.remove('hidden');       // show gz
-    gameOverTitle.classList.add('hidden');    // hide normal Game Over
+    // Player got all questions correct → show gz
+    gzTitle.classList.remove('hidden');
+    gameOverTitle.classList.add('hidden');
   } else {
-    gzTitle.classList.add('hidden');          // hide gz
-    gameOverTitle.classList.remove('hidden'); // show normal Game Over
+    // Player missed some → show normal Game Over
+    gzTitle.classList.add('hidden');
+    gameOverTitle.classList.remove('hidden');
   }
 
   await submitScore();
@@ -269,6 +270,7 @@ function showEndScreen(score, totalQuestions) {
 // Init
 // -------------------------
 loadCurrentUser();
+
 
 
 
