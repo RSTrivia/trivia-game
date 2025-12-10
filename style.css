@@ -316,6 +316,11 @@ h1 {
   display: none;
 }
 
+#userDisplay {
+  min-height: 24px; /* ~1 line of text */
+}
+
+
 
 
 
