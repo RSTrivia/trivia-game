@@ -287,19 +287,18 @@ h1 {
   -webkit-font-smoothing: antialiased;
 }
 
-/* OSRS title style - same as main menu h1 */
 .osrs-title {
-  font-family: 'Cinzel', serif;
-  font-size: 3.2rem;          /* same size as main menu h1 */
+  font-family: 'Cinzel', serif !important;
+  font-size: 3.2rem !important;
   margin: 0;
   text-align: center;
   letter-spacing: 2px;
 
-  /* Metallic gold gradient */
-  background: linear-gradient(145deg, #fff8dc 0%, #ffdd44 25%, #f2b705 50%, #c28f0c 75%, #a77b0a 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-
+  background: linear-gradient(145deg, #fff8dc 0%, #ffdd44 25%, #f2b705 50%, #c28f0c 75%, #a77b0a 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important; /* important: override inherited color */
+  
   text-shadow: 
     0 0 4px rgba(0,0,0,0.8),
     1px 1px 0 #000,
@@ -310,5 +309,7 @@ h1 {
   -webkit-font-smoothing: antialiased;
   display: block;
 }
+
+
 
 
