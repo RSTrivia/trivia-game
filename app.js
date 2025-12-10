@@ -239,29 +239,28 @@ function showEndScreen(score, totalQuestions) {
   const endTitle = document.getElementById('end-title');
   const finalScoreEl = document.getElementById('finalScore');
 
-  // Show the final score
   finalScoreEl.textContent = score;
 
   // Reset class
   endTitle.className = '';
 
-  // Check if player answered all questions correctly
   if (score === totalQuestions) {
     endTitle.textContent = 'gz';
-    endTitle.classList.add('osrs-title'); // apply gold gradient
+    endTitle.classList.add('osrs-title'); // apply gold gradient style
   } else {
     endTitle.textContent = 'Game Over!';
+    endTitle.classList.remove('osrs-title');
   }
 
   endScreen.classList.remove('hidden');
 }
 
 
-
 // -------------------------
 // Init
 // -------------------------
 loadCurrentUser();
+
 
 
 
