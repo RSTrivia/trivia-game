@@ -242,15 +242,15 @@ function showEndScreen(score, totalQuestions) {
   // Show the final score
   finalScoreEl.textContent = score;
 
+  // Reset class
+  endTitle.className = '';
+
   // Check if player answered all questions correctly
   if (score === totalQuestions) {
-    // Replace "Game Over!" with styled "gz"
     endTitle.textContent = 'gz';
-    endTitle.classList.add('osrs-title');
+    endTitle.classList.add('osrs-title'); // apply gold gradient
   } else {
-    // Normal game over text
     endTitle.textContent = 'Game Over!';
-    endTitle.classList.remove('osrs-title');
   }
 
   endScreen.classList.remove('hidden');
@@ -262,6 +262,7 @@ function showEndScreen(score, totalQuestions) {
 // Init
 // -------------------------
 loadCurrentUser();
+
 
 
 
