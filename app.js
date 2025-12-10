@@ -234,33 +234,35 @@ async function submitScore() {
   }
 }
 
-function showEndScreen(score, allCorrect = false) {
-  document.getElementById('start-screen').classList.add('hidden');
-  document.getElementById('game').classList.add('hidden');
+function showEndScreen(score, totalQuestions) {
   const endScreen = document.getElementById('end-screen');
-  endScreen.classList.remove('hidden');
+  const endTitle = document.getElementById('end-title');
+  const finalScoreEl = document.getElementById('finalScore');
 
-  document.getElementById('finalScore').textContent = score;
+  // Show the final score
+  finalScoreEl.textContent = score;
 
-  const wrapper = document.getElementById('endTitleWrapper');
-  wrapper.innerHTML = ''; // clear previous
-
-  if (allCorrect) {
-    const h1 = document.createElement('h1');
-    h1.textContent = 'gz';
-    wrapper.appendChild(h1);
+  // Check if player answered all questions correctly
+  if (score === totalQuestions) {
+    // Replace "Game Over!" with styled "gz"
+    endTitle.textContent = 'gz';
+    endTitle.classList.add('osrs-title');
   } else {
-    const h2 = document.createElement('h2');
-    h2.textContent = 'Game Over!';
-    wrapper.appendChild(h2);
+    // Normal game over text
+    endTitle.textContent = 'Game Over!';
+    endTitle.classList.remove('osrs-title');
   }
+
+  endScreen.classList.remove('hidden');
 }
+
 
 
 // -------------------------
 // Init
 // -------------------------
 loadCurrentUser();
+
 
 
 
