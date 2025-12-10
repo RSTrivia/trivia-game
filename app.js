@@ -217,8 +217,9 @@ async function endGame() {
 
 async function submitScore() {
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return; // skip guests
+  if (!user) return; // guests do not save scores
 
+  // ensure username is available
   if (!username) {
     const { data: profile } = await supabase
       .from('profiles')
@@ -229,20 +230,41 @@ async function submitScore() {
   }
 
   try {
+    // 1️⃣ Get the user's existing best score
+    const { data: existing, error: existingErr } = await supabase
+      .from('scores')
+      .select('score')
+      .eq('user_id', user.id)
+      .single();
+
+    if (existingErr && existingErr.code !== 'PGRST116') {
+      console.error('Error checking existing score:', existingErr);
+      return;
+    }
+
+    // 2️⃣ If they already have a better score, DO NOT update
+    if (existing && existing.score >= score) {
+      console.log('Score not updated (existing score is higher):', existing.score);
+      return;
+    }
+
+    // 3️⃣ Otherwise update to the new best score
     const { data, error } = await supabase
       .from('scores')
       .upsert(
         { user_id: user.id, username, score },
-        { onConflict: 'user_id' } // must be UNIQUE
+        { onConflict: 'user_id' }
       )
       .select();
 
     if (error) console.error('Error saving score:', error);
-    else console.log('Score saved:', data);
+    else console.log('Score updated to new best:', data);
+
   } catch (err) {
-    console.error('Error submitting score:', err);
+    console.error('Unexpected error submitting score:', err);
   }
 }
+
 
 function showEndScreen(score, totalQuestions) {
   const endScreen = document.getElementById('end-screen');
@@ -270,6 +292,7 @@ function showEndScreen(score, totalQuestions) {
 // Init
 // -------------------------
 loadCurrentUser();
+
 
 
 
