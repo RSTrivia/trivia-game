@@ -116,11 +116,14 @@ async function loadQuestion() {
     return await endGame();
   }
 
+  // Pick a random question
   const index = Math.floor(Math.random() * remainingQuestions.length);
   currentQuestion = remainingQuestions.splice(index, 1)[0];
 
+  // Display question text
   questionText.textContent = currentQuestion.question || 'No question text';
 
+  // Display image (if exists)
   if (currentQuestion.question_image) {
     questionImage.src = currentQuestion.question_image;
     questionImage.style.display = 'block';
@@ -128,21 +131,34 @@ async function loadQuestion() {
     questionImage.style.display = 'none';
   }
 
-  const answers = [
-    currentQuestion.answer_a,
-    currentQuestion.answer_b,
-    currentQuestion.answer_c,
-    currentQuestion.answer_d
+  // ORIGINAL ANSWERS ARRAY with their original index
+  let answers = [
+    { text: currentQuestion.answer_a, correct: currentQuestion.correct_answer === 1 },
+    { text: currentQuestion.answer_b, correct: currentQuestion.correct_answer === 2 },
+    { text: currentQuestion.answer_c, correct: currentQuestion.correct_answer === 3 },
+    { text: currentQuestion.answer_d, correct: currentQuestion.correct_answer === 4 }
   ];
 
-  answers.forEach((ans, i) => {
+  // 🔀 SHUFFLE the answers
+  answers = answers
+    .map(value => ({ value, sort: Math.random() }))
+    .sort((a, b) => a.sort - b.sort)
+    .map(a => a.value);
+
+  // Create buttons + track new correct answer index
+  answers.forEach((ans, index) => {
     const btn = document.createElement('button');
-    btn.textContent = ans || '';
+    btn.textContent = ans.text || '';
     btn.classList.add('answer-btn');
-    btn.addEventListener('click', () => checkAnswer(i + 1, btn));
+    btn.addEventListener('click', () => checkAnswer(index + 1, btn));
     answersBox.appendChild(btn);
   });
 
+  // Save the **new correct answer index** (1–4)
+  currentQuestion.correct_answer_shuffled =
+    answers.findIndex(a => a.correct) + 1;
+
+  // Restart timer
   timeLeft = 15;
   timeDisplay.textContent = timeLeft;
   clearInterval(timer);
@@ -160,11 +176,12 @@ async function loadQuestion() {
   }, 1000);
 }
 
+
 function checkAnswer(selected, clickedBtn) {
   clearInterval(timer);
   document.querySelectorAll('.answer-btn').forEach(btn => btn.disabled = true);
   
-  if (selected === currentQuestion.correct_answer) {
+ if (selected === currentQuestion.correct_answer_shuffled) {
     clickedBtn.classList.add('correct');
     score++;
     updateScore();
@@ -179,7 +196,7 @@ function checkAnswer(selected, clickedBtn) {
 
 function highlightCorrectAnswer() {
   document.querySelectorAll('.answer-btn').forEach((btn, i) => {
-    if (i + 1 === currentQuestion.correct_answer) btn.classList.add('correct');
+   if (i + 1 === currentQuestion.correct_answer_shuffled) btn.classList.add('correct');
   });
 }
 
@@ -292,6 +309,7 @@ function showEndScreen(score, totalQuestions) {
 // Init
 // -------------------------
 loadCurrentUser();
+
 
 
 
