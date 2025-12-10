@@ -112,10 +112,11 @@ async function startGame() {
 async function loadQuestion() {
   answersBox.innerHTML = '';
 
+ // ⛔ If no more questions, end game
   if (!remainingQuestions.length) {
-    return await ();
+    return await endGame();
   }
-
+  
   // Pick a random question
   const index = Math.floor(Math.random() * remainingQuestions.length);
   currentQuestion = remainingQuestions.splice(index, 1)[0];
@@ -314,6 +315,7 @@ function showEndScreen(score, totalQuestions) {
 // Init
 // -------------------------
 loadCurrentUser();
+
 
 
 
