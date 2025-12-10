@@ -113,7 +113,7 @@ async function loadQuestion() {
   answersBox.innerHTML = '';
 
   if (!remainingQuestions.length) {
-    return await endGame();
+    return await ();
   }
 
   // Pick a random question
@@ -218,7 +218,11 @@ async function endGame() {
   finalScore.textContent = score;
 
   if (score === questions.length && remainingQuestions.length === 0) {
-    // Player got all questions correct → show gz
+    // Player got all questions correct → show random gz message
+    const gzMessages = ['gz', 'go touch grass', 'see you in lumbridge'];
+    const randomMessage = gzMessages[Math.floor(Math.random() * gzMessages.length)];
+
+    gzTitle.textContent = randomMessage;
     gzTitle.classList.remove('hidden');
     gameOverTitle.classList.add('hidden');
   } else {
@@ -229,6 +233,7 @@ async function endGame() {
 
   await submitScore();
 }
+
 
 
 
@@ -309,6 +314,7 @@ function showEndScreen(score, totalQuestions) {
 // Init
 // -------------------------
 loadCurrentUser();
+
 
 
 
