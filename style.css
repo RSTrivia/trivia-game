@@ -312,8 +312,9 @@ h1 {
   -webkit-font-smoothing: antialiased;
 }
 
-.hidden { display: none; }
-
+.hidden {
+  display: none;
+}
 
 
 
