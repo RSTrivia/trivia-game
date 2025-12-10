@@ -195,21 +195,24 @@ async function endGame() {
   game.classList.add('hidden');
   endScreen.classList.remove('hidden');
 
-  const endTitle = document.getElementById('end-title');
+  const gameOverTitle = document.getElementById('game-over-title');
+  const gzTitle = document.getElementById('gz-title');
 
   finalScore.textContent = score;
 
-  // Only change style/text if the player answered all questions
   if (remainingQuestions.length === 0 && score === questions.length) {
-    endTitle.textContent = 'gz';
-    endTitle.classList.add('osrs-title'); // apply gold gradient style
+    // Show gz, hide normal Game Over
+    gzTitle.classList.remove('hidden');
+    gameOverTitle.classList.add('hidden');
   } else {
-    endTitle.textContent = 'Game Over!'; 
-    endTitle.classList.remove('osrs-title'); // keep normal Game Over! style
+    // Show normal Game Over, hide gz
+    gameOverTitle.classList.remove('hidden');
+    gzTitle.classList.add('hidden');
   }
 
   await submitScore();
 }
+
 
 async function submitScore() {
   const { data: { user } } = await supabase.auth.getUser();
@@ -266,6 +269,7 @@ function showEndScreen(score, totalQuestions) {
 // Init
 // -------------------------
 loadCurrentUser();
+
 
 
 
