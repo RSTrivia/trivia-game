@@ -7,19 +7,38 @@ const backgrounds = [
   "images/background3.jpg"
 ];
 
-// Change every 10 minutes (600000 ms)
-const CHANGE_INTERVAL = 600000;
+// Change every 10 minutes
+const CHANGE_INTERVAL = 600000; // 10 min in ms
 
-function changeBackground() {
-  const random = Math.floor(Math.random() * backgrounds.length);
-  document.body.style.backgroundImage = `url('${backgrounds[random]}')`;
+function pickRandomBackground() {
+  return backgrounds[Math.floor(Math.random() * backgrounds.length)];
+}
+
+function applyBackground(url) {
+  document.body.style.backgroundImage = `url('${url}')`;
   document.body.style.backgroundSize = "cover";
   document.body.style.backgroundPosition = "center";
   document.body.style.backgroundRepeat = "no-repeat";
 }
 
-// First background on page load
-document.addEventListener("DOMContentLoaded", changeBackground);
+function updateBackground() {
+  const now = Date.now();
+  const lastChange = localStorage.getItem("bg_last_change");
+  const currentBg = localStorage.getItem("bg_current");
 
-// Rotate every X minutes
-setInterval(changeBackground, CHANGE_INTERVAL);
+  // If no background chosen yet → pick; OR if 10 minutes passed → pick new
+  if (!currentBg || !lastChange || now - lastChange > CHANGE_INTERVAL) {
+    const newBg = pickRandomBackground();
+    localStorage.setItem("bg_current", newBg);
+    localStorage.setItem("bg_last_change", now);
+    applyBackground(newBg);
+  } else {
+    applyBackground(currentBg);
+  }
+}
+
+// Run on page load
+document.addEventListener("DOMContentLoaded", updateBackground);
+
+// Also check periodically (in case the user keeps one page open)
+setInterval(updateBackground, 10000); // check every 10 sec
