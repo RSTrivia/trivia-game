@@ -3,7 +3,7 @@
 // List your backgrounds
 const backgrounds = [
   "images/background.jpg",
-  "images/background2.jpg",
+  "images/background2.png",
   "images/background3.jpg"
 ];
 
