@@ -8,7 +8,7 @@ const backgrounds = [
 ];
 
 // Change interval in milliseconds (1 minute for testing)
-const CHANGE_INTERVAL = 60000;
+const CHANGE_INTERVAL = 600000;
 
 // Preload images for smoother transitions
 backgrounds.forEach(src => {
