@@ -2,9 +2,9 @@
 
 // Add your backgrounds here
 const backgrounds = [
-  "images/background.png",
-  "images/background2.jpg",
-  "images/background3.png"
+  "images/background.jpg",
+  "images/background2.png",
+  "images/background3.jpg"
 ];
 
 const CHANGE_INTERVAL = 60000; // 1 minute
