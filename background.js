@@ -1,24 +1,58 @@
-// === BACKGROUND ROTATION ===
+// === PERSISTENT BACKGROUND ROTATION WITH FADE & NO REPEATS ===
 
-// List your backgrounds
+// Add your backgrounds here
 const backgrounds = [
   "images/background.jpg",
-  "images/background2.png",
-  "images/background3.jpg"
+  "images/background2.jpg",
+  "images/background3.jpg",
+  "images/background4.jpg"
 ];
 
-// Change every 10 minutes
-const CHANGE_INTERVAL = 600000; // 10 min in ms
+// Time between background changes (10 minutes)
+const CHANGE_INTERVAL = 600000;
 
-function pickRandomBackground() {
-  return backgrounds[Math.floor(Math.random() * backgrounds.length)];
+// Create a fade overlay layer
+function createFadeLayer() {
+  const fadeLayer = document.createElement("div");
+  fadeLayer.id = "bg-fade-layer";
+  fadeLayer.style.position = "fixed";
+  fadeLayer.style.top = 0;
+  fadeLayer.style.left = 0;
+  fadeLayer.style.width = "100%";
+  fadeLayer.style.height = "100%";
+  fadeLayer.style.pointerEvents = "none";
+  fadeLayer.style.backgroundSize = "cover";
+  fadeLayer.style.backgroundPosition = "center";
+  fadeLayer.style.opacity = 0;
+  fadeLayer.style.transition = "opacity 1.5s ease";
+  fadeLayer.style.zIndex = "-1"; // behind everything
+  document.body.appendChild(fadeLayer);
 }
 
-function applyBackground(url) {
-  document.body.style.backgroundImage = `url('${url}')`;
-  document.body.style.backgroundSize = "cover";
-  document.body.style.backgroundPosition = "center";
-  document.body.style.backgroundRepeat = "no-repeat";
+function pickRandomBackground(exclude) {
+  let filtered = backgrounds.filter(bg => bg !== exclude);
+  return filtered[Math.floor(Math.random() * filtered.length)];
+}
+
+function applyBackground(newBg) {
+  const fadeLayer = document.getElementById("bg-fade-layer");
+
+  // Put new image on fade layer
+  fadeLayer.style.backgroundImage = `url('${newBg}')`;
+
+  // Fade in
+  fadeLayer.style.opacity = 1;
+
+  // After fade finishes, swap to body background
+  setTimeout(() => {
+    document.body.style.backgroundImage = `url('${newBg}')`;
+    document.body.style.backgroundSize = "cover";
+    document.body.style.backgroundPosition = "center";
+    document.body.style.backgroundRepeat = "no-repeat";
+
+    // Fade out the overlay
+    fadeLayer.style.opacity = 0;
+  }, 1500);
 }
 
 function updateBackground() {
@@ -26,19 +60,33 @@ function updateBackground() {
   const lastChange = localStorage.getItem("bg_last_change");
   const currentBg = localStorage.getItem("bg_current");
 
-  // If no background chosen yet → pick; OR if 10 minutes passed → pick new
-  if (!currentBg || !lastChange || now - lastChange > CHANGE_INTERVAL) {
-    const newBg = pickRandomBackground();
-    localStorage.setItem("bg_current", newBg);
+  // No background yet → choose one
+  if (!currentBg) {
+    const initial = pickRandomBackground(null);
+    localStorage.setItem("bg_current", initial);
     localStorage.setItem("bg_last_change", now);
-    applyBackground(newBg);
-  } else {
-    applyBackground(currentBg);
+    document.body.style.backgroundImage = `url('${initial}')`;
+    return;
   }
+
+  // Within allowed time → keep current
+  if (lastChange && now - lastChange < CHANGE_INTERVAL) {
+    document.body.style.backgroundImage = `url('${currentBg}')`;
+    return;
+  }
+
+  // Time to change → pick a new bg that is not the same as before
+  const newBg = pickRandomBackground(currentBg);
+  localStorage.setItem("bg_current", newBg);
+  localStorage.setItem("bg_last_change", now);
+
+  applyBackground(newBg);
 }
 
-// Run on page load
-document.addEventListener("DOMContentLoaded", updateBackground);
+document.addEventListener("DOMContentLoaded", () => {
+  createFadeLayer();
+  updateBackground();
+});
 
-// Also check periodically (in case the user keeps one page open)
-setInterval(updateBackground, 10000); // check every 10 sec
+// Check every 10 seconds if time expired
+setInterval(updateBackground, 10000);
