@@ -7,7 +7,7 @@ const backgrounds = [
   "images/background3.png"
 ];
 
-const CHANGE_INTERVAL = 600000; // 10 minutes
+const CHANGE_INTERVAL = 60000; // 1 minute
 
 function createFadeLayer() {
   const fadeLayer = document.createElement("div");
