@@ -103,5 +103,33 @@ async function fetchScores() {
 }
 
 fetchScores();
+</script>
 
+<!-- ✅ BACKGROUND ROTATION SCRIPT GOES HERE -->
+<script>
+// === BACKGROUND ROTATION ===
 
+// List your backgrounds
+const backgrounds = [
+  "images/background.png",
+  "images/background2.png",
+  "images/background3.png"
+];
+
+// Change every 10 minutes (600000 ms)
+const CHANGE_INTERVAL = 600000;
+
+function changeBackground() {
+  const random = Math.floor(Math.random() * backgrounds.length);
+  document.body.style.backgroundImage = `url('${backgrounds[random]}')`;
+}
+
+// Change immediately when page loads
+changeBackground();
+
+// Rotate every X minutes
+setInterval(changeBackground, CHANGE_INTERVAL);
+</script>
+
+</body>
+</html>
