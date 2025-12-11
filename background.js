@@ -2,10 +2,9 @@
 
 // Add your backgrounds here
 const backgrounds = [
-  "images/background.jpg",
+  "images/background.png",
   "images/background2.jpg",
-  "images/background3.jpg",
-  "images/background4.jpg"
+  "images/background3.png"
 ];
 
 // Time between background changes (10 minutes)
