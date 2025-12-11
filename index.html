@@ -1,135 +1,135 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>OSRS Trivia</title>
-
-<!-- Fancy OSRS title font -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leaderboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
-
-<link rel="stylesheet" href="style.css">
-
 <style>
-  h1 {
-    font-family: 'Cinzel', serif;
-    font-size: 3.2rem;
-    margin-bottom: 25px;
-    text-align: center;
-    letter-spacing: 2px;
-
-    /* Metallic gold gradient */
-    background: linear-gradient(145deg, #fff8dc 0%, #ffdd44 25%, #f2b705 50%, #c28f0c 75%, #a77b0a 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-
-    text-shadow: 0 0 4px rgba(0,0,0,0.8),
-                 1px 1px 0 #000,
-                 2px 2px 2px rgba(0,0,0,0.6),
-                 0 0 8px rgba(255, 223, 0, 0.8),
-                 0 -1px 2px rgba(255, 255, 255, 0.4);
-    filter: drop-shadow(0 0 10px rgba(255, 223, 0, 0.7));
-    -webkit-font-smoothing: antialiased;
-  }
-
-  /* OSRS title style for gz */
-  .osrs-title {
-    font-family: 'Cinzel', serif;
-    font-size: 3.2rem;
-    text-align: center;
-    letter-spacing: 2px;
-    background: linear-gradient(145deg, #fff8dc 0%, #ffdd44 25%, #f2b705 50%, #c28f0c 75%, #a77b0a 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 0 0 4px rgba(0,0,0,0.8),
-                 1px 1px 0 #000,
-                 2px 2px 2px rgba(0,0,0,0.6),
-                 0 0 8px rgba(255, 223, 0, 0.8),
-                 0 -1px 2px rgba(255, 255, 255, 0.4);
-    filter: drop-shadow(0 0 10px rgba(255, 223, 0, 0.7));
-    -webkit-font-smoothing: antialiased;
-  }
-
-  .container {
-    background-color: rgba(0,0,0,0.85);
-    padding: 20px;
-    border-radius: 10px;
-    max-width: 900px;
-    margin: 20px auto;
-    box-shadow: 0 0 30px rgba(0,0,0,0.5);
-    color: #fff;
-  }
-
-  #start-screen, #game, #end-screen { color: #fff; }
-
-  #questionImage {
-    max-width: 100%;
-    max-height: 300px;
-    margin: 10px 0;
-    display: none;
-    border-radius: 8px;
-  }
-
-  #questionText { font-size: 1.2rem; margin: 10px 0; }
-  #question { display: flex; flex-direction: column; align-items: center; }
-
-  .menu-row {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    margin-top: 12px;
-  }
-
-  .menu-row .btn-small { width: 48%; text-align: center; }
+    body {
+        font-family: Arial, sans-serif;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 40px;
+        margin: 0;
+        position: relative;
+    }
+    .leaderboard-container {
+        background-color: rgba(0, 0, 0, 0.8);
+        padding: 30px;
+        max-width: 600px;
+        width: 100%;
+        border-radius: 8px;
+        color: white;
+        text-align: center;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    }
+    h1 {
+        font-family: 'Cinzel', serif;
+        font-size: 42px;
+        margin-bottom: 20px;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+    table, th, td {
+        border: 1px solid #555;
+    }
+    th, td {
+        padding: 10px;
+        text-align: center;
+    }
+    th {
+        background-color: #333;
+        color: white;
+    }
+    tr:nth-child(even) {
+        background-color: #444;
+    }
 </style>
 </head>
 <body>
-<div class="container">
-  <h1>OSRS Trivia</h1>
-  <div id="userDisplay" style="margin-bottom: 20px; font-size: 1.2rem; color: #ffd700;"></div>
 
-  <!-- Game Screen -->
-  <div id="game" class="hidden">
-    <div id="score">Score: 0</div>
-    <div id="question">
-      <p id="questionText"></p>
-      <img id="questionImage" src="" alt="Question image">
-    </div>
-    <div id="answers"></div>
-    <div id="timer">Time: <span id="time">15</span>s</div>
-  </div>
-
-  <!-- Start Screen -->
-  <div id="start-screen">
-    <button id="startBtn" class="btn">Start Game</button>
-    <div class="menu-row">
-      <button id="authBtn" class="btn-small">Log In</button>
-      <a href="leaderboard.html" class="btn-small">View Leaderboard</a>
-    </div>
-  </div>
-
-<div id="end-screen" class="hidden">
-  <!-- Normal Game Over -->
-  <h2 id="game-over-title">Game Over!</h2>
-
-  <!-- "gz" OSRS-style, hidden by default -->
-  <h1 id="gz-title" class="osrs-title hidden">gz</h1>
-
-  <p>Your final score: <span id="finalScore"></span></p>
-  <button id="playAgainBtn" class="btn">Play Again</button>
-  <button id="mainMenuBtn" class="btn">Main Menu</button>
+<div class="leaderboard-container">
+    <h1>Leaderboard</h1>
+    <table id="leaderboardTable">
+        <tr>
+            <th>Rank</th>
+            <th>Name</th>
+            <th>Score</th>
+        </tr>
+    </table>
 </div>
 
-<!-- Scripts -->
-<script type="module" src="supabase.js"></script>
-<script type="module" src="app.js"></script>
+<script>
+// Fetch scores from Supabase
+async function fetchScores() {
+    const response = await fetch("https://nezrxqpporcepwlkvghp.supabase.co/rest/v1/leaderboard?select=name,score&order=score.desc", {
+        headers: {
+            "apikey": "YOUR_API_KEY",
+            "Authorization": "Bearer YOUR_API_KEY"
+        }
+    });
+
+    const data = await response.json();
+
+    const table = document.getElementById("leaderboardTable");
+
+    data.forEach((player, index) => {
+        const row = document.createElement("tr");
+
+        const rankCell = document.createElement("td");
+        rankCell.textContent = index + 1;
+
+        const nameCell = document.createElement("td");
+        nameCell.textContent = player.name;
+
+        const scoreCell = document.createElement("td");
+        scoreCell.textContent = player.score;
+
+        row.appendChild(rankCell);
+        row.appendChild(nameCell);
+        row.appendChild(scoreCell);
+
+        table.appendChild(row);
+    });
+}
+
+fetchScores();
+</script>
+
+<!-- ✅ BACKGROUND ROTATION SCRIPT GOES HERE -->
+<script>
+// === BACKGROUND ROTATION ===
+
+// List your backgrounds
+const backgrounds = [
+  "images/background.png",
+  "images/background2.png",
+  "images/background3.png"
+];
+
+// Change every 10 minutes (600000 ms)
+const CHANGE_INTERVAL = 600000;
+
+function changeBackground() {
+  const random = Math.floor(Math.random() * backgrounds.length);
+  document.body.style.backgroundImage = `url('${backgrounds[random]}')`;
+}
+
+// Change immediately when page loads
+changeBackground();
+
+// Rotate every X minutes
+setInterval(changeBackground, CHANGE_INTERVAL);
+</script>
+
 </body>
 </html>
-
-
-
-
-
-
-
-
