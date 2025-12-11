@@ -123,8 +123,37 @@
 <!-- Scripts -->
 <script type="module" src="supabase.js"></script>
 <script type="module" src="app.js"></script>
+
+<script>
+// === BACKGROUND ROTATION ===
+
+// List your backgrounds
+const backgrounds = [
+  "images/background.jpg",
+  "images/background2.jpg",
+  "images/background3.jpg"
+];
+
+// Change every 10 minutes (600000 ms)
+const CHANGE_INTERVAL = 600000;
+
+function changeBackground() {
+  const random = Math.floor(Math.random() * backgrounds.length);
+  document.body.style.backgroundImage = `url('${backgrounds[random]}')`;
+}
+
+// First background on page load
+changeBackground();
+
+// Rotate every X minutes
+setInterval(changeBackground, CHANGE_INTERVAL);
+</script>
+
+
+  
 </body>
 </html>
+
 
 
 
