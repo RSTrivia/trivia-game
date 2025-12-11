@@ -123,22 +123,24 @@ import { supabase } from './supabase.js';
 const leaderboardEl = document.getElementById('leaderboard');
 
 async function loadLeaderboard() {
+  leaderboardEl.innerHTML = '<li>Loading...</li>';
+
   const { data, error } = await supabase
     .from('public_leaderboard')
-    .select('*')
+    .select('username, score')
     .order('score', { ascending: false })
     .limit(10);
 
   if (error) {
-    console.error('Error loading leaderboard:', error);
+    leaderboardEl.innerHTML = '<li>Error loading leaderboard</li>';
+    console.error(error);
     return;
   }
 
-  let leaderboardData = data || [];
+  const leaderboardData = data || [];
 
-  // Fill up to 10 entries if less
   while (leaderboardData.length < 10) {
-    leaderboardData.push({ username: '', score: null }); // score null hides it
+    leaderboardData.push({ username: '', score: null });
   }
 
   leaderboardEl.innerHTML = '';
@@ -151,7 +153,6 @@ async function loadLeaderboard() {
     const posEmoji = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
     left.textContent = entry.username?.trim() ? `${posEmoji} ${entry.username}` : posEmoji;
 
-    // Only show score if it exists
     right.textContent = entry.score != null ? entry.score : '';
 
     if (i === 0) left.classList.add('top-1');
@@ -164,6 +165,7 @@ async function loadLeaderboard() {
   });
 }
 
+
 loadLeaderboard();
 </script>
   
@@ -171,6 +173,7 @@ loadLeaderboard();
 
 </body>
 </html>
+
 
 
 
