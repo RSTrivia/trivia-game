@@ -7,10 +7,8 @@ const backgrounds = [
   "images/background3.png"
 ];
 
-// Time between background changes (10 minutes)
-const CHANGE_INTERVAL = 600000;
+const CHANGE_INTERVAL = 600000; // 10 minutes
 
-// Create a fade overlay layer
 function createFadeLayer() {
   const fadeLayer = document.createElement("div");
   fadeLayer.id = "bg-fade-layer";
@@ -24,32 +22,22 @@ function createFadeLayer() {
   fadeLayer.style.backgroundPosition = "center";
   fadeLayer.style.opacity = 0;
   fadeLayer.style.transition = "opacity 1.5s ease";
-  fadeLayer.style.zIndex = "-1"; // behind everything
+  fadeLayer.style.zIndex = "-1"; 
   document.body.appendChild(fadeLayer);
 }
 
 function pickRandomBackground(exclude) {
-  let filtered = backgrounds.filter(bg => bg !== exclude);
+  const filtered = backgrounds.filter(bg => bg !== exclude);
   return filtered[Math.floor(Math.random() * filtered.length)];
 }
 
 function applyBackground(newBg) {
   const fadeLayer = document.getElementById("bg-fade-layer");
-
-  // Put new image on fade layer
   fadeLayer.style.backgroundImage = `url('${newBg}')`;
-
-  // Fade in
   fadeLayer.style.opacity = 1;
 
-  // After fade finishes, swap to body background
   setTimeout(() => {
     document.body.style.backgroundImage = `url('${newBg}')`;
-    document.body.style.backgroundSize = "cover";
-    document.body.style.backgroundPosition = "center";
-    document.body.style.backgroundRepeat = "no-repeat";
-
-    // Fade out the overlay
     fadeLayer.style.opacity = 0;
   }, 1500);
 }
@@ -59,7 +47,7 @@ function updateBackground() {
   const lastChange = localStorage.getItem("bg_last_change");
   const currentBg = localStorage.getItem("bg_current");
 
-  // No background yet → choose one
+  // If no background yet → pick one immediately
   if (!currentBg) {
     const initial = pickRandomBackground(null);
     localStorage.setItem("bg_current", initial);
@@ -68,18 +56,16 @@ function updateBackground() {
     return;
   }
 
-  // Within allowed time → keep current
-  if (lastChange && now - lastChange < CHANGE_INTERVAL) {
-    document.body.style.backgroundImage = `url('${currentBg}')`;
-    return;
+  // Apply the current background immediately (no jump)
+  document.body.style.backgroundImage = `url('${currentBg}')`;
+
+  // If 10 minutes elapsed → change with fade
+  if (!lastChange || now - lastChange >= CHANGE_INTERVAL) {
+    const newBg = pickRandomBackground(currentBg);
+    localStorage.setItem("bg_current", newBg);
+    localStorage.setItem("bg_last_change", now);
+    applyBackground(newBg);
   }
-
-  // Time to change → pick a new bg that is not the same as before
-  const newBg = pickRandomBackground(currentBg);
-  localStorage.setItem("bg_current", newBg);
-  localStorage.setItem("bg_last_change", now);
-
-  applyBackground(newBg);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -87,5 +73,5 @@ document.addEventListener("DOMContentLoaded", () => {
   updateBackground();
 });
 
-// Check every 10 seconds if time expired
+// Check every 10 seconds if time elapsed
 setInterval(updateBackground, 10000);
