@@ -123,8 +123,6 @@ import { supabase } from './supabase.js';
 const leaderboardEl = document.getElementById('leaderboard');
 
 async function loadLeaderboard() {
-  leaderboardEl.innerHTML = '<li>Loading...</li>';
-
   const { data, error } = await supabase
     .from('public_leaderboard')
     .select('username, score')
@@ -132,13 +130,13 @@ async function loadLeaderboard() {
     .limit(10);
 
   if (error) {
-    leaderboardEl.innerHTML = '<li>Error loading leaderboard</li>';
-    console.error(error);
+    console.error('Error loading leaderboard:', error);
     return;
   }
 
   const leaderboardData = data || [];
 
+  // Fill up to 10 entries if less
   while (leaderboardData.length < 10) {
     leaderboardData.push({ username: '', score: null });
   }
@@ -173,6 +171,7 @@ loadLeaderboard();
 
 </body>
 </html>
+
 
 
 
