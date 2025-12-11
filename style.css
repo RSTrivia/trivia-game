@@ -2,7 +2,7 @@
 body {
   font-family: Arial, sans-serif;
   /* ====== one background ====== */
-  background-image: url('images/background.jpg');
+  /* background-image: url('images/background.jpg');*/
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -320,6 +320,7 @@ h1 {
 #userDisplay {
   min-height: 24px; /* ~1 line of text */
 }
+
 
 
 
