@@ -38,7 +38,6 @@
     color: #fff;
     position: relative;
     z-index: 1;
-    visibility: hidden; /* Hide initially to prevent flash */
   }
 
   #questionImage { max-width: 100%; max-height: 300px; margin: 10px 0; display: none; border-radius: 8px; }
@@ -46,6 +45,18 @@
   #question { display: flex; flex-direction: column; align-items: center; }
   .menu-row { width: 100%; display: flex; justify-content: space-between; margin-top: 12px; }
   .menu-row .btn-small { width: 48%; text-align: center; }
+
+  /* ===== Fade in buttons ===== */
+  .container .btn,
+  .container .btn-small {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .container.ready .btn,
+  .container.ready .btn-small {
+    opacity: 1;
+  }
 </style>
 </head>
 <body>
@@ -100,9 +111,11 @@ if (currentBgImmediate) {
   document.body.style.backgroundRepeat = 'no-repeat';
 }
 
-// Reveal container after DOM and background ready to prevent flash
+// Fade in buttons after background is applied
 document.addEventListener("DOMContentLoaded", () => {
-  document.querySelector('.container').style.visibility = 'visible';
+  setTimeout(() => {
+    document.querySelector('.container').classList.add('ready');
+  }, 50); // small delay to ensure background applied first
 });
 </script>
 
