@@ -28,14 +28,19 @@
 <link rel="stylesheet" href="style.css">
 
 <style>
-  /* ====== BODY ====== */
+  /* ====== PAGE & BODY ====== */
   body {
-    margin: 0;
-    padding: 0;
     font-family: Arial, sans-serif;
+    /*background-image: url('images/background.jpg');*/
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+    margin: 0;
+    padding: 40px;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+    position: relative;
   }
 
   body::before {
@@ -48,43 +53,35 @@
   }
 
   .container {
-    max-width: 900px;
-    width: 100%;
-    padding: 20px;
-    margin: 20px auto;
     background-color: rgba(0,0,0,0.85);
-    border-radius: 10px;
-    box-shadow: 0 0 30px rgba(0,0,0,0.5);
-    position: relative;
+    padding: 20px;           /* same as main page */
+    border-radius: 10px;      /* same as main page */
+    max-width: 900px;         /* match main page width */
+    margin: 20px auto;        /* match main page vertical alignment */
+    color: #fff;
     z-index: 1;
-  
-    /* Fixed height to match main page */
-    min-height: 400px;       /* adjust to main page container height */
-    overflow-y: auto;        /* scroll if content too tall */
+    position: relative;
   }
 
 
-  /* ====== TITLE ====== */
   h1 {
     font-family: 'Cinzel', serif;
-    font-size: 3.2rem;
+    font-size: 2.5rem;
     margin-bottom: 25px;
     text-align: center;
     letter-spacing: 2px;
     background: linear-gradient(145deg, #fff8dc 0%, #ffdd44 25%, #f2b705 50%, #c28f0c 75%, #a77b0a 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    text-shadow:
-      0 0 4px rgba(0,0,0,0.8),
-      1px 1px 0 #000,
-      2px 2px 2px rgba(0,0,0,0.6),
-      0 0 8px rgba(255, 223, 0, 0.8),
-      0 -1px 2px rgba(255, 255, 255, 0.4);
+    text-shadow: 0 0 4px rgba(0,0,0,0.8),
+                 1px 1px 0 #000,
+                 2px 2px 2px rgba(0,0,0,0.6),
+                 0 0 8px rgba(255, 223, 0, 0.8),
+                 0 -1px 2px rgba(255, 255, 255, 0.4);
     filter: drop-shadow(0 0 10px rgba(255, 223, 0, 0.7));
     -webkit-font-smoothing: antialiased;
   }
 
-  /* ====== LEADERBOARD LIST ====== */
   #leaderboard {
     list-style: none;
     padding: 0;
@@ -94,8 +91,8 @@
   #leaderboard li {
     display: flex;
     justify-content: space-between;
-    padding: 10px;
-    background: rgba(50,50,50,0.8);
+    padding: 10px 12px;
+    background: rgba(50, 50, 50, 0.8);
     border-radius: 5px;
     margin-bottom: 6px;
     font-size: 1rem;
@@ -104,18 +101,17 @@
   }
 
   #leaderboard li:nth-child(odd) {
-    background: rgba(70,70,70,0.8);
+    background: rgba(70, 70, 70, 0.8);
   }
 
   #leaderboard li:hover {
-    background: rgba(100,100,100,0.9);
+    background: rgba(100, 100, 100, 0.9);
   }
 
   .top-1 { color: gold; font-weight: bold; }
   .top-2 { color: silver; font-weight: bold; }
   .top-3 { color: #cd7f32; font-weight: bold; }
 
-  /* ====== BUTTON ====== */
   a.btn-small {
     background: rgba(0,0,0,0.6);
     color: #ffd700;
@@ -136,7 +132,6 @@
 </style>
 </head>
 <body>
-
 <div class="container">
   <h1>Leaderboard</h1>
   <ul id="leaderboard"></ul>
@@ -155,7 +150,10 @@ async function loadLeaderboard() {
     .order('score', { ascending: false })
     .limit(10);
 
-  if (error) { console.error('Error loading leaderboard:', error); return; }
+  if (error) {
+    console.error('Error loading leaderboard:', error);
+    return;
+  }
 
   const leaderboardData = data || [];
 
@@ -171,8 +169,9 @@ async function loadLeaderboard() {
     const left = document.createElement('span');
     const right = document.createElement('span');
 
-    const posEmoji = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}.`;
+    const posEmoji = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
     left.textContent = entry.username?.trim() ? `${posEmoji} ${entry.username}` : posEmoji;
+
     right.textContent = entry.score != null ? entry.score : '';
 
     if (i === 0) left.classList.add('top-1');
@@ -187,9 +186,8 @@ async function loadLeaderboard() {
 
 loadLeaderboard();
 </script>
-
+  
 <script src="background.js"></script>
 
 </body>
 </html>
-
