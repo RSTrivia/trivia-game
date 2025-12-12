@@ -208,7 +208,7 @@ function updateScore() {
 // -------------------------
 // End Game & Submit Score
 // -------------------------
-async function endGame() {
+/*async function endGame() {
   clearInterval(timer);
   game.classList.add('hidden');
   endScreen.classList.remove('hidden');
@@ -233,9 +233,38 @@ async function endGame() {
   }
 
   await submitScore();
+}*/
+async function endGame() {
+  if (endGame.running) return;  // ⛔ prevents duplicate execution
+  endGame.running = true;
+
+  clearInterval(timer);
+  game.classList.add('hidden');
+  endScreen.classList.remove('hidden');
+
+  const gameOverTitle = document.getElementById('game-over-title');
+  const gzTitle = document.getElementById('gz-title');
+
+  finalScore.textContent = score;
+
+  if (score === questions.length && remainingQuestions.length === 0) {
+    // Player got all questions correct → show random gz message
+    const gzMessages = ['gz', 'go touch grass', 'see you in lumbridge'];
+    const randomMessage = gzMessages[Math.floor(Math.random() * gzMessages.length)];
+
+    gzTitle.textContent = randomMessage;
+    gzTitle.classList.remove('hidden');
+    gameOverTitle.classList.add('hidden');
+  } else {
+    // Player missed some → show normal Game Over
+    gzTitle.classList.add('hidden');
+    gameOverTitle.classList.remove('hidden');
+  }
+
+  await submitScore();
+
+  endGame.running = false; // reset flag
 }
-
-
 
 
 async function submitScore() {
@@ -315,6 +344,7 @@ function showEndScreen(score, totalQuestions) {
 // Init
 // -------------------------
 loadCurrentUser();
+
 
 
 
