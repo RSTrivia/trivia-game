@@ -10,6 +10,33 @@
 <link rel="stylesheet" href="style.css">
 
 <style>
+  /* Hide body until background is applied */
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+  }
+
+  /* Container */
+  .container {
+    background-color: rgba(0,0,0,0.85);
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 900px;
+    width: 100%;
+    margin: 20px auto;
+    box-shadow: 0 0 30px rgba(0,0,0,0.5);
+    color: #fff;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Title gradient */
   h1 {
     font-family: 'Cinzel', serif;
     font-size: 3.2rem;
@@ -27,51 +54,45 @@
     filter: drop-shadow(0 0 10px rgba(255, 223, 0, 0.7));
   }
 
-  /* Container always visible immediately */
-  .container {
-    background-color: rgba(0,0,0,0.85);
-    padding: 20px;
-    border-radius: 10px;
-    max-width: 900px;
-    margin: 20px auto;
-    box-shadow: 0 0 30px rgba(0,0,0,0.5);
-    color: #fff;
-    position: relative;
-    z-index: 1;
-    opacity: 1 !important;
-    transition: none !important;
-  }
-
   #questionImage { max-width: 100%; max-height: 300px; margin: 10px 0; border-radius: 8px; }
   #questionText { font-size: 1.2rem; margin: 10px 0; }
   #question { display: flex; flex-direction: column; align-items: center; }
+
   .menu-row { width: 100%; display: flex; justify-content: space-between; margin-top: 12px; }
   .menu-row .btn-small { width: 48%; text-align: center; }
 
-  /* Buttons always visible */
-  .btn, .btn-small {
-    opacity: 1 !important;
-    transition: none !important;
-  }
+  .btn, .btn-small { opacity: 1 !important; transition: none !important; }
 </style>
-</head>
-<body>
 
 <!-- Apply background immediately to prevent flash -->
 <script>
-  const currentBgImmediate = localStorage.getItem("bg_current");
-  if (currentBgImmediate) {
-    document.body.style.backgroundImage = `url('${currentBgImmediate}')`;
+  const bg = localStorage.getItem("bg_current");
+  if (bg) {
+    document.body.style.backgroundImage = `url('${bg}')`;
     document.body.style.backgroundSize = 'cover';
     document.body.style.backgroundPosition = 'center';
     document.body.style.backgroundRepeat = 'no-repeat';
-    window.bgAlreadySet = true; // prevent fade first load
+    window.bgAlreadySet = true;
   }
+  window.addEventListener('DOMContentLoaded', () => {
+    document.body.style.opacity = '1';
+  });
 </script>
+</head>
+<body>
 
 <div class="container">
   <h1>OSRS Trivia</h1>
   <div id="userDisplay" style="margin-bottom: 20px; font-size: 1.2rem; color: #ffd700;"></div>
+
+  <!-- Start Screen -->
+  <div id="start-screen">
+    <button id="startBtn" class="btn">Start Game</button>
+    <div class="menu-row">
+      <button id="authBtn" class="btn-small">Log In</button>
+      <a href="leaderboard.html" class="btn-small">View Leaderboard</a>
+    </div>
+  </div>
 
   <!-- Game Screen -->
   <div id="game" class="hidden">
@@ -84,15 +105,6 @@
     <div id="timer">Time: <span id="time">15</span>s</div>
   </div>
 
-  <!-- Start Screen -->
-  <div id="start-screen">
-    <button id="startBtn" class="btn">Start Game</button>
-    <div class="menu-row">
-      <button id="authBtn" class="btn-small">Log In</button>
-      <a href="leaderboard.html" class="btn-small">View Leaderboard</a>
-    </div>
-  </div>
-
   <!-- End Screen -->
   <div id="end-screen" class="hidden">
     <h2 id="game-over-title">Game Over!</h2>
@@ -103,7 +115,6 @@
   </div>
 </div>
 
-<!-- Scripts -->
 <script type="module" src="supabase.js"></script>
 <script type="module" src="app.js"></script>
 <script src="background.js"></script>
