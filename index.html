@@ -5,6 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>OSRS Trivia</title>
 
+<!-- INSTANT BACKGROUND FIX -->
+<script>
+  (function() {
+    const bg = localStorage.getItem("bg_current");
+    if (bg) {
+      const style = document.createElement("style");
+      style.innerHTML = `
+        body {
+          background-image: url('${bg}') !important;
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+  })();
+</script>
+
 <!-- Fancy OSRS title font -->
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
 
@@ -127,13 +146,3 @@
 <script src="background.js"></script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
