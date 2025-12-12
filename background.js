@@ -8,16 +8,21 @@ const backgrounds = [
   "images/background4.jpg"
 ];
 
-// Change interval in milliseconds (1 minute for testing)
+// Change interval in milliseconds (10 minutes)
 const CHANGE_INTERVAL = 600000;
 
-// Preload images for smoother transitions
+// Preload images for instant swaps (prevents flashing)
 backgrounds.forEach(src => {
   const img = new Image();
   img.src = src;
 });
 
-// Create fade layer on top of body
+// --- NEW: ensure body has instant fallback background (CSS covers flash) ---
+document.body.style.backgroundImage =
+  document.body.style.backgroundImage ||
+  "url('images/background.jpg')";
+
+// Create fade layer
 function createFadeLayer() {
   const fadeLayer = document.createElement("div");
   fadeLayer.id = "bg-fade-layer";
@@ -37,43 +42,56 @@ function createFadeLayer() {
   document.body.appendChild(fadeLayer);
 }
 
-// Pick a random background, excluding the current one
 function pickRandomBackground(exclude) {
   const filtered = backgrounds.filter(bg => bg !== exclude);
   return filtered[Math.floor(Math.random() * filtered.length)];
 }
 
-// Apply new background with fade
+// Apply new background with fade — ONLY after it is loaded (no flicker)
 function applyBackground(newBg) {
   const fadeLayer = document.getElementById("bg-fade-layer");
-  fadeLayer.style.backgroundImage = `url('${newBg}')`;
-  fadeLayer.style.opacity = 1;
 
-  setTimeout(() => {
-    document.body.style.backgroundImage = `url('${newBg}')`;
-    fadeLayer.style.opacity = 0;
-  }, 1500);
+  const img = new Image();
+  img.onload = () => {
+    fadeLayer.style.backgroundImage = `url('${newBg}')`;
+    fadeLayer.style.opacity = 1;
+
+    setTimeout(() => {
+      document.body.style.backgroundImage = `url('${newBg}')`;
+      fadeLayer.style.opacity = 0;
+    }, 1500);
+  };
+  img.src = newBg;
 }
 
-// Main function to update background
+// --- NEW: Make sure initial background loads WITHOUT flicker ---
+function applyInitialBackground(bg) {
+  const img = new Image();
+  img.onload = () => {
+    document.body.style.backgroundImage = `url('${bg}')`;
+  };
+  img.src = bg;
+}
+
+// Main update function
 function updateBackground() {
   const now = Date.now();
   const lastChange = localStorage.getItem("bg_last_change");
   const currentBg = localStorage.getItem("bg_current");
 
-  // First load: if no background, pick one
+  // First load
   if (!currentBg) {
     const initial = pickRandomBackground(null);
     localStorage.setItem("bg_current", initial);
     localStorage.setItem("bg_last_change", now);
-    document.body.style.backgroundImage = `url('${initial}')`;
+    applyInitialBackground(initial);
     return;
   }
 
-  // Ensure current background is applied immediately
-  document.body.style.backgroundImage = `url('${currentBg}')`;
+  // Apply instantly (but using pre-loaded logic)
+  applyInitialBackground(currentBg);
 
-  // Change only if interval elapsed
+  // Change only if interval passed
   if (!lastChange || now - lastChange >= CHANGE_INTERVAL) {
     const newBg = pickRandomBackground(currentBg);
     localStorage.setItem("bg_current", newBg);
@@ -82,17 +100,16 @@ function updateBackground() {
   }
 }
 
-// Immediately apply last background before DOM loads to prevent flash
+// Ensure last saved background applies instantly (prevents white flash)
 const currentBgImmediate = localStorage.getItem("bg_current");
 if (currentBgImmediate) {
   document.body.style.backgroundImage = `url('${currentBgImmediate}')`;
 }
 
-// Initialize
 document.addEventListener("DOMContentLoaded", () => {
   createFadeLayer();
   updateBackground();
 });
 
-// Periodically check every 10 seconds if it's time to change
+// Re-check every 10 seconds
 setInterval(updateBackground, 10000);
