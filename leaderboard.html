@@ -47,18 +47,22 @@
     z-index: 0;
   }
 
-  /* ====== CONTAINER (match main page) ====== */
   .container {
-    max-width: 900px;          /* same as main page */
+    max-width: 900px;
     width: 100%;
-    padding: 20px;             /* same as main page */
-    margin: 20px auto;         /* same top/bottom margin as main page */
+    padding: 20px;
+    margin: 20px auto;
     background-color: rgba(0,0,0,0.85);
     border-radius: 10px;
     box-shadow: 0 0 30px rgba(0,0,0,0.5);
     position: relative;
     z-index: 1;
+  
+    /* Fixed height to match main page */
+    min-height: 400px;       /* adjust to main page container height */
+    overflow-y: auto;        /* scroll if content too tall */
   }
+
 
   /* ====== TITLE ====== */
   h1 {
@@ -188,3 +192,4 @@ loadLeaderboard();
 
 </body>
 </html>
+
