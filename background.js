@@ -48,6 +48,14 @@ function pickRandomBackground(exclude) {
 // Apply new background with fade
 function applyBackground(newBg) {
   const fadeLayer = document.getElementById("bg-fade-layer");
+
+  // If first load (bgAlreadySet), apply instantly without fade
+  if (window.bgAlreadySet) {
+    document.body.style.backgroundImage = `url('${newBg}')`;
+    fadeLayer.style.opacity = 0;
+    return;
+  }
+
   fadeLayer.style.backgroundImage = `url('${newBg}')`;
   fadeLayer.style.opacity = 1;
 
@@ -68,8 +76,28 @@ function updateBackground(force = false) {
     const initial = pickRandomBackground(null);
     localStorage.setItem("bg_current", initial);
     localStorage.setItem("bg_last_change", now);
-    document.body.style.backgroundImage = `url('${initial}')`;
+    if (!window.bgAlreadySet) {
+      document.body.style.backgroundImage = `url('${initial}')`;
+    }
     return;
   }
 
-  // Ensure
+  // Check if interval passed
+  if (!force && lastChange && now - lastChange < CHANGE_INTERVAL) return;
+
+  const nextBg = pickRandomBackground(currentBg);
+  localStorage.setItem("bg_current", nextBg);
+  localStorage.setItem("bg_last_change", now);
+
+  createFadeLayer();
+  applyBackground(nextBg);
+}
+
+// Setup fade layer
+createFadeLayer();
+
+// Run update once immediately
+updateBackground();
+
+// Set interval for automatic rotation
+setInterval(() => updateBackground(), CHANGE_INTERVAL);
