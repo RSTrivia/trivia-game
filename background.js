@@ -67,11 +67,15 @@ function applyBackground(newBg, instant = false) {
 function initBackground() {
   const storedBg = localStorage.getItem("bg_current");
   const initialBg = storedBg || pickRandomBackground(null);
+
   localStorage.setItem("bg_current", initialBg);
   localStorage.setItem("bg_last_change", Date.now());
 
-  // Apply instantly on first load
-  applyBackground(initialBg, true);
+  // Only apply instantly if we haven’t applied yet on this page load
+  if (!window.bgAlreadySet) {
+    applyBackground(initialBg, true);
+    window.bgAlreadySet = true; // Prevents flashing when switching pages
+  }
 }
 
 // Rotate background after interval
@@ -81,12 +85,12 @@ function rotateBackground() {
   localStorage.setItem("bg_current", nextBg);
   localStorage.setItem("bg_last_change", Date.now());
 
-  // Apply with fade
+  // Fade only for automatic rotations
   applyBackground(nextBg);
 }
 
-// Run immediately
+// Run initialization immediately
 initBackground();
 
-// Set interval for rotation
+// Set interval for automatic rotation
 setInterval(rotateBackground, CHANGE_INTERVAL);
