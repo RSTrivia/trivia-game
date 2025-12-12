@@ -53,20 +53,18 @@
     background-color: rgba(0,0,0,0.85);
     padding: 20px;
     border-radius: 10px;
-    max-width: 900px;
-    width: 100%;
+    max-width: 700px; /* match main page */
+    width: 100%;      /* keeps responsive */
     margin: 20px auto;
     color: #fff;
     z-index: 1;
     position: relative;
     box-shadow: 0 0 30px rgba(0,0,0,0.5);
-  
-    /* FIXED height to match main menu */
-    height: 600px; /* adjust this value to match main page container height */
     
-    /* allow internal scroll if content is bigger */
+    height: 600px;    /* match main page height */
     overflow-y: auto;
   }
+
 
 
   /* ====== TITLE ====== */
@@ -194,4 +192,5 @@ loadLeaderboard();
 <script src="background.js"></script>
 </body>
 </html>
+
 
