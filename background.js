@@ -1,6 +1,6 @@
 // === PERSISTENT BACKGROUND ROTATION WITH FADE & NO REPEATS ===
 
-// List your backgrounds here
+// Add your backgrounds here
 const backgrounds = [
   "images/background.jpg",
   "images/background2.png",
@@ -8,22 +8,16 @@ const backgrounds = [
   "images/background4.jpg"
 ];
 
-// Rotation interval in milliseconds (10 minutes)
+// Rotation interval (10 minutes)
 const CHANGE_INTERVAL = 600000;
 
-// Preload all images for smooth transitions
+// Preload images
 backgrounds.forEach(src => {
   const img = new Image();
   img.src = src;
 });
 
-// Pick a random background, excluding the current one
-function pickRandomBackground(exclude) {
-  const filtered = backgrounds.filter(bg => bg !== exclude);
-  return filtered[Math.floor(Math.random() * filtered.length)];
-}
-
-// Create fade layer on top of body (only for later rotations)
+// Create fade layer for smooth transitions later
 function createFadeLayer() {
   if (!document.getElementById("bg-fade-layer")) {
     const fadeLayer = document.createElement("div");
@@ -44,74 +38,55 @@ function createFadeLayer() {
     document.body.appendChild(fadeLayer);
   }
 }
+createFadeLayer();
 
-// Apply a new background with fade (skip fade if first load)
-function applyBackground(newBg) {
-  const fadeLayer = document.getElementById("bg-fade-layer");
-
-  if (window.bgAlreadySet) {
-    // Apply instantly, no fade
-    document.body.style.backgroundImage = `url('${newBg}')`;
-    fadeLayer.style.opacity = 0;
-    return;
-  }
-
-  // Normal fade for future rotations
-  fadeLayer.style.backgroundImage = `url('${newBg}')`;
-  fadeLayer.style.opacity = 1;
-
-  setTimeout(() => {
-    document.body.style.backgroundImage = `url('${newBg}')`;
-    fadeLayer.style.opacity = 0;
-  }, 1500);
+// Pick a random background excluding current
+function pickRandomBackground(exclude) {
+  const filtered = backgrounds.filter(bg => bg !== exclude);
+  return filtered[Math.floor(Math.random() * filtered.length)];
 }
 
-// Main background update function
-function updateBackground(force = false) {
-  const now = Date.now();
-  const lastChange = localStorage.getItem("bg_last_change");
-  const currentBg = localStorage.getItem("bg_current");
+// Apply background instantly or with fade
+function applyBackground(newBg, instant = false) {
+  const fadeLayer = document.getElementById("bg-fade-layer");
 
-  // First load: pick one if none exists
-  if (!currentBg) {
-    const initial = pickRandomBackground(null);
-    localStorage.setItem("bg_current", initial);
-    localStorage.setItem("bg_last_change", now);
-    if (!window.bgAlreadySet) {
-      document.body.style.backgroundImage = `url('${initial}')`;
-    }
-    return;
+  if (instant) {
+    document.body.style.backgroundImage = `url('${newBg}')`;
+    fadeLayer.style.opacity = 0;
+  } else {
+    fadeLayer.style.backgroundImage = `url('${newBg}')`;
+    fadeLayer.style.opacity = 1;
+    setTimeout(() => {
+      document.body.style.backgroundImage = `url('${newBg}')`;
+      fadeLayer.style.opacity = 0;
+    }, 1500);
   }
+}
 
-  // Skip if interval hasn't passed
-  if (!force && lastChange && now - lastChange < CHANGE_INTERVAL) return;
+// Initialize background
+function initBackground() {
+  const storedBg = localStorage.getItem("bg_current");
+  const initialBg = storedBg || pickRandomBackground(null);
+  localStorage.setItem("bg_current", initialBg);
+  localStorage.setItem("bg_last_change", Date.now());
 
+  // Apply instantly on first load
+  applyBackground(initialBg, true);
+}
+
+// Rotate background after interval
+function rotateBackground() {
+  const currentBg = localStorage.getItem("bg_current");
   const nextBg = pickRandomBackground(currentBg);
   localStorage.setItem("bg_current", nextBg);
-  localStorage.setItem("bg_last_change", now);
+  localStorage.setItem("bg_last_change", Date.now());
 
+  // Apply with fade
   applyBackground(nextBg);
 }
 
-// ==========================
-// INITIAL SETUP
-// ==========================
+// Run immediately
+initBackground();
 
-// Immediately apply last background (before fade layer exists)
-const currentBgImmediate = localStorage.getItem("bg_current");
-if (currentBgImmediate) {
-  document.body.style.backgroundImage = `url('${currentBgImmediate}')`;
-  document.body.style.backgroundSize = 'cover';
-  document.body.style.backgroundPosition = 'center';
-  document.body.style.backgroundRepeat = 'no-repeat';
-  window.bgAlreadySet = true; // prevent fade on first load
-}
-
-// Now create the fade layer for future rotations
-createFadeLayer();
-
-// Delay first update slightly to ensure first paint is stable
-setTimeout(() => {
-  updateBackground();
-  setInterval(() => updateBackground(), CHANGE_INTERVAL);
-}, 500); // 0.5s delay is enough
+// Set interval for rotation
+setInterval(rotateBackground, CHANGE_INTERVAL);
