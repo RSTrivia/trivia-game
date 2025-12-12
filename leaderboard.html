@@ -49,19 +49,25 @@
     z-index: 0;
   }
 
-  /* ====== CONTAINER ====== */
   .container {
     background-color: rgba(0,0,0,0.85);
-    padding: 20px;        /* same as main page */
+    padding: 20px;
     border-radius: 10px;
-    max-width: 900px;      /* same width as main page */
+    max-width: 900px;
     width: 100%;
-    margin: 20px auto;     /* top margin same as main page */
+    margin: 20px auto;
     color: #fff;
     z-index: 1;
     position: relative;
-    box-shadow: 0 0 30px rgba(0,0,0,0.5); /* same as main page */
+    box-shadow: 0 0 30px rgba(0,0,0,0.5);
+  
+    /* FIXED height to match main menu */
+    height: 600px; /* adjust this value to match main page container height */
+    
+    /* allow internal scroll if content is bigger */
+    overflow-y: auto;
   }
+
 
   /* ====== TITLE ====== */
   h1 {
@@ -188,3 +194,4 @@ loadLeaderboard();
 <script src="background.js"></script>
 </body>
 </html>
+
