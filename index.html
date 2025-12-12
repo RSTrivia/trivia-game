@@ -89,21 +89,25 @@
 <!-- Scripts -->
 <script type="module" src="supabase.js"></script>
 <script type="module" src="app.js"></script>
-<script src="background.js"></script>
+
 
 <script>
 // Immediately apply last background for instant load
 const currentBgImmediate = localStorage.getItem("bg_current");
 if (currentBgImmediate) {
+  // Apply instantly
   document.body.style.backgroundImage = `url('${currentBgImmediate}')`;
   document.body.style.backgroundSize = 'cover';
   document.body.style.backgroundPosition = 'center';
   document.body.style.backgroundRepeat = 'no-repeat';
+
+  // Flag so background.js knows not to fade on first load
+  window.bgAlreadySet = true;
 }
-
-// Make container and buttons visible immediately
-document.querySelector('.container').classList.add('ready');
 </script>
-
+  
+<script src="background.js"></script>
+  
 </body>
 </html>
+
