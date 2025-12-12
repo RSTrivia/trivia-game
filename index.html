@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>OSRS Trivia</title>
 
-<!-- OSRS title font -->
+<!-- OSRS Title Font -->
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 
@@ -25,10 +25,9 @@
                  0 0 8px rgba(255, 223, 0, 0.8),
                  0 -1px 2px rgba(255, 255, 255, 0.4);
     filter: drop-shadow(0 0 10px rgba(255, 223, 0, 0.7));
-    -webkit-font-smoothing: antialiased;
   }
 
-  /* Container is always visible */
+  /* Container always visible immediately */
   .container {
     background-color: rgba(0,0,0,0.85);
     padding: 20px;
@@ -39,8 +38,6 @@
     color: #fff;
     position: relative;
     z-index: 1;
-
-    /* force visible immediately */
     opacity: 1 !important;
     transition: none !important;
   }
@@ -59,6 +56,18 @@
 </style>
 </head>
 <body>
+
+<!-- Apply background immediately to prevent flash -->
+<script>
+  const currentBgImmediate = localStorage.getItem("bg_current");
+  if (currentBgImmediate) {
+    document.body.style.backgroundImage = `url('${currentBgImmediate}')`;
+    document.body.style.backgroundSize = 'cover';
+    document.body.style.backgroundPosition = 'center';
+    document.body.style.backgroundRepeat = 'no-repeat';
+    window.bgAlreadySet = true; // prevent fade first load
+  }
+</script>
 
 <div class="container">
   <h1>OSRS Trivia</h1>
@@ -97,22 +106,6 @@
 <!-- Scripts -->
 <script type="module" src="supabase.js"></script>
 <script type="module" src="app.js"></script>
-
-<script>
-  // Apply last background immediately to prevent flash
-  const currentBgImmediate = localStorage.getItem("bg_current");
-  if (currentBgImmediate) {
-    document.body.style.backgroundImage = `url('${currentBgImmediate}')`;
-    document.body.style.backgroundSize = 'cover';
-    document.body.style.backgroundPosition = 'center';
-    document.body.style.backgroundRepeat = 'no-repeat';
-
-    // Flag so background.js does not fade on first load
-    window.bgAlreadySet = true;
-  }
-</script>
-
 <script src="background.js"></script>
-
 </body>
 </html>
