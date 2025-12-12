@@ -108,7 +108,18 @@
 </style>
 </head>
 <body>
-
+  
+<script>
+  // Immediately apply last background before DOM loads
+  const currentBgImmediate = localStorage.getItem("bg_current");
+  if (currentBgImmediate) {
+    document.body.style.backgroundImage = `url('${currentBgImmediate}')`;
+    document.body.style.backgroundSize = 'cover';
+    document.body.style.backgroundPosition = 'center';
+    document.body.style.backgroundRepeat = 'no-repeat';
+  }
+</script>
+  
 <div class="container">
   <h1>OSRS Trivia</h1>
 
@@ -170,3 +181,4 @@ loginBtn.addEventListener('click', async () => {
 
 </body>
 </html>
+
