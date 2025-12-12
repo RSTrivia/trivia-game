@@ -5,45 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OSRS Trivia Login / Sign Up</title>
 
-<!-- Fancy OSRS title font -->
+<!-- OSRS title font -->
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
 
 <link rel="stylesheet" href="style.css">
 
 <style>
-  /* ====== BODY & BACKGROUND ====== */
-  body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 40px;
-    min-height: 100vh;
-    position: relative;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-  }
-
-  body::before {
-    content: "";
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.3);
-    z-index: 0;
-  }
-
-  .container {
-    background-color: rgba(0, 0, 0, 0.85);
-    padding: 20px;
-    border-radius: 10px;
-    max-width: 900px;
-    margin: 0 auto;       /* horizontally centered */
-    box-shadow: 0 0 30px rgba(0,0,0,0.5);
-    color: #fff;
-    position: relative;
-    z-index: 1;
-  }
-
+  /* ====== OSRS Title ====== */
   h1 {
     font-family: 'Cinzel', serif;
     font-size: 3.2rem;
@@ -63,6 +31,20 @@
     -webkit-font-smoothing: antialiased;
   }
 
+  /* ====== Container ====== */
+  .container {
+    background-color: rgba(0, 0, 0, 0.85);
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 900px;
+    margin: 40px auto 0 auto; /* top margin to not overlap background */
+    box-shadow: 0 0 30px rgba(0,0,0,0.5);
+    color: #fff;
+    z-index: 1;
+    position: relative;
+  }
+
+  /* ====== Inputs ====== */
   #username, #password {
     display: block;
     width: 100%;
@@ -74,6 +56,7 @@
     box-sizing: border-box;
   }
 
+  /* ====== Button Rows ====== */
   .btn-row {
     display: flex;
     justify-content: space-between;
@@ -148,6 +131,7 @@ const passwordInput = document.getElementById('password');
 const loginBtn = document.getElementById('loginBtn');
 const signupBtn = document.getElementById('signupBtn');
 
+// SIGN UP
 signupBtn.addEventListener('click', async () => {
   const username = usernameInput.value.trim();
   const password = passwordInput.value;
@@ -166,6 +150,7 @@ signupBtn.addEventListener('click', async () => {
   alert('Account created! You can now log in.');
 });
 
+// LOGIN
 loginBtn.addEventListener('click', async () => {
   const username = usernameInput.value.trim();
   const password = passwordInput.value;
