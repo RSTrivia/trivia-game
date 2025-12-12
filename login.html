@@ -3,15 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OSRS Trivia Login / Sign Up</title>
+<title>OSRS Trivia Login</title>
 
-<!-- OSRS title font -->
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
-
 <link rel="stylesheet" href="style.css">
 
 <style>
-  /* ====== OSRS Title ====== */
   h1 {
     font-family: 'Cinzel', serif;
     font-size: 3.2rem;
@@ -28,23 +25,20 @@
       0 0 8px rgba(255, 223, 0, 0.8),
       0 -1px 2px rgba(255, 255, 255, 0.4);
     filter: drop-shadow(0 0 10px rgba(255, 223, 0, 0.7));
-    -webkit-font-smoothing: antialiased;
   }
 
-  /* ====== Container ====== */
   .container {
     background-color: rgba(0, 0, 0, 0.85);
     padding: 20px;
     border-radius: 10px;
     max-width: 900px;
-    margin: 40px auto 0 auto; /* top margin to not overlap background */
+    margin: 40px auto;
     box-shadow: 0 0 30px rgba(0,0,0,0.5);
     color: #fff;
     z-index: 1;
     position: relative;
   }
 
-  /* ====== Inputs ====== */
   #username, #password {
     display: block;
     width: 100%;
@@ -56,7 +50,6 @@
     box-sizing: border-box;
   }
 
-  /* ====== Button Rows ====== */
   .btn-row {
     display: flex;
     justify-content: space-between;
@@ -108,18 +101,19 @@
 </style>
 </head>
 <body>
-  
+
+<!-- Apply background immediately to prevent flash -->
 <script>
-  // Immediately apply last background before DOM loads
   const currentBgImmediate = localStorage.getItem("bg_current");
   if (currentBgImmediate) {
     document.body.style.backgroundImage = `url('${currentBgImmediate}')`;
     document.body.style.backgroundSize = 'cover';
     document.body.style.backgroundPosition = 'center';
     document.body.style.backgroundRepeat = 'no-repeat';
+    window.bgAlreadySet = true; // prevent fade first load
   }
 </script>
-  
+
 <div class="container">
   <h1>OSRS Trivia</h1>
 
@@ -142,43 +136,33 @@ const passwordInput = document.getElementById('password');
 const loginBtn = document.getElementById('loginBtn');
 const signupBtn = document.getElementById('signupBtn');
 
-// SIGN UP
 signupBtn.addEventListener('click', async () => {
   const username = usernameInput.value.trim();
   const password = passwordInput.value;
   if (!username || !password) { alert('Enter a username and password'); return; }
-
   const email = username.toLowerCase() + '@example.com';
-  const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
-  if (signUpError) { alert('Sign-up failed: ' + signUpError.message); return; }
-
-  const user = signUpData.user;
+  const { data, error } = await supabase.auth.signUp({ email, password });
+  if (error) { alert('Sign-up failed: ' + error.message); return; }
+  const user = data.user;
   if (!user) { alert('Sign-up failed: no user returned'); return; }
-
   const { error: profileError } = await supabase.from('profiles').insert({ id: user.id, username });
   if (profileError) { alert('Profile creation failed: ' + profileError.message); return; }
-
   alert('Account created! You can now log in.');
 });
 
-// LOGIN
 loginBtn.addEventListener('click', async () => {
   const username = usernameInput.value.trim();
   const password = passwordInput.value;
   if (!username || !password) { alert('Enter a username and password'); return; }
-
   const email = username.toLowerCase() + '@example.com';
-  const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({ email, password });
-  if (loginError) { alert('Login failed: ' + loginError.message); return; }
-  if (!loginData.user) { alert('Login failed: no user returned'); return; }
-
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) { alert('Login failed: ' + error.message); return; }
+  if (!data.user) { alert('Login failed: no user returned'); return; }
   window.location.href = 'index.html';
 });
 </script>
 
-<!-- Background script -->
 <script src="background.js"></script>
 
 </body>
 </html>
-
