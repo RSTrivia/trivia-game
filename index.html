@@ -5,25 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>OSRS Trivia</title>
 
-<!-- INSTANT BACKGROUND FIX -->
-<script>
-  (function() {
-    const bg = localStorage.getItem("bg_current");
-    if (bg) {
-      const style = document.createElement("style");
-      style.innerHTML = `
-        body {
-          background-image: url('${bg}') !important;
-          background-size: cover;
-          background-position: center;
-          background-repeat: no-repeat;
-        }
-      `;
-      document.head.appendChild(style);
-    }
-  })();
-</script>
-
 <!-- Fancy OSRS title font -->
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
 
@@ -37,29 +18,10 @@
     text-align: center;
     letter-spacing: 2px;
 
-    /* Metallic gold gradient */
     background: linear-gradient(145deg, #fff8dc 0%, #ffdd44 25%, #f2b705 50%, #c28f0c 75%, #a77b0a 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 
-    text-shadow: 0 0 4px rgba(0,0,0,0.8),
-                 1px 1px 0 #000,
-                 2px 2px 2px rgba(0,0,0,0.6),
-                 0 0 8px rgba(255, 223, 0, 0.8),
-                 0 -1px 2px rgba(255, 255, 255, 0.4);
-    filter: drop-shadow(0 0 10px rgba(255, 223, 0, 0.7));
-    -webkit-font-smoothing: antialiased;
-  }
-
-  /* OSRS title style for gz */
-  .osrs-title {
-    font-family: 'Cinzel', serif;
-    font-size: 3.2rem;
-    text-align: center;
-    letter-spacing: 2px;
-    background: linear-gradient(145deg, #fff8dc 0%, #ffdd44 25%, #f2b705 50%, #c28f0c 75%, #a77b0a 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
     text-shadow: 0 0 4px rgba(0,0,0,0.8),
                  1px 1px 0 #000,
                  2px 2px 2px rgba(0,0,0,0.6),
@@ -77,32 +39,30 @@
     margin: 20px auto;
     box-shadow: 0 0 30px rgba(0,0,0,0.5);
     color: #fff;
+    position: relative;
+    z-index: 1;
+
+    /* start invisible, fade in */
+    opacity: 0;
+    transition: opacity 0.5s ease;
   }
 
-  #start-screen, #game, #end-screen { color: #fff; }
-
-  #questionImage {
-    max-width: 100%;
-    max-height: 300px;
-    margin: 10px 0;
-    display: none;
-    border-radius: 8px;
-  }
-
-  #questionText { font-size: 1.2rem; margin: 10px 0; }
-  #question { display: flex; flex-direction: column; align-items: center; }
-
-  .menu-row {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    margin-top: 12px;
-  }
-
-  .menu-row .btn-small { width: 48%; text-align: center; }
+  /* ...keep your existing styles for #questionImage, #questionText, buttons, etc. */
 </style>
 </head>
 <body>
+
+<!-- Immediately apply last background before DOM renders to prevent flash -->
+<script>
+const currentBgImmediate = localStorage.getItem("bg_current");
+if (currentBgImmediate) {
+  document.body.style.backgroundImage = `url('${currentBgImmediate}')`;
+  document.body.style.backgroundSize = 'cover';
+  document.body.style.backgroundPosition = 'center';
+  document.body.style.backgroundRepeat = 'no-repeat';
+}
+</script>
+
 <div class="container">
   <h1>OSRS Trivia</h1>
   <div id="userDisplay" style="margin-bottom: 20px; font-size: 1.2rem; color: #ffd700;"></div>
@@ -127,22 +87,29 @@
     </div>
   </div>
 
-<div id="end-screen" class="hidden">
-  <!-- Normal Game Over -->
-  <h2 id="game-over-title">Game Over!</h2>
-
-  <!-- "gz" OSRS-style, hidden by default -->
-  <h1 id="gz-title" class="osrs-title hidden">gz</h1>
-
-  <p>Your final score: <span id="finalScore"></span></p>
-  <button id="playAgainBtn" class="btn">Play Again</button>
-  <button id="mainMenuBtn" class="btn">Main Menu</button>
+  <!-- End Screen -->
+  <div id="end-screen" class="hidden">
+    <h2 id="game-over-title">Game Over!</h2>
+    <h1 id="gz-title" class="osrs-title hidden">gz</h1>
+    <p>Your final score: <span id="finalScore"></span></p>
+    <button id="playAgainBtn" class="btn">Play Again</button>
+    <button id="mainMenuBtn" class="btn">Main Menu</button>
+  </div>
 </div>
 
 <!-- Scripts -->
 <script type="module" src="supabase.js"></script>
 <script type="module" src="app.js"></script>
-  
 <script src="background.js"></script>
+
+<!-- Fade in container once DOM & background are ready -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const container = document.querySelector(".container");
+  // small delay to ensure background loads
+  setTimeout(() => container.style.opacity = 1, 50);
+});
+</script>
+
 </body>
 </html>
