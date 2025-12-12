@@ -1,6 +1,6 @@
 // === PERSISTENT BACKGROUND ROTATION WITH FADE & NO REPEATS ===
 
-// Add your backgrounds here
+// Backgrounds
 const backgrounds = [
   "images/background.jpg",
   "images/background2.png",
@@ -8,10 +8,9 @@ const backgrounds = [
   "images/background4.jpg"
 ];
 
-// Change interval in milliseconds (10 minutes)
-const CHANGE_INTERVAL = 600000;
+const CHANGE_INTERVAL = 600000; // 10 minutes
 
-// Preload images for smoother transitions
+// Preload images for smooth fade
 backgrounds.forEach(src => new Image().src = src);
 
 // Create fade layer (behind all content)
@@ -36,24 +35,24 @@ function createFadeLayer() {
   }
 }
 
-// Pick a random background excluding the current one
+// Pick a random background excluding current
 function pickRandomBackground(exclude) {
   const filtered = backgrounds.filter(bg => bg !== exclude);
   return filtered[Math.floor(Math.random() * filtered.length)];
 }
 
-// Apply a background (faded if not first load)
+// Apply background (faded if not first load)
 function applyBackground(newBg) {
   const fadeLayer = document.getElementById("bg-fade-layer");
 
-  // If first load, apply instantly without fade
+  // First load → no fade
   if (window.bgAlreadySet) {
     document.body.style.backgroundImage = `url('${newBg}')`;
     fadeLayer.style.opacity = 0;
     return;
   }
 
-  // Normal fade for later rotations
+  // Fade transition
   fadeLayer.style.backgroundImage = `url('${newBg}')`;
   fadeLayer.style.opacity = 1;
 
@@ -63,13 +62,12 @@ function applyBackground(newBg) {
   }, 1500);
 }
 
-// Update background (either forced or interval)
+// Update background (forced or interval)
 function updateBackground(force = false) {
   const now = Date.now();
   const lastChange = localStorage.getItem("bg_last_change");
   const currentBg = localStorage.getItem("bg_current");
 
-  // First load: pick a background if none exists
   if (!currentBg) {
     const initial = pickRandomBackground(null);
     localStorage.setItem("bg_current", initial);
@@ -80,7 +78,6 @@ function updateBackground(force = false) {
     return;
   }
 
-  // If interval not passed and not forced, do nothing
   if (!force && lastChange && now - lastChange < CHANGE_INTERVAL) return;
 
   const nextBg = pickRandomBackground(currentBg);
