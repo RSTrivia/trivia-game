@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>OSRS Trivia</title>
 
-<!-- Fancy OSRS title font -->
+<!-- OSRS title font -->
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 
@@ -40,23 +40,15 @@
     z-index: 1;
   }
 
-  #questionImage { max-width: 100%; max-height: 300px; margin: 10px 0; display: none; border-radius: 8px; }
+  #questionImage { max-width: 100%; max-height: 300px; margin: 10px 0; border-radius: 8px; }
   #questionText { font-size: 1.2rem; margin: 10px 0; }
   #question { display: flex; flex-direction: column; align-items: center; }
   .menu-row { width: 100%; display: flex; justify-content: space-between; margin-top: 12px; }
   .menu-row .btn-small { width: 48%; text-align: center; }
 
-  /* ===== Fade in buttons ===== */
-  .container .btn,
-  .container .btn-small {
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  .container.ready .btn,
-  .container.ready .btn-small {
-    opacity: 1;
-  }
+  /* Ensure container and buttons are visible immediately */
+  .container { opacity: 1 !important; transition: none !important; }
+  .btn, .btn-small { opacity: 1 !important; transition: none !important; }
 </style>
 </head>
 <body>
@@ -97,8 +89,6 @@
 <!-- Scripts -->
 <script type="module" src="supabase.js"></script>
 <script type="module" src="app.js"></script>
-
-<!-- Background script -->
 <script src="background.js"></script>
 
 <script>
@@ -111,12 +101,8 @@ if (currentBgImmediate) {
   document.body.style.backgroundRepeat = 'no-repeat';
 }
 
-// Fade in buttons after background is applied
-document.addEventListener("DOMContentLoaded", () => {
-  setTimeout(() => {
-    document.querySelector('.container').classList.add('ready');
-  }, 50); // small delay to ensure background applied first
-});
+// Make container and buttons visible immediately
+document.querySelector('.container').classList.add('ready');
 </script>
 
 </body>
