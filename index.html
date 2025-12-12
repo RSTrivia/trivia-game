@@ -5,63 +5,104 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>OSRS Trivia</title>
 
-<!-- Fancy OSRS title font -->
+<!-- OSRS title font -->
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
 
 <link rel="stylesheet" href="style.css">
 
 <style>
-  h1 {
-    font-family: 'Cinzel', serif;
-    font-size: 3.2rem;
-    margin-bottom: 25px;
-    text-align: center;
-    letter-spacing: 2px;
+/* ===== TITLE ===== */
+h1 {
+  font-family: 'Cinzel', serif;
+  font-size: 3.2rem;
+  margin-bottom: 25px;
+  text-align: center;
+  letter-spacing: 2px;
+  background: linear-gradient(145deg, #fff8dc 0%, #ffdd44 25%, #f2b705 50%, #c28f0c 75%, #a77b0a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 4px rgba(0,0,0,0.8),
+               1px 1px 0 #000,
+               2px 2px 2px rgba(0,0,0,0.6),
+               0 0 8px rgba(255, 223, 0, 0.8),
+               0 -1px 2px rgba(255, 255, 255, 0.4);
+  filter: drop-shadow(0 0 10px rgba(255, 223, 0, 0.7));
+  -webkit-font-smoothing: antialiased;
+}
 
-    background: linear-gradient(145deg, #fff8dc 0%, #ffdd44 25%, #f2b705 50%, #c28f0c 75%, #a77b0a 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+/* ===== CONTAINER ===== */
+.container {
+  background-color: rgba(0,0,0,0.85);
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 900px;
+  margin: 20px auto;
+  box-shadow: 0 0 30px rgba(0,0,0,0.5);
+  color: #fff;
+  position: relative;
+  z-index: 1;
+}
 
-    text-shadow: 0 0 4px rgba(0,0,0,0.8),
-                 1px 1px 0 #000,
-                 2px 2px 2px rgba(0,0,0,0.6),
-                 0 0 8px rgba(255, 223, 0, 0.8),
-                 0 -1px 2px rgba(255, 255, 255, 0.4);
-    filter: drop-shadow(0 0 10px rgba(255, 223, 0, 0.7));
-    -webkit-font-smoothing: antialiased;
-  }
+/* ===== BUTTONS ===== */
+.btn, .btn-small {
+  background: rgba(0,0,0,0.6);
+  color: #ffd700;
+  border: 2px solid #ffd700;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 1.1rem;
+  text-align: center;
+  display: block;
+  width: 100%;
+  margin: 8px 0;
+  cursor: pointer;
+  transition: 0.2s;
+  text-decoration: none;
+}
 
-  .container {
-    background-color: rgba(0,0,0,0.85);
-    padding: 20px;
-    border-radius: 10px;
-    max-width: 900px;
-    margin: 20px auto;
-    box-shadow: 0 0 30px rgba(0,0,0,0.5);
-    color: #fff;
-    position: relative;
-    z-index: 1;
+.btn:hover, .btn-small:hover {
+  background: rgba(0,0,0,0.85);
+  border-color: #ffea8a;
+}
 
-    /* start invisible, fade in */
-    opacity: 0;
-    transition: opacity 0.5s ease;
-  }
+/* ===== MENU ROW ===== */
+.menu-row {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  margin-top: 10px;
+}
 
-  /* ...keep your existing styles for #questionImage, #questionText, buttons, etc. */
+.menu-row .btn-small {
+  flex: 1;
+}
+
+/* ===== QUESTION / GAME AREA ===== */
+#questionImage {
+  max-width: 100%;
+  max-height: 300px;
+  margin: 10px 0;
+  display: none;
+  border-radius: 8px;
+}
+
+#questionText {
+  font-size: 1.2rem;
+  margin: 10px 0;
+}
+
+#question {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hidden { display: none; }
+.correct { background-color: #4caf50 !important; color: white; }
+.wrong { background-color: #f44336 !important; color: white; }
 </style>
 </head>
 <body>
-
-<!-- Immediately apply last background before DOM renders to prevent flash -->
-<script>
-const currentBgImmediate = localStorage.getItem("bg_current");
-if (currentBgImmediate) {
-  document.body.style.backgroundImage = `url('${currentBgImmediate}')`;
-  document.body.style.backgroundSize = 'cover';
-  document.body.style.backgroundPosition = 'center';
-  document.body.style.backgroundRepeat = 'no-repeat';
-}
-</script>
 
 <div class="container">
   <h1>OSRS Trivia</h1>
@@ -100,16 +141,9 @@ if (currentBgImmediate) {
 <!-- Scripts -->
 <script type="module" src="supabase.js"></script>
 <script type="module" src="app.js"></script>
-<script src="background.js"></script>
 
-<!-- Fade in container once DOM & background are ready -->
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const container = document.querySelector(".container");
-  // small delay to ensure background loads
-  setTimeout(() => container.style.opacity = 1, 50);
-});
-</script>
+<!-- Background script -->
+<script src="background.js"></script>
 
 </body>
 </html>
