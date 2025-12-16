@@ -27,7 +27,6 @@
     filter: drop-shadow(0 0 10px rgba(255, 223, 0, 0.7));
   }
 
-  /* Container always visible immediately */
   .container {
     background-color: rgba(0,0,0,0.85);
     padding: 20px;
@@ -48,7 +47,6 @@
   .menu-row { width: 100%; display: flex; justify-content: space-between; margin-top: 12px; }
   .menu-row .btn-small { width: 48%; text-align: center; }
 
-  /* Buttons always visible */
   .btn, .btn-small {
     opacity: 1 !important;
     transition: none !important;
@@ -65,7 +63,7 @@
     document.body.style.backgroundSize = 'cover';
     document.body.style.backgroundPosition = 'center';
     document.body.style.backgroundRepeat = 'no-repeat';
-    window.bgAlreadySet = true; // prevent fade first load
+    window.bgAlreadySet = true;
   }
 </script>
 
@@ -107,5 +105,35 @@
 <script type="module" src="supabase.js"></script>
 <script type="module" src="app.js"></script>
 <script src="background.js"></script>
+
+<!-- Preload leaderboard while on main menu -->
+<script type="module">
+import { supabase } from './supabase.js';
+
+async function preloadLeaderboard() {
+  try {
+    const { data, error } = await supabase
+      .from('public_leaderboard')
+      .select('username, score')
+      .order('score', { ascending: false })
+      .limit(10);
+
+    if (error) {
+      console.error('Error preloading leaderboard:', error);
+      return;
+    }
+
+    // Store globally for leaderboard page to access
+    window.preloadedLeaderboard = data;
+    console.log('Leaderboard preloaded');
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+// Run immediately on main menu load
+preloadLeaderboard();
+</script>
+
 </body>
 </html>
