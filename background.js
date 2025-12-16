@@ -5,7 +5,9 @@ const backgrounds = [
   "images/background.jpg",
   "images/background2.png",
   "images/background3.jpg",
-  "images/background4.jpg"
+  "images/background4.jpg",
+  "images/background5.jpg",
+  "images/background6.png"
 ];
 
 // Change interval in milliseconds (10 minutes)
