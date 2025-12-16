@@ -31,7 +31,6 @@
   /* ====== PAGE & BODY ====== */
   body {
     font-family: Arial, sans-serif;
-    /*background-image: url('images/background.jpg');*/
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -54,15 +53,14 @@
 
   .container {
     background-color: rgba(0,0,0,0.85);
-    padding: 20px;           /* same as main page */
-    border-radius: 10px;      /* same as main page */
-    max-width: 900px;         /* match main page width */
-    margin: 20px auto;        /* match main page vertical alignment */
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 900px;
+    margin: 20px auto;
     color: #fff;
     z-index: 1;
     position: relative;
   }
-
 
   h1 {
     font-family: 'Cinzel', serif;
@@ -143,35 +141,21 @@ import { supabase } from './supabase.js';
 
 const leaderboardEl = document.getElementById('leaderboard');
 
-async function loadLeaderboard() {
-  const { data, error } = await supabase
-    .from('public_leaderboard')
-    .select('username, score')
-    .order('score', { ascending: false })
-    .limit(10);
-
-  if (error) {
-    console.error('Error loading leaderboard:', error);
-    return;
-  }
-
-  const leaderboardData = data || [];
-
+function renderLeaderboard(data) {
   // Fill up to 10 entries if less
-  while (leaderboardData.length < 10) {
-    leaderboardData.push({ username: '', score: null });
+  while (data.length < 10) {
+    data.push({ username: '', score: null });
   }
 
   leaderboardEl.innerHTML = '';
 
-  leaderboardData.forEach((entry, i) => {
+  data.forEach((entry, i) => {
     const li = document.createElement('li');
     const left = document.createElement('span');
     const right = document.createElement('span');
 
     const posEmoji = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
     left.textContent = entry.username?.trim() ? `${posEmoji} ${entry.username}` : posEmoji;
-
     right.textContent = entry.score != null ? entry.score : '';
 
     if (i === 0) left.classList.add('top-1');
@@ -184,10 +168,32 @@ async function loadLeaderboard() {
   });
 }
 
+async function loadLeaderboard() {
+  // Use preloaded data if available
+  const preloaded = window.preloadedLeaderboard || null;
+  if (preloaded) {
+    renderLeaderboard(preloaded);
+    return;
+  }
+
+  // Fallback: fetch from Supabase if not preloaded
+  const { data, error } = await supabase
+    .from('public_leaderboard')
+    .select('username, score')
+    .order('score', { ascending: false })
+    .limit(10);
+
+  if (error) {
+    console.error('Error loading leaderboard:', error);
+    return;
+  }
+
+  renderLeaderboard(data || []);
+}
+
 loadLeaderboard();
 </script>
-  
-<script src="background.js"></script>
 
+<script src="background.js"></script>
 </body>
 </html>
