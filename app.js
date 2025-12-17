@@ -310,28 +310,27 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
     function checkAnswer(selected, clickedBtn) {
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    clearInterval(timer);
-    document.querySelectorAll('.answer-btn').forEach(btn => btn.disabled = true);
-  
-    if (selected === currentQuestion.correct_answer_shuffled) {
-      playSound(correctBuffer);
-      clickedBtn.classList.add('correct');
-      score++;
-      updateScore();
-      loadQuestion(); // next question immediately
-    } else {
-      playSound(wrongBuffer);
-      clickedBtn.classList.add('wrong');
-      highlightCorrectAnswer();
-      updateScore();
-  
-      // WAIT 1 SECOND BEFORE ENDING THE GAME to show highlights
-      setTimeout(() => {
-        endGame();
-      }, 1000); // <-- 1 second delay
-    }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  clearInterval(timer);
+  document.querySelectorAll('.answer-btn').forEach(btn => btn.disabled = true);
+
+  if (selected === currentQuestion.correct_answer_shuffled) {
+    playSound(correctBuffer);
+    clickedBtn.classList.add('correct');
+    score++;
+    updateScore();
+    // Wait 1 second to show highlight
+    setTimeout(loadQuestion, 1000);
+  } else {
+    playSound(wrongBuffer);
+    clickedBtn.classList.add('wrong');
+    highlightCorrectAnswer();
+    updateScore();
+    // Wait 1 second to show highlights before ending
+    setTimeout(endGame, 1000);
   }
+}
+
 
 
   function highlightCorrectAnswer() {
@@ -400,4 +399,5 @@ document.addEventListener('DOMContentLoaded', () => {
   // -------------------------
   loadCurrentUser();
 });
+
 
