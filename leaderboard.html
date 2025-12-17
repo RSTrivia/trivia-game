@@ -66,16 +66,33 @@
     padding: 10px 12px;
     border-radius: 5px;
     margin-bottom: 6px;
-    color: #f0f0f0; /* light gray text for readability */
     font-weight: 500;
+    color: #f0f0f0; /* default light gray text */
   }
 
-  /* Alternating row colors */
+  /* Alternating row colors for better readability */
   #leaderboard li:nth-child(odd) {
     background: rgba(80, 80, 80, 0.9);
   }
   #leaderboard li:nth-child(even) {
     background: rgba(60, 60, 60, 0.9);
+  }
+
+  /* Top 3 colors */
+  #leaderboard li.first {
+    background: rgba(255, 215, 0, 0.3); /* gold background */
+    color: #FFD700; /* gold text */
+    font-weight: 700;
+  }
+  #leaderboard li.second {
+    background: rgba(192, 192, 192, 0.3); /* silver background */
+    color: #C0C0C0; /* silver text */
+    font-weight: 700;
+  }
+  #leaderboard li.third {
+    background: rgba(205, 127, 50, 0.3); /* bronze background */
+    color: #CD7F32; /* bronze text */
+    font-weight: 700;
   }
 
   a.btn-small {
@@ -132,12 +149,24 @@ function renderLeaderboard(data) {
     const left = document.createElement('span');
     const right = document.createElement('span');
 
-    const pos = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}.`;
+    // Position and medal
+    let pos;
+    if (i === 0) pos = '🥇';
+    else if (i === 1) pos = '🥈';
+    else if (i === 2) pos = '🥉';
+    else pos = `${i+1}.`;
+
     left.textContent = entry.username?.trim() ? `${pos} ${entry.username}` : pos;
     right.textContent = entry.score != null ? entry.score : '';
 
     li.appendChild(left);
     li.appendChild(right);
+
+    // Apply medal classes for top 3
+    if (i === 0) li.classList.add('first');
+    else if (i === 1) li.classList.add('second');
+    else if (i === 2) li.classList.add('third');
+
     leaderboardEl.appendChild(li);
   });
 }
