@@ -338,7 +338,7 @@ function checkAnswer(selected, clickedBtn) {
     scoreDisplay.textContent = `Score: ${score}`;
   }
 
-  async function endGame() {
+async function endGame() {
   if (endGame.running) return;
   endGame.running = true;
 
@@ -346,12 +346,13 @@ function checkAnswer(selected, clickedBtn) {
   game.classList.add('hidden');
   endScreen.classList.remove('hidden');
 
+  // Show final score
   finalScore.textContent = score;
 
   const gameOverTitle = document.getElementById('game-over-title');
   const gzTitle = document.getElementById('gz-title');
 
-  // If perfect score
+  // Perfect score message
   if (score === questions.length && remainingQuestions.length === 0) {
     const gzMessages = ['Gz!', 'Go touch grass', 'See you in Lumbridge'];
     const randomMessage = gzMessages[Math.floor(Math.random() * gzMessages.length)];
@@ -363,12 +364,18 @@ function checkAnswer(selected, clickedBtn) {
     gameOverTitle.classList.remove('hidden');
   }
 
+  // Submit score if user is logged in
   if (username) {
-    await submitLeaderboardScore(username, score);
+    try {
+      await submitLeaderboardScore(username, score);
+    } catch (err) {
+      console.error('Failed to submit leaderboard score:', err);
+    }
   }
 
   endGame.running = false;
 }
+
   
   // -------------------------
   // Event Listeners
@@ -398,6 +405,7 @@ function checkAnswer(selected, clickedBtn) {
   // -------------------------
   loadCurrentUser();
 });
+
 
 
 
