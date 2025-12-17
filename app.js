@@ -29,46 +29,44 @@ let username = '';
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 let correctBuffer, wrongBuffer;
 
-// Load sounds as buffers
 async function loadSounds() {
   correctBuffer = await loadAudio('./sounds/correct.mp3');
   wrongBuffer = await loadAudio('./sounds/wrong.mp3');
 }
 
-let muted = false;
-const volume = 0.5;
+let muted = localStorage.getItem('muted') === 'true'; // <- persistent state
 const muteBtn = document.getElementById('muteBtn');
+
+updateMuteIcon();
 
 muteBtn.addEventListener('click', () => {
   muted = !muted;
-  muteBtn.textContent = muted ? '🔇' : '🔊';
+  localStorage.setItem('muted', muted);
+  updateMuteIcon();
 });
 
-function playSound(buffer) {
-  if (!buffer || muted) return; // mute check
+function updateMuteIcon() {
+  muteBtn.textContent = muted ? '🔇' : '🔊';
+}
 
+function playSound(buffer) {
+  if (!buffer || muted) return; // respect muted state
   const source = audioCtx.createBufferSource();
   source.buffer = buffer;
-
   const gainNode = audioCtx.createGain();
-  gainNode.gain.value = volume; // set volume to 0.5
+  gainNode.gain.value = 0.5;
   source.connect(gainNode).connect(audioCtx.destination);
-
   source.start();
 }
 
-// Fetch + decode a sound file
 async function loadAudio(url) {
   const response = await fetch(url);
   const arrayBuffer = await response.arrayBuffer();
   return await audioCtx.decodeAudioData(arrayBuffer);
 }
 
-// Unlock audio on first user interaction
 function unlockAudio() {
-  if (audioCtx.state === 'suspended') {
-    audioCtx.resume();
-  }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
 }
 
 // -------------------------
@@ -76,13 +74,13 @@ function unlockAudio() {
 // -------------------------
 startBtn.addEventListener('click', async () => {
   await loadCurrentUser();
-  await loadSounds(); // load sounds before game starts
+  await loadSounds();
   startGame();
 });
 
 playAgainBtn.addEventListener('click', async () => {
   resetGame();
-  await loadSounds(); // reload sounds
+  await loadSounds();
   startGame();
 });
 
@@ -99,7 +97,6 @@ mainMenuBtn.addEventListener('click', () => {
 // -------------------------
 async function loadCurrentUser() {
   const { data: { session } } = await supabase.auth.getSession();
-
   if (!session?.user) {
     username = '';
     userDisplay.textContent = 'Player: Guest';
@@ -208,17 +205,13 @@ async function loadQuestion() {
   timer = setInterval(() => {
     timeLeft--;
     timeDisplay.textContent = timeLeft;
-  
-    // Add red color when 5 seconds or less
-    if (timeLeft <= 5) {
-      timeDisplay.classList.add('red-timer');
-    } else {
-      timeDisplay.classList.remove('red-timer');
-    }
-  
+
+    if (timeLeft <= 5) timeDisplay.classList.add('red-timer');
+    else timeDisplay.classList.remove('red-timer');
+
     if (timeLeft <= 0) {
       clearInterval(timer);
-      playSound(wrongBuffer); // mobile-safe wrong sound
+      playSound(wrongBuffer);
       highlightCorrectAnswer();
       setTimeout(async () => { await endGame(); }, 1000);
     }
@@ -226,7 +219,6 @@ async function loadQuestion() {
 }
 
 function checkAnswer(selected, clickedBtn) {
-  // Resume audio context if suspended (mobile fix)
   if (audioCtx.state === 'suspended') audioCtx.resume();
 
   clearInterval(timer);
@@ -246,7 +238,6 @@ function checkAnswer(selected, clickedBtn) {
     setTimeout(async () => { await endGame(); }, 1000);
   }
 }
-
 
 function highlightCorrectAnswer() {
   document.querySelectorAll('.answer-btn').forEach((btn, i) => {
@@ -286,7 +277,6 @@ async function endGame() {
   }
 
   await submitScore();
-
   endGame.running = false;
 }
 
@@ -314,7 +304,6 @@ async function submitScore() {
       .single();
 
     if (existingErr && existingErr.code !== 'PGRST116') return;
-
     if (existing && existing.score >= score) return;
 
     const { data, error } = await supabase
@@ -333,5 +322,11 @@ async function submitScore() {
 // -------------------------
 loadCurrentUser();
 
-
-
+// -------------------------
+// Instant Background Fix
+// -------------------------
+const backgroundDiv = document.getElementById('background');
+const currentBgImmediate = localStorage.getItem('bg_current');
+if (currentBgImmediate && backgroundDiv) {
+  backgroundDiv.style.backgroundImage = `url('${currentBgImmediate}')`;
+}
