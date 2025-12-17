@@ -353,6 +353,7 @@ async function endGame() {
   if (endGame.running) return;
   endGame.running = true;
 
+  // Stop timer and hide game screen
   clearInterval(timer);
   game.classList.add('hidden');
   endScreen.classList.remove('hidden');
@@ -363,7 +364,7 @@ async function endGame() {
   const gameOverTitle = document.getElementById('game-over-title');
   const gzTitle = document.getElementById('gz-title');
 
-  // Perfect score message
+  // Show special message if perfect score
   if (score === questions.length && remainingQuestions.length === 0) {
     const gzMessages = ['Gz!', 'Go touch grass', 'See you in Lumbridge'];
     const randomMessage = gzMessages[Math.floor(Math.random() * gzMessages.length)];
@@ -375,9 +376,10 @@ async function endGame() {
     gameOverTitle.classList.remove('hidden');
   }
 
-  // Submit score if user is logged in
+  // Submit score to Supabase leaderboard
   if (username) {
     try {
+      // Only updates if new score is higher
       await submitLeaderboardScore(username, score);
     } catch (err) {
       console.error('Failed to submit leaderboard score:', err);
@@ -386,6 +388,7 @@ async function endGame() {
 
   endGame.running = false;
 }
+
 
   
   // -------------------------
@@ -416,6 +419,7 @@ async function endGame() {
   // -------------------------
   loadCurrentUser();
 });
+
 
 
 
