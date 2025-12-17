@@ -145,13 +145,14 @@ function updateBackground() {
   const lastChange = Number(localStorage.getItem("bg_last_change")) || 0;
   const now = Date.now();
 
-  // If enough time passed, pick a new random background immediately
+  // Apply saved background immediately to both layers
+  bgImg.src = savedBg;
+  fadeLayer.style.backgroundImage = `url('${savedBg}')`;
+  fadeLayer.style.opacity = 0;
+
+  // If enough time passed, pick a new random background
   if (now - lastChange >= CHANGE_INTERVAL) {
     updateBackground();
-  } else {
-    // Otherwise, use the saved background
-    bgImg.src = savedBg;
-    fadeLayer.style.backgroundImage = `url('${savedBg}')`;
   }
 })();
 
@@ -398,6 +399,7 @@ setInterval(updateBackground, CHANGE_INTERVAL);
   // -------------------------
   loadCurrentUser();
 });
+
 
 
 
