@@ -286,14 +286,15 @@ function checkAnswer(selected, clickedBtn) {
     clickedBtn.classList.add('correct');
     score++;
     updateScore();
-    setTimeout(loadQuestion, 1000); // continue to next question
+    setTimeout(loadQuestion, 1000);
   } else {
     playSound(wrongBuffer);
     clickedBtn.classList.add('wrong');
     highlightCorrectAnswer();
     updateScore();
-    setTimeout(async () => { 
-      await endGame(); // end game on wrong answer
+    // End the game instead of loading the next question
+    setTimeout(() => {
+      endGame(); // no async/await needed here
     }, 1000);
   }
 }
@@ -336,4 +337,5 @@ function checkAnswer(selected, clickedBtn) {
   // -------------------------
   loadCurrentUser();
 });
+
 
