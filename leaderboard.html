@@ -66,7 +66,16 @@
     padding: 10px 12px;
     border-radius: 5px;
     margin-bottom: 6px;
-    background: rgba(50,50,50,0.8);
+    color: #f0f0f0; /* light gray text for readability */
+    font-weight: 500;
+  }
+
+  /* Alternating row colors */
+  #leaderboard li:nth-child(odd) {
+    background: rgba(80, 80, 80, 0.9);
+  }
+  #leaderboard li:nth-child(even) {
+    background: rgba(60, 60, 60, 0.9);
   }
 
   a.btn-small {
@@ -114,8 +123,10 @@ const leaderboardEl = document.getElementById('leaderboard');
 const app = document.getElementById('app');
 
 function renderLeaderboard(data) {
+  // Ensure 10 rows
   while (data.length < 10) data.push({ username: '', score: null });
   leaderboardEl.innerHTML = '';
+  
   data.forEach((entry, i) => {
     const li = document.createElement('li');
     const left = document.createElement('span');
