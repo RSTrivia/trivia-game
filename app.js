@@ -72,71 +72,82 @@ document.addEventListener('DOMContentLoaded', () => {
     source.start();
   }
 
-  // -------------------------
-  // Background Rotation
-  // -------------------------
-  const backgrounds = [
-    "images/background.jpg",
-    "images/background2.png",
-    "images/background3.jpg",
-    "images/background4.jpg",
-    "images/background5.jpg",
-    "images/background6.png"
-  ];
-  const CHANGE_INTERVAL = 600000; // 10 minutes
-  backgrounds.forEach(src => new Image().src = src); // preload
+ // -------------------------
+// Background (random every 10 minutes)
+// -------------------------
+const backgrounds = [
+  "images/background.jpg",
+  "images/background2.png",
+  "images/background3.jpg",
+  "images/background4.jpg",
+  "images/background5.jpg",
+  "images/background6.png"
+];
+const CHANGE_INTERVAL = 600000; // 10 minutes
 
-  let fadeLayer = document.getElementById('bg-fade-layer');
-  if (!fadeLayer) {
-    fadeLayer = document.createElement('div');
-    fadeLayer.id = 'bg-fade-layer';
-    Object.assign(fadeLayer.style, {
-      position: 'fixed',
-      inset: 0,
-      zIndex: '-2',
-      pointerEvents: 'none',
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      opacity: 0,
-      transition: 'opacity 1.5s ease'
-    });
-    document.body.appendChild(fadeLayer);
-  }
+// preload
+backgrounds.forEach(src => new Image().src = src);
 
-  function pickNextBackground(current) {
-    const filtered = backgrounds.filter(bg => bg !== current);
-    return filtered[Math.floor(Math.random() * filtered.length)];
-  }
+const bgImg = document.getElementById('background-img');
 
-  function applyBackground(newBg) {
-    fadeLayer.style.backgroundImage = `url('${newBg}')`;
-    fadeLayer.style.opacity = 1;
+// fade layer
+let fadeLayer = document.getElementById('bg-fade-layer');
+if (!fadeLayer) {
+  fadeLayer = document.createElement('div');
+  fadeLayer.id = 'bg-fade-layer';
+  Object.assign(fadeLayer.style, {
+    position: 'fixed',
+    inset: 0,
+    zIndex: '-2',
+    pointerEvents: 'none',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    opacity: 0,
+    transition: 'opacity 1.5s ease'
+  });
+  document.body.appendChild(fadeLayer);
+}
 
-    setTimeout(() => {
-      bgImg.src = newBg;
-      fadeLayer.style.opacity = 0;
-    }, 1500);
-  }
+// helper
+function pickRandomBackground(exclude) {
+  const filtered = backgrounds.filter(bg => bg !== exclude);
+  return filtered[Math.floor(Math.random() * filtered.length)];
+}
 
-  function updateBackground(force = false) {
-    const now = Date.now();
-    const lastChange = Number(localStorage.getItem('bg_last_change')) || 0;
-    const currentBg = localStorage.getItem('bg_current') || backgrounds[0];
+// apply fade
+function applyBackground(newBg) {
+  fadeLayer.style.backgroundImage = `url('${newBg}')`;
+  fadeLayer.style.opacity = 1;
 
-    if (!force && now - lastChange < CHANGE_INTERVAL) return;
+  setTimeout(() => {
+    bgImg.src = newBg;
+    fadeLayer.style.opacity = 0;
+  }, 1500);
+}
 
-    const nextBg = pickNextBackground(currentBg);
-    localStorage.setItem('bg_current', nextBg);
-    localStorage.setItem('bg_last_change', now);
+// update background if interval passed
+function updateBackground() {
+  const now = Date.now();
+  const lastChange = Number(localStorage.getItem("bg_last_change")) || 0;
+  const currentBg = localStorage.getItem("bg_current") || backgrounds[0];
 
-    applyBackground(nextBg);
-  }
+  if (now - lastChange < CHANGE_INTERVAL) return; // not time yet
 
-  const savedBg = localStorage.getItem('bg_current') || backgrounds[0];
-  bgImg.src = savedBg;
-  updateBackground(true);
-  setInterval(updateBackground, CHANGE_INTERVAL);
+  const nextBg = pickRandomBackground(currentBg);
+  localStorage.setItem("bg_current", nextBg);
+  localStorage.setItem("bg_last_change", now);
 
+  applyBackground(nextBg);
+}
+
+// --- INIT ---
+// show saved background immediately
+const savedBg = localStorage.getItem("bg_current") || backgrounds[0];
+bgImg.src = savedBg;
+
+// set interval
+setInterval(updateBackground, CHANGE_INTERVAL);
+  
   // -------------------------
   // User/Auth
   // -------------------------
@@ -376,3 +387,4 @@ document.addEventListener('DOMContentLoaded', () => {
   // -------------------------
   loadCurrentUser();
 });
+
