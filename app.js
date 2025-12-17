@@ -34,9 +34,15 @@ async function loadSounds() {
   wrongBuffer = await loadAudio('./sounds/wrong.mp3');
 }
 
+// -------------------------
+// Persistent Mute
+// -------------------------
 let muted = localStorage.getItem('muted') === 'true'; // <- persistent state
 const muteBtn = document.getElementById('muteBtn');
 
+function updateMuteIcon() {
+  muteBtn.textContent = muted ? '🔇' : '🔊';
+}
 updateMuteIcon();
 
 muteBtn.addEventListener('click', () => {
@@ -45,12 +51,9 @@ muteBtn.addEventListener('click', () => {
   updateMuteIcon();
 });
 
-function updateMuteIcon() {
-  muteBtn.textContent = muted ? '🔇' : '🔊';
-}
-
+// -------------------------
 function playSound(buffer) {
-  if (!buffer || muted) return; // respect muted state
+  if (!buffer || muted) return; // respect persistent muted state
   const source = audioCtx.createBufferSource();
   source.buffer = buffer;
   const gainNode = audioCtx.createGain();
@@ -158,10 +161,7 @@ async function startGame() {
 
 async function loadQuestion() {
   answersBox.innerHTML = '';
-
-  if (!remainingQuestions.length) {
-    return await endGame();
-  }
+  if (!remainingQuestions.length) return await endGame();
 
   const index = Math.floor(Math.random() * remainingQuestions.length);
   currentQuestion = remainingQuestions.splice(index, 1)[0];
@@ -171,9 +171,7 @@ async function loadQuestion() {
   if (currentQuestion.question_image) {
     questionImage.src = currentQuestion.question_image;
     questionImage.style.display = 'block';
-  } else {
-    questionImage.style.display = 'none';
-  }
+  } else questionImage.style.display = 'none';
 
   let answers = [
     { text: currentQuestion.answer_a, correct: currentQuestion.correct_answer === 1 },
@@ -306,12 +304,12 @@ async function submitScore() {
     if (existingErr && existingErr.code !== 'PGRST116') return;
     if (existing && existing.score >= score) return;
 
-    const { data, error } = await supabase
+    const { data: dataUpsert, error: errorUpsert } = await supabase
       .from('scores')
       .upsert({ user_id: user.id, username, score }, { onConflict: 'user_id' })
       .select();
 
-    if (error) console.error('Error saving score:', error);
+    if (errorUpsert) console.error('Error saving score:', errorUpsert);
   } catch (err) {
     console.error('Unexpected error submitting score:', err);
   }
