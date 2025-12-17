@@ -1,6 +1,8 @@
 /* ====== BODY ====== */
 body {
   font-family: Arial, sans-serif;
+  /* ====== one background ====== */
+  /* background-image: url('images/background.jpg');*/
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -18,7 +20,7 @@ body::before {
   position: fixed;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  background: rgba(0,0,0,0.3);
+  background: rgba(0,0,0,0.3); /* dark overlay */
   z-index: 0;
 }
 
@@ -43,59 +45,93 @@ button {
   outline: none;
 }
 
-/* ====== MENU / LOGIN BUTTONS ====== */
-.btn, .btn-small {
-  background: rgba(0,0,0,0.6);
+/* ====== BIG GOLD BUTTONS (game start / play again / main menu) ====== */
+.btn {
+  background: rgba(0, 0, 0, 0.6);
   color: #ffd700;
+  padding: 14px 22px;
   border: 2px solid #ffd700;
   border-radius: 8px;
-  text-decoration: none;
   cursor: pointer;
+  font-size: 1.1rem;
+  width: 100%;
+  display: block;
+  text-align: center;
+  text-decoration: none;
+  margin: 8px 0;
   transition: 0.2s;
 }
 
-.btn:hover, .btn-small:hover {
+.btn:hover {
+  background: rgba(0, 0, 0, 0.85);
+  border-color: #ffea8a;
+}
+
+/* ====== SMALL BUTTONS (login / signup / view leaderboard / back link) ====== */
+.btn-small {
+  background: rgba(0,0,0,0.6);
+  color: #ffd700;
+  padding: 10px 16px;
+  font-size: 1rem;
+  border: 2px solid #ffd700;
+  border-radius: 8px;
+  text-decoration: none;
+  display: inline-block;
+  flex: 1;             /* equal width inside menu row */
+  text-align: center;
+  transition: 0.2s;
+}
+
+.btn-small:hover {
   background: rgba(0,0,0,0.85);
   border-color: #ffea8a;
 }
 
+/* ====== LINKS styled like buttons ====== */
 a.btn, a.btn-small {
   text-decoration: none;
-  display: inline-block;
   text-align: center;
-  width: 100%;
+  color: #ffd700;
+  background: rgba(0,0,0,0.6);
+  border: 2px solid #ffd700;
+  border-radius: 8px;
+  transition: 0.2s;
+}
+
+a.btn:hover, a.btn-small:hover {
+  background: rgba(0,0,0,0.85);
+  border-color: #ffea8a;
 }
 
 /* ====== MENU ROW ===== */
 .menu-row {
   display: flex;
-  gap: 10px;
+  gap: 10px;       /* spacing between buttons */
   width: 100%;
   margin-top: 10px;
 }
 
-/* ====== GAME ANSWER BUTTONS ====== */
+/* ====== ANSWER BUTTONS (game) ====== */
 .answer-btn {
-  background: #222;
-  border: 2px solid #555;
+  background: #ffffff;
+  border: 2px solid #000;
   padding: 12px;
   margin: 6px 0;
   width: 100%;
   border-radius: 6px;
   font-size: 1rem;
-  color: #fff;
-  transition: 0.2s;
 }
 
 .answer-btn:hover {
-  background: #444;
+  background: #f2f2f2;
 }
 
+/* Extra spacing after the last answer button */
 .answer-btn:last-child {
   margin-bottom: 12px;
 }
 
-/* ====== GAME SCREEN ===== */
+/* ====== GAME SCREEN ====== */
 #game {
   position: relative;
   padding: 20px;
@@ -121,7 +157,7 @@ a.btn, a.btn-small {
 .correct { background-color: #4caf50 !important; color: white; }
 .wrong { background-color: #f44336 !important; color: white; }
 
-/* ====== LEADERBOARD ===== */
+/* ====== LEADERBOARD ====== */
 #leaderboard {
   list-style: none;
   padding: 0;
@@ -142,6 +178,7 @@ a.btn, a.btn-small {
   background: #e0e0e0;
 }
 
+/* Top 3 highlight */
 .top-1 { color: gold; font-weight: bold; }
 .top-2 { color: silver; font-weight: bold; }
 .top-3 { color: #cd7f32; font-weight: bold; }
@@ -195,7 +232,68 @@ a.btn, a.btn-small {
 }
 
 /* ====== OSRS TITLE ===== */
-h1, .osrs-title, .gz-title {
+h1 {
+  font-family: 'Cinzel', serif;
+  font-size: 3.2rem;
+  margin-bottom: 25px;
+  text-align: center;
+  letter-spacing: 2px;
+
+  background: linear-gradient(
+    145deg,
+    #fff8dc 0%,
+    #ffdd44 25%,
+    #f2b705 50%,
+    #c28f0c 75%,
+    #a77b0a 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  text-shadow:
+    0 0 4px rgba(0,0,0,0.8),
+    1px 1px 0 #000,
+    2px 2px 2px rgba(0,0,0,0.6),
+    0 0 8px rgba(255, 223, 0, 0.8),
+    0 -1px 2px rgba(255, 255, 255, 0.4);
+
+  filter: drop-shadow(0 0 10px rgba(255, 223, 0, 0.7));
+  -webkit-font-smoothing: antialiased;
+}
+
+/* GOLD "gz" END SCREEN TITLE */
+.gz-title {
+  font-family: 'Cinzel', serif;
+  font-size: 3rem;
+  text-align: center;
+  letter-spacing: 2px;
+  color: #ffd700;
+
+  /* Metallic gold gradient */
+  background: linear-gradient(
+    145deg,
+    #fff8dc 0%,
+    #ffdd44 25%,
+    #f2b705 50%,
+    #c28f0c 75%,
+    #a77b0a 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  /* OSRS-style glow */
+  text-shadow:
+    0 0 4px rgba(0,0,0,0.8),
+    1px 1px 0 #000,
+    2px 2px 2px rgba(0,0,0,0.6),
+    0 0 8px rgba(255, 223, 0, 0.8),
+    0 -1px 2px rgba(255, 255, 255, 0.4);
+
+  filter: drop-shadow(0 0 10px rgba(255, 223, 0, 0.7));
+  -webkit-font-smoothing: antialiased;
+}
+
+.osrs-title {
   font-family: 'Cinzel', serif;
   font-size: 3.2rem;
   text-align: center;
@@ -220,10 +318,12 @@ h1, .osrs-title, .gz-title {
   -webkit-font-smoothing: antialiased;
 }
 
-.hidden { display: none; }
+.hidden {
+  display: none;
+}
 
 #userDisplay {
-  min-height: 24px;
+  min-height: 24px; /* ~1 line of text */
 }
 
 /* red timer */
@@ -232,3 +332,6 @@ h1, .osrs-title, .gz-title {
   font-weight: bold;
   transition: color 0.3s;
 }
+
+
+
