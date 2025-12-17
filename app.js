@@ -183,33 +183,34 @@ document.addEventListener('DOMContentLoaded', () => {
       loadCurrentUser();
     };
   }
-
-async function submitLeaderboardScore(username, score) {
-  try {
-    // Check existing score
-    const { data: existingScore, error } = await supabase
-      .from('public_leaderboard')
-      .select('score')
-      .eq('username', username)
-      .single();
-
-    if (error && error.code !== 'PGRST116') { // 116 = no rows
-      console.error('Error fetching existing score:', error);
-      return;
+  
+  async function submitLeaderboardScore(username, score) {
+    try {
+      // Check existing score in the actual table
+      const { data: existingScore, error } = await supabase
+        .from('scores') // <- use the table name, not the view
+        .select('score')
+        .eq('username', username)
+        .single();
+  
+      if (error && error.code !== 'PGRST116') { // 116 = no rows found
+        console.error('Error fetching existing score:', error);
+        return;
+      }
+  
+      // Update only if higher
+      if (!existingScore || score > existingScore.score) {
+        const { data, error: upsertError } = await supabase
+          .from('scores') // <- table name
+          .upsert({ username, score }, { onConflict: 'username' });
+  
+        if (upsertError) console.error('Error updating leaderboard:', upsertError);
+      }
+    } catch (err) {
+      console.error('Unexpected error submitting leaderboard score:', err);
     }
-
-    // Update only if higher
-    if (!existingScore || score > existingScore.score) {
-      const { data, error: upsertError } = await supabase
-        .from('public_leaderboard')
-        .upsert({ username, score }, { onConflict: 'username' });
-
-      if (upsertError) console.error('Error updating leaderboard:', upsertError);
-    }
-  } catch (err) {
-    console.error('Unexpected error submitting leaderboard score:', err);
   }
-}
+
 
 
   // -------------------------
@@ -397,6 +398,7 @@ function checkAnswer(selected, clickedBtn) {
   // -------------------------
   loadCurrentUser();
 });
+
 
 
 
