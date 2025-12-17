@@ -1,5 +1,6 @@
-// === PERSISTENT BACKGROUND ROTATION WITH FADE & NO JUMP ===
+// === PERSISTENT BACKGROUND ROTATION WITH FADE & NO REPEATS ===
 
+// List of backgrounds
 const backgrounds = [
   "images/background.jpg",
   "images/background2.png",
@@ -9,33 +10,21 @@ const backgrounds = [
   "images/background6.png"
 ];
 
-const CHANGE_INTERVAL = 600000; // 10 minutes
+// Interval: 10 minutes
+const CHANGE_INTERVAL = 600000;
 
 // Preload images
 backgrounds.forEach(src => new Image().src = src);
 
-// Get/create background div
-let backgroundDiv = document.getElementById('background');
-if (!backgroundDiv) {
-  backgroundDiv = document.createElement('div');
-  backgroundDiv.id = 'background';
-  Object.assign(backgroundDiv.style, {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    width: "100%",
-    height: "100%",
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    backgroundRepeat: "no-repeat",
-    zIndex: "-1",
-    opacity: "1",
-    transition: "opacity 1.5s ease"
-  });
-  document.body.prepend(backgroundDiv);
-}
+// Grab the #background div
+const backgroundDiv = document.getElementById('background');
 
-// Fade layer
+// Immediately apply saved or default background to avoid flash
+const savedBg = localStorage.getItem("bg_current") || backgrounds[0];
+backgroundDiv.style.backgroundImage = `url('${savedBg}')`;
+window.bgAlreadySet = true; // mark initial background as set
+
+// Fade layer on top of #background (for smooth transition)
 function createFadeLayer() {
   if (!document.getElementById("bg-fade-layer")) {
     const fadeLayer = document.createElement("div");
@@ -51,13 +40,13 @@ function createFadeLayer() {
       backgroundPosition: "center",
       opacity: 0,
       transition: "opacity 1.5s ease",
-      zIndex: "-1"
+      zIndex: "-2" // behind #background
     });
-    document.body.prepend(fadeLayer);
+    document.body.appendChild(fadeLayer);
   }
 }
 
-// Pick random background not equal to exclude
+// Pick a random background excluding the current one
 function pickRandomBackground(exclude) {
   const filtered = backgrounds.filter(bg => bg !== exclude);
   return filtered[Math.floor(Math.random() * filtered.length)];
@@ -67,35 +56,27 @@ function pickRandomBackground(exclude) {
 function applyBackground(newBg) {
   const fadeLayer = document.getElementById("bg-fade-layer");
 
-  // Fade layer shows new bg
+  // Set fadeLayer background
   fadeLayer.style.backgroundImage = `url('${newBg}')`;
   fadeLayer.style.opacity = 1;
 
-  // After fade, update #background and hide fadeLayer
+  // After fade duration, apply to main div and hide fade layer
   setTimeout(() => {
     backgroundDiv.style.backgroundImage = `url('${newBg}')`;
     fadeLayer.style.opacity = 0;
   }, 1500);
 }
 
-// Update background
+// Update background based on interval or forced
 function updateBackground(force = false) {
   const now = Date.now();
   const lastChange = localStorage.getItem("bg_last_change");
   const currentBg = localStorage.getItem("bg_current");
 
-  // First load
-  if (!currentBg) {
-    const initial = pickRandomBackground(null);
-    localStorage.setItem("bg_current", initial);
-    localStorage.setItem("bg_last_change", now);
-    backgroundDiv.style.backgroundImage = `url('${initial}')`;
-    return;
-  }
-
+  // If interval not passed and not forced, do nothing
   if (!force && lastChange && now - lastChange < CHANGE_INTERVAL) return;
 
-  const nextBg = pickRandomBackground(currentBg);
+  const nextBg = pickRandomBackground(currentBg || savedBg);
   localStorage.setItem("bg_current", nextBg);
   localStorage.setItem("bg_last_change", now);
 
@@ -103,13 +84,7 @@ function updateBackground(force = false) {
   applyBackground(nextBg);
 }
 
-// INITIAL SETUP
+// Initial setup
 createFadeLayer();
-
-// Set initial background immediately to avoid jump
-const savedBg = localStorage.getItem("bg_current") || pickRandomBackground(null);
-backgroundDiv.style.backgroundImage = `url('${savedBg}')`;
-localStorage.setItem("bg_current", savedBg);
-
-// Start interval rotation
+updateBackground(true); // force update once on load
 setInterval(() => updateBackground(), CHANGE_INTERVAL);
