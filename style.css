@@ -326,6 +326,15 @@ h1 {
   min-height: 24px; /* ~1 line of text */
 }
 
+/* red timer */
+.red-timer {
+  color: red;
+  font-weight: bold;
+  transition: color 0.3s;
+}
+
+
+
 
 
 
