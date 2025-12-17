@@ -15,6 +15,8 @@ const questionImage = document.getElementById('questionImage');
 const answersBox = document.getElementById('answers');
 const timeDisplay = document.getElementById('time');
 
+const backgroundDiv = document.getElementById('background');
+
 let questions = [];
 let remainingQuestions = [];
 let currentQuestion = null;
@@ -24,20 +26,9 @@ let timeLeft = 15;
 let username = '';
 
 // -------------------------
-// Sounds (mobile-safe)
-// -------------------------
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-let correctBuffer, wrongBuffer;
-
-async function loadSounds() {
-  correctBuffer = await loadAudio('./sounds/correct.mp3');
-  wrongBuffer = await loadAudio('./sounds/wrong.mp3');
-}
-
-// -------------------------
 // Persistent Mute
 // -------------------------
-let muted = localStorage.getItem('muted') === 'true'; // <- persistent state
+let muted = localStorage.getItem('muted') === 'true';
 const muteBtn = document.getElementById('muteBtn');
 
 function updateMuteIcon() {
@@ -52,8 +43,18 @@ muteBtn.addEventListener('click', () => {
 });
 
 // -------------------------
+// Sounds
+// -------------------------
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+let correctBuffer, wrongBuffer;
+
+async function loadSounds() {
+  correctBuffer = await loadAudio('./sounds/correct.mp3');
+  wrongBuffer = await loadAudio('./sounds/wrong.mp3');
+}
+
 function playSound(buffer) {
-  if (!buffer || muted) return; // respect persistent muted state
+  if (!buffer || muted) return;
   const source = audioCtx.createBufferSource();
   source.buffer = buffer;
   const gainNode = audioCtx.createGain();
@@ -71,6 +72,88 @@ async function loadAudio(url) {
 function unlockAudio() {
   if (audioCtx.state === 'suspended') audioCtx.resume();
 }
+
+// -------------------------
+// Instant Background & Persistent Rotation
+// -------------------------
+const backgrounds = [
+  "images/background.jpg",
+  "images/background2.png",
+  "images/background3.jpg",
+  "images/background4.jpg",
+  "images/background5.jpg",
+  "images/background6.png"
+];
+const CHANGE_INTERVAL = 600000; // 10 minutes
+
+// preload images
+backgrounds.forEach(src => new Image().src = src);
+
+// Set immediate background from localStorage to avoid flash
+const savedBg = localStorage.getItem("bg_current") || backgrounds[0];
+backgroundDiv.style.backgroundImage = `url('${savedBg}')`;
+window.bgAlreadySet = true;
+
+// Create fade layer
+function createFadeLayer() {
+  if (!document.getElementById("bg-fade-layer")) {
+    const fadeLayer = document.createElement("div");
+    fadeLayer.id = "bg-fade-layer";
+    Object.assign(fadeLayer.style, {
+      position: "fixed",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+      pointerEvents: "none",
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      opacity: 0,
+      transition: "opacity 1.5s ease",
+      zIndex: "-2"
+    });
+    document.body.appendChild(fadeLayer);
+  }
+}
+
+// pick random background excluding current
+function pickRandomBackground(exclude) {
+  const filtered = backgrounds.filter(bg => bg !== exclude);
+  return filtered[Math.floor(Math.random() * filtered.length)];
+}
+
+// apply background with fade
+function applyBackground(newBg) {
+  const fadeLayer = document.getElementById("bg-fade-layer");
+  fadeLayer.style.backgroundImage = `url('${newBg}')`;
+  fadeLayer.style.opacity = 1;
+
+  setTimeout(() => {
+    backgroundDiv.style.backgroundImage = `url('${newBg}')`;
+    fadeLayer.style.opacity = 0;
+  }, 1500);
+}
+
+// update background based on interval
+function updateBackground(force = false) {
+  const now = Date.now();
+  const lastChange = localStorage.getItem("bg_last_change");
+  const currentBg = localStorage.getItem("bg_current");
+
+  if (!force && lastChange && now - lastChange < CHANGE_INTERVAL) return;
+
+  const nextBg = pickRandomBackground(currentBg || savedBg);
+  localStorage.setItem("bg_current", nextBg);
+  localStorage.setItem("bg_last_change", now);
+
+  createFadeLayer();
+  applyBackground(nextBg);
+}
+
+// initial setup
+createFadeLayer();
+updateBackground(true);
+setInterval(() => updateBackground(), CHANGE_INTERVAL);
 
 // -------------------------
 // Event Listeners
@@ -99,7 +182,9 @@ mainMenuBtn.addEventListener('click', () => {
 // User/Auth
 // -------------------------
 async function loadCurrentUser() {
+  // check if user exists
   const { data: { session } } = await supabase.auth.getSession();
+
   if (!session?.user) {
     username = '';
     userDisplay.textContent = 'Player: Guest';
@@ -203,7 +288,6 @@ async function loadQuestion() {
   timer = setInterval(() => {
     timeLeft--;
     timeDisplay.textContent = timeLeft;
-
     if (timeLeft <= 5) timeDisplay.classList.add('red-timer');
     else timeDisplay.classList.remove('red-timer');
 
@@ -218,7 +302,6 @@ async function loadQuestion() {
 
 function checkAnswer(selected, clickedBtn) {
   if (audioCtx.state === 'suspended') audioCtx.resume();
-
   clearInterval(timer);
   document.querySelectorAll('.answer-btn').forEach(btn => btn.disabled = true);
 
@@ -319,12 +402,3 @@ async function submitScore() {
 // Init
 // -------------------------
 loadCurrentUser();
-
-// -------------------------
-// Instant Background Fix
-// -------------------------
-const backgroundDiv = document.getElementById('background');
-const currentBgImmediate = localStorage.getItem('bg_current');
-if (currentBgImmediate && backgroundDiv) {
-  backgroundDiv.style.backgroundImage = `url('${currentBgImmediate}')`;
-}
