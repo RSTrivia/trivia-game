@@ -1,5 +1,8 @@
 import { supabase } from './supabase.js';
 
+// -------------------------
+// DOM Elements
+// -------------------------
 const startBtn = document.getElementById('startBtn');
 const playAgainBtn = document.getElementById('playAgainBtn');
 const mainMenuBtn = document.getElementById('mainMenuBtn');
@@ -14,26 +17,26 @@ const questionText = document.getElementById('questionText');
 const questionImage = document.getElementById('questionImage');
 const answersBox = document.getElementById('answers');
 const timeDisplay = document.getElementById('time');
-
 const backgroundDiv = document.getElementById('background');
 
 let username = '';
+let score = 0;
+let questions = [];
+let remainingQuestions = [];
+let currentQuestion = null;
+let timer;
+let timeLeft = 15;
 
 // -------------------------
 // Persistent Mute
 // -------------------------
 let muted = localStorage.getItem('muted') === 'true';
 const muteBtn = document.getElementById('muteBtn');
-
-function updateMuteIcon() {
-  muteBtn.textContent = muted ? '🔇' : '🔊';
-}
-updateMuteIcon();
-
+muteBtn.textContent = muted ? '🔇' : '🔊';
 muteBtn.addEventListener('click', () => {
   muted = !muted;
   localStorage.setItem('muted', muted);
-  updateMuteIcon();
+  muteBtn.textContent = muted ? '🔇' : '🔊';
 });
 
 // -------------------------
@@ -47,6 +50,12 @@ async function loadSounds() {
   wrongBuffer = await loadAudio('./sounds/wrong.mp3');
 }
 
+async function loadAudio(url) {
+  const response = await fetch(url);
+  const arrayBuffer = await response.arrayBuffer();
+  return await audioCtx.decodeAudioData(arrayBuffer);
+}
+
 function playSound(buffer) {
   if (!buffer || muted) return;
   const source = audioCtx.createBufferSource();
@@ -55,16 +64,6 @@ function playSound(buffer) {
   gainNode.gain.value = 0.5;
   source.connect(gainNode).connect(audioCtx.destination);
   source.start();
-}
-
-async function loadAudio(url) {
-  const response = await fetch(url);
-  const arrayBuffer = await response.arrayBuffer();
-  return await audioCtx.decodeAudioData(arrayBuffer);
-}
-
-function unlockAudio() {
-  if (audioCtx.state === 'suspended') audioCtx.resume();
 }
 
 // -------------------------
@@ -80,22 +79,22 @@ const backgrounds = [
 ];
 const CHANGE_INTERVAL = 600000; // 10 minutes
 
+// Preload images
 backgrounds.forEach(src => new Image().src = src);
 
-backgroundDiv.style.position = 'fixed';
-backgroundDiv.style.top = '0';
-backgroundDiv.style.left = '0';
-backgroundDiv.style.width = '100%';
-backgroundDiv.style.height = '100%';
-backgroundDiv.style.backgroundSize = 'cover';
-backgroundDiv.style.backgroundPosition = 'center';
-backgroundDiv.style.zIndex = '-1';
+// Setup background div
+Object.assign(backgroundDiv.style, {
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  width: '100%',
+  height: '100%',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  zIndex: '-1'
+});
 
-// Immediate background
-const savedBg = localStorage.getItem("bg_current") || backgrounds[0];
-backgroundDiv.style.backgroundImage = `url('${savedBg}')`;
-window.bgAlreadySet = true;
-
+// Fade layer
 function createFadeLayer() {
   if (!document.getElementById("bg-fade-layer")) {
     const fadeLayer = document.createElement("div");
@@ -117,11 +116,13 @@ function createFadeLayer() {
   }
 }
 
+// Pick a random background excluding current
 function pickRandomBackground(exclude) {
   const filtered = backgrounds.filter(bg => bg !== exclude);
   return filtered[Math.floor(Math.random() * filtered.length)];
 }
 
+// Apply background with fade
 function applyBackground(newBg) {
   const fadeLayer = document.getElementById("bg-fade-layer");
   fadeLayer.style.backgroundImage = `url('${newBg}')`;
@@ -133,14 +134,15 @@ function applyBackground(newBg) {
   }, 1500);
 }
 
+// Update background based on interval
 function updateBackground(force = false) {
   const now = Date.now();
   const lastChange = localStorage.getItem("bg_last_change");
-  const currentBg = localStorage.getItem("bg_current");
+  const currentBg = localStorage.getItem("bg_current") || backgrounds[0];
 
   if (!force && lastChange && now - lastChange < CHANGE_INTERVAL) return;
 
-  const nextBg = pickRandomBackground(currentBg || savedBg);
+  const nextBg = pickRandomBackground(currentBg);
   localStorage.setItem("bg_current", nextBg);
   localStorage.setItem("bg_last_change", now);
 
@@ -148,41 +150,19 @@ function updateBackground(force = false) {
   applyBackground(nextBg);
 }
 
+// Initialize background
+const savedBg = localStorage.getItem("bg_current") || backgrounds[0];
+backgroundDiv.style.backgroundImage = `url('${savedBg}')`; // no jump
 createFadeLayer();
-updateBackground(false);
 setInterval(() => updateBackground(), CHANGE_INTERVAL);
 
 // -------------------------
-// Event Listeners
-// -------------------------
-startBtn.addEventListener('click', async () => {
-  await loadCurrentUser();
-  await loadSounds();
-  startGame();
-});
-
-playAgainBtn.addEventListener('click', async () => {
-  resetGame();
-  await loadSounds();
-  startGame();
-});
-
-mainMenuBtn.addEventListener('click', () => {
-  resetGame();
-  game.classList.add('hidden');
-  endScreen.classList.add('hidden');
-  document.getElementById('start-screen').classList.remove('hidden');
-  updateScore();
-});
-
-// -------------------------
-// User/Auth (No Flash)
+// User/Auth
 // -------------------------
 async function loadCurrentUser() {
-  // Hide only the username text, not the whole element
-  const usernameSpan = document.getElementById('userDisplay');
-  usernameSpan.textContent = '';
-  
+  const usernameSpan = userDisplay;
+  usernameSpan.textContent = 'Player: ...'; // temporary placeholder
+
   const { data: { session } } = await supabase.auth.getSession();
 
   if (!session?.user) {
@@ -209,19 +189,9 @@ async function loadCurrentUser() {
   }
 }
 
-  userDisplay.style.visibility = 'visible'; // show after username is set
-}
-
 // -------------------------
 // Game Functions
 // -------------------------
-let questions = [];
-let remainingQuestions = [];
-let currentQuestion = null;
-let score = 0;
-let timer;
-let timeLeft = 15;
-
 function resetGame() {
   clearInterval(timer);
   score = 0;
@@ -411,4 +381,5 @@ async function submitScore() {
 // Init
 // -------------------------
 loadCurrentUser();
+
 
