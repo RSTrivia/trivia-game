@@ -36,7 +36,7 @@
     box-shadow: 0 0 30px rgba(0,0,0,0.5);
     color: #fff;
     position: relative;
-    z-index: 1;
+    z-index: auto; /* fixed to prevent overlaying buttons */
     opacity: 1 !important;
     transition: none !important;
   }
@@ -50,7 +50,16 @@
   .btn, .btn-small {
     opacity: 1 !important;
     transition: none !important;
+    cursor: pointer; /* ensure buttons show pointer */
+    z-index: auto;
   }
+
+  #start-screen, #game, #end-screen {
+    position: relative;
+    z-index: auto;
+  }
+
+  .hidden { display: none; }
 </style>
 </head>
 <body>
@@ -76,6 +85,15 @@
   </div>
 </div>
 
+<!-- Start Screen -->
+<div id="start-screen">
+  <button id="startBtn" class="btn">Start Game</button>
+  <div class="menu-row">
+    <button id="authBtn" class="btn-small">Log In</button>
+    <a href="leaderboard.html" class="btn-small">View Leaderboard</a>
+  </div>
+</div>
+
 <!-- Game Screen -->
 <div id="game" class="hidden">
   <div id="score">Score: 0</div>
@@ -85,15 +103,6 @@
   </div>
   <div id="answers"></div>
   <div id="timer">Time: <span id="time">15</span>s</div>
-</div>
-
-<!-- Start Screen -->
-<div id="start-screen">
-  <button id="startBtn" class="btn">Start Game</button>
-  <div class="menu-row">
-    <button id="authBtn" class="btn-small">Log In</button>
-    <a href="leaderboard.html" class="btn-small">View Leaderboard</a>
-  </div>
 </div>
 
 <!-- End Screen -->
