@@ -128,14 +128,15 @@ document.addEventListener('DOMContentLoaded', () => {
   return filtered[Math.floor(Math.random() * filtered.length)];
 }
 
-  function applyBackground(newBg) {
+function applyBackground(newBg) {
   const fadeLayer = document.getElementById("bg-fade-layer");
   fadeLayer.style.backgroundImage = `url('${newBg}')`;
   fadeLayer.style.opacity = 1;
+  
   setTimeout(() => {
     const bgImg = document.getElementById('background-img');
-    bgImg.src = newBg;
-    fadeLayer.style.opacity = 0;
+    bgImg.src = newBg;      // Update main background image
+    fadeLayer.style.opacity = 0; // fade out overlay
   }, 1500);
 }
   
@@ -404,5 +405,6 @@ setInterval(() => updateBackground(false), CHANGE_INTERVAL);
   // -------------------------
   loadCurrentUser();
 });
+
 
 
