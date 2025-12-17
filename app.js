@@ -33,12 +33,22 @@ const wrongSound = new Audio('./sounds/wrong.mp3');
 correctSound.volume = 0.6;
 wrongSound.volume = 0.6;
 
+// Unlock audio on first user interaction (mobile fix)
+answersBox.addEventListener('click', () => {
+  correctSound.play().then(() => correctSound.pause());
+  wrongSound.play().then(() => wrongSound.pause());
+}, { once: true });  // only run once
+
 // -------------------------
 // Event Listeners
 // -------------------------
 startBtn.addEventListener('click', async () => {
   await loadCurrentUser(); // ensures user info is loaded
   startGame();
+
+  // Unlock sounds on mobile
+  correctSound.play().then(() => correctSound.pause());
+  wrongSound.play().then(() => wrongSound.pause());
 });
 
 playAgainBtn.addEventListener('click', () => {
@@ -366,6 +376,7 @@ function showEndScreen(score, totalQuestions) {
 // Init
 // -------------------------
 loadCurrentUser();
+
 
 
 
