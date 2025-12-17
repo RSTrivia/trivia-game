@@ -129,6 +129,10 @@ document.addEventListener('DOMContentLoaded', () => {
     fadeLayer.style.opacity = 1;
     setTimeout(() => {
       backgroundDiv.style.backgroundImage = `url('${newBg}')`;
+      const backgroundDiv = document.getElementById('background');
+      backgroundDiv.style.backgroundImage = `url('${savedBg}')`;
+      backgroundDiv.style.filter = 'none';
+      backgroundDiv.style.mixBlendMode = 'normal';
       fadeLayer.style.opacity = 0;
     }, 1500);
   }
@@ -399,5 +403,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // -------------------------
   loadCurrentUser();
 });
+
 
 
