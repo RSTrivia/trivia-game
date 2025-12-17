@@ -150,12 +150,16 @@ function updateBackground(force = false) {
   applyBackground(nextBg);
 }
 
-// Initialize background
+// Initialize background WITHOUT changing it
 const savedBg = localStorage.getItem("bg_current") || backgrounds[0];
 backgroundDiv.style.backgroundImage = `url('${savedBg}')`;
 createFadeLayer();
-updateBackground(true); // initial fade
-setInterval(() => updateBackground(), CHANGE_INTERVAL);
+
+// Only rotate if interval actually passed
+updateBackground(false);
+
+// Rotate every 10 minutes
+setInterval(() => updateBackground(false), CHANGE_INTERVAL);
 
 // -------------------------
 // User/Auth
@@ -415,3 +419,4 @@ mainMenuBtn.addEventListener('click', () => {
 // Init
 // -------------------------
 loadCurrentUser();
+
