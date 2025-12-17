@@ -184,6 +184,34 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
+async function submitLeaderboardScore(username, score) {
+  try {
+    // Check existing score
+    const { data: existingScore, error } = await supabase
+      .from('public_leaderboard')
+      .select('score')
+      .eq('username', username)
+      .single();
+
+    if (error && error.code !== 'PGRST116') { // 116 = no rows
+      console.error('Error fetching existing score:', error);
+      return;
+    }
+
+    // Update only if higher
+    if (!existingScore || score > existingScore.score) {
+      const { data, error: upsertError } = await supabase
+        .from('public_leaderboard')
+        .upsert({ username, score }, { onConflict: 'username' });
+
+      if (upsertError) console.error('Error updating leaderboard:', upsertError);
+    }
+  } catch (err) {
+    console.error('Unexpected error submitting leaderboard score:', err);
+  }
+}
+
+
   // -------------------------
   // Game Functions
   // -------------------------
@@ -334,13 +362,8 @@ function checkAnswer(selected, clickedBtn) {
     gameOverTitle.classList.remove('hidden');
   }
 
-  // Optional: submit score to Supabase
-  const { data: { user } } = await supabase.auth.getUser();
-  if (user) {
-    const { error } = await supabase
-      .from('scores')
-      .upsert({ user_id: user.id, username, score }, { onConflict: 'user_id' });
-    if (error) console.error('Error submitting score:', error);
+  if (username) {
+    await submitLeaderboardScore(username, score);
   }
 
   endGame.running = false;
@@ -374,6 +397,7 @@ function checkAnswer(selected, clickedBtn) {
   // -------------------------
   loadCurrentUser();
 });
+
 
 
 
