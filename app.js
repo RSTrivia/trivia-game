@@ -17,6 +17,8 @@ const timeDisplay = document.getElementById('time');
 
 const backgroundDiv = document.getElementById('background');
 
+let username = '';
+
 // -------------------------
 // Persistent Mute
 // -------------------------
@@ -66,7 +68,7 @@ function unlockAudio() {
 }
 
 // -------------------------
-// Background & Rotation Fix
+// Background & Rotation
 // -------------------------
 const backgrounds = [
   "images/background.jpg",
@@ -78,10 +80,8 @@ const backgrounds = [
 ];
 const CHANGE_INTERVAL = 600000; // 10 minutes
 
-// preload images
 backgrounds.forEach(src => new Image().src = src);
 
-// Force background div to fill viewport (prevent jumps)
 backgroundDiv.style.position = 'fixed';
 backgroundDiv.style.top = '0';
 backgroundDiv.style.left = '0';
@@ -91,12 +91,11 @@ backgroundDiv.style.backgroundSize = 'cover';
 backgroundDiv.style.backgroundPosition = 'center';
 backgroundDiv.style.zIndex = '-1';
 
-// Set initial background immediately
+// Immediate background
 const savedBg = localStorage.getItem("bg_current") || backgrounds[0];
 backgroundDiv.style.backgroundImage = `url('${savedBg}')`;
 window.bgAlreadySet = true;
 
-// Fade layer
 function createFadeLayer() {
   if (!document.getElementById("bg-fade-layer")) {
     const fadeLayer = document.createElement("div");
@@ -118,13 +117,11 @@ function createFadeLayer() {
   }
 }
 
-// pick random background excluding current
 function pickRandomBackground(exclude) {
   const filtered = backgrounds.filter(bg => bg !== exclude);
   return filtered[Math.floor(Math.random() * filtered.length)];
 }
 
-// apply background with fade
 function applyBackground(newBg) {
   const fadeLayer = document.getElementById("bg-fade-layer");
   fadeLayer.style.backgroundImage = `url('${newBg}')`;
@@ -136,7 +133,6 @@ function applyBackground(newBg) {
   }, 1500);
 }
 
-// update background
 function updateBackground(force = false) {
   const now = Date.now();
   const lastChange = localStorage.getItem("bg_last_change");
@@ -152,7 +148,6 @@ function updateBackground(force = false) {
   applyBackground(nextBg);
 }
 
-// Initial setup
 createFadeLayer();
 updateBackground(false);
 setInterval(() => updateBackground(), CHANGE_INTERVAL);
@@ -181,34 +176,40 @@ mainMenuBtn.addEventListener('click', () => {
 });
 
 // -------------------------
-// User/Auth
+// User/Auth (No Flash)
 // -------------------------
 async function loadCurrentUser() {
+  // Hide only the username text, not the whole element
+  const usernameSpan = document.getElementById('userDisplay');
+  usernameSpan.textContent = '';
+  
   const { data: { session } } = await supabase.auth.getSession();
 
   if (!session?.user) {
     username = '';
-    userDisplay.textContent = 'Player: Guest';
+    usernameSpan.textContent = 'Player: Guest';
     authBtn.textContent = 'Log In';
     authBtn.onclick = () => { window.location.href = 'login.html'; };
-    return;
+  } else {
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('id', session.user.id)
+      .single();
+
+    username = !error && profile ? profile.username : 'Unknown';
+    usernameSpan.textContent = `Player: ${username}`;
+
+    authBtn.textContent = 'Log Out';
+    authBtn.onclick = async () => {
+      await supabase.auth.signOut();
+      username = '';
+      loadCurrentUser();
+    };
   }
+}
 
-  const { data: profile, error } = await supabase
-    .from('profiles')
-    .select('username')
-    .eq('id', session.user.id)
-    .single();
-
-  username = !error && profile ? profile.username : 'Unknown';
-  userDisplay.textContent = `Player: ${username}`;
-
-  authBtn.textContent = 'Log Out';
-  authBtn.onclick = async () => {
-    await supabase.auth.signOut();
-    username = '';
-    loadCurrentUser();
-  };
+  userDisplay.style.visibility = 'visible'; // show after username is set
 }
 
 // -------------------------
@@ -410,3 +411,4 @@ async function submitScore() {
 // Init
 // -------------------------
 loadCurrentUser();
+
