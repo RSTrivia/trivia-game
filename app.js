@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const answersBox = document.getElementById('answers');
   const timeDisplay = document.getElementById('time');
   const backgroundDiv = document.getElementById('background');
+  const muteBtn = document.getElementById('muteBtn');
 
   let username = '';
   let score = 0;
@@ -31,7 +32,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Persistent Mute
   // -------------------------
   let muted = localStorage.getItem('muted') === 'true';
-  const muteBtn = document.getElementById('muteBtn');
   muteBtn.textContent = muted ? '🔇' : '🔊';
   muteBtn.addEventListener('click', () => {
     muted = !muted;
@@ -147,116 +147,108 @@ document.addEventListener('DOMContentLoaded', () => {
   setInterval(() => updateBackground(false), CHANGE_INTERVAL);
 
   // -------------------------
+  // Fade in App
+  // -------------------------
+  function showApp() {
+    const app = document.getElementById('app');
+    if (app) app.style.opacity = '1';
+  }
+
+  // -------------------------
   // User/Auth
   // -------------------------
   async function loadCurrentUser() {
-  const usernameSpan = userDisplay;
-  const cachedName = localStorage.getItem('cachedUsername');
+    const usernameSpan = userDisplay;
+    const cachedName = localStorage.getItem('cachedUsername');
 
-  // 1️⃣ Immediately show cached username to prevent flash
-  usernameSpan.textContent = cachedName ? `Player: ${cachedName}` : 'Player: Guest';
+    // Show cached username immediately
+    usernameSpan.textContent = cachedName ? `Player: ${cachedName}` : 'Player: Guest';
 
-  // 2️⃣ Immediately set auth button based on cached state
-  const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
-  if (cachedLoggedIn) {
+    const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
+    authBtn.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
+
+    // Get Supabase session
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (!session?.user) {
+      username = '';
+      usernameSpan.textContent = 'Player: Guest';
+      localStorage.setItem('cachedUsername', 'Guest');
+      localStorage.setItem('cachedLoggedIn', 'false');
+      authBtn.textContent = 'Log In';
+      authBtn.onclick = () => { window.location.href = 'login.html'; };
+
+      showApp();
+      return;
+    }
+
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('id', session.user.id)
+      .single();
+
+    username = !error && profile ? profile.username : 'Unknown';
+    usernameSpan.textContent = `Player: ${username}`;
+    localStorage.setItem('cachedUsername', username);
+    localStorage.setItem('cachedLoggedIn', 'true');
+
     authBtn.textContent = 'Log Out';
-  } else {
-    authBtn.textContent = 'Log In';
+    authBtn.onclick = async () => {
+      await supabase.auth.signOut();
+      username = '';
+      localStorage.setItem('cachedUsername', 'Guest');
+      localStorage.setItem('cachedLoggedIn', 'false');
+      loadCurrentUser();
+    };
+
+    // Fade in app now
+    showApp();
   }
 
-  // 3️⃣ Get current Supabase session
-  const { data: { session } } = await supabase.auth.getSession();
-
-  if (!session?.user) {
-    username = '';
-    usernameSpan.textContent = 'Player: Guest';
-    localStorage.setItem('cachedUsername', 'Guest');
-    localStorage.setItem('cachedLoggedIn', 'false');
-    authBtn.textContent = 'Log In';
-    authBtn.onclick = () => { window.location.href = 'login.html'; };
-    return;
-  }
-
-  // 4️⃣ Fetch profile from Supabase
-  const { data: profile, error } = await supabase
-    .from('profiles')
-    .select('username')
-    .eq('id', session.user.id)
-    .single();
-
-  username = !error && profile ? profile.username : 'Unknown';
-  usernameSpan.textContent = `Player: ${username}`;
-  localStorage.setItem('cachedUsername', username);
-  localStorage.setItem('cachedLoggedIn', 'true');
-
-  // 5️⃣ Setup Log Out button
-  authBtn.textContent = 'Log Out';
-  authBtn.onclick = async () => {
-    await supabase.auth.signOut();
-    username = '';
-    localStorage.setItem('cachedUsername', 'Guest');
-    localStorage.setItem('cachedLoggedIn', 'false');
-    loadCurrentUser(); // reload state after logout
-  };
-}
-
-  
+  // -------------------------
+  // Leaderboard
+  // -------------------------
   async function submitLeaderboardScore(username, score) {
     try {
-      // Get the current authenticated user
       const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError || !user) {
-        console.error('No authenticated user:', userError);
-        return;
-      }
-  
+      if (userError || !user) return;
+
       const userId = user.id;
-  
-      // Fetch existing score for this user
+
       const { data: existingScore, error: fetchError } = await supabase
         .from('scores')
         .select('score')
         .eq('user_id', userId)
         .single();
-  
-      if (fetchError && fetchError.code !== 'PGRST116') { // ignore "no rows" error
-        console.error('Error fetching existing score:', fetchError);
-        return;
-      }
-  
-      // Only insert/update if higher than existing
+
+      if (fetchError && fetchError.code !== 'PGRST116') return;
+
       if (!existingScore || score > existingScore.score) {
-        const { data, error: upsertError } = await supabase
+        await supabase
           .from('scores')
           .upsert({ user_id: userId, username, score }, { onConflict: 'user_id' });
-  
-        if (upsertError) {
-          console.error('Error updating leaderboard:', upsertError);
-        }
       }
-  
     } catch (err) {
-      console.error('Unexpected error submitting leaderboard score:', err);
+      console.error('Error submitting score:', err);
     }
   }
-
 
   // -------------------------
   // Game Functions
   // -------------------------
   function resetGame() {
-  clearInterval(timer);
-  score = 0;
-  questions = [];
-  remainingQuestions = [];
-  currentQuestion = null;
-  questionText.textContent = '';
-  answersBox.innerHTML = '';
-  questionImage.style.display = 'none';
-  timeDisplay.textContent = '15';
-  // Remove red class immediately
-  timeDisplay.classList.remove('red-timer');
-}
+    clearInterval(timer);
+    score = 0;
+    questions = [];
+    remainingQuestions = [];
+    currentQuestion = null;
+    questionText.textContent = '';
+    answersBox.innerHTML = '';
+    questionImage.style.display = 'none';
+    timeDisplay.textContent = '15';
+    timeDisplay.classList.remove('red-timer');
+  }
 
   async function startGame() {
     resetGame();
@@ -266,11 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateScore();
 
     const { data, error } = await supabase.from('questions').select('*');
-    if (error || !data?.length) {
-      console.error('Error fetching questions:', error);
-      alert('Could not load questions!');
-      return;
-    }
+    if (error || !data?.length) return alert('Could not load questions!');
 
     questions = data;
     remainingQuestions = [...questions];
@@ -280,28 +268,28 @@ document.addEventListener('DOMContentLoaded', () => {
   async function loadQuestion() {
     answersBox.innerHTML = '';
     if (!remainingQuestions.length) return await endGame();
-  
+
     const index = Math.floor(Math.random() * remainingQuestions.length);
     currentQuestion = remainingQuestions.splice(index, 1)[0];
-  
+
     questionText.textContent = currentQuestion.question || 'No question text';
     if (currentQuestion.question_image) {
       questionImage.src = currentQuestion.question_image;
       questionImage.style.display = 'block';
     } else questionImage.style.display = 'none';
-  
+
     let answers = [
       { text: currentQuestion.answer_a, correct: currentQuestion.correct_answer === 1 },
       { text: currentQuestion.answer_b, correct: currentQuestion.correct_answer === 2 },
       { text: currentQuestion.answer_c, correct: currentQuestion.correct_answer === 3 },
       { text: currentQuestion.answer_d, correct: currentQuestion.correct_answer === 4 }
     ];
-  
+
     answers = answers
       .map(value => ({ value, sort: Math.random() }))
       .sort((a, b) => a.sort - b.sort)
       .map(a => a.value);
-  
+
     answers.forEach((ans, i) => {
       const btn = document.createElement('button');
       btn.textContent = ans.text || '';
@@ -309,23 +297,21 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.addEventListener('click', () => checkAnswer(i + 1, btn));
       answersBox.appendChild(btn);
     });
-  
+
     currentQuestion.correct_answer_shuffled =
       answers.findIndex(a => a.correct) + 1;
-  
-    // Reset timer
+
     clearInterval(timer);
     timeLeft = 15;
     timeDisplay.textContent = timeLeft;
-    // Remove red class immediately
     timeDisplay.classList.remove('red-timer');
-  
+
     timer = setInterval(() => {
       timeLeft--;
       timeDisplay.textContent = timeLeft;
       if (timeLeft <= 5) timeDisplay.classList.add('red-timer');
       else timeDisplay.classList.remove('red-timer');
-  
+
       if (timeLeft <= 0) {
         clearInterval(timer);
         playSound(wrongBuffer);
@@ -335,28 +321,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 1000);
   }
 
-function checkAnswer(selected, clickedBtn) {
-  if (audioCtx.state === 'suspended') audioCtx.resume();
-  clearInterval(timer);
-  document.querySelectorAll('.answer-btn').forEach(btn => btn.disabled = true);
+  function checkAnswer(selected, clickedBtn) {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    clearInterval(timer);
+    document.querySelectorAll('.answer-btn').forEach(btn => btn.disabled = true);
 
-  if (selected === currentQuestion.correct_answer_shuffled) {
-    playSound(correctBuffer);
-    clickedBtn.classList.add('correct');
-    score++;
-    updateScore();
-    setTimeout(loadQuestion, 1000);
-  } else {
-    playSound(wrongBuffer);
-    clickedBtn.classList.add('wrong');
-    highlightCorrectAnswer();
-    updateScore();
-    // End the game instead of loading the next question
-    setTimeout(() => {
-      endGame(); // no async/await needed here
-    }, 1000);
+    if (selected === currentQuestion.correct_answer_shuffled) {
+      playSound(correctBuffer);
+      clickedBtn.classList.add('correct');
+      score++;
+      updateScore();
+      setTimeout(loadQuestion, 1000);
+    } else {
+      playSound(wrongBuffer);
+      clickedBtn.classList.add('wrong');
+      highlightCorrectAnswer();
+      updateScore();
+      setTimeout(endGame, 1000);
+    }
   }
-}
 
   function highlightCorrectAnswer() {
     document.querySelectorAll('.answer-btn').forEach((btn, i) => {
@@ -368,48 +351,34 @@ function checkAnswer(selected, clickedBtn) {
     scoreDisplay.textContent = `Score: ${score}`;
   }
 
-async function endGame() {
-  if (endGame.running) return;
-  endGame.running = true;
+  async function endGame() {
+    if (endGame.running) return;
+    endGame.running = true;
 
-  // Stop timer and hide game screen
-  clearInterval(timer);
-  game.classList.add('hidden');
-  endScreen.classList.remove('hidden');
+    clearInterval(timer);
+    game.classList.add('hidden');
+    endScreen.classList.remove('hidden');
+    finalScore.textContent = score;
 
-  // Show final score
-  finalScore.textContent = score;
+    const gameOverTitle = document.getElementById('game-over-title');
+    const gzTitle = document.getElementById('gz-title');
 
-  const gameOverTitle = document.getElementById('game-over-title');
-  const gzTitle = document.getElementById('gz-title');
-
-  // Show special message if perfect score
-  if (score === questions.length && remainingQuestions.length === 0) {
-    const gzMessages = ['Gz!', 'Go touch grass', 'See you in Lumbridge'];
-    const randomMessage = gzMessages[Math.floor(Math.random() * gzMessages.length)];
-    gzTitle.textContent = randomMessage;
-    gzTitle.classList.remove('hidden');
-    gameOverTitle.classList.add('hidden');
-  } else {
-    gzTitle.classList.add('hidden');
-    gameOverTitle.classList.remove('hidden');
-  }
-
-  // Submit score to Supabase leaderboard
-  if (username) {
-    try {
-      // Only updates if new score is higher
-      await submitLeaderboardScore(username, score);
-    } catch (err) {
-      console.error('Failed to submit leaderboard score:', err);
+    if (score === questions.length && remainingQuestions.length === 0) {
+      const gzMessages = ['Gz!', 'Go touch grass', 'See you in Lumbridge'];
+      const randomMessage = gzMessages[Math.floor(Math.random() * gzMessages.length)];
+      gzTitle.textContent = randomMessage;
+      gzTitle.classList.remove('hidden');
+      gameOverTitle.classList.add('hidden');
+    } else {
+      gzTitle.classList.add('hidden');
+      gameOverTitle.classList.remove('hidden');
     }
+
+    if (username) await submitLeaderboardScore(username, score);
+
+    endGame.running = false;
   }
 
-  endGame.running = false;
-}
-
-
-  
   // -------------------------
   // Event Listeners
   // -------------------------
@@ -438,14 +407,3 @@ async function endGame() {
   // -------------------------
   loadCurrentUser();
 });
-
-
-
-
-
-
-
-
-
-
-
