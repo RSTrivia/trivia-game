@@ -8,111 +8,29 @@
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 
+<script>
+  // Apply saved background immediately
+  const bg = localStorage.getItem("bg_current");
+  if (bg) {
+    const style = document.createElement("style");
+    style.innerHTML = `body { background-image: url('${bg}') !important; background-size: cover; background-position: center; background-repeat: no-repeat; }`;
+    document.head.appendChild(style);
+  }
+</script>
+
 <style>
-  h1 {
-    font-family: 'Cinzel', serif;
-    font-size: 3.2rem;
-    margin-bottom: 25px;
-    text-align: center;
-    letter-spacing: 2px;
-    background: linear-gradient(145deg, #fff8dc 0%, #ffdd44 25%, #f2b705 50%, #c28f0c 75%, #a77b0a 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow:
-      0 0 4px rgba(0,0,0,0.8),
-      1px 1px 0 #000,
-      2px 2px 2px rgba(0,0,0,0.6),
-      0 0 8px rgba(255, 223, 0, 0.8),
-      0 -1px 2px rgba(255, 255, 255, 0.4);
-    filter: drop-shadow(0 0 10px rgba(255, 223, 0, 0.7));
-  }
-
-  .container {
-    background-color: rgba(0, 0, 0, 0.85);
-    padding: 20px;
-    border-radius: 10px;
-    max-width: 900px;
-    margin: 20px auto;
-    box-shadow: 0 0 30px rgba(0,0,0,0.5);
-    color: #fff;
-    z-index: 1;
-    position: relative;
-  }
-
-  #username, #password {
-    display: block;
-    width: 100%;
-    padding: 10px;
-    margin: 8px 0;
-    font-size: 1rem;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    box-sizing: border-box;
-  }
-
-  .btn-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-    margin: 12px 0;
-    max-width: 360px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .btn-small {
-    flex: 1;
-    padding: 10px 16px;
-    font-size: 1rem;
-    border-radius: 8px;
-    background: rgba(0,0,0,0.6);
-    color: #ffd700;
-    border: 2px solid #ffd700;
-    cursor: pointer;
-    transition: 0.2s;
-    text-align: center;
-  }
-
-  .btn-small:hover {
-    background: rgba(0,0,0,0.85);
-    border-color: #ffea8a;
-  }
-
-  a.btn-back {
-    display: block;
-    width: 100%;
-    max-width: 360px;
-    margin: 10px auto;
-    padding: 12px 0;
-    font-size: 1.05rem;
-    border-radius: 8px;
-    background: rgba(0,0,0,0.6);
-    color: #ffd700;
-    border: 2px solid #ffd700;
-    text-decoration: none;
-    text-align: center;
-    transition: 0.2s;
-  }
-
-  a.btn-back:hover {
-    background: rgba(0,0,0,0.85);
-    border-color: #ffea8a;
-  }
+  body { margin:0; font-family:Arial,sans-serif; color:#fff; display:flex; justify-content:center; }
+  .container { background-color: rgba(0,0,0,0.85); padding:20px; border-radius:10px; max-width:900px; margin:20px; text-align:center; }
+  h1 { font-family:'Cinzel', serif; font-size:3.2rem; margin-bottom:25px; }
+  input { display:block; width:100%; padding:10px; margin:8px 0; border-radius:6px; border:1px solid #ccc; box-sizing:border-box; }
+  .btn-row { display:flex; justify-content:space-between; gap:10px; margin:12px 0; max-width:360px; margin-left:auto; margin-right:auto; }
+  .btn-small { flex:1; padding:10px 16px; font-size:1rem; border-radius:8px; background: rgba(0,0,0,0.6); color:#ffd700; border:2px solid #ffd700; cursor:pointer; transition:0.2s; }
+  .btn-small:hover { background: rgba(0,0,0,0.85); border-color:#ffea8a; }
+  a.btn-back { display:block; width:100%; max-width:360px; margin:10px auto; padding:12px 0; font-size:1.05rem; border-radius:8px; background: rgba(0,0,0,0.6); color:#ffd700; border:2px solid #ffd700; text-decoration:none; text-align:center; transition:0.2s; }
+  a.btn-back:hover { background: rgba(0,0,0,0.85); border-color:#ffea8a; }
 </style>
 </head>
 <body>
-
-<!-- Apply background immediately to prevent flash -->
-<script>
-  const currentBgImmediate = localStorage.getItem("bg_current");
-  if (currentBgImmediate) {
-    document.body.style.backgroundImage = `url('${currentBgImmediate}')`;
-    document.body.style.backgroundSize = 'cover';
-    document.body.style.backgroundPosition = 'center';
-    document.body.style.backgroundRepeat = 'no-repeat';
-    window.bgAlreadySet = true; // prevent fade first load
-  }
-</script>
 
 <div class="container">
   <h1>OSRS Trivia</h1>
@@ -131,39 +49,36 @@
 <script type="module">
 import { supabase } from './supabase.js';
 
-const usernameInput = document.getElementById('username');
-const passwordInput = document.getElementById('password');
-const loginBtn = document.getElementById('loginBtn');
-const signupBtn = document.getElementById('signupBtn');
+const usernameInput=document.getElementById('username');
+const passwordInput=document.getElementById('password');
+const loginBtn=document.getElementById('loginBtn');
+const signupBtn=document.getElementById('signupBtn');
 
-signupBtn.addEventListener('click', async () => {
-  const username = usernameInput.value.trim();
-  const password = passwordInput.value;
-  if (!username || !password) { alert('Enter a username and password'); return; }
-  const email = username.toLowerCase() + '@example.com';
-  const { data, error } = await supabase.auth.signUp({ email, password });
-  if (error) { alert('Sign-up failed: ' + error.message); return; }
-  const user = data.user;
-  if (!user) { alert('Sign-up failed: no user returned'); return; }
-  const { error: profileError } = await supabase.from('profiles').insert({ id: user.id, username });
-  if (profileError) { alert('Profile creation failed: ' + profileError.message); return; }
+signupBtn.addEventListener('click',async()=>{
+  const username=usernameInput.value.trim();
+  const password=passwordInput.value;
+  if(!username||!password){alert('Enter a username and password'); return;}
+  const email=username.toLowerCase()+'@example.com';
+  const { data,error }=await supabase.auth.signUp({email,password});
+  if(error){alert('Sign-up failed: '+error.message); return;}
+  const user=data.user;
+  if(!user){alert('Sign-up failed: no user returned'); return;}
+  const { error: profileError } = await supabase.from('profiles').insert({id:user.id, username});
+  if(profileError){alert('Profile creation failed: '+profileError.message); return;}
   alert('Account created! You can now log in.');
 });
 
-loginBtn.addEventListener('click', async () => {
-  const username = usernameInput.value.trim();
-  const password = passwordInput.value;
-  if (!username || !password) { alert('Enter a username and password'); return; }
-  const email = username.toLowerCase() + '@example.com';
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) { alert('Login failed: ' + error.message); return; }
-  if (!data.user) { alert('Login failed: no user returned'); return; }
-  window.location.href = 'index.html';
+loginBtn.addEventListener('click',async()=>{
+  const username=usernameInput.value.trim();
+  const password=passwordInput.value;
+  if(!username||!password){alert('Enter a username and password'); return;}
+  const email=username.toLowerCase()+'@example.com';
+  const { data,error }=await supabase.auth.signInWithPassword({email,password});
+  if(error){alert('Login failed: '+error.message); return;}
+  if(!data.user){alert('Login failed: no user returned'); return;}
+  window.location.href='index.html';
 });
 </script>
 
-<script src="background.js"></script>
-
 </body>
 </html>
-
