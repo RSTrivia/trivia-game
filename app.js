@@ -195,6 +195,14 @@ async function loadQuestion() {
   timer = setInterval(() => {
     timeLeft--;
     timeDisplay.textContent = timeLeft;
+  
+    // Add red color when 5 seconds or less
+    if (timeLeft <= 5) {
+      timeDisplay.classList.add('red-timer');
+    } else {
+      timeDisplay.classList.remove('red-timer');
+    }
+  
     if (timeLeft <= 0) {
       clearInterval(timer);
       playSound(wrongBuffer); // mobile-safe wrong sound
@@ -311,4 +319,5 @@ async function submitScore() {
 // Init
 // -------------------------
 loadCurrentUser();
+
 
