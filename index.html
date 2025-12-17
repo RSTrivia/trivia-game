@@ -10,40 +10,23 @@
 <link rel="stylesheet" href="style.css">
 
 <style>
-  /* Background div */
-  #background {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    z-index: -1;
-  }
-
   body {
     margin: 0;
     font-family: Arial, sans-serif;
     color: #fff;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
   }
 
-  h1 {
-    font-family: 'Cinzel', serif;
-    font-size: 3.2rem;
-    margin-bottom: 25px;
-    text-align: center;
-    letter-spacing: 2px;
-    background: linear-gradient(145deg, #fff8dc 0%, #ffdd44 25%, #f2b705 50%, #c28f0c 75%, #a77b0a 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 0 0 4px rgba(0,0,0,0.8),
-                 1px 1px 0 #000,
-                 2px 2px 2px rgba(0,0,0,0.6),
-                 0 0 8px rgba(255, 223, 0, 0.8),
-                 0 -1px 2px rgba(255, 255, 255, 0.4);
-    filter: drop-shadow(0 0 10px rgba(255, 223, 0, 0.7));
+  #background {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: -1;
   }
 
   .container {
@@ -52,12 +35,24 @@
     border-radius: 10px;
     max-width: 900px;
     margin: 20px auto;
-    box-shadow: 0 0 30px rgba(0,0,0,0.5);
     color: #fff;
     text-align: center;
+    position: relative;
+    z-index: 1;
   }
 
-  /* Flex container for mute button + player name */
+  h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 3.2rem;
+    margin-bottom: 25px;
+    letter-spacing: 2px;
+    background: linear-gradient(145deg, #fff8dc 0%, #ffdd44 25%, #f2b705 50%, #c28f0c 75%, #a77b0a 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 4px rgba(0,0,0,0.8), 1px 1px 0 #000, 2px 2px 2px rgba(0,0,0,0.6), 0 0 8px rgba(255, 223, 0, 0.8), 0 -1px 2px rgba(255, 255, 255, 0.4);
+    filter: drop-shadow(0 0 10px rgba(255, 223, 0, 0.7));
+  }
+
   #user-controls {
     display: flex;
     align-items: center;
@@ -72,25 +67,16 @@
   .menu-row { width: 100%; display: flex; justify-content: space-between; margin-top: 12px; }
   .menu-row .btn-small { width: 48%; text-align: center; }
 
-  .btn, .btn-small {
-    opacity: 1 !important;
-    transition: none !important;
-    cursor: pointer;
-  }
+  .btn, .btn-small { cursor: pointer; opacity: 1 !important; transition: none !important; }
 
-  #game, #start-screen, #end-screen {
-    margin-top: 20px;
-  }
-
+  #game, #start-screen, #end-screen { margin-top: 20px; }
   .hidden { display: none; }
 </style>
 </head>
 <body>
 
-<!-- Background -->
 <div id="background"></div>
 
-<!-- Main container wrapping everything -->
 <div class="container">
   <h1>OSRS Trivia</h1>
 
@@ -135,36 +121,20 @@
 <script type="module" src="app.js"></script>
 <script src="background.js"></script>
 
-<script type="module">
-import { supabase } from './supabase.js';
-
-async function preloadLeaderboard() {
-  try {
-    const { data, error } = await supabase
-      .from('public_leaderboard')
-      .select('username, score')
-      .order('score', { ascending: false })
-      .limit(10);
-
-    if (error) console.error('Error preloading leaderboard:', error);
-
-    window.preloadedLeaderboard = data;
-  } catch (err) {
-    console.error(err);
-  }
-}
-
-preloadLeaderboard();
-</script>
-
 <script>
-// Apply saved background immediately
-const currentBgImmediate = localStorage.getItem("bg_current");
-const backgroundDiv = document.getElementById("background");
+  // Load mute state from localStorage
+  const muteBtn = document.getElementById('muteBtn');
+  let isMuted = localStorage.getItem('isMuted') === 'true';
+  muteBtn.textContent = isMuted ? '🔇' : '🔊';
+  muteBtn.addEventListener('click', () => {
+    isMuted = !isMuted;
+    localStorage.setItem('isMuted', isMuted);
+    muteBtn.textContent = isMuted ? '🔇' : '🔊';
+  });
 
-if (currentBgImmediate && backgroundDiv) {
-  backgroundDiv.style.backgroundImage = `url('${currentBgImmediate}')`;
-}
+  // Apply saved background immediately
+  const bg = localStorage.getItem("bg_current");
+  if (bg) document.getElementById("background").style.backgroundImage = `url('${bg}')`;
 </script>
 
 </body>
