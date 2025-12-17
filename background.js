@@ -67,16 +67,16 @@ function applyBackground(newBg) {
   }, 1500);
 }
 
-// Update background based on interval or forced
-function updateBackground(force = false) {
+// Update background based on interval
+function updateBackground() {
   const now = Date.now();
-  const lastChange = localStorage.getItem("bg_last_change");
-  const currentBg = localStorage.getItem("bg_current");
+  const lastChange = parseInt(localStorage.getItem("bg_last_change") || "0", 10);
+  const currentBg = localStorage.getItem("bg_current") || savedBg;
 
-  // If interval not passed and not forced, do nothing
-  if (!force && lastChange && now - lastChange < CHANGE_INTERVAL) return;
+  // If interval not passed, do nothing
+  if (now - lastChange < CHANGE_INTERVAL) return;
 
-  const nextBg = pickRandomBackground(currentBg || savedBg);
+  const nextBg = pickRandomBackground(currentBg);
   localStorage.setItem("bg_current", nextBg);
   localStorage.setItem("bg_last_change", now);
 
@@ -86,5 +86,5 @@ function updateBackground(force = false) {
 
 // Initial setup
 createFadeLayer();
-updateBackground(true); // force update once on load
-setInterval(() => updateBackground(), CHANGE_INTERVAL);
+// Do NOT force a new background on load; use saved one
+setInterval(updateBackground, CHANGE_INTERVAL);
