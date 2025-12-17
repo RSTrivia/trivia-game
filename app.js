@@ -152,42 +152,54 @@ function updateBackground(force = false) {
 
 // Initialize background
 const savedBg = localStorage.getItem("bg_current") || backgrounds[0];
-backgroundDiv.style.backgroundImage = `url('${savedBg}')`; // no jump
+backgroundDiv.style.backgroundImage = `url('${savedBg}')`;
 createFadeLayer();
+updateBackground(true); // force initial background with fade
 setInterval(() => updateBackground(), CHANGE_INTERVAL);
 
 // -------------------------
 // User/Auth
 // -------------------------
-async function loadCurrentUser() {
+  async function loadCurrentUser() {
   const usernameSpan = userDisplay;
-  usernameSpan.textContent = 'Player: ...'; // temporary placeholder
 
+  // Try to get cached username
+  const cachedName = localStorage.getItem('cachedUsername');
+  usernameSpan.textContent = cachedName ? `Player: ${cachedName}` : 'Player: Guest';
+
+  // Fetch session
   const { data: { session } } = await supabase.auth.getSession();
 
   if (!session?.user) {
     username = '';
     usernameSpan.textContent = 'Player: Guest';
+    localStorage.setItem('cachedUsername', 'Guest');
+
     authBtn.textContent = 'Log In';
     authBtn.onclick = () => { window.location.href = 'login.html'; };
-  } else {
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('username')
-      .eq('id', session.user.id)
-      .single();
-
-    username = !error && profile ? profile.username : 'Unknown';
-    usernameSpan.textContent = `Player: ${username}`;
-
-    authBtn.textContent = 'Log Out';
-    authBtn.onclick = async () => {
-      await supabase.auth.signOut();
-      username = '';
-      loadCurrentUser();
-    };
+    return;
   }
+
+  // Fetch profile
+  const { data: profile, error } = await supabase
+    .from('profiles')
+    .select('username')
+    .eq('id', session.user.id)
+    .single();
+
+  username = !error && profile ? profile.username : 'Unknown';
+  usernameSpan.textContent = `Player: ${username}`;
+  localStorage.setItem('cachedUsername', username);
+
+  authBtn.textContent = 'Log Out';
+  authBtn.onclick = async () => {
+    await supabase.auth.signOut();
+    username = '';
+    localStorage.setItem('cachedUsername', 'Guest');
+    loadCurrentUser();
+  };
 }
+
 
 // -------------------------
 // Game Functions
@@ -381,5 +393,6 @@ async function submitScore() {
 // Init
 // -------------------------
 loadCurrentUser();
+
 
 
