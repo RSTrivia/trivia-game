@@ -24,35 +24,53 @@ let timeLeft = 15;
 let username = '';
 
 // -------------------------
-// Sounds
+// Sounds (mobile-safe)
 // -------------------------
-const correctSound = new Audio('./sounds/correct.mp3');
-const wrongSound = new Audio('./sounds/wrong.mp3');
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+let correctBuffer, wrongBuffer;
 
-// Optional: reduce volume
-correctSound.volume = 0.6;
-wrongSound.volume = 0.6;
+// Load sounds as buffers
+async function loadSounds() {
+  correctBuffer = await loadAudio('./sounds/correct.mp3');
+  wrongBuffer = await loadAudio('./sounds/wrong.mp3');
+}
 
-// Unlock audio on first user interaction (mobile fix)
-answersBox.addEventListener('click', () => {
-  correctSound.play().then(() => correctSound.pause());
-  wrongSound.play().then(() => wrongSound.pause());
-}, { once: true });  // only run once
+// Fetch + decode a sound file
+async function loadAudio(url) {
+  const response = await fetch(url);
+  const arrayBuffer = await response.arrayBuffer();
+  return await audioCtx.decodeAudioData(arrayBuffer);
+}
+
+// Play a buffer
+function playSound(buffer) {
+  if (!buffer) return;
+  const source = audioCtx.createBufferSource();
+  source.buffer = buffer;
+  source.connect(audioCtx.destination);
+  source.start();
+}
+
+// Unlock audio on first user interaction
+function unlockAudio() {
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+}
+document.body.addEventListener('click', unlockAudio, { once: true });
 
 // -------------------------
 // Event Listeners
 // -------------------------
 startBtn.addEventListener('click', async () => {
-  await loadCurrentUser(); // ensures user info is loaded
+  await loadCurrentUser();
+  await loadSounds(); // load sounds before game starts
   startGame();
-
-  // Unlock sounds on mobile
-  correctSound.play().then(() => correctSound.pause());
-  wrongSound.play().then(() => wrongSound.pause());
 });
 
-playAgainBtn.addEventListener('click', () => {
+playAgainBtn.addEventListener('click', async () => {
   resetGame();
+  await loadSounds(); // reload sounds
   startGame();
 });
 
@@ -132,19 +150,15 @@ async function startGame() {
 async function loadQuestion() {
   answersBox.innerHTML = '';
 
- // ⛔ If no more questions, end game
   if (!remainingQuestions.length) {
     return await endGame();
   }
-  
-  // Pick a random question
+
   const index = Math.floor(Math.random() * remainingQuestions.length);
   currentQuestion = remainingQuestions.splice(index, 1)[0];
 
-  // Display question text
   questionText.textContent = currentQuestion.question || 'No question text';
 
-  // Display image (if exists)
   if (currentQuestion.question_image) {
     questionImage.src = currentQuestion.question_image;
     questionImage.style.display = 'block';
@@ -152,7 +166,6 @@ async function loadQuestion() {
     questionImage.style.display = 'none';
   }
 
-  // ORIGINAL ANSWERS ARRAY with their original index
   let answers = [
     { text: currentQuestion.answer_a, correct: currentQuestion.correct_answer === 1 },
     { text: currentQuestion.answer_b, correct: currentQuestion.correct_answer === 2 },
@@ -160,13 +173,11 @@ async function loadQuestion() {
     { text: currentQuestion.answer_d, correct: currentQuestion.correct_answer === 4 }
   ];
 
-  // 🔀 SHUFFLE the answers
   answers = answers
     .map(value => ({ value, sort: Math.random() }))
     .sort((a, b) => a.sort - b.sort)
     .map(a => a.value);
 
-  // Create buttons + track new correct answer index
   answers.forEach((ans, index) => {
     const btn = document.createElement('button');
     btn.textContent = ans.text || '';
@@ -175,11 +186,9 @@ async function loadQuestion() {
     answersBox.appendChild(btn);
   });
 
-  // Save the **new correct answer index** (1–4)
   currentQuestion.correct_answer_shuffled =
     answers.findIndex(a => a.correct) + 1;
 
-  // Restart timer
   timeLeft = 15;
   timeDisplay.textContent = timeLeft;
   clearInterval(timer);
@@ -189,47 +198,35 @@ async function loadQuestion() {
     timeDisplay.textContent = timeLeft;
     if (timeLeft <= 0) {
       clearInterval(timer);
-      wrongSound.currentTime = 0;
-      wrongSound.play();
-      
+      playSound(wrongBuffer); // mobile-safe wrong sound
       highlightCorrectAnswer();
-      setTimeout(async () => {
-        await endGame();
-      }, 1000);
+      setTimeout(async () => { await endGame(); }, 1000);
     }
   }, 1000);
 }
-
 
 function checkAnswer(selected, clickedBtn) {
   clearInterval(timer);
   document.querySelectorAll('.answer-btn').forEach(btn => btn.disabled = true);
 
   if (selected === currentQuestion.correct_answer_shuffled) {
-    correctSound.currentTime = 0; // allow rapid replays
-    correctSound.play();
-
+    playSound(correctBuffer); // mobile-safe correct sound
     clickedBtn.classList.add('correct');
     score++;
     updateScore();
-
     setTimeout(loadQuestion, 1000);
   } else {
-    wrongSound.currentTime = 0;
-    wrongSound.play();
-
+    playSound(wrongBuffer); // mobile-safe wrong sound
     clickedBtn.classList.add('wrong');
     highlightCorrectAnswer();
     updateScore();
-
     setTimeout(async () => { await endGame(); }, 1000);
   }
 }
 
-
 function highlightCorrectAnswer() {
   document.querySelectorAll('.answer-btn').forEach((btn, i) => {
-   if (i + 1 === currentQuestion.correct_answer_shuffled) btn.classList.add('correct');
+    if (i + 1 === currentQuestion.correct_answer_shuffled) btn.classList.add('correct');
   });
 }
 
@@ -240,34 +237,8 @@ function updateScore() {
 // -------------------------
 // End Game & Submit Score
 // -------------------------
-/*async function endGame() {
-  clearInterval(timer);
-  game.classList.add('hidden');
-  endScreen.classList.remove('hidden');
-
-  const gameOverTitle = document.getElementById('game-over-title');
-  const gzTitle = document.getElementById('gz-title');
-
-  finalScore.textContent = score;
-
-  if (score === questions.length && remainingQuestions.length === 0) {
-    // Player got all questions correct → show random gz message
-    const gzMessages = ['gz', 'go touch grass', 'see you in lumbridge'];
-    const randomMessage = gzMessages[Math.floor(Math.random() * gzMessages.length)];
-
-    gzTitle.textContent = randomMessage;
-    gzTitle.classList.remove('hidden');
-    gameOverTitle.classList.add('hidden');
-  } else {
-    // Player missed some → show normal Game Over
-    gzTitle.classList.add('hidden');
-    gameOverTitle.classList.remove('hidden');
-  }
-
-  await submitScore();
-}*/
 async function endGame() {
-  if (endGame.running) return;  // ⛔ prevents duplicate execution
+  if (endGame.running) return;
   endGame.running = true;
 
   clearInterval(timer);
@@ -280,30 +251,28 @@ async function endGame() {
   finalScore.textContent = score;
 
   if (score === questions.length && remainingQuestions.length === 0) {
-    // Player got all questions correct → show random gz message
     const gzMessages = ['gz', 'go touch grass', 'see you in lumbridge'];
     const randomMessage = gzMessages[Math.floor(Math.random() * gzMessages.length)];
-
     gzTitle.textContent = randomMessage;
     gzTitle.classList.remove('hidden');
     gameOverTitle.classList.add('hidden');
   } else {
-    // Player missed some → show normal Game Over
     gzTitle.classList.add('hidden');
     gameOverTitle.classList.remove('hidden');
   }
 
   await submitScore();
 
-  endGame.running = false; // reset flag
+  endGame.running = false;
 }
 
-
+// -------------------------
+// Score Submission
+// -------------------------
 async function submitScore() {
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return; // guests do not save scores
+  if (!user) return;
 
-  // ensure username is available
   if (!username) {
     const { data: profile } = await supabase
       .from('profiles')
@@ -314,88 +283,28 @@ async function submitScore() {
   }
 
   try {
-    // 1️⃣ Get the user's existing best score
     const { data: existing, error: existingErr } = await supabase
       .from('scores')
       .select('score')
       .eq('user_id', user.id)
       .single();
 
-    if (existingErr && existingErr.code !== 'PGRST116') {
-      console.error('Error checking existing score:', existingErr);
-      return;
-    }
+    if (existingErr && existingErr.code !== 'PGRST116') return;
 
-    // 2️⃣ If they already have a better score, DO NOT update
-    if (existing && existing.score >= score) {
-      console.log('Score not updated (existing score is higher):', existing.score);
-      return;
-    }
+    if (existing && existing.score >= score) return;
 
-    // 3️⃣ Otherwise update to the new best score
     const { data, error } = await supabase
       .from('scores')
-      .upsert(
-        { user_id: user.id, username, score },
-        { onConflict: 'user_id' }
-      )
+      .upsert({ user_id: user.id, username, score }, { onConflict: 'user_id' })
       .select();
 
     if (error) console.error('Error saving score:', error);
-    else console.log('Score updated to new best:', data);
-
   } catch (err) {
     console.error('Unexpected error submitting score:', err);
   }
 }
 
-
-function showEndScreen(score, totalQuestions) {
-  const endScreen = document.getElementById('end-screen');
-  const endTitle = document.getElementById('end-title');
-  const finalScoreEl = document.getElementById('finalScore');
-
-  finalScoreEl.textContent = score;
-
-  // Reset class
-  endTitle.className = '';
-
-  if (score === totalQuestions) {
-    endTitle.textContent = 'gz';
-    endTitle.classList.add('osrs-title'); // apply gold gradient style
-  } else {
-    endTitle.textContent = 'Game Over!';
-    endTitle.classList.remove('osrs-title');
-  }
-
-  endScreen.classList.remove('hidden');
-}
-
-
 // -------------------------
 // Init
 // -------------------------
 loadCurrentUser();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
