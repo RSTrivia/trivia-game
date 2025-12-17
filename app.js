@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const questionImage = document.getElementById('questionImage');
   const answersBox = document.getElementById('answers');
   const timeDisplay = document.getElementById('time');
-  const backgroundDiv = document.getElementById('background');
+  const bgImg = document.getElementById('background-img');
   const muteBtn = document.getElementById('muteBtn');
   const appDiv = document.getElementById('app');
 
@@ -73,64 +73,76 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // -------------------------
-// Background
-// -------------------------
-const backgrounds = [
-  "images/background.jpg",
-  "images/background2.png",
-  "images/background3.jpg",
-  "images/background4.jpg",
-  "images/background5.jpg",
-  "images/background6.png"
-];
-const CHANGE_INTERVAL = 600000;
-backgrounds.forEach(src => new Image().src = src); // pre-load
+  // Background Rotation
+  // -------------------------
+  const backgrounds = [
+    "images/background.jpg",
+    "images/background2.png",
+    "images/background3.jpg",
+    "images/background4.jpg",
+    "images/background5.jpg",
+    "images/background6.png"
+  ];
+  const CHANGE_INTERVAL = 600000; // 10 minutes
+  backgrounds.forEach(src => new Image().src = src); // preload
 
-const bgImg = document.getElementById('background-img');
-const fadeLayer = document.getElementById('bg-fade-layer');
+  let fadeLayer = document.getElementById('bg-fade-layer');
+  if (!fadeLayer) {
+    fadeLayer = document.createElement('div');
+    fadeLayer.id = 'bg-fade-layer';
+    Object.assign(fadeLayer.style, {
+      position: 'fixed',
+      inset: 0,
+      zIndex: '-2',
+      pointerEvents: 'none',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      opacity: 0,
+      transition: 'opacity 1.5s ease'
+    });
+    document.body.appendChild(fadeLayer);
+  }
 
-function pickRandomBackground(exclude) {
-  const filtered = backgrounds.filter(bg => bg !== exclude);
-  return filtered[Math.floor(Math.random() * filtered.length)];
-}
+  function pickNextBackground(current) {
+    const filtered = backgrounds.filter(bg => bg !== current);
+    return filtered[Math.floor(Math.random() * filtered.length)];
+  }
 
-function applyBackground(newBg) {
-  fadeLayer.style.backgroundImage = `url('${newBg}')`;
-  fadeLayer.style.opacity = 1;
+  function applyBackground(newBg) {
+    fadeLayer.style.backgroundImage = `url('${newBg}')`;
+    fadeLayer.style.opacity = 1;
 
-  setTimeout(() => {
-    bgImg.src = newBg;      // main image update
-    fadeLayer.style.opacity = 0;
-  }, 1500);
-}
+    setTimeout(() => {
+      bgImg.src = newBg;
+      fadeLayer.style.opacity = 0;
+    }, 1500);
+  }
 
-function updateBackground(force = false) {
-  const now = Date.now();
-  const lastChange = localStorage.getItem("bg_last_change");
-  const currentBg = localStorage.getItem("bg_current") || backgrounds[0];
-  if (!force && lastChange && now - lastChange < CHANGE_INTERVAL) return;
+  function updateBackground(force = false) {
+    const now = Date.now();
+    const lastChange = Number(localStorage.getItem('bg_last_change')) || 0;
+    const currentBg = localStorage.getItem('bg_current') || backgrounds[0];
 
-  const nextBg = pickRandomBackground(currentBg);
-  localStorage.setItem("bg_current", nextBg);
-  localStorage.setItem("bg_last_change", now);
+    if (!force && now - lastChange < CHANGE_INTERVAL) return;
 
-  applyBackground(nextBg);
-}
+    const nextBg = pickNextBackground(currentBg);
+    localStorage.setItem('bg_current', nextBg);
+    localStorage.setItem('bg_last_change', now);
 
-// Init
-const savedBg = localStorage.getItem("bg_current") || backgrounds[0];
-bgImg.src = savedBg;
-updateBackground(false);
-setInterval(() => updateBackground(false), CHANGE_INTERVAL);
-  
+    applyBackground(nextBg);
+  }
+
+  const savedBg = localStorage.getItem('bg_current') || backgrounds[0];
+  bgImg.src = savedBg;
+  updateBackground(true);
+  setInterval(updateBackground, CHANGE_INTERVAL);
+
   // -------------------------
   // User/Auth
   // -------------------------
   async function loadCurrentUser() {
-    const usernameSpan = userDisplay;
     const cachedName = localStorage.getItem('cachedUsername');
-
-    usernameSpan.textContent = cachedName ? `Player: ${cachedName}` : 'Player: Guest';
+    userDisplay.textContent = cachedName ? `Player: ${cachedName}` : 'Player: Guest';
     const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
     authBtn.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
 
@@ -138,11 +150,11 @@ setInterval(() => updateBackground(false), CHANGE_INTERVAL);
 
     if (!session?.user) {
       username = '';
-      usernameSpan.textContent = 'Player: Guest';
+      userDisplay.textContent = 'Player: Guest';
       localStorage.setItem('cachedUsername', 'Guest');
       localStorage.setItem('cachedLoggedIn', 'false');
       authBtn.textContent = 'Log In';
-      authBtn.onclick = () => { window.location.href = 'login.html'; };
+      authBtn.onclick = () => window.location.href = 'login.html';
       return;
     }
 
@@ -153,7 +165,7 @@ setInterval(() => updateBackground(false), CHANGE_INTERVAL);
       .single();
 
     username = !error && profile ? profile.username : 'Unknown';
-    usernameSpan.textContent = `Player: ${username}`;
+    userDisplay.textContent = `Player: ${username}`;
     localStorage.setItem('cachedUsername', username);
     localStorage.setItem('cachedLoggedIn', 'true');
 
@@ -258,8 +270,7 @@ setInterval(() => updateBackground(false), CHANGE_INTERVAL);
       answersBox.appendChild(btn);
     });
 
-    currentQuestion.correct_answer_shuffled =
-      answers.findIndex(a => a.correct) + 1;
+    currentQuestion.correct_answer_shuffled = answers.findIndex(a => a.correct) + 1;
 
     clearInterval(timer);
     timeLeft = 15;
@@ -269,16 +280,13 @@ setInterval(() => updateBackground(false), CHANGE_INTERVAL);
     timer = setInterval(() => {
       timeLeft--;
       timeDisplay.textContent = timeLeft;
-      if (timeLeft <= 5) timeDisplay.classList.add('red-timer');
-      else timeDisplay.classList.remove('red-timer');
+      timeDisplay.classList.toggle('red-timer', timeLeft <= 5);
 
       if (timeLeft <= 0) {
         clearInterval(timer);
         playSound(wrongBuffer);
         highlightCorrectAnswer();
-        requestAnimationFrame(() => {
-          setTimeout(() => endGame(), 1000);
-        });
+        setTimeout(endGame, 1000);
       }
     }, 1000);
   }
@@ -299,7 +307,7 @@ setInterval(() => updateBackground(false), CHANGE_INTERVAL);
       clickedBtn.classList.add('wrong');
       highlightCorrectAnswer();
       updateScore();
-      setTimeout(() => endGame(), 1000);
+      setTimeout(endGame, 1000);
     }
   }
 
@@ -337,7 +345,6 @@ setInterval(() => updateBackground(false), CHANGE_INTERVAL);
     }
 
     if (username) await submitLeaderboardScore(username, score);
-
     endGame.running = false;
   }
 
@@ -369,7 +376,3 @@ setInterval(() => updateBackground(false), CHANGE_INTERVAL);
   // -------------------------
   loadCurrentUser();
 });
-
-
-
-
