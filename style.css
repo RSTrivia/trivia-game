@@ -1,27 +1,10 @@
 /* ====== BODY ====== */
 body {
   font-family: Arial, sans-serif;
-  /* ====== one background ====== */
-  /* background-image: url('images/background.jpg');*/
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 40px;
   margin: 0;
-  position: relative;
-}
-
-body::before {
-  content: "";
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.3); /* dark overlay */
-  z-index: 0;
+  padding: 0;
+  height: 100%;
+  overflow-x: hidden;
 }
 
 /* ====== CONTAINER ====== */
@@ -123,7 +106,7 @@ a.btn:hover, a.btn-small:hover {
 }
 
 .answer-btn:hover {
-  background: #f2f2f2;
+  : #f2f2f2;
 }
 
 /* Extra spacing after the last answer button */
@@ -143,7 +126,7 @@ a.btn:hover, a.btn-small:hover {
   position: absolute;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  background: rgba(0,0,0,0.3);
+  : rgba(0,0,0,0.3);
   z-index: 0;
   border-radius: 10px;
 }
@@ -154,8 +137,8 @@ a.btn:hover, a.btn-small:hover {
 }
 
 .hidden { display: none; }
-.correct { background-color: #4caf50 !important; color: white; }
-.wrong { background-color: #f44336 !important; color: white; }
+.correct { -color: #4caf50 !important; color: white; }
+.wrong { -color: #f44336 !important; color: white; }
 
 /* ====== LEADERBOARD ====== */
 #leaderboard {
@@ -168,14 +151,14 @@ a.btn:hover, a.btn-small:hover {
   display: flex;
   justify-content: space-between;
   padding: 10px 12px;
-  background: #f2f2f2;
+  : #f2f2f2;
   border-radius: 5px;
   margin-bottom: 6px;
   font-size: 1rem;
 }
 
 #leaderboard li:nth-child(odd) {
-  background: #e0e0e0;
+  : #e0e0e0;
 }
 
 /* Top 3 highlight */
@@ -183,7 +166,7 @@ a.btn:hover, a.btn-small:hover {
 .top-2 { color: silver; font-weight: bold; }
 .top-3 { color: #cd7f32; font-weight: bold; }
 
-/* ====== PAGE BACKGROUND ===== */
+/* ====== PAGE  ===== */
 .page-background {
   background-color: #f5f5f5;
   min-height: 100vh;
@@ -362,6 +345,15 @@ html, body {
   background-position: center;
 }
 
+/* App layout wrapper (replaces body layout) */
+#app {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px;
+}
+
 /* App visibility control (prevents all flashes) */
 .app-hidden {
   opacity: 0;
@@ -371,4 +363,5 @@ html, body {
   opacity: 1;
   transition: opacity 0.15s ease;
 }
+
 
