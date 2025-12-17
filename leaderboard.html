@@ -29,12 +29,20 @@
     z-index: -1;
   }
 
+  /* App wrapper */
+  #app {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 40px;
+  }
+
   .container {
     background-color: rgba(0,0,0,0.85);
     padding: 20px;
     border-radius: 10px;
     max-width: 900px;
-    margin: 20px auto;
     text-align: center;
     box-shadow: 0 0 30px rgba(0,0,0,0.5);
   }
@@ -78,13 +86,8 @@
   }
 
   /* Prevent flash */
-  .app-hidden {
-    visibility: hidden;
-  }
-
-  .app-ready {
-    visibility: visible;
-  }
+  .app-hidden { visibility: hidden; }
+  .app-ready { visibility: visible; }
 </style>
 </head>
 
@@ -95,21 +98,15 @@
 
 <!-- App wrapper -->
 <div id="app" class="app-hidden">
-
   <div class="container">
     <h1>Leaderboard</h1>
-
     <ul id="leaderboard"></ul>
-
     <a href="index.html" class="btn-small">Main Menu</a>
   </div>
-
 </div>
 
 <!-- Scripts -->
-<script type="module" src="supabase.js"></script>
 <script src="background.js"></script>
-
 <script type="module">
 import { supabase } from './supabase.js';
 
@@ -118,24 +115,14 @@ const app = document.getElementById('app');
 
 function renderLeaderboard(data) {
   while (data.length < 10) data.push({ username: '', score: null });
-
   leaderboardEl.innerHTML = '';
-
   data.forEach((entry, i) => {
     const li = document.createElement('li');
     const left = document.createElement('span');
     const right = document.createElement('span');
 
-    const pos =
-      i === 0 ? '🥇' :
-      i === 1 ? '🥈' :
-      i === 2 ? '🥉' :
-      `${i + 1}.`;
-
-    left.textContent = entry.username?.trim()
-      ? `${pos} ${entry.username}`
-      : pos;
-
+    const pos = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}.`;
+    left.textContent = entry.username?.trim() ? `${pos} ${entry.username}` : pos;
     right.textContent = entry.score != null ? entry.score : '';
 
     li.appendChild(left);
@@ -153,7 +140,7 @@ function renderLeaderboard(data) {
 
   if (!error) renderLeaderboard(data || []);
 
-  // Reveal UI once everything is ready
+  // Reveal UI after data is ready
   app.classList.remove('app-hidden');
   app.classList.add('app-ready');
 })();
