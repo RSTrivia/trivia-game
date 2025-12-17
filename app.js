@@ -186,31 +186,42 @@ document.addEventListener('DOMContentLoaded', () => {
   
   async function submitLeaderboardScore(username, score) {
     try {
-      // Check existing score in the actual table
-      const { data: existingScore, error } = await supabase
-        .from('scores') // <- use the table name, not the view
-        .select('score')
-        .eq('username', username)
-        .single();
-  
-      if (error && error.code !== 'PGRST116') { // 116 = no rows found
-        console.error('Error fetching existing score:', error);
+      // Get the current authenticated user
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        console.error('No authenticated user:', userError);
         return;
       }
   
-      // Update only if higher
+      const userId = user.id;
+  
+      // Fetch existing score for this user
+      const { data: existingScore, error: fetchError } = await supabase
+        .from('scores')
+        .select('score')
+        .eq('user_id', userId)
+        .single();
+  
+      if (fetchError && fetchError.code !== 'PGRST116') { // ignore "no rows" error
+        console.error('Error fetching existing score:', fetchError);
+        return;
+      }
+  
+      // Only insert/update if higher than existing
       if (!existingScore || score > existingScore.score) {
         const { data, error: upsertError } = await supabase
-          .from('scores') // <- table name
-          .upsert({ username, score }, { onConflict: 'username' });
+          .from('scores')
+          .upsert({ user_id: userId, username, score }, { onConflict: 'user_id' });
   
-        if (upsertError) console.error('Error updating leaderboard:', upsertError);
+        if (upsertError) {
+          console.error('Error updating leaderboard:', upsertError);
+        }
       }
+  
     } catch (err) {
       console.error('Unexpected error submitting leaderboard score:', err);
     }
   }
-
 
 
   // -------------------------
@@ -405,6 +416,7 @@ async function endGame() {
   // -------------------------
   loadCurrentUser();
 });
+
 
 
 
