@@ -309,6 +309,43 @@ function checkAnswer(selected, clickedBtn) {
     scoreDisplay.textContent = `Score: ${score}`;
   }
 
+  async function endGame() {
+  if (endGame.running) return;
+  endGame.running = true;
+
+  clearInterval(timer);
+  game.classList.add('hidden');
+  endScreen.classList.remove('hidden');
+
+  finalScore.textContent = score;
+
+  const gameOverTitle = document.getElementById('game-over-title');
+  const gzTitle = document.getElementById('gz-title');
+
+  // If perfect score
+  if (score === questions.length && remainingQuestions.length === 0) {
+    const gzMessages = ['Gz!', 'Go touch grass', 'See you in Lumbridge'];
+    const randomMessage = gzMessages[Math.floor(Math.random() * gzMessages.length)];
+    gzTitle.textContent = randomMessage;
+    gzTitle.classList.remove('hidden');
+    gameOverTitle.classList.add('hidden');
+  } else {
+    gzTitle.classList.add('hidden');
+    gameOverTitle.classList.remove('hidden');
+  }
+
+  // Optional: submit score to Supabase
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    const { error } = await supabase
+      .from('scores')
+      .upsert({ user_id: user.id, username, score }, { onConflict: 'user_id' });
+    if (error) console.error('Error submitting score:', error);
+  }
+
+  endGame.running = false;
+}
+  
   // -------------------------
   // Event Listeners
   // -------------------------
@@ -337,6 +374,7 @@ function checkAnswer(selected, clickedBtn) {
   // -------------------------
   loadCurrentUser();
 });
+
 
 
 
