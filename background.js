@@ -1,6 +1,5 @@
 // === PERSISTENT BACKGROUND ROTATION WITH FADE & NO JUMP ===
 
-// Add your backgrounds here
 const backgrounds = [
   "images/background.jpg",
   "images/background2.png",
@@ -10,13 +9,12 @@ const backgrounds = [
   "images/background6.png"
 ];
 
-// Change interval in milliseconds (10 minutes)
-const CHANGE_INTERVAL = 600000;
+const CHANGE_INTERVAL = 600000; // 10 minutes
 
-// Preload images for smoother transitions
+// Preload images
 backgrounds.forEach(src => new Image().src = src);
 
-// Get or create the #background div
+// Get/create background div
 let backgroundDiv = document.getElementById('background');
 if (!backgroundDiv) {
   backgroundDiv = document.createElement('div');
@@ -31,13 +29,13 @@ if (!backgroundDiv) {
     backgroundPosition: "center",
     backgroundRepeat: "no-repeat",
     zIndex: "-1",
-    transition: "opacity 1.5s ease",
-    opacity: "1"
+    opacity: "1",
+    transition: "opacity 1.5s ease"
   });
   document.body.prepend(backgroundDiv);
 }
 
-// Fade layer for smooth transition
+// Fade layer
 function createFadeLayer() {
   if (!document.getElementById("bg-fade-layer")) {
     const fadeLayer = document.createElement("div");
@@ -59,51 +57,42 @@ function createFadeLayer() {
   }
 }
 
-// Pick a random background excluding the current one
+// Pick random background not equal to exclude
 function pickRandomBackground(exclude) {
   const filtered = backgrounds.filter(bg => bg !== exclude);
   return filtered[Math.floor(Math.random() * filtered.length)];
 }
 
-// Apply a background (fade effect)
+// Apply background with fade
 function applyBackground(newBg) {
   const fadeLayer = document.getElementById("bg-fade-layer");
 
-  if (window.bgAlreadySet) {
-    // Instant first load
-    backgroundDiv.style.backgroundImage = `url('${newBg}')`;
-    fadeLayer.style.opacity = 0;
-    return;
-  }
-
-  // Normal fade for later rotations
+  // Fade layer shows new bg
   fadeLayer.style.backgroundImage = `url('${newBg}')`;
   fadeLayer.style.opacity = 1;
 
+  // After fade, update #background and hide fadeLayer
   setTimeout(() => {
     backgroundDiv.style.backgroundImage = `url('${newBg}')`;
     fadeLayer.style.opacity = 0;
   }, 1500);
 }
 
-// Update background (force or interval)
+// Update background
 function updateBackground(force = false) {
   const now = Date.now();
   const lastChange = localStorage.getItem("bg_last_change");
   const currentBg = localStorage.getItem("bg_current");
 
-  // First load: pick a background if none exists
+  // First load
   if (!currentBg) {
     const initial = pickRandomBackground(null);
     localStorage.setItem("bg_current", initial);
     localStorage.setItem("bg_last_change", now);
-    if (!window.bgAlreadySet) {
-      backgroundDiv.style.backgroundImage = `url('${initial}')`;
-    }
+    backgroundDiv.style.backgroundImage = `url('${initial}')`;
     return;
   }
 
-  // Skip if interval not passed and not forced
   if (!force && lastChange && now - lastChange < CHANGE_INTERVAL) return;
 
   const nextBg = pickRandomBackground(currentBg);
@@ -114,17 +103,13 @@ function updateBackground(force = false) {
   applyBackground(nextBg);
 }
 
-// === INITIAL SETUP ===
+// INITIAL SETUP
 createFadeLayer();
 
-// Apply last background immediately (prevents first-load jump)
-const savedBg = localStorage.getItem("bg_current");
-if (savedBg) {
-  backgroundDiv.style.backgroundImage = `url('${savedBg}')`;
-  window.bgAlreadySet = true;
-} else {
-  updateBackground(true); // pick initial background
-}
+// Set initial background immediately to avoid jump
+const savedBg = localStorage.getItem("bg_current") || pickRandomBackground(null);
+backgroundDiv.style.backgroundImage = `url('${savedBg}')`;
+localStorage.setItem("bg_current", savedBg);
 
 // Start interval rotation
 setInterval(() => updateBackground(), CHANGE_INTERVAL);
