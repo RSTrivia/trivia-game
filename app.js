@@ -79,8 +79,10 @@ const backgrounds = [
 ];
 const CHANGE_INTERVAL = 600000; // 10 minutes
 
+// Preload images
 backgrounds.forEach(src => new Image().src = src);
 
+// Setup background div
 Object.assign(backgroundDiv.style, {
   position: 'fixed',
   top: 0,
@@ -92,6 +94,7 @@ Object.assign(backgroundDiv.style, {
   zIndex: '-1'
 });
 
+// Fade layer
 function createFadeLayer() {
   if (!document.getElementById("bg-fade-layer")) {
     const fadeLayer = document.createElement("div");
@@ -122,19 +125,18 @@ function applyBackground(newBg) {
   const fadeLayer = document.getElementById("bg-fade-layer");
   fadeLayer.style.backgroundImage = `url('${newBg}')`;
   fadeLayer.style.opacity = 1;
-
   setTimeout(() => {
     backgroundDiv.style.backgroundImage = `url('${newBg}')`;
     fadeLayer.style.opacity = 0;
   }, 1500);
 }
 
-function updateBackground() {
+function updateBackground(force = false) {
   const now = Date.now();
   const lastChange = localStorage.getItem("bg_last_change");
   const currentBg = localStorage.getItem("bg_current") || backgrounds[0];
 
-  if (lastChange && now - lastChange < CHANGE_INTERVAL) return;
+  if (!force && lastChange && now - lastChange < CHANGE_INTERVAL) return;
 
   const nextBg = pickRandomBackground(currentBg);
   localStorage.setItem("bg_current", nextBg);
@@ -144,11 +146,11 @@ function updateBackground() {
   applyBackground(nextBg);
 }
 
-// Init background
-createFadeLayer();
+// Initial background (no fade)
 const savedBg = localStorage.getItem("bg_current") || backgrounds[0];
 backgroundDiv.style.backgroundImage = `url('${savedBg}')`;
-setInterval(updateBackground, CHANGE_INTERVAL);
+createFadeLayer();
+setInterval(() => updateBackground(), CHANGE_INTERVAL);
 
 // -------------------------
 // User/Auth
@@ -156,33 +158,37 @@ setInterval(updateBackground, CHANGE_INTERVAL);
 async function loadCurrentUser() {
   const usernameSpan = userDisplay;
 
-  // Show cached username immediately
-  const cachedName = localStorage.getItem('cachedUsername') || 'Guest';
-  usernameSpan.textContent = `Player: ${cachedName}`;
+  // Show cached name immediately
+  const cachedName = localStorage.getItem('cachedUsername');
+  if (cachedName) {
+    username = cachedName;
+    usernameSpan.textContent = `Player: ${username}`;
+  } else {
+    usernameSpan.textContent = '';
+  }
 
+  // Fetch session
   const { data: { session } } = await supabase.auth.getSession();
   if (!session?.user) {
     username = '';
+    usernameSpan.textContent = `Player: Guest`;
+    localStorage.setItem('cachedUsername', 'Guest');
+
     authBtn.textContent = 'Log In';
     authBtn.onclick = () => { window.location.href = 'login.html'; };
-    localStorage.setItem('cachedUsername', 'Guest');
     return;
   }
 
+  // Fetch profile
   const { data: profile, error } = await supabase
     .from('profiles')
     .select('username')
     .eq('id', session.user.id)
     .single();
 
-  if (!error && profile?.username) {
-    username = profile.username;
-    usernameSpan.textContent = `Player: ${username}`;
-    localStorage.setItem('cachedUsername', username);
-  } else {
-    username = 'Unknown';
-    usernameSpan.textContent = `Player: ${username}`;
-  }
+  username = !error && profile ? profile.username : 'Unknown';
+  usernameSpan.textContent = `Player: ${username}`;
+  localStorage.setItem('cachedUsername', username);
 
   authBtn.textContent = 'Log Out';
   authBtn.onclick = async () => {
@@ -324,10 +330,10 @@ async function endGame() {
   game.classList.add('hidden');
   endScreen.classList.remove('hidden');
 
-  finalScore.textContent = score;
-
   const gameOverTitle = document.getElementById('game-over-title');
   const gzTitle = document.getElementById('gz-title');
+
+  finalScore.textContent = score;
 
   if (score === questions.length && remainingQuestions.length === 0) {
     const gzMessages = ['gz', 'go touch grass', 'see you in lumbridge'];
@@ -380,29 +386,6 @@ async function submitScore() {
     console.error('Unexpected error submitting score:', err);
   }
 }
-
-// -------------------------
-// Event Listeners
-// -------------------------
-startBtn.addEventListener('click', async () => {
-  await loadCurrentUser();
-  await loadSounds();
-  startGame();
-});
-
-playAgainBtn.addEventListener('click', async () => {
-  resetGame();
-  await loadSounds();
-  startGame();
-});
-
-mainMenuBtn.addEventListener('click', () => {
-  resetGame();
-  game.classList.add('hidden');
-  endScreen.classList.add('hidden');
-  document.getElementById('start-screen').classList.remove('hidden');
-  updateScore();
-});
 
 // -------------------------
 // Init
