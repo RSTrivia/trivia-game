@@ -17,14 +17,6 @@ const timeDisplay = document.getElementById('time');
 
 const backgroundDiv = document.getElementById('background');
 
-let questions = [];
-let remainingQuestions = [];
-let currentQuestion = null;
-let score = 0;
-let timer;
-let timeLeft = 15;
-let username = '';
-
 // -------------------------
 // Persistent Mute
 // -------------------------
@@ -74,7 +66,7 @@ function unlockAudio() {
 }
 
 // -------------------------
-// Instant Background & Persistent Rotation
+// Background & Rotation Fix
 // -------------------------
 const backgrounds = [
   "images/background.jpg",
@@ -85,14 +77,26 @@ const backgrounds = [
   "images/background6.png"
 ];
 const CHANGE_INTERVAL = 600000; // 10 minutes
+
+// preload images
 backgrounds.forEach(src => new Image().src = src);
 
-// Set immediate background from localStorage to avoid flash
+// Force background div to fill viewport (prevent jumps)
+backgroundDiv.style.position = 'fixed';
+backgroundDiv.style.top = '0';
+backgroundDiv.style.left = '0';
+backgroundDiv.style.width = '100%';
+backgroundDiv.style.height = '100%';
+backgroundDiv.style.backgroundSize = 'cover';
+backgroundDiv.style.backgroundPosition = 'center';
+backgroundDiv.style.zIndex = '-1';
+
+// Set initial background immediately
 const savedBg = localStorage.getItem("bg_current") || backgrounds[0];
 backgroundDiv.style.backgroundImage = `url('${savedBg}')`;
 window.bgAlreadySet = true;
 
-// Create fade layer
+// Fade layer
 function createFadeLayer() {
   if (!document.getElementById("bg-fade-layer")) {
     const fadeLayer = document.createElement("div");
@@ -114,29 +118,33 @@ function createFadeLayer() {
   }
 }
 
+// pick random background excluding current
 function pickRandomBackground(exclude) {
   const filtered = backgrounds.filter(bg => bg !== exclude);
   return filtered[Math.floor(Math.random() * filtered.length)];
 }
 
+// apply background with fade
 function applyBackground(newBg) {
   const fadeLayer = document.getElementById("bg-fade-layer");
   fadeLayer.style.backgroundImage = `url('${newBg}')`;
   fadeLayer.style.opacity = 1;
+
   setTimeout(() => {
     backgroundDiv.style.backgroundImage = `url('${newBg}')`;
     fadeLayer.style.opacity = 0;
   }, 1500);
 }
 
+// update background
 function updateBackground(force = false) {
   const now = Date.now();
-  const lastChange = parseInt(localStorage.getItem("bg_last_change") || "0", 10);
-  const currentBg = localStorage.getItem("bg_current") || savedBg;
+  const lastChange = localStorage.getItem("bg_last_change");
+  const currentBg = localStorage.getItem("bg_current");
 
-  if (!force && now - lastChange < CHANGE_INTERVAL) return;
+  if (!force && lastChange && now - lastChange < CHANGE_INTERVAL) return;
 
-  const nextBg = pickRandomBackground(currentBg);
+  const nextBg = pickRandomBackground(currentBg || savedBg);
   localStorage.setItem("bg_current", nextBg);
   localStorage.setItem("bg_last_change", now);
 
@@ -144,8 +152,9 @@ function updateBackground(force = false) {
   applyBackground(nextBg);
 }
 
+// Initial setup
 createFadeLayer();
-// Do not force a new random background on load to avoid jump
+updateBackground(false);
 setInterval(() => updateBackground(), CHANGE_INTERVAL);
 
 // -------------------------
@@ -172,7 +181,7 @@ mainMenuBtn.addEventListener('click', () => {
 });
 
 // -------------------------
-// User/Auth (No Flash)
+// User/Auth
 // -------------------------
 async function loadCurrentUser() {
   const { data: { session } } = await supabase.auth.getSession();
@@ -185,7 +194,6 @@ async function loadCurrentUser() {
     return;
   }
 
-  // User is logged in — show immediately
   const { data: profile, error } = await supabase
     .from('profiles')
     .select('username')
@@ -194,6 +202,7 @@ async function loadCurrentUser() {
 
   username = !error && profile ? profile.username : 'Unknown';
   userDisplay.textContent = `Player: ${username}`;
+
   authBtn.textContent = 'Log Out';
   authBtn.onclick = async () => {
     await supabase.auth.signOut();
@@ -205,6 +214,13 @@ async function loadCurrentUser() {
 // -------------------------
 // Game Functions
 // -------------------------
+let questions = [];
+let remainingQuestions = [];
+let currentQuestion = null;
+let score = 0;
+let timer;
+let timeLeft = 15;
+
 function resetGame() {
   clearInterval(timer);
   score = 0;
@@ -394,4 +410,3 @@ async function submitScore() {
 // Init
 // -------------------------
 loadCurrentUser();
-
