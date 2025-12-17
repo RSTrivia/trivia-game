@@ -264,35 +264,39 @@ document.addEventListener('DOMContentLoaded', () => {
       timeDisplay.textContent = timeLeft;
       if (timeLeft <= 5) timeDisplay.classList.add('red-timer');
       else timeDisplay.classList.remove('red-timer');
-
+    
       if (timeLeft <= 0) {
         clearInterval(timer);
         playSound(wrongBuffer);
         highlightCorrectAnswer();
-        setTimeout(loadQuestion, 1000);
+        setTimeout(async () => { 
+          await endGame(); // end game when timer runs out
+        }, 1000);
       }
     }, 1000);
   }
 
-  function checkAnswer(selected, clickedBtn) {
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    clearInterval(timer);
-    document.querySelectorAll('.answer-btn').forEach(btn => btn.disabled = true);
+function checkAnswer(selected, clickedBtn) {
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  clearInterval(timer);
+  document.querySelectorAll('.answer-btn').forEach(btn => btn.disabled = true);
 
-    if (selected === currentQuestion.correct_answer_shuffled) {
-      playSound(correctBuffer);
-      clickedBtn.classList.add('correct');
-      score++;
-      updateScore();
-      setTimeout(loadQuestion, 1000);
-    } else {
-      playSound(wrongBuffer);
-      clickedBtn.classList.add('wrong');
-      highlightCorrectAnswer();
-      updateScore();
-      setTimeout(loadQuestion, 1000);
-    }
+  if (selected === currentQuestion.correct_answer_shuffled) {
+    playSound(correctBuffer);
+    clickedBtn.classList.add('correct');
+    score++;
+    updateScore();
+    setTimeout(loadQuestion, 1000); // continue to next question
+  } else {
+    playSound(wrongBuffer);
+    clickedBtn.classList.add('wrong');
+    highlightCorrectAnswer();
+    updateScore();
+    setTimeout(async () => { 
+      await endGame(); // end game on wrong answer
+    }, 1000);
   }
+}
 
   function highlightCorrectAnswer() {
     document.querySelectorAll('.answer-btn').forEach((btn, i) => {
@@ -332,3 +336,4 @@ document.addEventListener('DOMContentLoaded', () => {
   // -------------------------
   loadCurrentUser();
 });
+
