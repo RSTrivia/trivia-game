@@ -28,7 +28,7 @@ button {
   outline: none;
 }
 
-/* ====== BIG GOLD BUTTONS (game start / play again / main menu) ====== */
+/* ====== BIG GOLD BUTTONS ====== */
 .btn {
   background: rgba(0, 0, 0, 0.6);
   color: #ffd700;
@@ -50,7 +50,7 @@ button {
   border-color: #ffea8a;
 }
 
-/* ====== SMALL BUTTONS (login / signup / view leaderboard / back link) ====== */
+/* ====== SMALL BUTTONS ====== */
 .btn-small {
   background: rgba(0,0,0,0.6);
   color: #ffd700;
@@ -60,7 +60,7 @@ button {
   border-radius: 8px;
   text-decoration: none;
   display: inline-block;
-  flex: 1;             /* equal width inside menu row */
+  flex: 1;
   text-align: center;
   transition: 0.2s;
 }
@@ -89,12 +89,12 @@ a.btn:hover, a.btn-small:hover {
 /* ====== MENU ROW ===== */
 .menu-row {
   display: flex;
-  gap: 10px;       /* spacing between buttons */
+  gap: 10px;
   width: 100%;
   margin-top: 10px;
 }
 
-/* ====== ANSWER BUTTONS (game) ====== */
+/* ====== ANSWER BUTTONS ===== */
 .answer-btn {
   background: #ffffff;
   border: 2px solid #000;
@@ -106,7 +106,7 @@ a.btn:hover, a.btn-small:hover {
 }
 
 .answer-btn:hover {
-  : #f2f2f2;
+  background: #f2f2f2;
 }
 
 /* Extra spacing after the last answer button */
@@ -114,7 +114,7 @@ a.btn:hover, a.btn-small:hover {
   margin-bottom: 12px;
 }
 
-/* ====== GAME SCREEN ====== */
+/* ====== GAME SCREEN ===== */
 #game {
   position: relative;
   padding: 20px;
@@ -126,7 +126,7 @@ a.btn:hover, a.btn-small:hover {
   position: absolute;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  : rgba(0,0,0,0.3);
+  background: rgba(0,0,0,0.3);
   z-index: 0;
   border-radius: 10px;
 }
@@ -137,10 +137,10 @@ a.btn:hover, a.btn-small:hover {
 }
 
 .hidden { display: none; }
-.correct { -color: #4caf50 !important; color: white; }
-.wrong { -color: #f44336 !important; color: white; }
+.correct { background-color: #4caf50 !important; color: white; }
+.wrong { background-color: #f44336 !important; color: white; }
 
-/* ====== LEADERBOARD ====== */
+/* ====== LEADERBOARD ===== */
 #leaderboard {
   list-style: none;
   padding: 0;
@@ -151,29 +151,20 @@ a.btn:hover, a.btn-small:hover {
   display: flex;
   justify-content: space-between;
   padding: 10px 12px;
-  : #f2f2f2;
+  background: #f2f2f2;
   border-radius: 5px;
   margin-bottom: 6px;
   font-size: 1rem;
 }
 
 #leaderboard li:nth-child(odd) {
-  : #e0e0e0;
+  background: #e0e0e0;
 }
 
 /* Top 3 highlight */
 .top-1 { color: gold; font-weight: bold; }
 .top-2 { color: silver; font-weight: bold; }
 .top-3 { color: #cd7f32; font-weight: bold; }
-
-/* ====== PAGE  ===== */
-.page-background {
-  background-color: #f5f5f5;
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
 
 /* ====== GAME WINDOW ===== */
 .game-window {
@@ -221,122 +212,15 @@ h1 {
   margin-bottom: 25px;
   text-align: center;
   letter-spacing: 2px;
-
-  background: linear-gradient(
-    145deg,
-    #fff8dc 0%,
-    #ffdd44 25%,
-    #f2b705 50%,
-    #c28f0c 75%,
-    #a77b0a 100%
-  );
+  background: linear-gradient(145deg,#fff8dc 0%,#ffdd44 25%,#f2b705 50%,#c28f0c 75%,#a77b0a 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-
-  text-shadow:
-    0 0 4px rgba(0,0,0,0.8),
-    1px 1px 0 #000,
-    2px 2px 2px rgba(0,0,0,0.6),
-    0 0 8px rgba(255, 223, 0, 0.8),
-    0 -1px 2px rgba(255, 255, 255, 0.4);
-
-  filter: drop-shadow(0 0 10px rgba(255, 223, 0, 0.7));
+  text-shadow: 0 0 4px rgba(0,0,0,0.8),1px 1px 0 #000,2px 2px 2px rgba(0,0,0,0.6),0 0 8px rgba(255,223,0,0.8),0 -1px 2px rgba(255,255,255,0.4);
+  filter: drop-shadow(0 0 10px rgba(255,223,0,0.7));
   -webkit-font-smoothing: antialiased;
 }
 
-/* GOLD "gz" END SCREEN TITLE */
-.gz-title {
-  font-family: 'Cinzel', serif;
-  font-size: 3rem;
-  text-align: center;
-  letter-spacing: 2px;
-  color: #ffd700;
-
-  /* Metallic gold gradient */
-  background: linear-gradient(
-    145deg,
-    #fff8dc 0%,
-    #ffdd44 25%,
-    #f2b705 50%,
-    #c28f0c 75%,
-    #a77b0a 100%
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-
-  /* OSRS-style glow */
-  text-shadow:
-    0 0 4px rgba(0,0,0,0.8),
-    1px 1px 0 #000,
-    2px 2px 2px rgba(0,0,0,0.6),
-    0 0 8px rgba(255, 223, 0, 0.8),
-    0 -1px 2px rgba(255, 255, 255, 0.4);
-
-  filter: drop-shadow(0 0 10px rgba(255, 223, 0, 0.7));
-  -webkit-font-smoothing: antialiased;
-}
-
-.osrs-title {
-  font-family: 'Cinzel', serif;
-  font-size: 3.2rem;
-  text-align: center;
-  letter-spacing: 2px;
-  background: linear-gradient(
-    145deg,
-    #fff8dc 0%,
-    #ffdd44 25%,
-    #f2b705 50%,
-    #c28f0c 75%,
-    #a77b0a 100%
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-shadow:
-    0 0 4px rgba(0,0,0,0.8),
-    1px 1px 0 #000,
-    2px 2px 2px rgba(0,0,0,0.6),
-    0 0 8px rgba(255, 223, 0, 0.8),
-    0 -1px 2px rgba(255, 255, 255, 0.4);
-  filter: drop-shadow(0 0 10px rgba(255, 223, 0, 0.7));
-  -webkit-font-smoothing: antialiased;
-}
-
-.hidden {
-  display: none;
-}
-
-#userDisplay {
-  min-height: 24px; /* ~1 line of text */
-}
-
-/* red timer */
-.red-timer {
-  color: red;
-  font-weight: bold;
-  transition: color 0.3s;
-}
-
-#muteBtn {
-  background: none;
-  border: none;
-  font-size: 1.5rem;   /* bigger icon */
-  cursor: pointer;
-  color: #ffd700;
-  padding: 0;
-}
-
-#muteBtn:hover {
-  color: #fff;
-}
-
-html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  overflow-x: hidden;
-}
-
-/* Fixed background layer */
+/* ====== BACKGROUND ===== */
 #background {
   position: fixed;
   inset: 0;
@@ -345,7 +229,7 @@ html, body {
   background-position: center;
 }
 
-/* App layout wrapper (replaces body layout) */
+/* ====== APP WRAPPER ===== */
 #app {
   min-height: 100vh;
   display: flex;
@@ -354,14 +238,6 @@ html, body {
   padding: 40px;
 }
 
-/* App visibility control (prevents all flashes) */
-.app-hidden {
-  opacity: 0;
-}
-
-.app-ready {
-  opacity: 1;
-  transition: opacity 0.15s ease;
-}
-
-
+/* App visibility control */
+.app-hidden { opacity: 0; }
+.app-ready { opacity: 1; transition: opacity 0.15s ease; }
