@@ -150,39 +150,56 @@ document.addEventListener('DOMContentLoaded', () => {
   // User/Auth
   // -------------------------
   async function loadCurrentUser() {
-    const usernameSpan = userDisplay;
-    const cachedName = localStorage.getItem('cachedUsername');
-    usernameSpan.textContent = cachedName ? `Player: ${cachedName}` : 'Player: Guest';
+  const usernameSpan = userDisplay;
+  const cachedName = localStorage.getItem('cachedUsername');
 
-    const { data: { session } } = await supabase.auth.getSession();
+  // 1️⃣ Immediately show cached username to prevent flash
+  usernameSpan.textContent = cachedName ? `Player: ${cachedName}` : 'Player: Guest';
 
-    if (!session?.user) {
-      username = '';
-      usernameSpan.textContent = 'Player: Guest';
-      localStorage.setItem('cachedUsername', 'Guest');
-      authBtn.textContent = 'Log In';
-      authBtn.onclick = () => { window.location.href = 'login.html'; };
-      return;
-    }
-
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('username')
-      .eq('id', session.user.id)
-      .single();
-
-    username = !error && profile ? profile.username : 'Unknown';
-    usernameSpan.textContent = `Player: ${username}`;
-    localStorage.setItem('cachedUsername', username);
-
+  // 2️⃣ Immediately set auth button based on cached state
+  const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
+  if (cachedLoggedIn) {
     authBtn.textContent = 'Log Out';
-    authBtn.onclick = async () => {
-      await supabase.auth.signOut();
-      username = '';
-      localStorage.setItem('cachedUsername', 'Guest');
-      loadCurrentUser();
-    };
+  } else {
+    authBtn.textContent = 'Log In';
   }
+
+  // 3️⃣ Get current Supabase session
+  const { data: { session } } = await supabase.auth.getSession();
+
+  if (!session?.user) {
+    username = '';
+    usernameSpan.textContent = 'Player: Guest';
+    localStorage.setItem('cachedUsername', 'Guest');
+    localStorage.setItem('cachedLoggedIn', 'false');
+    authBtn.textContent = 'Log In';
+    authBtn.onclick = () => { window.location.href = 'login.html'; };
+    return;
+  }
+
+  // 4️⃣ Fetch profile from Supabase
+  const { data: profile, error } = await supabase
+    .from('profiles')
+    .select('username')
+    .eq('id', session.user.id)
+    .single();
+
+  username = !error && profile ? profile.username : 'Unknown';
+  usernameSpan.textContent = `Player: ${username}`;
+  localStorage.setItem('cachedUsername', username);
+  localStorage.setItem('cachedLoggedIn', 'true');
+
+  // 5️⃣ Setup Log Out button
+  authBtn.textContent = 'Log Out';
+  authBtn.onclick = async () => {
+    await supabase.auth.signOut();
+    username = '';
+    localStorage.setItem('cachedUsername', 'Guest');
+    localStorage.setItem('cachedLoggedIn', 'false');
+    loadCurrentUser(); // reload state after logout
+  };
+}
+
   
   async function submitLeaderboardScore(username, score) {
     try {
@@ -421,6 +438,7 @@ async function endGame() {
   // -------------------------
   loadCurrentUser();
 });
+
 
 
 
