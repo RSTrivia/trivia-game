@@ -126,6 +126,11 @@ a.btn:hover, a.btn-small:hover {
   background: #f2f2f2;
 }
 
+/* Extra spacing after the last answer button */
+.answer-btn:last-child {
+  margin-bottom: 12px;
+}
+
 /* ====== GAME SCREEN ====== */
 #game {
   position: relative;
@@ -320,6 +325,7 @@ h1 {
 #userDisplay {
   min-height: 24px; /* ~1 line of text */
 }
+
 
 
 
