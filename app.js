@@ -94,7 +94,9 @@ document.addEventListener('DOMContentLoaded', () => {
     height: '100%',
     backgroundSize: 'cover',
     backgroundPosition: 'center',
-    zIndex: '-1'
+    zIndex: '-1',
+    filter: 'none',
+    mixBlendMode: 'normal'
   });
 
   function createFadeLayer() {
@@ -112,7 +114,9 @@ document.addEventListener('DOMContentLoaded', () => {
         backgroundPosition: "center",
         opacity: 0,
         transition: "opacity 1.5s ease",
-        zIndex: "-2"
+        zIndex: "-2",
+        filter: 'none',
+        mixBlendMode: 'normal'
       });
       document.body.appendChild(fadeLayer);
     }
@@ -129,10 +133,6 @@ document.addEventListener('DOMContentLoaded', () => {
     fadeLayer.style.opacity = 1;
     setTimeout(() => {
       backgroundDiv.style.backgroundImage = `url('${newBg}')`;
-      const backgroundDiv = document.getElementById('background');
-      backgroundDiv.style.backgroundImage = `url('${savedBg}')`;
-      backgroundDiv.style.filter = 'none';
-      backgroundDiv.style.mixBlendMode = 'normal';
       fadeLayer.style.opacity = 0;
     }, 1500);
   }
@@ -254,7 +254,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     questions = data;
     remainingQuestions = [...questions];
-    loadQuestion(); // FIRST QUESTION APPEARS IMMEDIATELY
+    loadQuestion();
   }
 
   async function loadQuestion() {
@@ -308,34 +308,32 @@ document.addEventListener('DOMContentLoaded', () => {
         clearInterval(timer);
         playSound(wrongBuffer);
         highlightCorrectAnswer();
-        setTimeout(endGame, 1000);
+        requestAnimationFrame(() => {
+          setTimeout(() => endGame(), 1000);
+        });
       }
     }, 1000);
   }
 
-    function checkAnswer(selected, clickedBtn) {
-  if (audioCtx.state === 'suspended') audioCtx.resume();
-  clearInterval(timer);
-  document.querySelectorAll('.answer-btn').forEach(btn => btn.disabled = true);
+  function checkAnswer(selected, clickedBtn) {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    clearInterval(timer);
+    document.querySelectorAll('.answer-btn').forEach(btn => btn.disabled = true);
 
-  if (selected === currentQuestion.correct_answer_shuffled) {
-    playSound(correctBuffer);
-    clickedBtn.classList.add('correct');
-    score++;
-    updateScore();
-    // Wait 1 second to show highlight
-    setTimeout(loadQuestion, 1000);
-  } else {
-    playSound(wrongBuffer);
-    clickedBtn.classList.add('wrong');
-    highlightCorrectAnswer();
-    updateScore();
-    // Wait 1 second to show highlights before ending
-    setTimeout(endGame, 1000);
+    if (selected === currentQuestion.correct_answer_shuffled) {
+      playSound(correctBuffer);
+      clickedBtn.classList.add('correct');
+      score++;
+      updateScore();
+      setTimeout(loadQuestion, 1000);
+    } else {
+      playSound(wrongBuffer);
+      clickedBtn.classList.add('wrong');
+      highlightCorrectAnswer();
+      updateScore();
+      setTimeout(() => endGame(), 1000);
+    }
   }
-}
-
-
 
   function highlightCorrectAnswer() {
     document.querySelectorAll('.answer-btn').forEach((btn, i) => {
@@ -403,6 +401,3 @@ document.addEventListener('DOMContentLoaded', () => {
   // -------------------------
   loadCurrentUser();
 });
-
-
-
