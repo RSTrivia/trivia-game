@@ -66,10 +66,11 @@
     window.bgAlreadySet = true;
   }
 </script>
-
-<div class="container">
-  <h1>OSRS Trivia</h1>
-  <div id="userDisplay" style="margin-bottom: 20px; font-size: 1.2rem; color: #ffd700;"></div>
+  
+  <div style="display: flex; align-items: center; margin-bottom: 20px; gap: 15px;">
+    <button id="muteBtn">🔊</button>
+    <div id="userDisplay" style="font-size: 1.2rem; color: #ffd700;"></div>
+  </div>
 
   <!-- Game Screen -->
   <div id="game" class="hidden">
@@ -137,3 +138,4 @@ preloadLeaderboard();
 
 </body>
 </html>
+
