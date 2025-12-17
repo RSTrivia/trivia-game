@@ -166,8 +166,9 @@ setInterval(() => updateBackground(false), CHANGE_INTERVAL);
 // -------------------------
 async function loadCurrentUser() {
   const usernameSpan = userDisplay;
+  const authControls = document.getElementById('auth-controls');
 
-  // Load cached username to avoid flash
+  // Show cached username immediately to avoid flash
   const cachedName = localStorage.getItem('cachedUsername');
   if (cachedName) usernameSpan.textContent = `Player: ${cachedName}`;
 
@@ -181,8 +182,32 @@ async function loadCurrentUser() {
 
     authBtn.textContent = 'Log In';
     authBtn.onclick = () => { window.location.href = 'login.html'; };
-    return;
+  } else {
+    // Fetch profile
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('id', session.user.id)
+      .single();
+
+    username = !error && profile ? profile.username : 'Unknown';
+    usernameSpan.textContent = `Player: ${username}`;
+    localStorage.setItem('cachedUsername', username);
+
+    authBtn.textContent = 'Log Out';
+    authBtn.onclick = async () => {
+      await supabase.auth.signOut();
+      username = '';
+      localStorage.setItem('cachedUsername', 'Guest');
+      loadCurrentUser();
+    };
   }
+
+  // Reveal auth button only after session is resolved
+  authControls.classList.remove('app-hidden');
+  authControls.classList.add('app-ready');
+}
+
 
   // Fetch profile
   const { data: profile, error } = await supabase
@@ -419,4 +444,5 @@ mainMenuBtn.addEventListener('click', () => {
 // Init
 // -------------------------
 loadCurrentUser();
+
 
