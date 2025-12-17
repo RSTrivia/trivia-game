@@ -35,20 +35,33 @@ async function loadSounds() {
   wrongBuffer = await loadAudio('./sounds/wrong.mp3');
 }
 
+let muted = false;
+const volume = 0.5;
+const muteBtn = document.getElementById('muteBtn');
+
+muteBtn.addEventListener('click', () => {
+  muted = !muted;
+  muteBtn.textContent = muted ? '🔇' : '🔊';
+});
+
+function playSound(buffer) {
+  if (!buffer || muted) return; // mute check
+
+  const source = audioCtx.createBufferSource();
+  source.buffer = buffer;
+
+  const gainNode = audioCtx.createGain();
+  gainNode.gain.value = volume; // set volume to 0.5
+  source.connect(gainNode).connect(audioCtx.destination);
+
+  source.start();
+}
+
 // Fetch + decode a sound file
 async function loadAudio(url) {
   const response = await fetch(url);
   const arrayBuffer = await response.arrayBuffer();
   return await audioCtx.decodeAudioData(arrayBuffer);
-}
-
-// Play a buffer
-function playSound(buffer) {
-  if (!buffer) return;
-  const source = audioCtx.createBufferSource();
-  source.buffer = buffer;
-  source.connect(audioCtx.destination);
-  source.start();
 }
 
 // Unlock audio on first user interaction
@@ -319,5 +332,6 @@ async function submitScore() {
 // Init
 // -------------------------
 loadCurrentUser();
+
 
 
