@@ -133,7 +133,8 @@ document.addEventListener('DOMContentLoaded', () => {
   fadeLayer.style.backgroundImage = `url('${newBg}')`;
   fadeLayer.style.opacity = 1;
   setTimeout(() => {
-    backgroundDiv.style.backgroundImage = `url('${newBg}')`;
+    const bgImg = document.getElementById('background-img');
+    bgImg.src = newBg;
     fadeLayer.style.opacity = 0;
   }, 1500);
 }
@@ -403,4 +404,5 @@ setInterval(() => updateBackground(false), CHANGE_INTERVAL);
   // -------------------------
   loadCurrentUser();
 });
+
 
