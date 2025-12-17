@@ -269,8 +269,8 @@ document.addEventListener('DOMContentLoaded', () => {
         clearInterval(timer);
         playSound(wrongBuffer);
         highlightCorrectAnswer();
-        setTimeout(async () => { 
-          await endGame(); // end game when timer runs out
+        setTimeout(() => {
+          endGame();
         }, 1000);
       }
     }, 1000);
@@ -337,5 +337,6 @@ function checkAnswer(selected, clickedBtn) {
   // -------------------------
   loadCurrentUser();
 });
+
 
 
