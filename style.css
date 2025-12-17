@@ -353,10 +353,22 @@ html, body {
   overflow-x: hidden;
 }
 
+/* Fixed background layer */
 #background {
   position: fixed;
   inset: 0;
   z-index: -1;
+  background-size: cover;
+  background-position: center;
 }
 
+/* App visibility control (prevents all flashes) */
+.app-hidden {
+  opacity: 0;
+}
+
+.app-ready {
+  opacity: 1;
+  transition: opacity 0.15s ease;
+}
 
