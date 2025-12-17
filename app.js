@@ -168,7 +168,7 @@ async function loadCurrentUser() {
   const usernameSpan = userDisplay;
   const authControls = document.getElementById('auth-controls');
 
-  // Show cached username immediately to avoid flash
+  // Load cached username immediately
   const cachedName = localStorage.getItem('cachedUsername');
   if (cachedName) usernameSpan.textContent = `Player: ${cachedName}`;
 
@@ -202,6 +202,12 @@ async function loadCurrentUser() {
       loadCurrentUser();
     };
   }
+
+  // Reveal the auth button now that it's ready
+  authControls.classList.remove('app-hidden');
+  authControls.classList.add('app-ready');
+}
+
 
   // Reveal auth button only after session is resolved
   authControls.classList.remove('app-hidden');
@@ -444,5 +450,6 @@ mainMenuBtn.addEventListener('click', () => {
 // Init
 // -------------------------
 loadCurrentUser();
+
 
 
