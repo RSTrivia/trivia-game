@@ -73,92 +73,56 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // -------------------------
-  // Background
-  // -------------------------
-  const backgrounds = [
-    "images/background.jpg",
-    "images/background2.png",
-    "images/background3.jpg",
-    "images/background4.jpg",
-    "images/background5.jpg",
-    "images/background6.png"
-  ];
-  const CHANGE_INTERVAL = 600000;
-  backgrounds.forEach(src => new Image().src = src);
+// Background
+// -------------------------
+const backgrounds = [
+  "images/background.jpg",
+  "images/background2.png",
+  "images/background3.jpg",
+  "images/background4.jpg",
+  "images/background5.jpg",
+  "images/background6.png"
+];
+const CHANGE_INTERVAL = 600000;
+backgrounds.forEach(src => new Image().src = src); // pre-load
 
-  Object.assign(backgroundDiv.style, {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    zIndex: '-1',
-    filter: 'none',
-    mixBlendMode: 'normal'
-  });
+const bgImg = document.getElementById('background-img');
+const fadeLayer = document.getElementById('bg-fade-layer');
 
-  function createFadeLayer() {
-  if (!document.getElementById("bg-fade-layer")) {
-    const fadeLayer = document.createElement("div");
-    fadeLayer.id = "bg-fade-layer";
-    fadeLayer.setAttribute('data-darkreader-ignore', ''); // ignore for Dark Reader
-    Object.assign(fadeLayer.style, {
-      position: "fixed",
-      top: 0,
-      left: 0,
-      width: "100%",
-      height: "100%",
-      pointerEvents: "none",
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-      opacity: 0,
-      transition: "opacity 1.5s ease",
-      zIndex: "-2",
-      filter: 'none',
-      mixBlendMode: 'normal'
-    });
-    document.body.appendChild(fadeLayer);
-  }
-}
-
-  function pickRandomBackground(exclude) {
+function pickRandomBackground(exclude) {
   const filtered = backgrounds.filter(bg => bg !== exclude);
   return filtered[Math.floor(Math.random() * filtered.length)];
 }
 
 function applyBackground(newBg) {
-  const fadeLayer = document.getElementById("bg-fade-layer");
   fadeLayer.style.backgroundImage = `url('${newBg}')`;
   fadeLayer.style.opacity = 1;
-  
+
   setTimeout(() => {
-    const bgImg = document.getElementById('background-img');
-    bgImg.src = newBg;      // Update main background image
-    fadeLayer.style.opacity = 0; // fade out overlay
+    bgImg.src = newBg;      // main image update
+    fadeLayer.style.opacity = 0;
   }, 1500);
 }
-  
-  function updateBackground(force = false) {
+
+function updateBackground(force = false) {
   const now = Date.now();
   const lastChange = localStorage.getItem("bg_last_change");
   const currentBg = localStorage.getItem("bg_current") || backgrounds[0];
   if (!force && lastChange && now - lastChange < CHANGE_INTERVAL) return;
+
   const nextBg = pickRandomBackground(currentBg);
   localStorage.setItem("bg_current", nextBg);
   localStorage.setItem("bg_last_change", now);
-  createFadeLayer();
+
   applyBackground(nextBg);
 }
-  
+
 // Init
 const savedBg = localStorage.getItem("bg_current") || backgrounds[0];
-backgroundDiv.style.backgroundImage = `url('${savedBg}')`;
-createFadeLayer();
+bgImg.src = savedBg;
 updateBackground(false);
 setInterval(() => updateBackground(false), CHANGE_INTERVAL);
-
+  
   // -------------------------
   // User/Auth
   // -------------------------
@@ -405,6 +369,7 @@ setInterval(() => updateBackground(false), CHANGE_INTERVAL);
   // -------------------------
   loadCurrentUser();
 });
+
 
 
 
