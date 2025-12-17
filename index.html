@@ -19,7 +19,7 @@
     color: #fff;
   }
 
-  /* Background handled ONLY by background.js */
+  /* Background div handled by background.js */
   #background {
     position: fixed;
     inset: 0;
@@ -27,6 +27,15 @@
     background-position: center;
     background-repeat: no-repeat;
     z-index: -1;
+  }
+
+  /* App wrapper layout */
+  #app {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 40px;
   }
 
   h1 {
@@ -38,11 +47,7 @@
     background: linear-gradient(145deg, #fff8dc 0%, #ffdd44 25%, #f2b705 50%, #c28f0c 75%, #a77b0a 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    text-shadow:
-      0 0 4px rgba(0,0,0,0.8),
-      1px 1px 0 #000,
-      2px 2px 2px rgba(0,0,0,0.6),
-      0 0 8px rgba(255, 223, 0, 0.8);
+    text-shadow: 0 0 4px rgba(0,0,0,0.8), 1px 1px 0 #000, 2px 2px 2px rgba(0,0,0,0.6), 0 0 8px rgba(255, 223, 0, 0.8);
   }
 
   .container {
@@ -50,7 +55,6 @@
     padding: 20px;
     border-radius: 10px;
     max-width: 900px;
-    margin: 20px auto;
     box-shadow: 0 0 30px rgba(0,0,0,0.5);
     text-align: center;
   }
@@ -70,34 +74,35 @@
     border-radius: 8px;
   }
 
+  #question { display: flex; flex-direction: column; align-items: center; }
+
   .menu-row {
-    width: 100%;
     display: flex;
     justify-content: space-between;
     margin-top: 12px;
   }
 
-  .menu-row .btn-small {
-    width: 48%;
+  .menu-row .btn-small { width: 48%; }
+
+  .hidden { display: none; }
+  .red-timer { color: red; font-weight: bold; }
+
+  /* Prevent UI flash until JS is ready */
+  .app-hidden { visibility: hidden; }
+  .app-ready { visibility: visible; }
+
+  #muteBtn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #ffd700;
+    padding: 0;
   }
 
-  .hidden {
-    display: none;
-  }
+  #muteBtn:hover { color: #fff; }
 
-  .red-timer {
-    color: red;
-    font-weight: bold;
-  }
-
-  /* Prevent UI flash */
-  .app-hidden {
-    visibility: hidden;
-  }
-
-  .app-ready {
-    visibility: visible;
-  }
+  #userDisplay { font-size: 1.2rem; color: #ffd700; min-height: 24px; }
 </style>
 </head>
 <body>
@@ -114,7 +119,7 @@
     <!-- Mute + Player -->
     <div id="user-controls">
       <button id="muteBtn" aria-label="Mute"></button>
-      <div id="userDisplay" style="font-size: 1.2rem; color: #ffd700;"></div>
+      <div id="userDisplay">Player: Guest</div>
     </div>
 
     <!-- Game Screen -->
@@ -133,7 +138,6 @@
     <!-- Start Screen -->
     <div id="start-screen">
       <button id="startBtn" class="btn">Start Game</button>
-
       <div class="menu-row">
         <button id="authBtn" class="btn-small">Log In</button>
         <a href="leaderboard.html" class="btn-small">View Leaderboard</a>
@@ -144,9 +148,7 @@
     <div id="end-screen" class="hidden">
       <h2 id="game-over-title">Game Over!</h2>
       <h1 id="gz-title" class="hidden">gz</h1>
-
       <p>Your final score: <span id="finalScore"></span></p>
-
       <button id="playAgainBtn" class="btn">Play Again</button>
       <button id="mainMenuBtn" class="btn">Main Menu</button>
     </div>
@@ -158,6 +160,30 @@
 <script type="module" src="supabase.js"></script>
 <script type="module" src="app.js"></script>
 <script src="background.js"></script>
+
+<script>
+  // Instant mute icon setup
+  const muteBtn = document.getElementById('muteBtn');
+  const updateMuteIcon = () => {
+    const muted = localStorage.getItem('muted') === 'true';
+    window.muted = muted;
+    muteBtn.textContent = muted ? '🔇' : '🔊';
+  };
+  updateMuteIcon();
+
+  muteBtn.addEventListener('click', () => {
+    window.muted = !window.muted;
+    localStorage.setItem('muted', window.muted);
+    updateMuteIcon();
+  });
+
+  // Show app once JS is ready
+  window.addEventListener('load', () => {
+    const app = document.getElementById('app');
+    app.classList.remove('app-hidden');
+    app.classList.add('app-ready');
+  });
+</script>
 
 </body>
 </html>
