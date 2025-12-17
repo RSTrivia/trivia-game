@@ -197,6 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
     answersBox.innerHTML = '';
     questionImage.style.display = 'none';
     timeDisplay.textContent = '15';
+    timeDisplay.classList.remove('red-timer');
   }
 
   async function startGame() {
@@ -268,7 +269,7 @@ document.addEventListener('DOMContentLoaded', () => {
         clearInterval(timer);
         playSound(wrongBuffer);
         highlightCorrectAnswer();
-        setTimeout(async () => { await endGame(); }, 1000);
+        setTimeout(loadQuestion, 1000);
       }
     }, 1000);
   }
@@ -289,7 +290,7 @@ document.addEventListener('DOMContentLoaded', () => {
       clickedBtn.classList.add('wrong');
       highlightCorrectAnswer();
       updateScore();
-      setTimeout(async () => { await endGame(); }, 1000);
+      setTimeout(loadQuestion, 1000);
     }
   }
 
@@ -301,68 +302,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function updateScore() {
     scoreDisplay.textContent = `Score: ${score}`;
-  }
-
-  async function endGame() {
-    if (endGame.running) return;
-    endGame.running = true;
-
-    clearInterval(timer);
-    game.classList.add('hidden');
-    endScreen.classList.remove('hidden');
-
-    const gameOverTitle = document.getElementById('game-over-title');
-    const gzTitle = document.getElementById('gz-title');
-
-    finalScore.textContent = score;
-
-    if (score === questions.length && remainingQuestions.length === 0) {
-      const gzMessages = ['gz', 'go touch grass', 'see you in lumbridge'];
-      const randomMessage = gzMessages[Math.floor(Math.random() * gzMessages.length)];
-      gzTitle.textContent = randomMessage;
-      gzTitle.classList.remove('hidden');
-      gameOverTitle.classList.add('hidden');
-    } else {
-      gzTitle.classList.add('hidden');
-      gameOverTitle.classList.remove('hidden');
-    }
-
-    await submitScore();
-    endGame.running = false;
-  }
-
-  async function submitScore() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    if (!username) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('id', user.id)
-        .single();
-      username = profile?.username || `Player-${user.id.slice(0,5)}`;
-    }
-
-    try {
-      const { data: existing, error: existingErr } = await supabase
-        .from('scores')
-        .select('score')
-        .eq('user_id', user.id)
-        .single();
-
-      if (existingErr && existingErr.code !== 'PGRST116') return;
-      if (existing && existing.score >= score) return;
-
-      const { data: dataUpsert, error: errorUpsert } = await supabase
-        .from('scores')
-        .upsert({ user_id: user.id, username, score }, { onConflict: 'user_id' })
-        .select();
-
-      if (errorUpsert) console.error('Error saving score:', errorUpsert);
-    } catch (err) {
-      console.error('Unexpected error submitting score:', err);
-    }
   }
 
   // -------------------------
