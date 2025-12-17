@@ -116,21 +116,25 @@ function createFadeLayer() {
   }
 }
 
+// Pick a random background excluding current
 function pickRandomBackground(exclude) {
   const filtered = backgrounds.filter(bg => bg !== exclude);
   return filtered[Math.floor(Math.random() * filtered.length)];
 }
 
+// Apply background with fade
 function applyBackground(newBg) {
   const fadeLayer = document.getElementById("bg-fade-layer");
   fadeLayer.style.backgroundImage = `url('${newBg}')`;
   fadeLayer.style.opacity = 1;
+
   setTimeout(() => {
     backgroundDiv.style.backgroundImage = `url('${newBg}')`;
     fadeLayer.style.opacity = 0;
   }, 1500);
 }
 
+// Update background based on interval
 function updateBackground(force = false) {
   const now = Date.now();
   const lastChange = localStorage.getItem("bg_last_change");
@@ -146,10 +150,11 @@ function updateBackground(force = false) {
   applyBackground(nextBg);
 }
 
-// Initial background (no fade)
+// Initialize background
 const savedBg = localStorage.getItem("bg_current") || backgrounds[0];
 backgroundDiv.style.backgroundImage = `url('${savedBg}')`;
 createFadeLayer();
+updateBackground(true); // initial fade
 setInterval(() => updateBackground(), CHANGE_INTERVAL);
 
 // -------------------------
@@ -158,20 +163,16 @@ setInterval(() => updateBackground(), CHANGE_INTERVAL);
 async function loadCurrentUser() {
   const usernameSpan = userDisplay;
 
-  // Show cached name immediately
+  // Load cached username to avoid flash
   const cachedName = localStorage.getItem('cachedUsername');
-  if (cachedName) {
-    username = cachedName;
-    usernameSpan.textContent = `Player: ${username}`;
-  } else {
-    usernameSpan.textContent = '';
-  }
+  if (cachedName) usernameSpan.textContent = `Player: ${cachedName}`;
 
   // Fetch session
   const { data: { session } } = await supabase.auth.getSession();
+
   if (!session?.user) {
     username = '';
-    usernameSpan.textContent = `Player: Guest`;
+    usernameSpan.textContent = 'Player: Guest';
     localStorage.setItem('cachedUsername', 'Guest');
 
     authBtn.textContent = 'Log In';
@@ -386,6 +387,29 @@ async function submitScore() {
     console.error('Unexpected error submitting score:', err);
   }
 }
+
+// -------------------------
+// Event Listeners
+// -------------------------
+startBtn.addEventListener('click', async () => {
+  await loadCurrentUser();
+  await loadSounds();
+  startGame();
+});
+
+playAgainBtn.addEventListener('click', async () => {
+  resetGame();
+  await loadSounds();
+  startGame();
+});
+
+mainMenuBtn.addEventListener('click', () => {
+  resetGame();
+  game.classList.add('hidden');
+  endScreen.classList.add('hidden');
+  document.getElementById('start-screen').classList.remove('hidden');
+  updateScore();
+});
 
 // -------------------------
 // Init
