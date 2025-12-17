@@ -85,8 +85,6 @@ const backgrounds = [
   "images/background6.png"
 ];
 const CHANGE_INTERVAL = 600000; // 10 minutes
-
-// preload images
 backgrounds.forEach(src => new Image().src = src);
 
 // Set immediate background from localStorage to avoid flash
@@ -116,33 +114,29 @@ function createFadeLayer() {
   }
 }
 
-// pick random background excluding current
 function pickRandomBackground(exclude) {
   const filtered = backgrounds.filter(bg => bg !== exclude);
   return filtered[Math.floor(Math.random() * filtered.length)];
 }
 
-// apply background with fade
 function applyBackground(newBg) {
   const fadeLayer = document.getElementById("bg-fade-layer");
   fadeLayer.style.backgroundImage = `url('${newBg}')`;
   fadeLayer.style.opacity = 1;
-
   setTimeout(() => {
     backgroundDiv.style.backgroundImage = `url('${newBg}')`;
     fadeLayer.style.opacity = 0;
   }, 1500);
 }
 
-// update background based on interval
 function updateBackground(force = false) {
   const now = Date.now();
-  const lastChange = localStorage.getItem("bg_last_change");
-  const currentBg = localStorage.getItem("bg_current");
+  const lastChange = parseInt(localStorage.getItem("bg_last_change") || "0", 10);
+  const currentBg = localStorage.getItem("bg_current") || savedBg;
 
-  if (!force && lastChange && now - lastChange < CHANGE_INTERVAL) return;
+  if (!force && now - lastChange < CHANGE_INTERVAL) return;
 
-  const nextBg = pickRandomBackground(currentBg || savedBg);
+  const nextBg = pickRandomBackground(currentBg);
   localStorage.setItem("bg_current", nextBg);
   localStorage.setItem("bg_last_change", now);
 
@@ -150,9 +144,8 @@ function updateBackground(force = false) {
   applyBackground(nextBg);
 }
 
-// initial setup
 createFadeLayer();
-updateBackground(true);
+// Do not force a new random background on load to avoid jump
 setInterval(() => updateBackground(), CHANGE_INTERVAL);
 
 // -------------------------
@@ -179,10 +172,9 @@ mainMenuBtn.addEventListener('click', () => {
 });
 
 // -------------------------
-// User/Auth
+// User/Auth (No Flash)
 // -------------------------
 async function loadCurrentUser() {
-  // check if user exists
   const { data: { session } } = await supabase.auth.getSession();
 
   if (!session?.user) {
@@ -193,6 +185,7 @@ async function loadCurrentUser() {
     return;
   }
 
+  // User is logged in — show immediately
   const { data: profile, error } = await supabase
     .from('profiles')
     .select('username')
@@ -201,7 +194,6 @@ async function loadCurrentUser() {
 
   username = !error && profile ? profile.username : 'Unknown';
   userDisplay.textContent = `Player: ${username}`;
-
   authBtn.textContent = 'Log Out';
   authBtn.onclick = async () => {
     await supabase.auth.signOut();
@@ -402,3 +394,4 @@ async function submitScore() {
 // Init
 // -------------------------
 loadCurrentUser();
+
