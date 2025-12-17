@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const timeDisplay = document.getElementById('time');
   const backgroundDiv = document.getElementById('background');
   const muteBtn = document.getElementById('muteBtn');
+  const appDiv = document.getElementById('app');
 
   let username = '';
   let score = 0;
@@ -27,6 +28,11 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentQuestion = null;
   let timer;
   let timeLeft = 15;
+
+  // -------------------------
+  // Show App Immediately
+  // -------------------------
+  appDiv.style.opacity = '1';
 
   // -------------------------
   // Persistent Mute
@@ -78,7 +84,6 @@ document.addEventListener('DOMContentLoaded', () => {
     "images/background6.png"
   ];
   const CHANGE_INTERVAL = 600000;
-
   backgrounds.forEach(src => new Image().src = src);
 
   Object.assign(backgroundDiv.style, {
@@ -147,27 +152,16 @@ document.addEventListener('DOMContentLoaded', () => {
   setInterval(() => updateBackground(false), CHANGE_INTERVAL);
 
   // -------------------------
-  // Fade in App
-  // -------------------------
-  function showApp() {
-    const app = document.getElementById('app');
-    if (app) app.style.opacity = '1';
-  }
-
-  // -------------------------
   // User/Auth
   // -------------------------
   async function loadCurrentUser() {
     const usernameSpan = userDisplay;
     const cachedName = localStorage.getItem('cachedUsername');
 
-    // Show cached username immediately
     usernameSpan.textContent = cachedName ? `Player: ${cachedName}` : 'Player: Guest';
-
     const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
     authBtn.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
 
-    // Get Supabase session
     const { data: { session } } = await supabase.auth.getSession();
 
     if (!session?.user) {
@@ -177,8 +171,6 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.setItem('cachedLoggedIn', 'false');
       authBtn.textContent = 'Log In';
       authBtn.onclick = () => { window.location.href = 'login.html'; };
-
-      showApp();
       return;
     }
 
@@ -201,9 +193,6 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.setItem('cachedLoggedIn', 'false');
       loadCurrentUser();
     };
-
-    // Fade in app now
-    showApp();
   }
 
   // -------------------------
@@ -211,9 +200,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // -------------------------
   async function submitLeaderboardScore(username, score) {
     try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError || !user) return;
-
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
       const userId = user.id;
 
       const { data: existingScore, error: fetchError } = await supabase
@@ -262,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     questions = data;
     remainingQuestions = [...questions];
-    loadQuestion();
+    loadQuestion(); // FIRST QUESTION APPEARS IMMEDIATELY
   }
 
   async function loadQuestion() {
@@ -316,7 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
         clearInterval(timer);
         playSound(wrongBuffer);
         highlightCorrectAnswer();
-        setTimeout(() => endGame(), 1000);
+        setTimeout(endGame, 1000);
       }
     }, 1000);
   }
@@ -331,13 +319,13 @@ document.addEventListener('DOMContentLoaded', () => {
       clickedBtn.classList.add('correct');
       score++;
       updateScore();
-      setTimeout(loadQuestion, 1000);
+      loadQuestion(); // IMMEDIATE NEXT QUESTION
     } else {
       playSound(wrongBuffer);
       clickedBtn.classList.add('wrong');
       highlightCorrectAnswer();
       updateScore();
-      setTimeout(endGame, 1000);
+      endGame(); // IMMEDIATE END
     }
   }
 
