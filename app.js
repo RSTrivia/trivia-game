@@ -139,11 +139,25 @@ function updateBackground() {
   applyBackground(nextBg);
 }
 
-// --- INIT ---
-bgImg.src = localStorage.getItem("bg_current") || backgrounds[0];
+// --- INIT: Smooth background on load ---
+(function initBackground() {
+  const savedBg = localStorage.getItem("bg_current") || backgrounds[0];
+  const lastChange = Number(localStorage.getItem("bg_last_change")) || 0;
+  const now = Date.now();
 
-// set interval
+  // If enough time passed, pick a new random background immediately
+  if (now - lastChange >= CHANGE_INTERVAL) {
+    updateBackground();
+  } else {
+    // Otherwise, use the saved background
+    bgImg.src = savedBg;
+    fadeLayer.style.backgroundImage = `url('${savedBg}')`;
+  }
+})();
+
+// set interval for future updates
 setInterval(updateBackground, CHANGE_INTERVAL);
+
   
   // -------------------------
   // User/Auth
@@ -384,5 +398,6 @@ setInterval(updateBackground, CHANGE_INTERVAL);
   // -------------------------
   loadCurrentUser();
 });
+
 
 
