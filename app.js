@@ -43,6 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
     muted = !muted;
     localStorage.setItem('muted', muted);
     muteBtn.textContent = muted ? '🔇' : '🔊';
+    if (audioCtx.state === 'suspended') audioCtx.resume(); // ensure audio plays after unmute
   });
 
   // -------------------------
@@ -87,8 +88,6 @@ const CHANGE_INTERVAL = 600000; // 10 minutes
 
 // preload
 backgrounds.forEach(src => new Image().src = src);
-
-const bgImg = document.getElementById('background-img');
 
 // fade layer
 let fadeLayer = document.getElementById('bg-fade-layer');
@@ -141,9 +140,7 @@ function updateBackground() {
 }
 
 // --- INIT ---
-// show saved background immediately
-const savedBg = localStorage.getItem("bg_current") || backgrounds[0];
-bgImg.src = savedBg;
+bgImg.src = localStorage.getItem("bg_current") || backgrounds[0];
 
 // set interval
 setInterval(updateBackground, CHANGE_INTERVAL);
@@ -387,4 +384,5 @@ setInterval(updateBackground, CHANGE_INTERVAL);
   // -------------------------
   loadCurrentUser();
 });
+
 
