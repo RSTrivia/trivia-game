@@ -228,17 +228,18 @@ document.addEventListener('DOMContentLoaded', () => {
   // Game Functions
   // -------------------------
   function resetGame() {
-    clearInterval(timer);
-    score = 0;
-    questions = [];
-    remainingQuestions = [];
-    currentQuestion = null;
-    questionText.textContent = '';
-    answersBox.innerHTML = '';
-    questionImage.style.display = 'none';
-    timeDisplay.textContent = '15';
-    timeDisplay.classList.remove('red-timer');
-  }
+  clearInterval(timer);
+  score = 0;
+  questions = [];
+  remainingQuestions = [];
+  currentQuestion = null;
+  questionText.textContent = '';
+  answersBox.innerHTML = '';
+  questionImage.style.display = 'none';
+  timeDisplay.textContent = '15';
+  // Remove red class immediately
+  timeDisplay.classList.remove('red-timer');
+}
 
   async function startGame() {
     resetGame();
@@ -262,28 +263,28 @@ document.addEventListener('DOMContentLoaded', () => {
   async function loadQuestion() {
     answersBox.innerHTML = '';
     if (!remainingQuestions.length) return await endGame();
-
+  
     const index = Math.floor(Math.random() * remainingQuestions.length);
     currentQuestion = remainingQuestions.splice(index, 1)[0];
-
+  
     questionText.textContent = currentQuestion.question || 'No question text';
     if (currentQuestion.question_image) {
       questionImage.src = currentQuestion.question_image;
       questionImage.style.display = 'block';
     } else questionImage.style.display = 'none';
-
+  
     let answers = [
       { text: currentQuestion.answer_a, correct: currentQuestion.correct_answer === 1 },
       { text: currentQuestion.answer_b, correct: currentQuestion.correct_answer === 2 },
       { text: currentQuestion.answer_c, correct: currentQuestion.correct_answer === 3 },
       { text: currentQuestion.answer_d, correct: currentQuestion.correct_answer === 4 }
     ];
-
+  
     answers = answers
       .map(value => ({ value, sort: Math.random() }))
       .sort((a, b) => a.sort - b.sort)
       .map(a => a.value);
-
+  
     answers.forEach((ans, i) => {
       const btn = document.createElement('button');
       btn.textContent = ans.text || '';
@@ -291,27 +292,28 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.addEventListener('click', () => checkAnswer(i + 1, btn));
       answersBox.appendChild(btn);
     });
-
+  
     currentQuestion.correct_answer_shuffled =
       answers.findIndex(a => a.correct) + 1;
-
+  
+    // Reset timer
+    clearInterval(timer);
     timeLeft = 15;
     timeDisplay.textContent = timeLeft;
-    clearInterval(timer);
-
+    // Remove red class immediately
+    timeDisplay.classList.remove('red-timer');
+  
     timer = setInterval(() => {
       timeLeft--;
       timeDisplay.textContent = timeLeft;
       if (timeLeft <= 5) timeDisplay.classList.add('red-timer');
       else timeDisplay.classList.remove('red-timer');
-    
+  
       if (timeLeft <= 0) {
         clearInterval(timer);
         playSound(wrongBuffer);
         highlightCorrectAnswer();
-        setTimeout(() => {
-          endGame();
-        }, 1000);
+        setTimeout(() => endGame(), 1000);
       }
     }, 1000);
   }
@@ -419,6 +421,7 @@ async function endGame() {
   // -------------------------
   loadCurrentUser();
 });
+
 
 
 
