@@ -24,6 +24,16 @@ let timeLeft = 15;
 let username = '';
 
 // -------------------------
+// Sounds
+// -------------------------
+const correctSound = new Audio('./sounds/correct.mp3');
+const wrongSound = new Audio('./sounds/wrong.mp3');
+
+// Optional: reduce volume
+correctSound.volume = 0.6;
+wrongSound.volume = 0.6;
+
+// -------------------------
 // Event Listeners
 // -------------------------
 startBtn.addEventListener('click', async () => {
@@ -169,6 +179,9 @@ async function loadQuestion() {
     timeDisplay.textContent = timeLeft;
     if (timeLeft <= 0) {
       clearInterval(timer);
+      wrongSound.currentTime = 0;
+      wrongSound.play();
+      
       highlightCorrectAnswer();
       setTimeout(async () => {
         await endGame();
@@ -181,19 +194,28 @@ async function loadQuestion() {
 function checkAnswer(selected, clickedBtn) {
   clearInterval(timer);
   document.querySelectorAll('.answer-btn').forEach(btn => btn.disabled = true);
-  
- if (selected === currentQuestion.correct_answer_shuffled) {
+
+  if (selected === currentQuestion.correct_answer_shuffled) {
+    correctSound.currentTime = 0; // allow rapid replays
+    correctSound.play();
+
     clickedBtn.classList.add('correct');
     score++;
     updateScore();
+
     setTimeout(loadQuestion, 1000);
   } else {
+    wrongSound.currentTime = 0;
+    wrongSound.play();
+
     clickedBtn.classList.add('wrong');
     highlightCorrectAnswer();
     updateScore();
+
     setTimeout(async () => { await endGame(); }, 1000);
   }
 }
+
 
 function highlightCorrectAnswer() {
   document.querySelectorAll('.answer-btn').forEach((btn, i) => {
@@ -344,6 +366,7 @@ function showEndScreen(score, totalQuestions) {
 // Init
 // -------------------------
 loadCurrentUser();
+
 
 
 
