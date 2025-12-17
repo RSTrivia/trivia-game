@@ -57,7 +57,6 @@ function unlockAudio() {
     audioCtx.resume();
   }
 }
-document.body.addEventListener('click', unlockAudio, { once: true });
 
 // -------------------------
 // Event Listeners
@@ -206,23 +205,27 @@ async function loadQuestion() {
 }
 
 function checkAnswer(selected, clickedBtn) {
+  // Resume audio context if suspended (mobile fix)
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+
   clearInterval(timer);
   document.querySelectorAll('.answer-btn').forEach(btn => btn.disabled = true);
 
   if (selected === currentQuestion.correct_answer_shuffled) {
-    playSound(correctBuffer); // mobile-safe correct sound
+    playSound(correctBuffer);
     clickedBtn.classList.add('correct');
     score++;
     updateScore();
     setTimeout(loadQuestion, 1000);
   } else {
-    playSound(wrongBuffer); // mobile-safe wrong sound
+    playSound(wrongBuffer);
     clickedBtn.classList.add('wrong');
     highlightCorrectAnswer();
     updateScore();
     setTimeout(async () => { await endGame(); }, 1000);
   }
 }
+
 
 function highlightCorrectAnswer() {
   document.querySelectorAll('.answer-btn').forEach((btn, i) => {
@@ -308,3 +311,4 @@ async function submitScore() {
 // Init
 // -------------------------
 loadCurrentUser();
+
