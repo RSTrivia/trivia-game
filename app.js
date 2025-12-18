@@ -75,49 +75,46 @@ document.addEventListener('DOMContentLoaded', () => {
   // -------------------------
   
 async function loadCurrentUser() {
-  const usernameSpan = document.getElementById('usernameSpan');
-
-  // 1️⃣ Show cached username immediately (optional)
+  // Try cached values first for instant render
   const cachedName = localStorage.getItem('cachedUsername');
-  usernameSpan.textContent = cachedName ? ' ' + cachedName : ''; // prepend space for spacing
-  authBtn.textContent = localStorage.getItem('cachedLoggedIn') === 'true' ? 'Log Out' : 'Log In';
+  username = cachedName || '';
+  userDisplay.querySelector('#usernameSpan').textContent = username ? ' ' + username : '';
 
-  // 2️⃣ Fetch Supabase session
+  const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
+  authBtn.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
+  authBtn.onclick = cachedLoggedIn
+    ? async () => { await supabase.auth.signOut(); localStorage.setItem('cachedUsername',''); localStorage.setItem('cachedLoggedIn','false'); loadCurrentUser(); }
+    : () => window.location.href = 'login.html';
+
+  // Fetch actual session in background
   const { data: { session } } = await supabase.auth.getSession();
-
   if (!session?.user) {
     username = '';
-    usernameSpan.textContent = ''; // nothing shown
-    authBtn.textContent = 'Log In';
-    authBtn.onclick = () => window.location.href = 'login.html';
+    userDisplay.querySelector('#usernameSpan').textContent = '';
     localStorage.setItem('cachedUsername', '');
     localStorage.setItem('cachedLoggedIn', 'false');
     return;
   }
 
-  // 3️⃣ User logged in → fetch profile
   const { data: profile, error } = await supabase
     .from('profiles')
     .select('username')
     .eq('id', session.user.id)
     .single();
 
-  username = !error && profile ? profile.username : 'Unknown';
-  usernameSpan.textContent = ' ' + username;
+  username = !error && profile ? profile.username : '';
+  userDisplay.querySelector('#usernameSpan').textContent = username ? ' ' + username : '';
+  localStorage.setItem('cachedUsername', username);
+  localStorage.setItem('cachedLoggedIn', 'true');
 
   authBtn.textContent = 'Log Out';
   authBtn.onclick = async () => {
     await supabase.auth.signOut();
     username = '';
-    usernameSpan.textContent = '';
-    authBtn.textContent = 'Log In';
     localStorage.setItem('cachedUsername', '');
     localStorage.setItem('cachedLoggedIn', 'false');
+    loadCurrentUser();
   };
-
-  // 4️⃣ Cache for next reload
-  localStorage.setItem('cachedUsername', username);
-  localStorage.setItem('cachedLoggedIn', 'true');
 }
 
 
@@ -320,6 +317,7 @@ async function loadCurrentUser() {
   // -------------------------
   loadCurrentUser();
 });
+
 
 
 
