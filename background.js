@@ -45,7 +45,7 @@ function crossfadeTo(newBg) {
 
     localStorage.setItem("bg_current", newBg);
     localStorage.setItem("bg_last_change", Date.now());
-  }, 1500);
+  }, 1600); // slightly > transition time
 }
 
 // Rotation logic (NO reload change)
