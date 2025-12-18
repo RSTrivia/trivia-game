@@ -55,7 +55,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (elapsed >= CHANGE_INTERVAL) {
         crossfadeTo(pickNext(lastBg));
-        lastTimestamp = Date.now();
       }
 
       requestAnimationFrame(tick);
