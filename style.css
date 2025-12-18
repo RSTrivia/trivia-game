@@ -414,6 +414,21 @@ input.input-field:-webkit-autofill:active {
 
 
 
+#userDisplay {
+  font-size: 1.2rem;
+  color: #ffd700;
+  min-height: 24px;
+}
+
+#usernameSpan {
+  display: inline-block;
+  min-width: 8ch; /* reserve space for ~8 characters initially */
+  max-width: 20ch; /* optional max width */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* truncate if too long */
+}
+
 
 
 
