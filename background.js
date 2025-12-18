@@ -37,21 +37,22 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  // Initialize
+  // ----------------------
+  // INITIAL BACKGROUND
+  // ----------------------
   let savedBg = localStorage.getItem("bg_current");
   if (!backgrounds.includes(savedBg)) savedBg = backgrounds[0];
 
-  const preload = new Image();
-  preload.src = savedBg;
-  preload.onload = () => {
+  // Immediately set background without fade
   bgImg.src = savedBg;
+  bgImg.style.opacity = 1;
   bgImg.style.visibility = "visible";
-  bgImg.style.opacity = "1"; // fade in
-  fadeLayer.style.backgroundImage = `url('${savedBg}')`;
   fadeLayer.style.opacity = 0;
-};
+  localStorage.setItem("bg_current", savedBg);
 
-
+  // ----------------------
+  // ROTATION
+  // ----------------------
   setInterval(() => {
     const current = localStorage.getItem("bg_current") || savedBg;
     const next = pickNext(current);
