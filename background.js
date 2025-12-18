@@ -10,21 +10,18 @@ document.addEventListener("DOMContentLoaded", () => {
     "images/background5.jpg"
   ];
 
-  // Preload all images
-  backgrounds.forEach(src => {
-    const img = new Image();
-    img.src = src;
-  });
-
-  // Start with last used background or default
-  let currentBg = localStorage.getItem("bg_current") || backgrounds[0];
-
-  // Set initial background instantly
-  document.documentElement.style.setProperty("--bg-image", `url('${currentBg}')`);
-  fadeLayer.style.opacity = 0;
+  // Preload images
+  backgrounds.forEach(src => { const img = new Image(); img.src = src; });
 
   const FADE_DURATION = 1200;
-  const CHANGE_INTERVAL = 4000; // 4 seconds
+  const CHANGE_INTERVAL = 4000;
+
+  // Get current background and last change timestamp
+  let currentBg = localStorage.getItem("bg_current") || backgrounds[0];
+  let lastChange = parseInt(localStorage.getItem("bg_lastChange")) || Date.now();
+
+  document.documentElement.style.setProperty("--bg-image", `url('${currentBg}')`);
+  fadeLayer.style.opacity = 0;
 
   function pickNext() {
     const choices = backgrounds.filter(b => b !== currentBg);
@@ -32,24 +29,30 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function crossfadeTo(nextBg) {
-    // Fade layer on top of current background
     fadeLayer.style.backgroundImage = `url('${nextBg}')`;
     fadeLayer.style.transition = `opacity ${FADE_DURATION}ms ease`;
     fadeLayer.style.opacity = 1;
 
-    // After fade completes, update main background
     setTimeout(() => {
       document.documentElement.style.setProperty("--bg-image", `url('${nextBg}')`);
-      fadeLayer.style.transition = `none`; // reset transition for next fade
+      fadeLayer.style.transition = 'none';
       fadeLayer.style.opacity = 0;
 
       currentBg = nextBg;
+      lastChange = Date.now();
       localStorage.setItem("bg_current", nextBg);
+      localStorage.setItem("bg_lastChange", lastChange);
     }, FADE_DURATION);
   }
 
-  // Start interval for crossfades
-  setInterval(() => {
-    crossfadeTo(pickNext());
-  }, CHANGE_INTERVAL);
+  function updateBackground() {
+    const now = Date.now();
+    if (now - lastChange >= CHANGE_INTERVAL) {
+      crossfadeTo(pickNext());
+    }
+    requestAnimationFrame(updateBackground);
+  }
+
+  // Start the loop
+  updateBackground();
 });
