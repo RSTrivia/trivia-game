@@ -23,9 +23,10 @@ html, body {
 #background-img {
   object-fit: cover;
   z-index: -1;
-  opacity: 0;
   display: block;
+  visibility: hidden; /* hidden until JS sets it */
 }
+
 
 #bg-fade-layer {
   z-index: 0;             /* behind the app but above bgImg */
@@ -215,6 +216,7 @@ h1 {
   font-size: 0.85rem;
   z-index: 9999;
 }
+
 
 
 
