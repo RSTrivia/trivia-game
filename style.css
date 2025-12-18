@@ -218,12 +218,13 @@ h1 {
 
 /* ====== USER DISPLAY & MUTE BUTTON ===== */
 #user-controls {
-  display: flex;            /* align items horizontally */
-  align-items: center;      /* vertical centering */
-  gap: 8px;                 /* spacing between mic and name */
-  justify-content: flex-start; /* align to the left */
+  display: flex;            /* horizontal layout */
+  align-items: center;      /* vertically center mic and text */
+  justify-content: center;  /* horizontally center inside container */
+  gap: 8px;                 /* space between mic and name */
   margin-bottom: 15px;      /* optional spacing below */
 }
+
 
 #userDisplay {
   font-size: 1.2rem;
@@ -243,6 +244,7 @@ h1 {
 #muteBtn:hover {
   color: #fff;
 }
+
 
 
 
