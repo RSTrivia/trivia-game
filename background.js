@@ -30,4 +30,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Fade overlay
     fadeLayer.style.transition = `opacity ${FADE_DURATION}ms ease`;
-    fadeLayer.style.backgroun
+    fadeLayer.style.backgroundImage = `url('${nextBg}')`;
+    fadeLayer.style.opacity = 1;
+
+    setTimeout(() => {
+      document.documentElement.style.setProperty("--bg-image", `url('${nextBg}')`);
+      fadeLayer.style.opacity = 0;
+      currentBg = nextBg;
+      localStorage.setItem("bg_current", nextBg);
+    }, FADE_DURATION);
+  };
+});
