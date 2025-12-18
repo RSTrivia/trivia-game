@@ -5,6 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>OSRS Trivia</title>
 
+  <!-- 🔥 Load last background BEFORE first paint (NO flicker) -->
+  <script>
+    (function () {
+      const bg = localStorage.getItem("bg_current");
+      if (bg) {
+        document.documentElement.style.setProperty(
+          "--bg-image",
+          `url('${bg}')`
+        );
+      }
+    })();
+  </script>
+    
   <!-- OSRS Title Font -->
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
@@ -13,11 +26,6 @@
 <body>
   <!-- BACKGROUND LAYERS -->
   <div id="background-root">
-    <img 
-      id="background-img" 
-      src="" 
-      alt="Background"
-    >
     <div id="bg-fade-layer"></div>
   </div>
 
@@ -70,15 +78,7 @@
   <script type="module" src="app.js"></script>
   <script src="background.js" defer></script>
 
-  <!-- Set the last used background AFTER the element exists -->
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const lastBg = localStorage.getItem("bg_current") || "images/background.jpg";
-      const bgImg = document.getElementById("background-img");
-      if (bgImg) bgImg.src = lastBg;
-    });
-  </script>
-
 </body>
 </html>
+
 
