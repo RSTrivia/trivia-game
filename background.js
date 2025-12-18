@@ -11,8 +11,8 @@ const backgrounds = [
   "images/background6.png"
 ];
 
-// 10 minutes (change if you want)
-const CHANGE_INTERVAL = 600000;
+// 3 minutes
+const CHANGE_INTERVAL = 180000;
 
 const bgImg = document.getElementById("background-img");
 const fadeLayer = document.getElementById("bg-fade-layer");
