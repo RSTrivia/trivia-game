@@ -336,7 +336,9 @@ h1 {
 .login-row > .btn {
   width: 100%;
   box-sizing: border-box;
+  text-decoration: none;
 }
+
 
 
 
