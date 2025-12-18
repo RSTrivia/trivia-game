@@ -435,8 +435,8 @@ input.input-field:-webkit-autofill:active {
   align-items: center;      /* vertically center icon & text */
   justify-content: center;  /* horizontally center the whole row */
   gap: 10px;                /* space between mute icon and name */
-  margin-bottom: 15px;      /* optional spacing below */
-  text-align: center;
+  /* margin-bottom: 15px;      /* optional spacing below */
+   /*text-align: center;*/
 }
 
 /* Start game row */
@@ -456,6 +456,7 @@ input.input-field:-webkit-autofill:active {
   white-space: nowrap;
   overflow: hidden;
 }
+
 
 
 
