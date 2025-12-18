@@ -75,27 +75,20 @@ document.addEventListener('DOMContentLoaded', () => {
   // -------------------------
   
 async function loadCurrentUser() {
-  // Try cached values first for instant render
-  const cachedName = localStorage.getItem('cachedUsername');
-  username = cachedName || '';
-  userDisplay.querySelector('#usernameSpan').textContent = username ? ' ' + username : '';
-
-  const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
-  authBtn.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
-  authBtn.onclick = cachedLoggedIn
-    ? async () => { await supabase.auth.signOut(); localStorage.setItem('cachedUsername',''); localStorage.setItem('cachedLoggedIn','false'); loadCurrentUser(); }
-    : () => window.location.href = 'login.html';
-
-  // Fetch actual session in background
+  // Fetch actual session first
   const { data: { session } } = await supabase.auth.getSession();
+
   if (!session?.user) {
     username = '';
     userDisplay.querySelector('#usernameSpan').textContent = '';
+    authBtn.textContent = 'Log In';
+    authBtn.onclick = () => window.location.href = 'login.html';
     localStorage.setItem('cachedUsername', '');
     localStorage.setItem('cachedLoggedIn', 'false');
     return;
   }
 
+  // Get profile from supabase
   const { data: profile, error } = await supabase
     .from('profiles')
     .select('username')
@@ -104,18 +97,20 @@ async function loadCurrentUser() {
 
   username = !error && profile ? profile.username : '';
   userDisplay.querySelector('#usernameSpan').textContent = username ? ' ' + username : '';
-  localStorage.setItem('cachedUsername', username);
-  localStorage.setItem('cachedLoggedIn', 'true');
-
+  
   authBtn.textContent = 'Log Out';
   authBtn.onclick = async () => {
     await supabase.auth.signOut();
     username = '';
-    localStorage.setItem('cachedUsername', '');
-    localStorage.setItem('cachedLoggedIn', 'false');
+    userDisplay.querySelector('#usernameSpan').textContent = '';
+    authBtn.textContent = '';
     loadCurrentUser();
   };
+
+  localStorage.setItem('cachedUsername', username);
+  localStorage.setItem('cachedLoggedIn', 'true');
 }
+
 
 
   // -------------------------
@@ -317,6 +312,7 @@ async function loadCurrentUser() {
   // -------------------------
   loadCurrentUser();
 });
+
 
 
 
