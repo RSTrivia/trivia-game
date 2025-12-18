@@ -289,16 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
   startBtn.addEventListener('click', async () => {
     await loadCurrentUser();
     await loadSounds();
-
-    questions = new Array(510);
-    score = 510; // pretend max score
-    remainingQuestions = [];
-
-    document.getElementById('start-screen').classList.add('hidden');
-    await endGame();
-
-    
-    //startGame();
+    startGame();
   });
 
   playAgainBtn.addEventListener('click', async () => {
@@ -320,6 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // -------------------------
   loadCurrentUser();
 });
+
 
 
 
