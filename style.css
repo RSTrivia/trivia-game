@@ -308,11 +308,10 @@ h1 {
 #user-controls {
   display: flex;            /* horizontal layout */
   align-items: center;      /* vertically center mic and text */
-  justify-content: center;  /* horizontally center inside container */
+  justify-content: space-between;  /* horizontally center inside container */
   gap: 8px;                 /* space between mic and name */
   margin-bottom: 15px;      /* optional spacing below */
 }
-
 
 #userDisplay {
   font-size: 1.2rem;
@@ -458,11 +457,13 @@ input.input-field:-webkit-autofill:active {
   overflow: hidden;
 }
 
-#start-screen .row button {
-  flex: 1;       /* share row evenly */
-  min-width: 75px;
-  max-width: 100px; /* optional */
+/* Make both buttons in the row have the same width */
+#start-screen .row button,
+#start-screen .row a.btn-small {
+  display: inline-block;
+  width: 120px; /* fixed width, matches longest button text */
   text-align: center;
+  flex: none; /* prevent flex from resizing it */
 }
 
 
