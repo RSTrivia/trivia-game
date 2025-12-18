@@ -104,16 +104,18 @@
 </head>
 <body>
 
-<!-- Background -->
-<div id="background"></div>
+<!-- BACKGROUND LAYERS (REQUIRED FOR JS) -->
+<div id="background-root">
+  <img id="background-img" alt="" />
+  <div id="bg-fade-layer"></div>
+</div>
 
 <!-- App wrapper -->
 <div id="app" style="opacity:0;">
-
   <div class="container">
     <h1>OSRS Trivia</h1>
 
-    <!-- User + Mute (top row) -->
+    <!-- User + Mute -->
     <div id="user-controls">
       <button id="muteBtn" aria-label="Mute"></button>
       <div id="userDisplay">Player: Guest</div>
@@ -136,7 +138,6 @@
     <div id="start-screen">
       <button id="startBtn" class="btn">Start Game</button>
       <div class="menu-row">
-        <!-- Auth button back with leaderboard row -->
         <button id="authBtn" class="btn-small">Log In</button>
         <a href="leaderboard.html" class="btn-small">View Leaderboard</a>
       </div>
@@ -151,7 +152,6 @@
       <button id="mainMenuBtn" class="btn">Main Menu</button>
     </div>
   </div>
-
 </div>
 
 <!-- Scripts -->
@@ -159,32 +159,9 @@
 <script type="module" src="app.js"></script>
 <script src="background.js"></script>
 
-<script>
-  // Instant mute icon setup
-  const muteBtn = document.getElementById('muteBtn');
-  const updateMuteIcon = () => {
-    const muted = localStorage.getItem('muted') === 'true';
-    window.muted = muted;
-    muteBtn.textContent = muted ? '🔇' : '🔊';
-  };
-  updateMuteIcon();
-
-  muteBtn.addEventListener('click', () => {
-    window.muted = !window.muted;
-    localStorage.setItem('muted', window.muted);
-    updateMuteIcon();
-  });
-
-  // Show app once JS is ready
-  window.addEventListener('load', () => {
-    const app = document.getElementById('app');
-    app.classList.remove('app-hidden');
-    app.classList.add('app-ready');
-  });
-</script>
-
 </body>
 </html>
+
 
 
 
