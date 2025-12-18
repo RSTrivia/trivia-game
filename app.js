@@ -247,7 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
         clearInterval(timer);
         playSound(wrongBuffer);
         highlightCorrectAnswer();
-        setTimeout(loadQuestion, 1000);
+        setTimeout(endGame, 1000);
       }
     }, 1000);
   }
@@ -267,7 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
       playSound(wrongBuffer);
       clickedBtn.classList.add('wrong');
       highlightCorrectAnswer();
-      setTimeout(loadQuestion, 1000);
+      setTimeout(endGame, 1000);
     }
   }
 
@@ -313,11 +313,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // -------------------------
   startBtn.addEventListener('click', async () => {
     await loadCurrentUser();
+    await loadSounds();
     startGame();
   });
 
-  playAgainBtn.addEventListener('click', () => {
+  playAgainBtn.addEventListener('click', async () => {
     resetGame();
+    await loadSounds();
     startGame();
   });
 
@@ -334,4 +336,5 @@ document.addEventListener('DOMContentLoaded', () => {
   // -------------------------
   loadCurrentUser();
 });
+
 
