@@ -14,34 +14,30 @@ html, body {
   inset: 0;
   width: 100vw;
   height: 100vh;
-  background-color: #000; /* fallback black to prevent white flash */
-  z-index: -1;
   overflow: hidden;
+  z-index: -2; /* behind everything */
+  background-color: #000; /* fallback */
 }
 
 #background-img {
   position: absolute;
-  top: 0;
-  left: 0;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  z-index: -1;
-  opacity: 0;          /* start invisible */
-  transition: opacity 0.3s ease;
+  z-index: -1; /* above root but behind app */
+  opacity: 1;  /* start visible */
+  visibility: visible;
 }
 
 #bg-fade-layer {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   background-size: cover;
   background-position: center;
   pointer-events: none;
   z-index: 0;
-  opacity: 0;          /* start invisible */
+  opacity: 0;
   transition: opacity 1.5s ease;
 }
 
@@ -226,6 +222,7 @@ h1 {
   font-size: 0.85rem;
   z-index: 9999;
 }
+
 
 
 
