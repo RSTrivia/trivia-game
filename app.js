@@ -70,34 +70,6 @@ document.addEventListener('DOMContentLoaded', () => {
     source.start();
   }
 
-  async function endGame() {
-  if (endGame.running) return;
-  endGame.running = true;
-
-  clearInterval(timer);
-  game.classList.add('hidden');
-  endScreen.classList.remove('hidden');
-  finalScore.textContent = score;
-
-  const gameOverTitle = document.getElementById('game-over-title');
-  const gzTitle = document.getElementById('gz-title');
-
-  if (score === questions.length && remainingQuestions.length === 0) {
-    const gzMessages = ['Gz!', 'Go touch grass', 'See you in Lumbridge'];
-    gzTitle.textContent = gzMessages[Math.floor(Math.random() * gzMessages.length)];
-    gzTitle.classList.remove('hidden');
-    gameOverTitle.classList.add('hidden');
-  } else {
-    gzTitle.classList.add('hidden');
-    gameOverTitle.classList.remove('hidden');
-  }
-
-  if (username) {
-    await submitLeaderboardScore(username, score);
-  }
-}
-
-
   // -------------------------
   // User/Auth
   // -------------------------
@@ -280,33 +252,32 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateScore() {
     scoreDisplay.textContent = `Score: ${score}`;
   }
-
+  
   async function endGame() {
     if (endGame.running) return;
     endGame.running = true;
-
+  
     clearInterval(timer);
     game.classList.add('hidden');
     endScreen.classList.remove('hidden');
     finalScore.textContent = score;
-
+  
     const gameOverTitle = document.getElementById('game-over-title');
     const gzTitle = document.getElementById('gz-title');
-
+  
     if (score === questions.length && remainingQuestions.length === 0) {
       const gzMessages = ['Gz!', 'Go touch grass', 'See you in Lumbridge'];
-      const randomMessage = gzMessages[Math.floor(Math.random() * gzMessages.length)];
-      gzTitle.textContent = randomMessage;
+      gzTitle.textContent = gzMessages[Math.floor(Math.random() * gzMessages.length)];
       gzTitle.classList.remove('hidden');
       gameOverTitle.classList.add('hidden');
     } else {
       gzTitle.classList.add('hidden');
       gameOverTitle.classList.remove('hidden');
     }
-
+  
     if (username) await submitLeaderboardScore(username, score);
-    endGame.running = false;
   }
+
 
   // -------------------------
   // Event Listeners
@@ -336,5 +307,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // -------------------------
   loadCurrentUser();
 });
+
 
 
