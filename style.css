@@ -227,6 +227,18 @@ h1 {
   z-index: -1;
   background-size: cover;
   background-position: center;
+  background-repeat: no-repeat;
+}
+
+#bg-fade-layer {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 1.5s ease;
 }
 
 /* ====== APP WRAPPER ===== */
@@ -241,3 +253,4 @@ h1 {
 /* App visibility control */
 .app-hidden { opacity: 0; }
 .app-ready { opacity: 1; transition: opacity 0.15s ease; }
+
