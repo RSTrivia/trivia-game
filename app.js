@@ -74,45 +74,53 @@ document.addEventListener('DOMContentLoaded', () => {
   // User/Auth
   // -------------------------
   async function loadCurrentUser() {
-  // Show placeholders immediately
-  userDisplay.textContent = 'Player:         '; // reserve space
-  authBtn.textContent = 'Log In';               // default state
+  const usernamePlaceholder = document.getElementById('usernamePlaceholder');
 
-  // Try cached values
+  // Show placeholders immediately
+  usernamePlaceholder.textContent = '        '; // reserve space
+  authBtn.textContent = 'Log In';
+  authBtn.onclick = () => window.location.href = 'login.html'; // default click
+
+  // Try cached values first
   const cachedName = localStorage.getItem('cachedUsername');
   const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
-  if (cachedName) userDisplay.textContent = `Player: ${cachedName}`;
+  if (cachedName) usernamePlaceholder.textContent = cachedName;
   if (cachedLoggedIn) authBtn.textContent = 'Log Out';
 
   // Fetch real session
   const { data: { session } } = await supabase.auth.getSession();
+
   if (!session?.user) {
     username = '';
-    authBtn.onclick = () => window.location.href = 'login.html';
-    localStorage.setItem('cachedUsername', '');
+    localStorage.setItem('cachedUsername', 'Guest');
     localStorage.setItem('cachedLoggedIn', 'false');
-  } else {
-    // Fetch profile
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('username')
-      .eq('id', session.user.id)
-      .single();
-
-    username = !error && profile ? profile.username : 'Unknown';
-    userDisplay.textContent = `Player: ${username}`;
-    authBtn.textContent = 'Log Out';
-    authBtn.onclick = async () => {
-      await supabase.auth.signOut();
-      username = '';
-      localStorage.setItem('cachedUsername', '');
-      localStorage.setItem('cachedLoggedIn', 'false');
-      loadCurrentUser();
-    };
-
-    localStorage.setItem('cachedUsername', username);
-    localStorage.setItem('cachedLoggedIn', 'true');
+    usernamePlaceholder.textContent = 'Guest';
+    authBtn.textContent = 'Log In';
+    authBtn.onclick = () => window.location.href = 'login.html';
+    return;
   }
+
+  // Fetch profile
+  const { data: profile, error } = await supabase
+    .from('profiles')
+    .select('username')
+    .eq('id', session.user.id)
+    .single();
+
+  username = !error && profile ? profile.username : 'Unknown';
+  usernamePlaceholder.textContent = username;
+  authBtn.textContent = 'Log Out';
+  authBtn.onclick = async () => {
+    await supabase.auth.signOut();
+    username = '';
+    localStorage.setItem('cachedUsername', 'Guest');
+    localStorage.setItem('cachedLoggedIn', 'false');
+    loadCurrentUser(); // refresh UI
+  };
+
+  // Cache for next refresh
+  localStorage.setItem('cachedUsername', username);
+  localStorage.setItem('cachedLoggedIn', 'true');
 }
 
 
@@ -315,6 +323,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // -------------------------
   loadCurrentUser();
 });
+
 
 
 
