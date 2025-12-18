@@ -354,10 +354,11 @@ input.input-field:-webkit-autofill,
 input.input-field:-webkit-autofill:hover,
 input.input-field:-webkit-autofill:focus,
 input.input-field:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0px 1000px rgba(69, 69, 69, 0.9) inset !important;
+  -webkit-box-shadow: 0 0 0px 1000px rgba(30,30,30,0.9) inset !important;
   -webkit-text-fill-color: #fff !important;
   transition: background-color 5000s ease-in-out 0s;
 }
+
 
 
 
