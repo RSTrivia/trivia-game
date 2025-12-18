@@ -77,16 +77,17 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadCurrentUser() {
   // Fetch actual session first
   const { data: { session } } = await supabase.auth.getSession();
-
+  
   if (!session?.user) {
     username = '';
-    userDisplay.querySelector('#usernameSpan').textContent = '';
+    userDisplay.querySelector('#usernameSpan').textContent = ' Guest';
     authBtn.textContent = 'Log In';
     authBtn.onclick = () => window.location.href = 'login.html';
     localStorage.setItem('cachedUsername', '');
     localStorage.setItem('cachedLoggedIn', 'false');
     return;
   }
+
 
   // Get profile from supabase
   const { data: profile, error } = await supabase
@@ -100,12 +101,10 @@ async function loadCurrentUser() {
   
   authBtn.textContent = 'Log Out';
   authBtn.onclick = async () => {
-    await supabase.auth.signOut();
-    username = '';
-    userDisplay.querySelector('#usernameSpan').textContent = '';
-    authBtn.textContent = '';
-    loadCurrentUser();
-  };
+  await supabase.auth.signOut();
+  await loadCurrentUser();
+};
+
 
   localStorage.setItem('cachedUsername', username);
   localStorage.setItem('cachedLoggedIn', 'true');
@@ -312,6 +311,7 @@ async function loadCurrentUser() {
   // -------------------------
   loadCurrentUser();
 });
+
 
 
 
