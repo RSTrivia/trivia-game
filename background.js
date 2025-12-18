@@ -34,27 +34,20 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function crossfadeTo(nextBg) {
-    const img = new Image();
-    img.src = nextBg;
-  
-    img.onload = () => {
-      // Fade in overlay
-      fadeLayer.style.backgroundImage = `url('${nextBg}')`;
-      fadeLayer.style.opacity = 1;
-  
-      setTimeout(() => {
-        // Update the main background (CSS variable)
-        document.documentElement.style.setProperty("--bg-image", `url('${nextBg}')`);
-  
-        // Fade overlay out
-        fadeLayer.style.opacity = 0;
-  
-        // Save last used background
-        currentBg = nextBg;
-        localStorage.setItem("bg_current", nextBg);
-      }, FADE_DURATION);
-    };
-  }
+  // Fade in overlay immediately, image already preloaded
+  fadeLayer.style.backgroundImage = `url('${nextBg}')`;
+  fadeLayer.style.opacity = 1;
+
+  setTimeout(() => {
+    // Update main background
+    document.documentElement.style.setProperty("--bg-image", `url('${nextBg}')`);
+    fadeLayer.style.opacity = 0;
+
+    currentBg = nextBg;
+    localStorage.setItem("bg_current", nextBg);
+  }, FADE_DURATION);
+}
+
 
   setInterval(() => crossfadeTo(pickNext()), CHANGE_INTERVAL);
 });
