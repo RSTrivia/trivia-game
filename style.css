@@ -459,26 +459,29 @@ input.input-field:-webkit-autofill:active {
 
 /* ===== START SCREEN BUTTONS ===== */
 
-/* Start Game button (row 2) */
+/* START GAME BUTTON (row 2) */
 #start-screen .row:nth-child(2) button {
-  width: 100%; /* full width */
-  flex: none;
+  width: 100%;        /* full width of container */
+  max-width: 100%;    /* prevent overflow */
+  flex: none;         /* don’t stretch via flex */
 }
 
-/* Login + Leaderboard buttons (row 3) */
+/* LOGIN / LOGOUT + LEADERBOARD BUTTONS (row 3) */
 #start-screen .row:nth-child(3) {
   display: flex;
-  gap: 10px;          /* spacing between buttons */
+  gap: 10px;         /* spacing between buttons */
   justify-content: center;
 }
 
 #start-screen .row:nth-child(3) button,
 #start-screen .row:nth-child(3) a.btn-small {
-  flex: 1;            /* evenly divide available space */
-  min-width: 120px;   /* don't shrink too small */
-  max-width: 180px;   /* optional max width */
+  flex: 1;            /* share available space evenly */
+  min-width: 120px;   /* prevent buttons from shrinking too much */
+  max-width: 180px;   /* optional: prevent buttons from getting too wide */
   text-align: center;
 }
+
+
 
 
 
