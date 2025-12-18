@@ -14,12 +14,11 @@ document.addEventListener("DOMContentLoaded", () => {
   // Preload images
   backgrounds.forEach(src => new Image().src = src);
 
-  const FADE_DURATION = 1200;
-  const CHANGE_INTERVAL = 4000;
+  const FADE_DURATION = 1200; // ms
+  const CHANGE_INTERVAL = 4000; // ms
 
-  // Last background & timestamp
+  // Last background
   let lastBg = localStorage.getItem("bg_current") || backgrounds[0];
-  let lastTimestamp = parseInt(localStorage.getItem("bg_timestamp")) || Date.now();
 
   // Show last background instantly
   document.documentElement.style.setProperty("--bg-image", `url('${lastBg}')`);
@@ -37,31 +36,18 @@ document.addEventListener("DOMContentLoaded", () => {
     fadeLayer.style.opacity = 1;
 
     setTimeout(() => {
+      // Update main background
       document.documentElement.style.setProperty("--bg-image", `url('${nextBg}')`);
       fadeLayer.style.opacity = 0;
 
       lastBg = nextBg;
-      lastTimestamp = Date.now();
       localStorage.setItem("bg_current", lastBg);
-      localStorage.setItem("bg_timestamp", lastTimestamp);
     }, FADE_DURATION);
   }
 
-  // Single interval, calculated from last timestamp
-  function startBackgroundLoop() {
-    function tick() {
-      const now = Date.now();
-      const elapsed = now - lastTimestamp;
-
-      if (elapsed >= CHANGE_INTERVAL) {
-        crossfadeTo(pickNext(lastBg));
-      }
-
-      requestAnimationFrame(tick);
-    }
-
-    requestAnimationFrame(tick);
-  }
-
-  startBackgroundLoop();
+  // Start interval loop
+  setInterval(() => {
+    const nextBg = pickNext(lastBg);
+    crossfadeTo(nextBg);
+  }, CHANGE_INTERVAL);
 });
