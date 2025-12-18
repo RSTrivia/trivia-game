@@ -290,14 +290,11 @@ document.addEventListener('DOMContentLoaded', () => {
     await loadCurrentUser();
     await loadSounds();
 
+    questions = new Array(510);
     score = 510; // pretend max score
     remainingQuestions = [];
-    endGame(); // directly trigger the end screen
-    document.getElementById('end-screen').classList.remove('hidden');
-    document.getElementById('game').classList.add('hidden');
-    const gzTitle = document.getElementById('gz-title');
-    gzTitle.classList.remove('hidden');
-    
+
+    await endGame();
 
     
     //startGame();
@@ -322,6 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // -------------------------
   loadCurrentUser();
 });
+
 
 
 
