@@ -156,6 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function startGame() {
+    endGame.running = false;
     resetGame();
     game.classList.remove('hidden');
     document.getElementById('start-screen').classList.add('hidden');
@@ -307,6 +308,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // -------------------------
   loadCurrentUser();
 });
+
 
 
 
