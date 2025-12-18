@@ -8,13 +8,14 @@ html, body {
   background: #000; /* fallback prevents white flash */
 }
 
+/* ====== BACKGROUND ROOT ===== */
 #background-root {
   position: fixed;
   inset: 0;
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  z-index: -1; /* only -1 is needed */
+  z-index: -1; /* below everything */
   background-color: #000; /* fallback */
 }
 
@@ -24,8 +25,8 @@ html, body {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  z-index: -1; /* same as root */
-  opacity: 1;
+  z-index: -1; /* below app */
+  opacity: 1;  /* visible */
   visibility: visible;
 }
 
@@ -39,6 +40,7 @@ html, body {
   opacity: 0;
   transition: opacity 1.5s ease;
 }
+
 
 
 /* ====== APP WRAPPER ===== */
@@ -222,6 +224,7 @@ h1 {
   font-size: 0.85rem;
   z-index: 9999;
 }
+
 
 
 
