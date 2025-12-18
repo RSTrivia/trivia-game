@@ -268,7 +268,9 @@ document.addEventListener('DOMContentLoaded', () => {
   
     if (score === questions.length && remainingQuestions.length === 0) {
       const gzMessages = ['Gz!', 'Go touch grass', 'See you in Lumbridge'];
-      gzTitle.textContent = gzMessages[Math.floor(Math.random() * gzMessages.length)];
+      const selectedMessage = gzMessages[Math.floor(Math.random() * gzMessages.length)];
+      console.log('Selected gz message:', selectedMessage); // <-- added log
+      gzTitle.textContent = selectedMessage;
       gzTitle.classList.remove('hidden');
       gameOverTitle.classList.add('hidden');
     } else {
@@ -278,6 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
     if (username) await submitLeaderboardScore(username, score);
   }
+
 
 
   // -------------------------
@@ -319,6 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // -------------------------
   loadCurrentUser();
 });
+
 
 
 
