@@ -14,26 +14,20 @@ document.addEventListener("DOMContentLoaded", () => {
   const CHANGE_INTERVAL = 180000; // 3 minutes
 
   // -----------------------------
-  // Load saved background (stable)
+  // Get saved background from localStorage or default
   // -----------------------------
   let savedBg = localStorage.getItem("bg_current");
   if (!backgrounds.includes(savedBg)) savedBg = backgrounds[0];
 
-  // Preload saved background
-  const preload = new Image();
-  preload.src = savedBg;
-  preload.onload = () => {
-    // Show the image only when fully loaded
-    bgImg.src = savedBg;
-    bgImg.style.visibility = "visible";
-    bgImg.style.opacity = 1;
-
-    fadeLayer.style.opacity = 0; // fade layer stays hidden initially
-    localStorage.setItem("bg_current", savedBg);
-  };
+  // -----------------------------
+  // Immediately set src to avoid alt text showing
+  // -----------------------------
+  bgImg.src = savedBg;
+  bgImg.style.visibility = "visible";
+  bgImg.style.opacity = 1;
 
   // -----------------------------
-  // Preload all backgrounds for future rotation
+  // Preload all backgrounds
   // -----------------------------
   backgrounds.forEach(src => {
     const img = new Image();
@@ -49,7 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // -----------------------------
-  // Crossfade to the next background
+  // Crossfade to next background
   // -----------------------------
   function crossfadeTo(newBg) {
     fadeLayer.style.backgroundImage = `url('${newBg}')`;
@@ -65,7 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // -----------------------------
-  // Rotate backgrounds (after first load)
+  // Rotate backgrounds
   // -----------------------------
   setInterval(() => {
     const current = localStorage.getItem("bg_current") || savedBg;
