@@ -24,15 +24,28 @@
     <div class="container">
       <h1>OSRS Trivia</h1>
 
-      <input id="username" placeholder="Username" autocomplete="username" />
-      <input id="password" type="password" placeholder="Password" autocomplete="current-password" />
-
-      <div class="btn-row">
-        <button id="signupBtn" class="btn-small">Sign Up</button>
-        <button id="loginBtn" class="btn-small">Log In</button>
+      <!-- Username -->
+      <div class="login-row">
+        <input id="username" placeholder="Username" autocomplete="username" class="input-field" />
       </div>
 
-      <a href="index.html" class="btn-back">Back to Game</a>
+      <!-- Password -->
+      <div class="login-row">
+        <input id="password" type="password" placeholder="Password" autocomplete="current-password" class="input-field" />
+      </div>
+
+      <!-- Sign Up / Log In buttons -->
+      <div class="login-row">
+        <button id="signupBtn" class="btn">Sign Up</button>
+      </div>
+      <div class="login-row">
+        <button id="loginBtn" class="btn">Log In</button>
+      </div>
+
+      <!-- Back to Game button -->
+      <div class="login-row">
+        <a href="index.html" class="btn">Back to Game</a>
+      </div>
     </div>
   </div>
 
