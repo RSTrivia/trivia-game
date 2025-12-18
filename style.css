@@ -432,6 +432,30 @@ input.input-field:-webkit-autofill:active {
 
 
 
+/* ====== ROW LAYOUT FIX ===== */
+.row {
+  display: flex;
+  align-items: center;       /* vertically center content */
+  justify-content: center;   /* horizontally center content by default */
+  gap: 10px;                 /* space between elements */
+  margin: 10px 0;            /* spacing between rows */
+}
+
+/* Ensure user + mute icon row aligns left inside container */
+#user-controls {
+  justify-content: flex-start; /* align mute + player to left */
+}
+
+/* Start game row */
+#start-screen .row:nth-child(2) {
+  justify-content: center;     /* center start button */
+}
+
+/* Third row: login + leaderboard buttons */
+#start-screen .row:nth-child(3) {
+  justify-content: center;     /* center buttons */
+}
+
 
 
 
