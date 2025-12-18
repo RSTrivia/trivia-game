@@ -75,7 +75,7 @@ html, body {
   padding: 6px 15px;
   border-radius: 8px;
   border: 1px solid #d4af37; /*#ffd700;*/
-  background: rgba(25,25,25,0.9) !important;
+  background: rgba(18,18,18,0.9) !important;
   color: #fff !important;
   font-size: 1rem;
   outline: none;
@@ -354,10 +354,11 @@ input.input-field:-webkit-autofill,
 input.input-field:-webkit-autofill:hover,
 input.input-field:-webkit-autofill:focus,
 input.input-field:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0px 1000px rgba(25,25,25,0.9) inset !important;
+  -webkit-box-shadow: 0 0 0px 1000px rgba(18,18,18,0.9) inset !important;
   -webkit-text-fill-color: #fff !important;
   transition: background-color 5000s ease-in-out 0s;
 }
+
 
 
 
