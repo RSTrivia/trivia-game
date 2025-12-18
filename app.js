@@ -35,6 +35,17 @@ document.addEventListener('DOMContentLoaded', () => {
   // -------------------------
   appDiv.style.opacity = '1';
 
+  const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
+  const cachedUsername = localStorage.getItem('cachedUsername');
+  
+  if (cachedLoggedIn && cachedUsername) {
+    userDisplay.querySelector('#usernameSpan').textContent = ' ' + cachedUsername;
+    authBtn.textContent = 'Log Out';
+  } else {
+    userDisplay.querySelector('#usernameSpan').textContent = ' Guest';
+    authBtn.textContent = 'Log In';
+  }
+
   // -------------------------
   // Audio & Mute
   // -------------------------
@@ -48,6 +59,46 @@ document.addEventListener('DOMContentLoaded', () => {
     updateMuteIcon();
     if (audioCtx.state === 'suspended') audioCtx.resume();
   });
+
+
+  authBtn.onclick = async () => {
+  if (authBtn.textContent === 'Log Out') {
+    await supabase.auth.signOut();
+    localStorage.setItem('cachedLoggedIn', 'false');
+    localStorage.setItem('cachedUsername', '');
+    location.reload(); // hard reset, no intermediate paint
+  } else {
+    window.location.href = 'login.html';
+  }
+};
+
+async function validateSessionSilently() {
+  const { data: { session } } = await supabase.auth.getSession();
+
+  // If cache says logged in but session is dead → force reset
+  if (!session && cachedLoggedIn) {
+    localStorage.setItem('cachedLoggedIn', 'false');
+    localStorage.setItem('cachedUsername', '');
+    location.reload();
+  }
+
+  // If cache says guest but session exists → update cache & reload
+  if (session && !cachedLoggedIn) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('id', session.user.id)
+      .single();
+
+    if (profile?.username) {
+      localStorage.setItem('cachedLoggedIn', 'true');
+      localStorage.setItem('cachedUsername', profile.username);
+      location.reload();
+    }
+  }
+}
+
+validateSessionSilently();
 
   async function loadSounds() {
     correctBuffer = await loadAudio('./sounds/correct.mp3');
@@ -336,6 +387,7 @@ async function loadCurrentUser() {
   renderCachedUser();     // instant, no flicker
   loadCurrentUser();
 });
+
 
 
 
