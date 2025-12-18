@@ -72,7 +72,7 @@ html, body {
 /* Input fields */
 .input-field {
   width: 100%;
-  padding: 10px 15px;
+  padding: 6px 15px;
   border-radius: 8px;
   border: 2px solid #ffd700;
   background: rgba(0,0,0,0.6);
@@ -337,6 +337,7 @@ h1 {
   width: 100%;
   box-sizing: border-box;
 }
+
 
 
 
