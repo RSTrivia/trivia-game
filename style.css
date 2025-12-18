@@ -19,37 +19,70 @@ html, body {
   width: 100vw;
   height: 100vh;
 }*/
+
+/*
 #background-root {
   position: fixed;
   inset: 0;
   z-index: -1; /*0*/
-  background-image: var(--bg-image);
+ /* background-image: var(--bg-image);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-}
+}*/
 
 
-#background-img {
+/*#background-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: none; /*block*/
-}
+/*}*/
 
 
-#bg-fade-layer {
+/*#bg-fade-layer {
   position: fixed; /*absolute*/
-  inset: 0; /* didnt exist before */
-  z-index: -1; /* same layer as root */
-  background-size: cover;
+  /*inset: 0; /* didnt exist before */
+  /*z-index: -1; /* same layer as root */
+ /* background-size: cover;
   background-position: center;
   background-position: no-repeat; /* didnt exist before */
-  opacity: 0;
+  /*opacity: 0;
   transition: opacity 1.2s ease;
   pointer-events: none;
   /*background-color: transparent;*/
+/*}*/
+
+#background-img {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: var(--bg-image);
+  background-size: cover;
+  background-position: center;
+  z-index: -2;
 }
+
+#bg-fade-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  z-index: -1;
+  background-size: cover;
+  background-position: center;
+  animation: fadeLoop 4s linear infinite;
+}
+
+@keyframes fadeLoop {
+  0%, 90% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
 
 /* ====== APP WRAPPER ===== */
 #app {
@@ -374,6 +407,7 @@ input.input-field:-webkit-autofill:active {
   -webkit-text-fill-color: #fff !important;
   transition: background-color 5000s ease-in-out 0s;
 }
+
 
 
 
