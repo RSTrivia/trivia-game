@@ -21,27 +21,23 @@ html, body {
 }
 
 #background-img {
-  position: fixed;       /* fixed instead of absolute */
-  top: 0;
-  left: 0;
-  width: 100vw;          /* ensure full viewport */
-  height: 100vh;         /* ensure full viewport */
-  object-fit: cover;     /* cover entire screen */
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -1;
   display: block;
-  z-index: -2;           /* behind fade layer */
   visibility: visible;
 }
 
 #bg-fade-layer {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
+  inset: 0;
   background-size: cover;
   background-position: center;
   pointer-events: none;
-  z-index: -1;           /* above img but below app */
+  z-index: 0;
   opacity: 0;
   transition: opacity 1.5s ease;
 }
@@ -227,6 +223,7 @@ h1 {
   font-size: 0.85rem;
   z-index: 9999;
 }
+
 
 
 
