@@ -411,9 +411,6 @@ input.input-field:-webkit-autofill:active {
   transition: background-color 5000s ease-in-out 0s;
 }
 
-
-
-
 #userDisplay {
   font-size: 1.2rem;
   color: #ffd700;
@@ -422,18 +419,6 @@ input.input-field:-webkit-autofill:active {
   align-items: center;
   justify-content: center;  /* center the text horizontally */
 }
-
-#usernameSpan {
-  display: inline-block;
-  min-width: 6ch; /* reserve space for ~8 characters initially */
-  max-width: 20ch; /* optional max width */
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis; /* truncate if too long */
-}
-
-
-
 
 /* ====== ROW LAYOUT FIX ===== */
 .row {
@@ -464,10 +449,14 @@ input.input-field:-webkit-autofill:active {
   justify-content: center;     /* center buttons */
 }
 
-
-#usernamePlaceholder {
-  margin-left: 6px; /* space after "Player:" */
+#usernameSpan {
+  display: inline-block;
+  width: 6ch; /* reserve ~6 characters width */
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
 }
+
 
 
 
