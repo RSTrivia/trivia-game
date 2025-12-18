@@ -465,6 +465,10 @@ input.input-field:-webkit-autofill:active {
 }
 
 
+#usernamePlaceholder {
+  margin-left: 6px; /* space after "Player:" */
+}
+
 
 
 
