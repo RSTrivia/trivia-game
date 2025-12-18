@@ -20,6 +20,9 @@ html, body {
 }
 
 #background-img {
+  opacity: 0;             /* start invisible */
+  visibility: hidden;     /* prevent alt text from showing */
+  transition: opacity 1.5s ease;
   position: absolute;
   inset: 0;
   width: 100%;
@@ -222,6 +225,7 @@ h1 {
   font-size: 0.85rem;
   z-index: 9999;
 }
+
 
 
 
