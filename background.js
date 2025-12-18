@@ -13,7 +13,10 @@ const backgrounds = [
 const CHANGE_INTERVAL = 180000; // 3 minutes
 
 // Preload all backgrounds
-backgrounds.forEach(src => new Image().src = src);
+backgrounds.forEach(src => {
+  const img = new Image();
+  img.src = src;
+});
 
 function pickNext(current) {
   const list = backgrounds.filter(b => b !== current);
@@ -28,28 +31,33 @@ function crossfadeTo(newBg) {
   img.src = newBg;
   img.onload = () => {
     bgImg.src = newBg;
-    bgImg.style.opacity = 1;   // fade in main image
+    bgImg.style.opacity = 1;
     fadeLayer.style.opacity = 0;
     localStorage.setItem("bg_current", newBg);
   };
 }
 
 function initBackground() {
-  const savedBg = backgrounds.includes(localStorage.getItem("bg_current"))
-    ? localStorage.getItem("bg_current")
-    : backgrounds[0];
+  // Fallback to first background if localStorage value invalid
+  let savedBg = localStorage.getItem("bg_current");
+  if (!backgrounds.includes(savedBg)) savedBg = backgrounds[0];
 
   // Preload first image
-  const preload = new Image();
-  preload.src = savedBg;
-  preload.onload = () => {
+  const firstImg = new Image();
+  firstImg.src = savedBg;
+  firstImg.onload = () => {
     bgImg.src = savedBg;
     bgImg.style.opacity = 1;
     fadeLayer.style.backgroundImage = `url('${savedBg}')`;
     fadeLayer.style.opacity = 0;
   };
+  firstImg.onerror = () => {
+    console.error("Failed to load background:", savedBg);
+    bgImg.src = backgrounds[0];
+    bgImg.style.opacity = 1;
+  };
 
-  // Rotate backgrounds
+  // Start interval rotation
   setInterval(() => {
     const current = localStorage.getItem("bg_current") || savedBg;
     const next = pickNext(current);
