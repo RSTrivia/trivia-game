@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Start with the last background
   let currentBg = localStorage.getItem("bg_current") || backgrounds[0];
 
-  // 🔥 Set initial background immediately (no flicker)
+  // 🔥 Show current background immediately (no fade)
   document.documentElement.style.setProperty("--bg-image", `url('${currentBg}')`);
   bgImg.src = currentBg;
   fadeLayer.style.opacity = 0;
@@ -34,13 +34,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function crossfadeTo(nextBg) {
-    // Fade in overlay immediately
+    // Fade in overlay
     fadeLayer.style.backgroundImage = `url('${nextBg}')`;
     fadeLayer.style.transition = `opacity ${FADE_DURATION}ms ease`;
     fadeLayer.style.opacity = 1;
 
     setTimeout(() => {
-      // Update main background
+      // Update main background and hide overlay
       document.documentElement.style.setProperty("--bg-image", `url('${nextBg}')`);
       fadeLayer.style.opacity = 0;
 
@@ -49,9 +49,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }, FADE_DURATION);
   }
 
-  // Start rotation using setInterval (simpler and reliable)
+  // Start rotation immediately every CHANGE_INTERVAL
   setInterval(() => crossfadeTo(pickNext()), CHANGE_INTERVAL);
-
-  // Optional: start first fade after a small delay so it’s visible immediately
-  setTimeout(() => crossfadeTo(pickNext()), 1000);
 });
