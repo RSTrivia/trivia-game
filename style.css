@@ -451,11 +451,12 @@ input.input-field:-webkit-autofill:active {
 
 #usernameSpan {
   display: inline-block;
-  width: 8ch; /* reserve space for ~8 characters */
+  width: 10ch; /* reserve space for ~10 characters */
   text-align: left;
   white-space: nowrap;
   overflow: hidden;
 }
+
 
 
 
