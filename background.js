@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
   fadeLayer.style.opacity = 0;
 
   const FADE_DURATION = 1200;
-  const CHANGE_INTERVAL = 180000;
+  const CHANGE_INTERVAL = 4000;//180000
 
   function pickNext() {
     const choices = backgrounds.filter(b => b !== currentBg);
@@ -55,8 +55,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }, FADE_DURATION);
     };
   }
-
-
 
   setInterval(() => crossfadeTo(pickNext()), CHANGE_INTERVAL);
 });
