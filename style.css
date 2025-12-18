@@ -458,6 +458,13 @@ input.input-field:-webkit-autofill:active {
   overflow: hidden;
 }
 
+#start-screen .row button {
+  flex: 1;       /* share row evenly */
+  min-width: 75px;
+  max-width: 100px; /* optional */
+  text-align: center;
+}
+
 
 
 
