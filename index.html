@@ -11,7 +11,11 @@
 </head>
 
 <body>
-
+   <script>
+    const lastBg = localStorage.getItem("bg_current") || "images/background.jpg";
+    document.getElementById("background-img").src = lastBg;
+  </script>
+  
   <!-- BACKGROUND LAYERS -->
   <div id="background-root">
     <img 
@@ -74,6 +78,7 @@
 
 </body>
 </html>
+
 
 
 
