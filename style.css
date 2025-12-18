@@ -453,9 +453,11 @@ input.input-field:-webkit-autofill:active {
   display: inline-block;
   width: 10ch; /* reserve space for ~10 characters */
   text-align: left;
+  margin-left: 0.25ch;   /* small space between Player: and username */
   white-space: nowrap;
   overflow: hidden;
 }
+
 
 
 
