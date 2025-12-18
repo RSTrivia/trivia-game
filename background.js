@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const CHANGE_INTERVAL = 180000; // 3 minutes
 
-  // Load last used background (optional)
+  // Load last used background immediately
   let savedBg = localStorage.getItem("bg_current") || backgrounds[0];
   bgImg.src = savedBg;
 
@@ -34,26 +34,16 @@ document.addEventListener("DOMContentLoaded", () => {
       fadeLayer.style.backgroundImage = `url('${newBg}')`;
       fadeLayer.style.opacity = 1;
 
-      // Wait for CSS transition
+      // Wait for CSS transition to finish
       setTimeout(() => {
         bgImg.src = newBg;
         fadeLayer.style.opacity = 0;
         localStorage.setItem("bg_current", newBg);
-      }, 1200);
+      }, 1200); // match your CSS transition duration
     };
   }
 
-  setInterval(() => {
-    const current = localStorage.getItem("bg_current") || savedBg;
-    const next = pickNext(current);
-    crossfadeTo(next);
-  }, CHANGE_INTERVAL);
-});
-
-
-  // ----------------------
-  // 5️⃣ Rotate backgrounds automatically
-  // ----------------------
+  // Rotate backgrounds automatically
   setInterval(() => {
     const current = localStorage.getItem("bg_current") || savedBg;
     const next = pickNext(current);
