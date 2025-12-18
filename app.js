@@ -267,7 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const gzTitle = document.getElementById('gz-title');
   
     if (score === questions.length && remainingQuestions.length === 0) {
-      const gzMessages = ['Gz!', 'Go touch grass', 'See you in Lumbridge'];
+      const gzMessages = ['Gz', 'Go touch grass', 'See you in Lumbridge'];
       const selectedMessage = gzMessages[Math.floor(Math.random() * gzMessages.length)];
       console.log('Selected gz message:', selectedMessage); // <-- added log
       gzTitle.textContent = selectedMessage;
@@ -319,6 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // -------------------------
   loadCurrentUser();
 });
+
 
 
 
