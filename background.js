@@ -79,7 +79,7 @@ function updateBackground(force = false) {
   fadeLayer.style.backgroundImage = `url('${savedBg}')`;
   fadeLayer.style.opacity = 0;
 
-  updateBackground(true); // Force initial check
+  updateBackground(); // Only update if enough time has passed
 })();
 
 // Update every 10 minutes
