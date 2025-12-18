@@ -418,6 +418,9 @@ input.input-field:-webkit-autofill:active {
   font-size: 1.2rem;
   color: #ffd700;
   min-height: 24px;
+  display: flex;            /* make it inline-flex to center text vertically */
+  align-items: center;
+  justify-content: center;  /* center the text horizontally */
 }
 
 #usernameSpan {
@@ -443,7 +446,12 @@ input.input-field:-webkit-autofill:active {
 
 /* Ensure user + mute icon row aligns left inside container */
 #user-controls {
-  justify-content: flex-start; /* align mute + player to left */
+  display: flex;            /* horizontal layout */
+  align-items: center;      /* vertically center icon & text */
+  justify-content: center;  /* horizontally center the whole row */
+  gap: 10px;                /* space between mute icon and name */
+  margin-bottom: 15px;      /* optional spacing below */
+  text-align: center;
 }
 
 /* Start game row */
@@ -455,6 +463,7 @@ input.input-field:-webkit-autofill:active {
 #start-screen .row:nth-child(3) {
   justify-content: center;     /* center buttons */
 }
+
 
 
 
