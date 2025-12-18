@@ -159,6 +159,7 @@ button {
 }
 
 #game > * {
+  color: #ffffff;
   position: relative;
   z-index: 1;
 }
@@ -245,6 +246,39 @@ h1 {
   color: #fff;
 }
 
+
+/* ====== GAME SCREEN TEXT ===== */
+
+/* Score */
+#score {
+  font-size: 1.3rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #fff; /* explicit white */
+  text-shadow: 0 0 4px rgba(0,0,0,0.7);
+}
+
+/* Question text */
+#questionText {
+  font-size: 1.2rem;
+  margin: 10px 0;
+  color: #fff; /* white text */
+}
+
+/* Timer */
+#timer {
+  font-size: 1.1rem;
+  margin-top: 10px;
+  color: #fff;
+}
+
+/* End screen titles and score */
+#end-screen h2,
+#end-screen h1,
+#end-screen p,
+#finalScore {
+  color: #fff;
+}
 
 
 
