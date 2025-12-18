@@ -442,7 +442,7 @@ input.input-field:-webkit-autofill:active {
   display: inline-block;
   width: 10ch; /* reserve space for ~10 characters */
   text-align: left;
-  margin-left: 0.25ch;   /* small space between Player: and username */
+  margin-left: 0.4ch;   /* small space between Player: and username */
   white-space: nowrap;
   overflow: hidden;
 }
@@ -484,6 +484,26 @@ input.input-field:-webkit-autofill:active {
   text-overflow: ellipsis;       /* add ... if text is too long */
 }
 
+
+/* HARD STABILIZE LOGIN / LOGOUT + LEADERBOARD */
+#start-screen .row:nth-child(3) {
+  display: flex;
+  gap: 10px;
+}
+
+#start-screen .row:nth-child(3) > * {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* Force identical visual size regardless of text */
+#authBtn,
+#start-screen .row:nth-child(3) a {
+  height: 44px;              /* same height always */
+  line-height: 44px;         /* vertical centering */
+  padding: 0 16px;           /* horizontal padding */
+  box-sizing: border-box;
+}
 
 
 
