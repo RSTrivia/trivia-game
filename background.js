@@ -8,7 +8,7 @@ const backgrounds = [
   "images/background6.png"
 ];
 
-const CHANGE_INTERVAL = 60000; // 10 minutes
+const CHANGE_INTERVAL = 180000; // 3 minutes
 
 // Preload all images
 backgrounds.forEach(src => new Image().src = src);
