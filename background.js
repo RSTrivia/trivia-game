@@ -18,6 +18,9 @@ const bgImg = document.getElementById("background-img");
 const fadeLayer = document.getElementById("bg-fade-layer");
 const warning = document.getElementById("darkreader-warning");
 
+// Disable fade animation (instant switch)
+fadeLayer.style.transition = "none";
+
 // Preload images
 backgrounds.forEach(src => {
   const img = new Image();
