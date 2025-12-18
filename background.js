@@ -10,16 +10,19 @@ document.addEventListener("DOMContentLoaded", () => {
     "images/background5.jpg"
   ];
 
-  // Preload images for smooth fades
+  // Preload all images
   backgrounds.forEach(src => new Image().src = src);
 
-  let currentBg = localStorage.getItem("bg_current") || backgrounds[0];
-  document.documentElement.style.setProperty("--bg-image", `url('${currentBg}')`);
-
-  const CHANGE_INTERVAL = 4000; // 4 seconds
+  const CHANGE_INTERVAL = 4000; // 4s
   const FADE_DURATION = 1200;   // ms
+  let currentBg = localStorage.getItem("bg_current") || backgrounds[0];
 
-  let lastChangeTime = performance.now();
+  // Show initial background
+  document.documentElement.style.setProperty("--bg-image", `url('${currentBg}')`);
+  fadeLayer.style.opacity = 0;
+
+  // Use a "logical" timer based on last time
+  let startTime = Date.now();
 
   function pickNext() {
     const choices = backgrounds.filter(b => b !== currentBg);
@@ -35,17 +38,23 @@ document.addEventListener("DOMContentLoaded", () => {
       fadeLayer.style.opacity = 0;
       currentBg = nextBg;
       localStorage.setItem("bg_current", nextBg);
-      lastChangeTime = performance.now(); // reset timer
     }, FADE_DURATION);
   }
 
-  function loop(now) {
-    if (now - lastChangeTime >= CHANGE_INTERVAL) {
-      crossfadeTo(pickNext());
-      lastChangeTime = now; // ensure consistent timing
+  function loop() {
+    const now = Date.now();
+    const elapsed = now - startTime;
+
+    if (elapsed >= CHANGE_INTERVAL) {
+      const steps = Math.floor(elapsed / CHANGE_INTERVAL); // how many backgrounds we “skipped”
+      const nextBg = pickNext();
+      crossfadeTo(nextBg);
+
+      startTime = now; // reset start
     }
+
     requestAnimationFrame(loop);
   }
 
-  requestAnimationFrame(loop); // start loop
+  requestAnimationFrame(loop);
 });
