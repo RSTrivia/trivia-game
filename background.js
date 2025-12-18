@@ -18,8 +18,9 @@ const bgImg = document.getElementById("background-img");
 const fadeLayer = document.getElementById("bg-fade-layer");
 const warning = document.getElementById("darkreader-warning");
 
-// Disable fade animation (instant switch)
+// Disable fade during initial load
 fadeLayer.style.transition = "none";
+fadeLayer.style.opacity = 0;
 
 // Preload images
 backgrounds.forEach(src => {
@@ -59,28 +60,20 @@ function updateBackground() {
   crossfadeTo(next);
 }
 
-// Init (runs once per load)
 (function initBackground() {
   const savedBg = localStorage.getItem("bg_current") || backgrounds[0];
+
+  // Set BOTH layers immediately
   bgImg.src = savedBg;
   fadeLayer.style.backgroundImage = `url('${savedBg}')`;
   fadeLayer.style.opacity = "0";
 
-  // DO NOT rotate on load — only after interval
+  // Force browser paint before enabling transitions
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      fadeLayer.style.transition = "opacity 1.5s ease";
+    });
+  });
+
+  // Do NOT rotate on load
 })();
-
-// Interval rotation
-setInterval(updateBackground, CHANGE_INTERVAL);
-
-// ================================
-// DARK READER DETECTION
-// ================================
-setTimeout(() => {
-  const drActive =
-    document.documentElement.hasAttribute("data-darkreader-mode") ||
-    document.documentElement.hasAttribute("data-darkreader-scheme");
-
-  if (drActive) {
-    warning.classList.remove("hidden");
-  }
-}, 500);
