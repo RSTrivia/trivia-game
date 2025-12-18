@@ -26,6 +26,9 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentQuestion = null;
   let timer;
   let timeLeft = 15;
+  let correctBuffer, wrongBuffer;
+  let muted = localStorage.getItem('muted') === 'true';
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
   // -------------------------
   // Show App Immediately
@@ -35,10 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // -------------------------
   // Audio & Mute
   // -------------------------
-  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  let muted = localStorage.getItem('muted') === 'true';
-  let correctBuffer, wrongBuffer;
-
   const muteBtn = document.getElementById('muteBtn');
   const updateMuteIcon = () => muteBtn.textContent = muted ? '🔇' : '🔊';
   updateMuteIcon();
@@ -151,7 +150,8 @@ document.addEventListener('DOMContentLoaded', () => {
     questionText.textContent = '';
     answersBox.innerHTML = '';
     questionImage.style.display = 'none';
-    timeDisplay.textContent = '15';
+    timeLeft = 15;
+    timeDisplay.textContent = timeLeft;
     timeDisplay.classList.remove('red-timer');
   }
 
@@ -161,6 +161,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('start-screen').classList.add('hidden');
     endScreen.classList.add('hidden');
     updateScore();
+
+    await loadSounds();
 
     const { data, error } = await supabase.from('questions').select('*');
     if (error || !data?.length) return alert('Could not load questions!');
@@ -190,10 +192,8 @@ document.addEventListener('DOMContentLoaded', () => {
       { text: currentQuestion.answer_d, correct: currentQuestion.correct_answer === 4 }
     ];
 
-    answers = answers
-      .map(value => ({ value, sort: Math.random() }))
-      .sort((a, b) => a.sort - b.sort)
-      .map(a => a.value);
+    // Shuffle
+    answers = answers.sort(() => Math.random() - 0.5);
 
     answers.forEach((ans, i) => {
       const btn = document.createElement('button');
@@ -219,7 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
         clearInterval(timer);
         playSound(wrongBuffer);
         highlightCorrectAnswer();
-        setTimeout(endGame, 1000);
+        setTimeout(loadQuestion, 1000);
       }
     }, 1000);
   }
@@ -239,8 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
       playSound(wrongBuffer);
       clickedBtn.classList.add('wrong');
       highlightCorrectAnswer();
-      updateScore();
-      setTimeout(endGame, 1000);
+      setTimeout(loadQuestion, 1000);
     }
   }
 
@@ -286,13 +285,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // -------------------------
   startBtn.addEventListener('click', async () => {
     await loadCurrentUser();
-    await loadSounds();
     startGame();
   });
 
-  playAgainBtn.addEventListener('click', async () => {
+  playAgainBtn.addEventListener('click', () => {
     resetGame();
-    await loadSounds();
     startGame();
   });
 
