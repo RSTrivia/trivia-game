@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   
   if (!bgImg || !fadeLayer) return;
 
-  bgImg.src = "https://via.placeholder.com/1920x1080"; // your image path
+  bgImg.src = 'images/background.jpg'; // your image path
   bgImg.style.display = 'block';
   bgImg.style.width = '100vw';
   bgImg.style.height = '100vh';
