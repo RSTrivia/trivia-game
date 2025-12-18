@@ -1,19 +1,28 @@
 // bgWorker.js
+
+const backgrounds = [
+  "images/background.jpg",
+  "images/background2.png",
+  "images/background3.jpg",
+  "images/background4.jpg",
+  "images/background5.jpg"
+];
+
 const CHANGE_INTERVAL = 4000; // ms
+let currentIndex = 0;
 
-function startTimer() {
-  let lastTime = Date.now();
+// Send initial background
+postMessage(backgrounds[currentIndex]);
 
-  setInterval(() => {
-    const now = Date.now();
-    const elapsed = now - lastTime;
+setInterval(() => {
+  // pick next index
+  let nextIndex;
+  do {
+    nextIndex = Math.floor(Math.random() * backgrounds.length);
+  } while (nextIndex === currentIndex);
 
-    if (elapsed >= CHANGE_INTERVAL) {
-      // send message to main thread
-      postMessage('change');
-      lastTime = now;
-    }
-  }, 100); // check every 100ms
-}
+  currentIndex = nextIndex;
 
-startTimer();
+  // send to main thread
+  postMessage(backgrounds[currentIndex]);
+}, CHANGE_INTERVAL);
