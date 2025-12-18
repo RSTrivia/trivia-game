@@ -36,29 +36,20 @@ function crossfadeTo(newBg) {
 function initBackground() {
   const savedBg = localStorage.getItem("bg_current") || backgrounds[0];
 
-  // Preload first image
-  const preload = new Image();
-  preload.src = savedBg;
-  preload.onload = () => {
-    // Disable transitions for initial load
-    bgImg.style.transition = "none";
-    fadeLayer.style.transition = "none";
+  // Set initial image immediately to prevent flicker
+  bgImg.src = savedBg;
+  bgImg.style.visibility = "visible";
+  bgImg.style.opacity = 1;
 
-    // Set src and make visible instantly
-    bgImg.src = savedBg;
-    bgImg.style.visibility = "visible";  // instant show
-    bgImg.style.opacity = 1;
+  // Prepare fadeLayer for future crossfades
+  fadeLayer.style.backgroundImage = `url('${savedBg}')`;
+  fadeLayer.style.opacity = 0;
 
-    // Prepare fadeLayer
-    fadeLayer.style.backgroundImage = `url('${savedBg}')`;
-    fadeLayer.style.opacity = 0;
-
-    // Enable transitions for future crossfade
-    requestAnimationFrame(() => {
-      bgImg.style.transition = "opacity 0.3s ease";
-      fadeLayer.style.transition = "opacity 1.5s ease";
-    });
-  };
+  // Enable transitions for crossfade
+  requestAnimationFrame(() => {
+    bgImg.style.transition = "opacity 0.3s ease";
+    fadeLayer.style.transition = "opacity 1.5s ease";
+  });
 
   // Rotate background every CHANGE_INTERVAL
   setInterval(() => {
