@@ -13,39 +13,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const CHANGE_INTERVAL = 180000; // 3 minutes
 
-  // ----------------------
-  // 1️⃣ Load last used background immediately
-  // ----------------------
-  const savedBg = localStorage.getItem("bg_current") || backgrounds[0];
-  bgImg.src = savedBg;
-  bgImg.style.opacity = 1;
-  bgImg.style.visibility = "visible";
-  fadeLayer.style.opacity = 0;
+  // 1️⃣ Load last background from localStorage
+  let savedBg = localStorage.getItem("bg_current") || backgrounds[0];
 
-  // ----------------------
+  // Preload the saved image first
+  const preload = new Image();
+  preload.src = savedBg;
+  preload.onload = () => {
+    bgImg.src = savedBg;
+    bgImg.style.opacity = 1;  // reveal image
+    localStorage.setItem("bg_current", savedBg);
+  };
+
   // 2️⃣ Preload all backgrounds
-  // ----------------------
   backgrounds.forEach(src => {
     const img = new Image();
     img.src = src;
   });
 
-  // ----------------------
-  // 3️⃣ Helper to pick next background randomly
-  // ----------------------
+  // 3️⃣ Pick next background randomly
   function pickNext(current) {
     const list = backgrounds.filter(b => b !== current);
     return list[Math.floor(Math.random() * list.length)];
   }
 
-  // ----------------------
   // 4️⃣ Crossfade to next background
-  // ----------------------
   function crossfadeTo(newBg) {
     fadeLayer.style.backgroundImage = `url('${newBg}')`;
     fadeLayer.style.opacity = 1;
 
-    // Wait for fadeLayer to show then switch bgImg
     const img = new Image();
     img.src = newBg;
     img.onload = () => {
@@ -55,9 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  // ----------------------
-  // 5️⃣ Rotate backgrounds
-  // ----------------------
+  // 5️⃣ Rotate backgrounds every CHANGE_INTERVAL
   setInterval(() => {
     const current = localStorage.getItem("bg_current") || savedBg;
     const next = pickNext(current);
