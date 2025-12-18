@@ -40,7 +40,7 @@ html, body {
   min-height: 100vh;
   display: flex;
   justify-content: center;
-  align-items: center; /*flex-start;*/
+  align-items: flex-start;
   padding: 20px; /*40px;*/
   position: relative;
   z-index: 1; /* above the background */
@@ -302,6 +302,7 @@ h1 {
 #finalScore {
   color: #f5f5f5;
 }
+
 
 
 
