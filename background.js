@@ -1,7 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
   const bgImg = document.getElementById("background-img");
   const fadeLayer = document.getElementById("bg-fade-layer");
-
+  
+  console.log("bgImg:", bgImg);
+  bgImg.onerror = () => console.error("Failed to load background image!");
+  
   if (!bgImg || !fadeLayer) return;
 
   bgImg.src = 'images/background.jpg';  // your image path
