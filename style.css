@@ -422,12 +422,13 @@ input.input-field:-webkit-autofill:active {
 
 #usernameSpan {
   display: inline-block;
-  min-width: 8ch; /* reserve space for ~8 characters initially */
+  min-width: 6ch; /* reserve space for ~8 characters initially */
   max-width: 20ch; /* optional max width */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis; /* truncate if too long */
 }
+
 
 
 
