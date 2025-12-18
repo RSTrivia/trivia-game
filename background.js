@@ -19,7 +19,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Start with the last background
   let currentBg = localStorage.getItem("bg_current") || backgrounds[0];
-  bgImg.src = currentBg;
+
+  // 🔥 Set initial background via CSS variable immediately (no flicker)
+  document.documentElement.style.setProperty("--bg-image", `url('${currentBg}')`);
+  bgImg.src = currentBg; // Keep <img> in sync
   fadeLayer.style.opacity = 0;
 
   const FADE_DURATION = 1200;
@@ -33,12 +36,19 @@ document.addEventListener("DOMContentLoaded", () => {
   function crossfadeTo(nextBg) {
     const img = new Image();
     img.src = nextBg;
+
     img.onload = () => {
+      // Fade in overlay
       fadeLayer.style.backgroundImage = `url('${nextBg}')`;
       fadeLayer.style.opacity = 1;
 
       setTimeout(() => {
-        bgImg.src = nextBg;
+        // 🔥 Update the CSS variable to actually display the new background
+        document.documentElement.style.setProperty("--bg-image", `url('${nextBg}')`);
+
+        // Keep <img> in sync, but it no longer drives the paint
+        if (bgImg) bgImg.src = nextBg;
+
         fadeLayer.style.opacity = 0;
         currentBg = nextBg;
         localStorage.setItem("bg_current", nextBg);
