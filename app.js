@@ -74,11 +74,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // User/Auth
   // -------------------------
   async function loadCurrentUser() {
-  // Set default placeholder immediately to prevent flicker
-  userDisplay.textContent = 'Player:     '; // reserve space for name
-  authBtn.textContent = 'Log In'; // default auth button
+  // Show placeholders immediately
+  userDisplay.textContent = 'Player:         '; // reserve space
+  authBtn.textContent = 'Log In';               // default state
 
-  // Try cached values first
+  // Try cached values
   const cachedName = localStorage.getItem('cachedUsername');
   const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
   if (cachedName) userDisplay.textContent = `Player: ${cachedName}`;
@@ -88,7 +88,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session?.user) {
     username = '';
-    authBtn.textContent = 'Log In';
     authBtn.onclick = () => window.location.href = 'login.html';
     localStorage.setItem('cachedUsername', '');
     localStorage.setItem('cachedLoggedIn', 'false');
@@ -101,7 +100,6 @@ document.addEventListener('DOMContentLoaded', () => {
       .single();
 
     username = !error && profile ? profile.username : 'Unknown';
-    // Fill in the placeholder space
     userDisplay.textContent = `Player: ${username}`;
     authBtn.textContent = 'Log Out';
     authBtn.onclick = async () => {
@@ -317,6 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // -------------------------
   loadCurrentUser();
 });
+
 
 
 
