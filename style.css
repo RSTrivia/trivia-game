@@ -4,10 +4,11 @@ html, body {
   padding: 0;
   height: 100%;
   overflow: hidden;
+  background: #000;
   font-family: Arial, sans-serif;
-  background: #000; /* fallback */
 }
 
+/* BACKGROUND */
 #background-root {
   position: fixed;
   inset: 0;
@@ -15,26 +16,24 @@ html, body {
   overflow: hidden;
 }
 
-#background-img,
-#bg-fade-layer {
+#background-img {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-}
-
-#background-img {
-  opacity: 1;
+  opacity: 1;          /* NEVER hidden */
 }
 
 #bg-fade-layer {
-  opacity: 0;
-  transition: opacity 1.2s ease;
+  position: absolute;
+  inset: 0;
   background-size: cover;
   background-position: center;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+  pointer-events: none;
 }
-
 
 /* ====== APP WRAPPER ===== */
 #app {
@@ -50,7 +49,6 @@ html, body {
 /* App visibility control */
 .app-hidden { opacity: 0; }
 .app-ready { opacity: 1; transition: opacity 0.15s ease; }
-
 
 /* ====== CONTAINER ====== */
 .container {
@@ -217,16 +215,6 @@ h1 {
   font-size: 0.85rem;
   z-index: 9999;
 }
-
-
-
-
-
-
-
-
-
-
 
 
 
