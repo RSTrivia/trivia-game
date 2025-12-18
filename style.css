@@ -75,11 +75,16 @@ html, body {
   padding: 6px 15px;
   border-radius: 8px;
   border: 2px solid #ffd700;
-  background: rgba(0,0,0,0.9);
-  color: #fff;
+  background: rgba(0,0,0,0.9) !important;
+  color: #fff !important;
   font-size: 1rem;
   outline: none;
   transition: 0.2s;
+
+  /* Reset browser default styling */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
 }
 
 .input-field::placeholder {
@@ -88,9 +93,9 @@ html, body {
 }
 
 .input-field:focus {
-  background: rgba(0,0,0,0.95);
+  background: rgba(0,0,0,0.95) !important;
   border-color: #ffea8a;
-  color: #ffffff;
+  color: #fff !important;
 }
 
 /* ====== RESET BUTTONS ====== */
@@ -340,6 +345,7 @@ h1 {
   box-sizing: border-box;
   text-decoration: none;
 }
+
 
 
 
