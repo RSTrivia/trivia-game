@@ -62,11 +62,9 @@ function updateBackground() {
 
 (function initBackground() {
   const savedBg = localStorage.getItem("bg_current") || backgrounds[0];
-
-  // Set BOTH layers immediately
   bgImg.src = savedBg;
   fadeLayer.style.backgroundImage = `url('${savedBg}')`;
-  fadeLayer.style.opacity = "0";
+  fadeLayer.style.opacity = 0;
 
   // Force browser paint before enabling transitions
   requestAnimationFrame(() => {
