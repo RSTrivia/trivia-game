@@ -124,10 +124,13 @@
 <body>
 
 <!-- Background -->
-<div id="background-root"> 
-  <img id="background-img" alt="Background image"> 
-  <div id="bg-fade-layer"></div> 
+<!-- BACKGROUND LAYERS -->
+<div id="background-root">
+  <!-- First background shows immediately -->
+  <img id="background-img" src="images/background.jpg" alt="Background image" style="opacity:1;">
+  <div id="bg-fade-layer" style="opacity:0;"></div>
 </div>
+
 
 <!-- App wrapper -->
 <div id="app" class="app-hidden">
@@ -195,6 +198,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
