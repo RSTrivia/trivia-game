@@ -16,54 +16,50 @@ const backgrounds = [
 // 3 minutes
 const CHANGE_INTERVAL = 180000;
 
-// Preload images
-backgrounds.forEach(src => {
-  const img = new Image();
-  img.src = src;
-});
+// Preload all backgrounds (for smooth transitions)
+backgrounds.forEach(src => new Image().src = src);
 
-// Pick next background (excluding current)
+// Pick a random next background excluding the current one
 function pickNext(current) {
   const list = backgrounds.filter(b => b !== current);
   return list[Math.floor(Math.random() * list.length)];
 }
 
-// Crossfade function
+// Crossfade to a new background
 function crossfadeTo(newBg) {
   fadeLayer.style.backgroundImage = `url('${newBg}')`;
   fadeLayer.style.opacity = 1;
 
-  // Wait for fade then swap main image
   setTimeout(() => {
     bgImg.src = newBg;
     fadeLayer.style.opacity = 0;
     localStorage.setItem("bg_current", newBg);
     localStorage.setItem("bg_last_change", Date.now());
-  }, 1600);
+  }, 1600); // slightly longer than transition
 }
 
-// Initialize background on page load
+// Initialize background
 function initBackground() {
   const savedBg = localStorage.getItem("bg_current") || backgrounds[0];
 
-  // Set main image and wait for it to load before hiding fade layer
-  bgImg.onload = () => {
+  // Preload the saved image to prevent flicker
+  const preload = new Image();
+  preload.src = savedBg;
+  preload.onload = () => {
+    // Set the actual background image after it's fully loaded
+    bgImg.src = savedBg;
+    fadeLayer.style.backgroundImage = `url('${savedBg}')`;
     fadeLayer.style.opacity = 0;
-  };
-  bgImg.src = savedBg;
 
-  // Apply initial fade layer
-  fadeLayer.style.backgroundImage = `url('${savedBg}')`;
-  fadeLayer.style.opacity = 0;
-
-  // Enable fade transition after initial paint
-  requestAnimationFrame(() => {
+    // Enable fade transition after initial paint
     requestAnimationFrame(() => {
-      fadeLayer.style.transition = "opacity 1.5s ease";
+      requestAnimationFrame(() => {
+        fadeLayer.style.transition = "opacity 1.5s ease";
+      });
     });
-  });
+  };
 
-  // Optional: automatic rotation every CHANGE_INTERVAL
+  // Rotate background every CHANGE_INTERVAL
   setInterval(() => {
     const current = localStorage.getItem("bg_current") || savedBg;
     const next = pickNext(current);
@@ -71,5 +67,5 @@ function initBackground() {
   }, CHANGE_INTERVAL);
 }
 
-// Wait for DOM
+// Start everything after DOM is ready
 document.addEventListener("DOMContentLoaded", initBackground);
