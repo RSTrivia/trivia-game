@@ -124,7 +124,10 @@
 <body>
 
 <!-- Background -->
-<div id="background"></div>
+<div id="background-root">
+  <img id="background-img" alt="" style="opacity:0;">
+  <div id="bg-fade-layer"></div>
+</div>
 
 <!-- App wrapper -->
 <div id="app" class="app-hidden">
@@ -192,6 +195,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
