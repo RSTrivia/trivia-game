@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
   ];
 
   const CHANGE_INTERVAL = 180000; // 3 minutes
+  const FADE_DURATION = 1500; // ms, should match CSS transition
 
   // ----------------------
   // 1️⃣ Load last used background immediately
@@ -19,7 +20,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let savedBg = localStorage.getItem("bg_current") || backgrounds[0];
   bgImg.src = savedBg;
 
-  // If cached, force opacity to show immediately
   if (bgImg.complete) {
     bgImg.style.opacity = 1;
   } else {
@@ -52,18 +52,16 @@ document.addEventListener("DOMContentLoaded", () => {
   // 4️⃣ Crossfade to next background
   // ----------------------
   function crossfadeTo(newBg) {
-    const img = new Image();
-    img.src = newBg;
-    img.onload = () => {
-      fadeLayer.style.backgroundImage = `url('${newBg}')`;
-      fadeLayer.style.opacity = 1;
-  
+    // Set fadeLayer immediately
+    fadeLayer.style.backgroundImage = `url('${newBg}')`;
+    fadeLayer.style.opacity = 1;
+
+    // After fade duration, swap main bg and hide fadeLayer
+    setTimeout(() => {
       bgImg.src = newBg;
-      bgImg.style.opacity = 1;
-  
       fadeLayer.style.opacity = 0;
       localStorage.setItem("bg_current", newBg);
-    };
+    }, FADE_DURATION);
   }
 
   // ----------------------
