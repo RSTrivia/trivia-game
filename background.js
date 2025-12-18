@@ -1,7 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const bgImg = document.getElementById("background-img");
   const fadeLayer = document.getElementById("bg-fade-layer");
-  if (!bgImg || !fadeLayer) return;
+  if (!fadeLayer) return; // only need fadeLayer to run
 
   const backgrounds = [
     "images/background.jpg",
@@ -11,43 +10,40 @@ document.addEventListener("DOMContentLoaded", () => {
     "images/background5.jpg"
   ];
 
-  // Preload images
+  // Preload images for smoother transitions
   backgrounds.forEach(src => new Image().src = src);
 
-  const FADE_DURATION = 1200; // ms
-  const CHANGE_INTERVAL = 4000; // ms
+  // Start with the last background or default
+  let currentBg = localStorage.getItem("bg_current") || backgrounds[0];
 
-  // Last background
-  let lastBg = localStorage.getItem("bg_current") || backgrounds[0];
-
-  // Show last background instantly
-  document.documentElement.style.setProperty("--bg-image", `url('${lastBg}')`);
-  bgImg.src = lastBg;
+  // 🔥 Set initial background via CSS variable immediately (no flicker)
+  document.documentElement.style.setProperty("--bg-image", `url('${currentBg}')`);
   fadeLayer.style.opacity = 0;
 
-  function pickNext(current) {
-    const choices = backgrounds.filter(b => b !== current);
+  const FADE_DURATION = 1200;
+  const CHANGE_INTERVAL = 4000; // 4 seconds
+
+  function pickNext() {
+    const choices = backgrounds.filter(b => b !== currentBg);
     return choices[Math.floor(Math.random() * choices.length)];
   }
 
   function crossfadeTo(nextBg) {
-    fadeLayer.style.transition = `opacity ${FADE_DURATION}ms ease`;
     fadeLayer.style.backgroundImage = `url('${nextBg}')`;
+    fadeLayer.style.transition = `opacity ${FADE_DURATION}ms ease`;
     fadeLayer.style.opacity = 1;
 
     setTimeout(() => {
-      // Update main background
       document.documentElement.style.setProperty("--bg-image", `url('${nextBg}')`);
       fadeLayer.style.opacity = 0;
-
-      lastBg = nextBg;
-      localStorage.setItem("bg_current", lastBg);
+      currentBg = nextBg;
+      localStorage.setItem("bg_current", nextBg);
     }, FADE_DURATION);
   }
 
-  // Start interval loop
-  setInterval(() => {
-    const nextBg = pickNext(lastBg);
-    crossfadeTo(nextBg);
-  }, CHANGE_INTERVAL);
+  // ✅ Only start one interval for the lifetime of the page
+  if (!window.bgIntervalStarted) {
+    window.bgIntervalStarted = true; // prevent multiple intervals if script runs again
+    setInterval(() => crossfadeTo(pickNext()), CHANGE_INTERVAL);
+  }
 });
