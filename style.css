@@ -41,11 +41,10 @@ html, body {
   background-size: cover;
   background-position: center;
   pointer-events: none;
-  z-index: 0;
+  z-index: 0; 
   opacity: 0; /* start invisible */
   transition: opacity 1.5s ease;
 }
-
 
 /* ====== APP WRAPPER ===== */
 #app {
@@ -54,7 +53,10 @@ html, body {
   justify-content: center;
   align-items: flex-start;
   padding: 40px;
+  position: relative;
+  z-index: 1; /* ensures app is above backgrounds */
 }
+
 
 /* App visibility control */
 .app-hidden { opacity: 0; }
@@ -225,6 +227,7 @@ h1 {
   font-size: 0.85rem;
   z-index: 9999;
 }
+
 
 
 
