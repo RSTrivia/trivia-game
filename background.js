@@ -3,8 +3,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!fadeLayer) return;
 
   const FADE_DURATION = 1200; // ms
-
-  // Preload backgrounds
   const backgrounds = [
     "images/background.jpg",
     "images/background2.png",
@@ -12,9 +10,11 @@ document.addEventListener("DOMContentLoaded", () => {
     "images/background4.jpg",
     "images/background5.jpg"
   ];
+
+  // Preload all images
   backgrounds.forEach(src => new Image().src = src);
 
-  // Use last background or default
+  // Set initial background instantly (no fade)
   let currentBg = localStorage.getItem("bg_current") || backgrounds[0];
   document.documentElement.style.setProperty("--bg-image", `url('${currentBg}')`);
   fadeLayer.style.opacity = 0;
@@ -22,10 +22,23 @@ document.addEventListener("DOMContentLoaded", () => {
   // Start worker
   const worker = new Worker("bgWorker.js");
 
+  let firstMessage = true;
+
   worker.onmessage = (e) => {
     const nextBg = e.data;
 
-    // Only fade if it’s a different background
+    // On first message, just skip fading to avoid flicker
+    if (firstMessage) {
+      firstMessage = false;
+      if (nextBg !== currentBg) {
+        currentBg = nextBg;
+        document.documentElement.style.setProperty("--bg-image", `url('${currentBg}')`);
+        localStorage.setItem("bg_current", currentBg);
+      }
+      return;
+    }
+
+    // Only fade if the background is actually different
     if (nextBg === currentBg) return;
 
     // Fade overlay
@@ -37,7 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
       document.documentElement.style.setProperty("--bg-image", `url('${nextBg}')`);
       fadeLayer.style.opacity = 0;
       currentBg = nextBg;
-      localStorage.setItem("bg_current", nextBg);
+      localStorage.setItem("bg_current", currentBg);
     }, FADE_DURATION);
   };
 });
