@@ -44,6 +44,7 @@ function initBackground() {
   const preload = new Image();
   preload.src = savedBg;
   preload.onload = () => {
+    console.log("Setting background to:", savedBg);
     bgImg.src = savedBg;
     bgImg.style.opacity = 1;
     bgImg.style.visibility = "visible"; // make sure it's visible
