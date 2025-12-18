@@ -1,7 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const bgImg = document.getElementById("background-img");
   const fadeLayer = document.getElementById("bg-fade-layer");
-  if (!bgImg || !fadeLayer) return;
+  if (!fadeLayer) return;
 
   const backgrounds = [
     "images/background.jpg",
@@ -11,18 +10,17 @@ document.addEventListener("DOMContentLoaded", () => {
     "images/background5.jpg"
   ];
 
-  // Preload all images for smoother fades
+  // Preload all images
   backgrounds.forEach(src => {
     const img = new Image();
     img.src = src;
   });
 
-  // Start with the last background (or default)
+  // Start with last used background or default
   let currentBg = localStorage.getItem("bg_current") || backgrounds[0];
 
-  // Show instantly (no fade)
+  // Set initial background instantly
   document.documentElement.style.setProperty("--bg-image", `url('${currentBg}')`);
-  bgImg.src = currentBg;
   fadeLayer.style.opacity = 0;
 
   const FADE_DURATION = 1200;
@@ -34,14 +32,15 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function crossfadeTo(nextBg) {
-    // Use CSS transition for smooth fade
-    fadeLayer.style.transition = `opacity ${FADE_DURATION}ms ease`;
+    // Fade layer on top of current background
     fadeLayer.style.backgroundImage = `url('${nextBg}')`;
+    fadeLayer.style.transition = `opacity ${FADE_DURATION}ms ease`;
     fadeLayer.style.opacity = 1;
 
     // After fade completes, update main background
     setTimeout(() => {
       document.documentElement.style.setProperty("--bg-image", `url('${nextBg}')`);
+      fadeLayer.style.transition = `none`; // reset transition for next fade
       fadeLayer.style.opacity = 0;
 
       currentBg = nextBg;
@@ -49,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }, FADE_DURATION);
   }
 
-  // Always keep the interval running in the background
+  // Start interval for crossfades
   setInterval(() => {
     crossfadeTo(pickNext());
   }, CHANGE_INTERVAL);
