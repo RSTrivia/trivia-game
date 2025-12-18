@@ -1,18 +1,62 @@
-/* ====== BODY ====== */
-body {
-  font-family: Arial, sans-serif;
+/* ====== GLOBAL RESET ====== */
+html, body {
   margin: 0;
   padding: 0;
   height: 100%;
   overflow-x: hidden;
+  font-family: Arial, sans-serif;
+  background: #000; /* IMPORTANT: prevents white flash */
 }
+
+/* ====== BACKGROUND ROOT (NEW) ====== */
+#background-root {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+  background: #000; /* fallback while images load */
+}
+
+/* Base background image */
+#background-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+/* Fade layer */
+#bg-fade-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 1.5s ease;
+}
+
+/* ====== APP WRAPPER ===== */
+#app {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px;
+}
+
+/* App visibility control */
+.app-hidden { opacity: 0; }
+.app-ready { opacity: 1; transition: opacity 0.15s ease; }
 
 /* ====== CONTAINER ====== */
 .container {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(0, 0, 0, 0.85); /* darkened to match OSRS theme */
   padding: 20px;
   border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  box-shadow: 0 0 30px rgba(0,0,0,0.6);
   width: 400px;
   max-width: 90%;
   text-align: center;
@@ -35,12 +79,9 @@ button {
   padding: 14px 22px;
   border: 2px solid #ffd700;
   border-radius: 8px;
-  cursor: pointer;
   font-size: 1.1rem;
   width: 100%;
   display: block;
-  text-align: center;
-  text-decoration: none;
   margin: 8px 0;
   transition: 0.2s;
 }
@@ -58,7 +99,6 @@ button {
   font-size: 1rem;
   border: 2px solid #ffd700;
   border-radius: 8px;
-  text-decoration: none;
   display: inline-block;
   flex: 1;
   text-align: center;
@@ -66,22 +106,6 @@ button {
 }
 
 .btn-small:hover {
-  background: rgba(0,0,0,0.85);
-  border-color: #ffea8a;
-}
-
-/* ====== LINKS styled like buttons ====== */
-a.btn, a.btn-small {
-  text-decoration: none;
-  text-align: center;
-  color: #ffd700;
-  background: rgba(0,0,0,0.6);
-  border: 2px solid #ffd700;
-  border-radius: 8px;
-  transition: 0.2s;
-}
-
-a.btn:hover, a.btn-small:hover {
   background: rgba(0,0,0,0.85);
   border-color: #ffea8a;
 }
@@ -96,31 +120,28 @@ a.btn:hover, a.btn-small:hover {
 
 /* ====== ANSWER BUTTONS ===== */
 .answer-btn {
-  background-color: #181A1B;   /* normal */
-  border: 2px solid #8C8273;   /* border */
-  color: #FFFFFF;             /* text */
+  background-color: #181A1B;
+  border: 2px solid #8C8273;
+  color: #FFFFFF;
   padding: 12px;
   margin: 6px 0;
   width: 100%;
   border-radius: 6px;
   font-size: 1rem;
-  transition: background-color 0.15s ease, transform 0.05s ease;
+  transition: background-color 0.15s ease;
 }
 
 .answer-btn:hover {
   background-color: #1F2223;
 }
 
-/* Prevent hover changing disabled buttons */
 .answer-btn:disabled:hover {
   background-color: #181A1B;
   cursor: default;
 }
 
-/* Extra spacing after the last answer button */
-.answer-btn:last-child {
-  margin-bottom: 12px;
-}
+.correct { background-color: #4caf50 !important; }
+.wrong { background-color: #f44336 !important; }
 
 /* ====== GAME SCREEN ===== */
 #game {
@@ -132,11 +153,10 @@ a.btn:hover, a.btn-small:hover {
 #game::before {
   content: "";
   position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.3);
-  z-index: 0;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
   border-radius: 10px;
+  z-index: 0;
 }
 
 #game > * {
@@ -144,62 +164,11 @@ a.btn:hover, a.btn-small:hover {
   z-index: 1;
 }
 
-.hidden { display: none; }
-.correct { background-color: #4caf50 !important; color: white; }
-.wrong { background-color: #f44336 !important; color: white; }
-
-/* ====== LEADERBOARD ===== */
-#leaderboard {
-  list-style: none;
-  padding: 0;
-  margin: 20px 0;
-}
-
-#leaderboard li {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px 12px;
-  background: #f2f2f2;
-  border-radius: 5px;
-  margin-bottom: 6px;
-  font-size: 1rem;
-}
-
-#leaderboard li:nth-child(odd) {
-  background: #e0e0e0;
-}
-
-/* Top 3 highlight */
-.top-1 { color: gold; font-weight: bold; }
-.top-2 { color: silver; font-weight: bold; }
-.top-3 { color: #cd7f32; font-weight: bold; }
-
-/* ====== GAME WINDOW ===== */
-.game-window {
-  background-color: #000;
-  width: 800px;
-  height: 600px;
-  border: 4px solid #ffd700;
-  box-shadow: 0 0 20px rgba(255, 223, 0, 0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.game-window canvas {
-  width: 100%;
-  height: 100%;
-  display: block;
-  background-color: transparent;
-}
-
 /* ====== QUESTION AREA ===== */
-#questionImage {
-  max-width: 100%;
-  max-height: 300px;
-  margin: 10px 0;
-  display: none;
-  border-radius: 8px;
+#question {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 #questionText {
@@ -207,10 +176,12 @@ a.btn:hover, a.btn-small:hover {
   margin: 10px 0;
 }
 
-#question {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+#questionImage {
+  max-width: 100%;
+  max-height: 300px;
+  margin: 10px 0;
+  border-radius: 8px;
+  display: none;
 }
 
 /* ====== OSRS TITLE ===== */
@@ -223,35 +194,17 @@ h1 {
   background: linear-gradient(145deg,#fff8dc 0%,#ffdd44 25%,#f2b705 50%,#c28f0c 75%,#a77b0a 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  text-shadow: 0 0 4px rgba(0,0,0,0.8),1px 1px 0 #000,2px 2px 2px rgba(0,0,0,0.6),0 0 8px rgba(255,223,0,0.8),0 -1px 2px rgba(255,255,255,0.4);
-  filter: drop-shadow(0 0 10px rgba(255,223,0,0.7));
-  -webkit-font-smoothing: antialiased;
+  text-shadow:
+    0 0 4px rgba(0,0,0,0.8),
+    1px 1px 0 #000,
+    2px 2px 2px rgba(0,0,0,0.6),
+    0 0 8px rgba(255,223,0,0.8);
 }
 
-/* ===== BACKGROUND IMAGE ===== */
-#background-img {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  object-fit: cover;
-  z-index: -2;
-  pointer-events: none;
-}
+/* ====== UTIL ===== */
+.hidden { display: none; }
 
-/* Fade layer */
-#bg-fade-layer {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background-size: cover;
-  background-position: center;
-  opacity: 0;
-  transition: opacity 1.5s ease;
-}
-
-/* Dark Reader warning */
+/* ====== DARK READER WARNING ===== */
 #darkreader-warning {
   position: fixed;
   bottom: 12px;
@@ -263,23 +216,3 @@ h1 {
   font-size: 0.85rem;
   z-index: 9999;
 }
-
-.hidden {
-  display: none;
-}
-
-
-/* ====== APP WRAPPER ===== */
-#app {
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 40px;
-}
-
-/* App visibility control */
-.app-hidden { opacity: 0; }
-.app-ready { opacity: 1; transition: opacity 0.15s ease; }
-
-
