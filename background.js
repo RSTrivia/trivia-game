@@ -2,6 +2,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const bgImg = document.getElementById("background-img");
   const fadeLayer = document.getElementById("bg-fade-layer");
 
+  if (!bgImg || !fadeLayer) return;
+
   const backgrounds = [
     "images/background.jpg",
     "images/background2.png",
@@ -12,41 +14,60 @@ document.addEventListener("DOMContentLoaded", () => {
   ];
 
   const CHANGE_INTERVAL = 180000; // 3 minutes
+  const FADE_DURATION = 1200; // must match CSS transition
 
-  // Load last used background immediately
-  let savedBg = localStorage.getItem("bg_current") || backgrounds[0];
-  bgImg.src = savedBg;
+  // -------------------------
+  // Load initial background
+  // -------------------------
+  let currentBg = localStorage.getItem("bg_current");
 
-  // Preload all other backgrounds
-  backgrounds.forEach(src => {
-    if (src !== savedBg) new Image().src = src;
-  });
-
-  function pickNext(current) {
-    const list = backgrounds.filter(b => b !== current);
-    return list[Math.floor(Math.random() * list.length)];
+  if (!currentBg || !backgrounds.includes(currentBg)) {
+    currentBg = backgrounds[0];
   }
 
-  function crossfadeTo(newBg) {
-    const img = new Image();
-    img.src = newBg;
-    img.onload = () => {
-      fadeLayer.style.backgroundImage = `url('${newBg}')`;
-      fadeLayer.style.opacity = 1;
+  bgImg.src = currentBg;
+  bgImg.style.opacity = "1";
+  fadeLayer.style.opacity = "0";
 
-      // Wait for CSS transition to finish
+  // -------------------------
+  // Preload remaining images
+  // -------------------------
+  backgrounds.forEach(src => {
+    if (src !== currentBg) {
+      const img = new Image();
+      img.src = src;
+    }
+  });
+
+  // -------------------------
+  // Helpers
+  // -------------------------
+  function pickNext() {
+    const choices = backgrounds.filter(b => b !== currentBg);
+    return choices[Math.floor(Math.random() * choices.length)];
+  }
+
+  function crossfadeTo(nextBg) {
+    const img = new Image();
+    img.src = nextBg;
+
+    img.onload = () => {
+      fadeLayer.style.backgroundImage = `url('${nextBg}')`;
+      fadeLayer.style.opacity = "1";
+
       setTimeout(() => {
-        bgImg.src = newBg;
-        fadeLayer.style.opacity = 0;
-        localStorage.setItem("bg_current", newBg);
-      }, 1200); // match your CSS transition duration
+        bgImg.src = nextBg;
+        fadeLayer.style.opacity = "0";
+        currentBg = nextBg;
+        localStorage.setItem("bg_current", nextBg);
+      }, FADE_DURATION);
     };
   }
 
-  // Rotate backgrounds automatically
+  // -------------------------
+  // Rotation loop
+  // -------------------------
   setInterval(() => {
-    const current = localStorage.getItem("bg_current") || savedBg;
-    const next = pickNext(current);
-    crossfadeTo(next);
+    crossfadeTo(pickNext());
   }, CHANGE_INTERVAL);
 });
