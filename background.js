@@ -10,19 +10,14 @@ document.addEventListener("DOMContentLoaded", () => {
     "images/background5.jpg"
   ];
 
-  // Preload all images
+  // Preload images
   backgrounds.forEach(src => new Image().src = src);
 
-  const CHANGE_INTERVAL = 4000; // 4s
-  const FADE_DURATION = 1200;   // ms
   let currentBg = localStorage.getItem("bg_current") || backgrounds[0];
-
-  // Show initial background
   document.documentElement.style.setProperty("--bg-image", `url('${currentBg}')`);
   fadeLayer.style.opacity = 0;
 
-  // Use a "logical" timer based on last time
-  let startTime = Date.now();
+  const FADE_DURATION = 1200; // ms
 
   function pickNext() {
     const choices = backgrounds.filter(b => b !== currentBg);
@@ -30,31 +25,28 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function crossfadeTo(nextBg) {
+    fadeLayer.style.transition = `opacity ${FADE_DURATION}ms ease`;
     fadeLayer.style.backgroundImage = `url('${nextBg}')`;
     fadeLayer.style.opacity = 1;
 
     setTimeout(() => {
       document.documentElement.style.setProperty("--bg-image", `url('${nextBg}')`);
       fadeLayer.style.opacity = 0;
+
       currentBg = nextBg;
       localStorage.setItem("bg_current", nextBg);
     }, FADE_DURATION);
   }
 
-  function loop() {
-    const now = Date.now();
-    const elapsed = now - startTime;
-
-    if (elapsed >= CHANGE_INTERVAL) {
-      const steps = Math.floor(elapsed / CHANGE_INTERVAL); // how many backgrounds we “skipped”
+  // Start Web Worker
+  if (window.Worker) {
+    const worker = new Worker('bgWorker.js');
+    worker.onmessage = () => {
       const nextBg = pickNext();
       crossfadeTo(nextBg);
-
-      startTime = now; // reset start
-    }
-
-    requestAnimationFrame(loop);
+    };
+  } else {
+    // fallback if workers are not supported
+    setInterval(() => crossfadeTo(pickNext()), 4000);
   }
-
-  requestAnimationFrame(loop);
 });
