@@ -228,26 +228,46 @@ h1 {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ====== BACKGROUND ===== */
-#background {
+/* ===== BACKGROUND IMAGE ===== */
+#background-img {
   position: fixed;
   inset: 0;
-  z-index: -1;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  z-index: -2;
+  pointer-events: none;
 }
 
+/* Fade layer */
 #bg-fade-layer {
   position: fixed;
   inset: 0;
-  z-index: -2;
+  z-index: -1;
   pointer-events: none;
   background-size: cover;
   background-position: center;
   opacity: 0;
   transition: opacity 1.5s ease;
 }
+
+/* Dark Reader warning */
+#darkreader-warning {
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  background: rgba(0,0,0,0.75);
+  color: #ffd700;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  z-index: 9999;
+}
+
+.hidden {
+  display: none;
+}
+
 
 /* ====== APP WRAPPER ===== */
 #app {
@@ -261,4 +281,5 @@ h1 {
 /* App visibility control */
 .app-hidden { opacity: 0; }
 .app-ready { opacity: 1; transition: opacity 0.15s ease; }
+
 
