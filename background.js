@@ -39,25 +39,38 @@ function crossfadeTo(newBg) {
 
 function initBackground() {
   let savedBg = localStorage.getItem("bg_current");
-  if (!backgrounds.includes(savedBg)) savedBg = backgrounds[0]; // fallback
+  if (!backgrounds.includes(savedBg)) savedBg = backgrounds[0];
 
+  // Preload first image
   const preload = new Image();
   preload.src = savedBg;
   preload.onload = () => {
     console.log("Setting background to:", savedBg);
     bgImg.src = savedBg;
-    bgImg.style.opacity = 1;
-    bgImg.style.visibility = "visible"; // make sure it's visible
+    bgImg.style.opacity = "1"; 
+    bgImg.style.visibility = "visible"; 
     fadeLayer.style.backgroundImage = `url('${savedBg}')`;
-    fadeLayer.style.opacity = 0;
+    fadeLayer.style.opacity = "0";
   };
-  
+
+  // Rotate backgrounds every interval
   setInterval(() => {
     const current = localStorage.getItem("bg_current") || savedBg;
     const next = pickNext(current);
-    crossfadeTo(next);
+
+    fadeLayer.style.backgroundImage = `url('${next}')`;
+    fadeLayer.style.opacity = 1;
+
+    const img = new Image();
+    img.src = next;
+    img.onload = () => {
+      bgImg.src = next;
+      fadeLayer.style.opacity = 0;
+      localStorage.setItem("bg_current", next);
+    };
   }, CHANGE_INTERVAL);
 }
+
 
 
 document.addEventListener("DOMContentLoaded", initBackground);
