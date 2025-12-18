@@ -42,12 +42,24 @@ function initBackground() {
   const preload = new Image();
   preload.src = savedBg;
   preload.onload = () => {
+    // Temporarily remove transition for initial load
+    const prevTransition = bgImg.style.transition;
+    bgImg.style.transition = 'none';
+
+    // Set src and make fully visible immediately
     bgImg.src = savedBg;
-    bgImg.style.opacity = 1;        // fade in smoothly
+    bgImg.style.opacity = 1;
+
+    // Restore transition for future crossfades
+    requestAnimationFrame(() => {
+      bgImg.style.transition = prevTransition || 'opacity 0.3s ease';
+    });
+
+    // Set fadeLayer for crossfade system
     fadeLayer.style.backgroundImage = `url('${savedBg}')`;
     fadeLayer.style.opacity = 0;
 
-    // Enable fade layer transition after first paint
+    // Enable fade layer transition
     requestAnimationFrame(() => {
       fadeLayer.style.transition = "opacity 1.5s ease";
     });
