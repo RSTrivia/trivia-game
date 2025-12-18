@@ -17,20 +17,20 @@ html, body {
   background: #000; /* fallback while images load */
 }
 
-/* Base background image */
 #background-img {
-  position: absolute;
+  position: fixed;
   inset: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   object-fit: cover;
+  z-index: -2;
   pointer-events: none;
 }
 
-/* Fade layer */
 #bg-fade-layer {
-  position: absolute;
+  position: fixed;
   inset: 0;
+  z-index: -1;
   pointer-events: none;
   background-size: cover;
   background-position: center;
@@ -216,3 +216,4 @@ h1 {
   font-size: 0.85rem;
   z-index: 9999;
 }
+
