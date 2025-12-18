@@ -52,14 +52,15 @@ document.addEventListener("DOMContentLoaded", () => {
   // 4️⃣ Crossfade to next background
   // ----------------------
   function crossfadeTo(newBg) {
-    fadeLayer.style.backgroundImage = `url('${newBg}')`;
-    fadeLayer.style.opacity = 1;
-
     const img = new Image();
     img.src = newBg;
     img.onload = () => {
+      fadeLayer.style.backgroundImage = `url('${newBg}')`;
+      fadeLayer.style.opacity = 1;
+  
       bgImg.src = newBg;
       bgImg.style.opacity = 1;
+  
       fadeLayer.style.opacity = 0;
       localStorage.setItem("bg_current", newBg);
     };
