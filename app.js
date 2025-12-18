@@ -294,6 +294,7 @@ document.addEventListener('DOMContentLoaded', () => {
     score = 510; // pretend max score
     remainingQuestions = [];
 
+    document.getElementById('start-screen').classList.add('hidden');
     await endGame();
 
     
@@ -319,6 +320,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // -------------------------
   loadCurrentUser();
 });
+
 
 
 
