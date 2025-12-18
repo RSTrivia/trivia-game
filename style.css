@@ -22,7 +22,7 @@ html, body {
 #background-root {
   position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: -1; /*0*/
   background-image: var(--bg-image);
   background-size: cover;
   background-position: center;
@@ -39,14 +39,16 @@ html, body {
 
 
 #bg-fade-layer {
-  position: absolute;
-  inset: 0;
+  position: fixed; /*absolute*/
+  inset: 0; /* didnt exist before */
+  z-index: -1; /* same layer as root */
   background-size: cover;
   background-position: center;
+  background-position: no-repeat; /* didnt exist before */
   opacity: 0;
   transition: opacity 1.2s ease;
   pointer-events: none;
-  background-color: transparent;
+  /*background-color: transparent;*/
 }
 
 /* ====== APP WRAPPER ===== */
@@ -372,6 +374,7 @@ input.input-field:-webkit-autofill:active {
   -webkit-text-fill-color: #fff !important;
   transition: background-color 5000s ease-in-out 0s;
 }
+
 
 
 
