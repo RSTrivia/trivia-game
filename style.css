@@ -8,34 +8,43 @@ html, body {
   background: #000; /* fallback prevents white flash */
 }
 
-#background-root,
-#background-img,
-#bg-fade-layer {
+/* ====== BACKGROUND ROOT ===== */
+#background-root {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;   /* full viewport width */
-  height: 100vh;  /* full viewport height */
-  margin: 0;
-  padding: 0;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #000; /* fallback black to prevent white flash */
+  z-index: -1;
+  overflow: hidden;
 }
 
 #background-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   z-index: -1;
-  display: block;
-  visibility: hidden; /* hidden until JS sets it */
+  visibility: visible; /* always visible to prevent flicker */
+  opacity: 1;
+  transition: opacity 0.3s ease;
 }
-
 
 #bg-fade-layer {
-  z-index: 0;             /* behind the app but above bgImg */
-  opacity: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background-size: cover;
   background-position: center;
-  pointer-events: none;    /* avoid interaction */
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0; /* start invisible */
+  transition: opacity 1.5s ease;
 }
-
 
 
 /* ====== APP WRAPPER ===== */
@@ -216,6 +225,7 @@ h1 {
   font-size: 0.85rem;
   z-index: 9999;
 }
+
 
 
 
