@@ -13,17 +13,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const CHANGE_INTERVAL = 180000; // 3 minutes
 
+  // Pick saved or default background
+  let savedBg = localStorage.getItem("bg_current");
+  if (!backgrounds.includes(savedBg)) savedBg = backgrounds[0];
+
+  // Preload saved background before setting it
+  const preload = new Image();
+  preload.src = savedBg;
+  preload.onload = () => {
+    bgImg.src = savedBg;
+    bgImg.style.opacity = 1;
+    bgImg.style.visibility = "visible";
+    fadeLayer.style.opacity = 0;
+    localStorage.setItem("bg_current", savedBg);
+  };
+
   // Preload all backgrounds
   backgrounds.forEach(src => {
     const img = new Image();
     img.src = src;
   });
 
+  // Pick a random next background
   function pickNext(current) {
     const list = backgrounds.filter(b => b !== current);
     return list[Math.floor(Math.random() * list.length)];
   }
 
+  // Crossfade to next background
   function crossfadeTo(newBg) {
     fadeLayer.style.backgroundImage = `url('${newBg}')`;
     fadeLayer.style.opacity = 1;
@@ -37,22 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  // ----------------------
-  // INITIAL BACKGROUND
-  // ----------------------
-  let savedBg = localStorage.getItem("bg_current");
-  if (!backgrounds.includes(savedBg)) savedBg = backgrounds[0];
-
-  // Immediately set background without fade
-  bgImg.src = savedBg;
-  bgImg.style.opacity = 1;
-  bgImg.style.visibility = "visible";
-  fadeLayer.style.opacity = 0;
-  localStorage.setItem("bg_current", savedBg);
-
-  // ----------------------
-  // ROTATION
-  // ----------------------
+  // Rotate backgrounds
   setInterval(() => {
     const current = localStorage.getItem("bg_current") || savedBg;
     const next = pickNext(current);
