@@ -469,16 +469,19 @@ input.input-field:-webkit-autofill:active {
 /* LOGIN / LOGOUT + LEADERBOARD BUTTONS (row 3) */
 #start-screen .row:nth-child(3) {
   display: flex;
-  gap: 10px;         /* spacing between buttons */
+  gap: 10px;          /* spacing between buttons */
   justify-content: center;
 }
 
+/* Make both buttons exactly the same width */
 #start-screen .row:nth-child(3) button,
 #start-screen .row:nth-child(3) a.btn-small {
-  flex: 1;            /* share available space evenly */
-  min-width: 120px;   /* prevent buttons from shrinking too much */
-  max-width: 180px;   /* optional: prevent buttons from getting too wide */
+  flex: 1;                      /* share space equally */
+  min-width: 0;                  /* allow shrinking */
   text-align: center;
+  white-space: nowrap;           /* prevent wrapping text */
+  overflow: hidden;              /* hide overflow */
+  text-overflow: ellipsis;       /* add ... if text is too long */
 }
 
 
