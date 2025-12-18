@@ -11,16 +11,16 @@ document.addEventListener("DOMContentLoaded", () => {
     "images/background5.jpg"
   ];
 
-  // Preload images
+  // Preload all images for smoother fades
   backgrounds.forEach(src => {
     const img = new Image();
     img.src = src;
   });
 
-  // Start with the last background
+  // Start with the last background (or default)
   let currentBg = localStorage.getItem("bg_current") || backgrounds[0];
 
-  // 🔥 Show current background immediately (no fade)
+  // Show instantly (no fade)
   document.documentElement.style.setProperty("--bg-image", `url('${currentBg}')`);
   bgImg.src = currentBg;
   fadeLayer.style.opacity = 0;
@@ -34,13 +34,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function crossfadeTo(nextBg) {
-    // Fade in overlay
-    fadeLayer.style.backgroundImage = `url('${nextBg}')`;
+    // Use CSS transition for smooth fade
     fadeLayer.style.transition = `opacity ${FADE_DURATION}ms ease`;
+    fadeLayer.style.backgroundImage = `url('${nextBg}')`;
     fadeLayer.style.opacity = 1;
 
+    // After fade completes, update main background
     setTimeout(() => {
-      // Update main background and hide overlay
       document.documentElement.style.setProperty("--bg-image", `url('${nextBg}')`);
       fadeLayer.style.opacity = 0;
 
@@ -49,6 +49,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }, FADE_DURATION);
   }
 
-  // Start rotation immediately every CHANGE_INTERVAL
-  setInterval(() => crossfadeTo(pickNext()), CHANGE_INTERVAL);
+  // Always keep the interval running in the background
+  setInterval(() => {
+    crossfadeTo(pickNext());
+  }, CHANGE_INTERVAL);
 });
