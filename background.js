@@ -39,15 +39,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
       currentBg = nextBg;
       localStorage.setItem("bg_current", nextBg);
-      lastChange = Date.now();
+      lastChange = Date.now(); // reset timer after fade completes
     }, FADE_DURATION);
   }
 
-function loop() {
-  const now = Date.now();
-  if (now - lastChange >= CHANGE_INTERVAL) {
-    crossfadeTo(pickNext());
-    lastChange = now; // immediately reset the timer
+  // Start the loop
+  function loop() {
+    const now = Date.now();
+    if (now - lastChange >= CHANGE_INTERVAL) {
+      crossfadeTo(pickNext());
+      lastChange = now; // immediately reset timer to prevent multiple changes
+    }
+    requestAnimationFrame(loop);
   }
-  requestAnimationFrame(loop);
+
+  requestAnimationFrame(loop); // start the loop
 });
