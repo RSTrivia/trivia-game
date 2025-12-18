@@ -74,53 +74,49 @@ document.addEventListener('DOMContentLoaded', () => {
   // User/Auth
   // -------------------------
   async function loadCurrentUser() {
-    // Hide initially to prevent flicker
-    userDisplay.classList.add('hidden');
-    authBtn.classList.add('hidden');
+  // Set default placeholder immediately to prevent flicker
+  userDisplay.textContent = 'Player:     '; // reserve space for name
+  authBtn.textContent = 'Log In'; // default auth button
 
-    // Try cached values first
-    const cachedName = localStorage.getItem('cachedUsername');
-    const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
-    if (cachedName) userDisplay.textContent = `Player: ${cachedName}`;
-    if (cachedLoggedIn) authBtn.textContent = 'Log Out';
-    else authBtn.textContent = 'Log In';
+  // Try cached values first
+  const cachedName = localStorage.getItem('cachedUsername');
+  const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
+  if (cachedName) userDisplay.textContent = `Player: ${cachedName}`;
+  if (cachedLoggedIn) authBtn.textContent = 'Log Out';
 
-    // Fetch real session
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user) {
+  // Fetch real session
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.user) {
+    username = '';
+    authBtn.textContent = 'Log In';
+    authBtn.onclick = () => window.location.href = 'login.html';
+    localStorage.setItem('cachedUsername', '');
+    localStorage.setItem('cachedLoggedIn', 'false');
+  } else {
+    // Fetch profile
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('id', session.user.id)
+      .single();
+
+    username = !error && profile ? profile.username : 'Unknown';
+    // Fill in the placeholder space
+    userDisplay.textContent = `Player: ${username}`;
+    authBtn.textContent = 'Log Out';
+    authBtn.onclick = async () => {
+      await supabase.auth.signOut();
       username = '';
-      userDisplay.textContent = ''; // empty until real fetch
-      authBtn.textContent = 'Log In';
-      authBtn.onclick = () => window.location.href = 'login.html';
       localStorage.setItem('cachedUsername', '');
       localStorage.setItem('cachedLoggedIn', 'false');
-    } else {
-      // Fetch profile
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('id', session.user.id)
-        .single();
+      loadCurrentUser();
+    };
 
-      username = !error && profile ? profile.username : 'Unknown';
-      userDisplay.textContent = `Player: ${username}`;
-      authBtn.textContent = 'Log Out';
-      authBtn.onclick = async () => {
-        await supabase.auth.signOut();
-        username = '';
-        localStorage.setItem('cachedUsername', '');
-        localStorage.setItem('cachedLoggedIn', 'false');
-        loadCurrentUser();
-      };
-
-      localStorage.setItem('cachedUsername', username);
-      localStorage.setItem('cachedLoggedIn', 'true');
-    }
-
-    // Reveal after data is ready
-    userDisplay.classList.remove('hidden');
-    authBtn.classList.remove('hidden');
+    localStorage.setItem('cachedUsername', username);
+    localStorage.setItem('cachedLoggedIn', 'true');
   }
+}
+
 
   // -------------------------
   // Leaderboard
@@ -321,6 +317,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // -------------------------
   loadCurrentUser();
 });
+
 
 
 
