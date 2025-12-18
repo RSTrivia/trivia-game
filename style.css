@@ -96,17 +96,25 @@ a.btn:hover, a.btn-small:hover {
 
 /* ====== ANSWER BUTTONS ===== */
 .answer-btn {
-  background: #ffffff;
-  border: 2px solid #000;
+  background-color: #181A1B;   /* normal */
+  border: 2px solid #8C8273;   /* border */
+  color: #FFFFFF;             /* text */
   padding: 12px;
   margin: 6px 0;
   width: 100%;
   border-radius: 6px;
   font-size: 1rem;
+  transition: background-color 0.15s ease, transform 0.05s ease;
 }
 
 .answer-btn:hover {
-  background: #f2f2f2;
+  background-color: #1F2223;
+}
+
+/* Prevent hover changing disabled buttons */
+.answer-btn:disabled:hover {
+  background-color: #181A1B;
+  cursor: default;
 }
 
 /* Extra spacing after the last answer button */
@@ -253,3 +261,4 @@ h1 {
 /* App visibility control */
 .app-hidden { opacity: 0; }
 .app-ready { opacity: 1; transition: opacity 0.15s ease; }
+
