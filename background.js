@@ -43,13 +43,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }, FADE_DURATION);
   }
 
-  function loop() {
-    const now = Date.now();
-    if (now - lastChange >= CHANGE_INTERVAL) {
-      crossfadeTo(pickNext());
-    }
-    requestAnimationFrame(loop);
+function loop() {
+  const now = Date.now();
+  if (now - lastChange >= CHANGE_INTERVAL) {
+    crossfadeTo(pickNext());
+    lastChange = now; // immediately reset the timer
   }
-
   requestAnimationFrame(loop);
 });
