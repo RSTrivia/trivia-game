@@ -42,11 +42,14 @@ function crossfadeTo(newBg) {
 function initBackground() {
   const savedBg = localStorage.getItem("bg_current") || backgrounds[0];
 
-  // Preload the saved image to prevent flicker
+  // Remove any src from the img to prevent initial flash
+  bgImg.removeAttribute("src");
+
+  // Preload the saved image
   const preload = new Image();
   preload.src = savedBg;
   preload.onload = () => {
-    // Set the actual background image after it's fully loaded
+    // Set the actual image only after it's fully loaded
     bgImg.src = savedBg;
     fadeLayer.style.backgroundImage = `url('${savedBg}')`;
     fadeLayer.style.opacity = 0;
