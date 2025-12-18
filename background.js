@@ -1,4 +1,7 @@
-// background.js
+// ================================
+// BACKGROUND SYSTEM (STABLE + NO RELOAD CHANGE)
+// ================================
+
 const backgrounds = [
   "images/background.jpg",
   "images/background2.png",
@@ -8,79 +11,73 @@ const backgrounds = [
   "images/background6.png"
 ];
 
-const CHANGE_INTERVAL = 180000; // 3 minutes
+// 10 minutes (change if you want)
+const CHANGE_INTERVAL = 600000;
 
-// Preload all images
-backgrounds.forEach(src => new Image().src = src);
+const bgImg = document.getElementById("background-img");
+const fadeLayer = document.getElementById("bg-fade-layer");
+const warning = document.getElementById("darkreader-warning");
 
-// Elements
-const bgDiv = document.getElementById('background') || (() => {
-  const div = document.createElement('div');
-  div.id = 'background';
-  document.body.prepend(div);
-  return div;
-})();
+// Preload images
+backgrounds.forEach(src => {
+  const img = new Image();
+  img.src = src;
+});
 
-let fadeLayer = document.getElementById('bg-fade-layer');
-if (!fadeLayer) {
-  fadeLayer = document.createElement('div');
-  fadeLayer.id = 'bg-fade-layer';
-  fadeLayer.style.position = 'fixed';
-  fadeLayer.style.top = 0;
-  fadeLayer.style.left = 0;
-  fadeLayer.style.width = '100%';
-  fadeLayer.style.height = '100%';
-  fadeLayer.style.zIndex = -1;
-  fadeLayer.style.transition = 'opacity 1.5s ease';
-  fadeLayer.style.opacity = 0;
-  document.body.appendChild(fadeLayer);
+// Pick random background excluding current
+function pickNext(current) {
+  const list = backgrounds.filter(b => b !== current);
+  return list[Math.floor(Math.random() * list.length)];
 }
 
-// Pick a random background excluding the current one
-function pickRandomBackground(exclude) {
-  const options = backgrounds.filter(bg => bg !== exclude);
-  return options[Math.floor(Math.random() * options.length)];
-}
-
-// Crossfade background
-function applyBackground(newBg) {
+// Apply crossfade
+function crossfadeTo(newBg) {
   fadeLayer.style.backgroundImage = `url('${newBg}')`;
-  fadeLayer.style.opacity = 1;
+  fadeLayer.style.opacity = "1";
 
-  fadeLayer.addEventListener(
-    'transitionend',
-    function done() {
-      bgDiv.style.backgroundImage = `url('${newBg}')`;
-      fadeLayer.style.opacity = 0;
-      fadeLayer.removeEventListener('transitionend', done);
-    }
-  );
+  setTimeout(() => {
+    bgImg.src = newBg;
+    fadeLayer.style.opacity = "0";
+
+    localStorage.setItem("bg_current", newBg);
+    localStorage.setItem("bg_last_change", Date.now());
+  }, 1500);
 }
 
-// Update background if interval passed
-function updateBackground(force = false) {
+// Rotation logic (NO reload change)
+function updateBackground() {
   const now = Date.now();
-  const lastChange = Number(localStorage.getItem("bg_last_change")) || 0;
-  const currentBg = localStorage.getItem("bg_current") || backgrounds[0];
+  const last = Number(localStorage.getItem("bg_last_change")) || 0;
+  const current = localStorage.getItem("bg_current") || backgrounds[0];
 
-  if (!force && now - lastChange < CHANGE_INTERVAL) return;
+  if (now - last < CHANGE_INTERVAL) return;
 
-  const nextBg = pickRandomBackground(currentBg);
-  localStorage.setItem("bg_current", nextBg);
-  localStorage.setItem("bg_last_change", now);
-
-  applyBackground(nextBg);
+  const next = pickNext(current);
+  crossfadeTo(next);
 }
 
-// Initialize background immediately
+// Init (runs once per load)
 (function initBackground() {
   const savedBg = localStorage.getItem("bg_current") || backgrounds[0];
-  bgDiv.style.backgroundImage = `url('${savedBg}')`;
+  bgImg.src = savedBg;
   fadeLayer.style.backgroundImage = `url('${savedBg}')`;
-  fadeLayer.style.opacity = 0;
+  fadeLayer.style.opacity = "0";
 
-  updateBackground(); // Only update if enough time has passed
+  // DO NOT rotate on load — only after interval
 })();
 
-// Update every 10 minutes
+// Interval rotation
 setInterval(updateBackground, CHANGE_INTERVAL);
+
+// ================================
+// DARK READER DETECTION
+// ================================
+setTimeout(() => {
+  const drActive =
+    document.documentElement.hasAttribute("data-darkreader-mode") ||
+    document.documentElement.hasAttribute("data-darkreader-scheme");
+
+  if (drActive) {
+    warning.classList.remove("hidden");
+  }
+}, 500);
