@@ -73,58 +73,56 @@ document.addEventListener('DOMContentLoaded', () => {
   // -------------------------
   // User/Auth
   // -------------------------
+  
   async function loadCurrentUser() {
-  const usernamePlaceholder = document.getElementById('usernamePlaceholder');
-
-  // Show placeholders immediately
   const usernameSpan = document.getElementById('usernameSpan');
-  usernameSpan.textContent = 'Guest'; // default value immediately
+  const authBtn = document.getElementById('authBtn');
 
+  // 1️⃣ Set default UI immediately to avoid flicker
+  usernameSpan.textContent = 'Guest';
   authBtn.textContent = 'Log In';
-  authBtn.onclick = () => window.location.href = 'login.html'; // default click
+  authBtn.onclick = () => window.location.href = 'login.html';
 
-  // Try cached values first
+  // 2️⃣ Try cached values to speed up first render (optional)
   const cachedName = localStorage.getItem('cachedUsername');
   const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
-  if (cachedName) usernamePlaceholder.textContent = cachedName;
+  if (cachedName) usernameSpan.textContent = cachedName;
   if (cachedLoggedIn) authBtn.textContent = 'Log Out';
 
-  // Fetch real session
+  // 3️⃣ Fetch actual Supabase session
   const { data: { session } } = await supabase.auth.getSession();
 
   if (!session?.user) {
-    username = '';
-    localStorage.setItem('cachedUsername', 'Guest');
-    localStorage.setItem('cachedLoggedIn', 'false');
-    usernamePlaceholder.textContent = 'Guest';
+    // Not logged in
+    usernameSpan.textContent = 'Guest';
     authBtn.textContent = 'Log In';
     authBtn.onclick = () => window.location.href = 'login.html';
+    localStorage.setItem('cachedUsername', 'Guest');
+    localStorage.setItem('cachedLoggedIn', 'false');
     return;
   }
 
-  // Fetch profile
+  // 4️⃣ User is logged in, fetch profile
   const { data: profile, error } = await supabase
     .from('profiles')
     .select('username')
     .eq('id', session.user.id)
     .single();
 
-  username = !error && profile ? profile.username : 'Unknown';
-  usernamePlaceholder.textContent = username;
+  const username = !error && profile ? profile.username : 'Unknown';
+  usernameSpan.textContent = username;
+
+  // 5️⃣ Update single button to log out
   authBtn.textContent = 'Log Out';
   authBtn.onclick = async () => {
     await supabase.auth.signOut();
-    username = '';
-    localStorage.setItem('cachedUsername', 'Guest');
-    localStorage.setItem('cachedLoggedIn', 'false');
-    loadCurrentUser(); // refresh UI
+    loadCurrentUser(); // refresh UI after logout
   };
 
-  // Cache for next refresh
+  // 6️⃣ Cache username for next reload
   localStorage.setItem('cachedUsername', username);
   localStorage.setItem('cachedLoggedIn', 'true');
 }
-
 
   // -------------------------
   // Leaderboard
@@ -325,6 +323,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // -------------------------
   loadCurrentUser();
 });
+
 
 
 
