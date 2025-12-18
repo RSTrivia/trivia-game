@@ -44,13 +44,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const preload = new Image();
   preload.src = savedBg;
   preload.onload = () => {
-    bgImg.src = savedBg;
-    bgImg.style.opacity = 1;
-    bgImg.style.visibility = "visible";
-    fadeLayer.style.backgroundImage = `url('${savedBg}')`;
-    fadeLayer.style.opacity = 0;
-    console.log("Setting background to:", savedBg);
-  };
+  bgImg.src = savedBg;
+  bgImg.style.visibility = "visible";
+  bgImg.style.opacity = "1"; // fade in
+  fadeLayer.style.backgroundImage = `url('${savedBg}')`;
+  fadeLayer.style.opacity = 0;
+};
+
 
   setInterval(() => {
     const current = localStorage.getItem("bg_current") || savedBg;
