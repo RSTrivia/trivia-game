@@ -4,6 +4,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!bgImg || !fadeLayer) return;
 
+  // Force test background
+  bgImg.src = 'images/background.jpg';
+  bgImg.style.display = 'block';
+  bgImg.style.width = '100vw';
+  bgImg.style.height = '100vh';
+  bgImg.style.position = 'fixed';
+  bgImg.style.zIndex = '-1';
+
   const backgrounds = [
     "images/background.jpg",
     "images/background2.png",
@@ -14,24 +22,18 @@ document.addEventListener("DOMContentLoaded", () => {
   ];
 
   const CHANGE_INTERVAL = 180000; // 3 minutes
-  const FADE_DURATION = 1200; // must match CSS transition
+  const FADE_DURATION = 1200;     // must match CSS transition
 
-  // -------------------------
   // Load initial background
-  // -------------------------
   let currentBg = localStorage.getItem("bg_current");
-
   if (!currentBg || !backgrounds.includes(currentBg)) {
     currentBg = backgrounds[0];
   }
-
   bgImg.src = currentBg;
   bgImg.style.opacity = "1";
   fadeLayer.style.opacity = "0";
 
-  // -------------------------
   // Preload remaining images
-  // -------------------------
   backgrounds.forEach(src => {
     if (src !== currentBg) {
       const img = new Image();
@@ -39,9 +41,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // -------------------------
-  // Helpers
-  // -------------------------
   function pickNext() {
     const choices = backgrounds.filter(b => b !== currentBg);
     return choices[Math.floor(Math.random() * choices.length)];
@@ -50,7 +49,6 @@ document.addEventListener("DOMContentLoaded", () => {
   function crossfadeTo(nextBg) {
     const img = new Image();
     img.src = nextBg;
-
     img.onload = () => {
       fadeLayer.style.backgroundImage = `url('${nextBg}')`;
       fadeLayer.style.opacity = "1";
@@ -64,9 +62,6 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  // -------------------------
-  // Rotation loop
-  // -------------------------
   setInterval(() => {
     crossfadeTo(pickNext());
   }, CHANGE_INTERVAL);
