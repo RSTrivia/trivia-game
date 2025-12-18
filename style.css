@@ -8,6 +8,10 @@ html, body {
   font-family: Arial, sans-serif;
 }
 
+:root {
+  --bg-image: url('images/background.jpg'); /* default background */
+}
+
 /*#background-root {
   position: fixed;
   inset: 0;
@@ -368,6 +372,7 @@ input.input-field:-webkit-autofill:active {
   -webkit-text-fill-color: #fff !important;
   transition: background-color 5000s ease-in-out 0s;
 }
+
 
 
 
