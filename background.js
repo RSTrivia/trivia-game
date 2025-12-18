@@ -38,23 +38,19 @@ function crossfadeTo(newBg) {
   }, 1600); // slightly longer than transition
 }
 
-// Initialize background
 function initBackground() {
   const savedBg = localStorage.getItem("bg_current") || backgrounds[0];
-
-  // Remove any src from the img to prevent initial flash
-  bgImg.removeAttribute("src");
 
   // Preload the saved image
   const preload = new Image();
   preload.src = savedBg;
   preload.onload = () => {
-    // Set the actual image only after it's fully loaded
+    // Set the src only after it's fully loaded
     bgImg.src = savedBg;
     fadeLayer.style.backgroundImage = `url('${savedBg}')`;
     fadeLayer.style.opacity = 0;
 
-    // Enable fade transition after initial paint
+    // Enable fade transition
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         fadeLayer.style.transition = "opacity 1.5s ease";
@@ -69,6 +65,7 @@ function initBackground() {
     crossfadeTo(next);
   }, CHANGE_INTERVAL);
 }
+
 
 // Start everything after DOM is ready
 document.addEventListener("DOMContentLoaded", initBackground);
