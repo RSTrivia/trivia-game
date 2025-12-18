@@ -146,7 +146,7 @@ function updateBackground() {
   const now = Date.now();
 
   // Apply saved background immediately to both layers
-  bgImg.src = savedBg;
+  bgDiv.style.backgroundImage = `url('${savedBg}')`;
   fadeLayer.style.backgroundImage = `url('${savedBg}')`;
   fadeLayer.style.opacity = 0;
 
@@ -399,6 +399,7 @@ setInterval(updateBackground, CHANGE_INTERVAL);
   // -------------------------
   loadCurrentUser();
 });
+
 
 
 
