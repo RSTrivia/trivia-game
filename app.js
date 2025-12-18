@@ -99,6 +99,10 @@ async function validateSessionSilently() {
 }
 
 validateSessionSilently();
+  // -------------------------
+  // User/Auth
+  // -------------------------
+  
 
   async function loadSounds() {
     correctBuffer = await loadAudio('./sounds/correct.mp3');
@@ -120,72 +124,6 @@ validateSessionSilently();
     source.connect(gainNode).connect(audioCtx.destination);
     source.start();
   }
-
-  // -------------------------
-  // User/Auth
-  // -------------------------
- function renderCachedUser() {
-  const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
-  const cachedUsername = localStorage.getItem('cachedUsername') || '';
-
-  if (cachedLoggedIn && cachedUsername) {
-    username = cachedUsername;
-    userDisplay.querySelector('#usernameSpan').textContent = ' ' + cachedUsername;
-    authBtn.textContent = 'Log Out';
-    authBtn.onclick = async () => {
-      await supabase.auth.signOut();
-      await loadCurrentUser();
-    };
-  } else {
-    username = '';
-    userDisplay.querySelector('#usernameSpan').textContent = ' Guest';
-    authBtn.textContent = 'Log In';
-    authBtn.onclick = () => window.location.href = 'login.html';
-  }
-}
- 
-async function loadCurrentUser() {
-  const { data: { session } } = await supabase.auth.getSession();
-
-  // LOGGED OUT
-  if (!session?.user) {
-    if (localStorage.getItem('cachedLoggedIn') !== 'false') {
-      username = '';
-      userDisplay.querySelector('#usernameSpan').textContent = ' Guest';
-      authBtn.textContent = 'Log In';
-      authBtn.onclick = () => window.location.href = 'login.html';
-      localStorage.setItem('cachedLoggedIn', 'false');
-      localStorage.setItem('cachedUsername', '');
-    }
-    return;
-  }
-
-  // LOGGED IN — fetch profile
-  const { data: profile, error } = await supabase
-    .from('profiles')
-    .select('username')
-    .eq('id', session.user.id)
-    .single();
-
-  const realUsername = !error && profile ? profile.username : '';
-
-  // Only update UI if username changed
-  if (realUsername && realUsername !== localStorage.getItem('cachedUsername')) {
-    username = realUsername;
-    userDisplay.querySelector('#usernameSpan').textContent = ' ' + realUsername;
-    authBtn.textContent = 'Log Out';
-    authBtn.onclick = async () => {
-      await supabase.auth.signOut();
-      await loadCurrentUser();
-    };
-
-    localStorage.setItem('cachedUsername', realUsername);
-    localStorage.setItem('cachedLoggedIn', 'true');
-  }
-}
-
-
-
 
   // -------------------------
   // Leaderboard
@@ -381,12 +319,8 @@ async function loadCurrentUser() {
     updateScore();
   });
 
-  // -------------------------
-  // Init
-  // -------------------------
-  renderCachedUser();     // instant, no flicker
-  loadCurrentUser();
 });
+
 
 
 
