@@ -10,13 +10,16 @@ document.addEventListener("DOMContentLoaded", () => {
     "images/background5.jpg"
   ];
 
-  // Preload images
+  // Preload images for smooth fades
   backgrounds.forEach(src => new Image().src = src);
 
   let currentBg = localStorage.getItem("bg_current") || backgrounds[0];
   document.documentElement.style.setProperty("--bg-image", `url('${currentBg}')`);
 
-  const CHANGE_INTERVAL = 4000;
+  const CHANGE_INTERVAL = 4000; // 4 seconds
+  const FADE_DURATION = 1200;   // ms
+
+  let lastChangeTime = performance.now();
 
   function pickNext() {
     const choices = backgrounds.filter(b => b !== currentBg);
@@ -32,8 +35,17 @@ document.addEventListener("DOMContentLoaded", () => {
       fadeLayer.style.opacity = 0;
       currentBg = nextBg;
       localStorage.setItem("bg_current", nextBg);
-    }, 1200); // match CSS transition duration
+      lastChangeTime = performance.now(); // reset timer
+    }, FADE_DURATION);
   }
 
-  setInterval(() => crossfadeTo(pickNext()), CHANGE_INTERVAL);
+  function loop(now) {
+    if (now - lastChangeTime >= CHANGE_INTERVAL) {
+      crossfadeTo(pickNext());
+      lastChangeTime = now; // ensure consistent timing
+    }
+    requestAnimationFrame(loop);
+  }
+
+  requestAnimationFrame(loop); // start loop
 });
