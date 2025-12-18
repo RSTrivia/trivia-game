@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
+  const bgImg = document.getElementById("background-img");
   const fadeLayer = document.getElementById("bg-fade-layer");
-  if (!fadeLayer) return;
+  if (!bgImg || !fadeLayer) return;
 
   const backgrounds = [
     "images/background.jpg",
@@ -10,49 +11,64 @@ document.addEventListener("DOMContentLoaded", () => {
     "images/background5.jpg"
   ];
 
-  // Preload images
-  backgrounds.forEach(src => { const img = new Image(); img.src = src; });
+  // Preload all images
+  backgrounds.forEach(src => {
+    const img = new Image();
+    img.src = src;
+  });
 
-  const FADE_DURATION = 1200;
-  const CHANGE_INTERVAL = 4000;
+  const FADE_DURATION = 1200;      // fade animation time
+  const CHANGE_INTERVAL = 4000;    // time between background changes
 
-  // Get current background and last change timestamp
-  let currentBg = localStorage.getItem("bg_current") || backgrounds[0];
-  let lastChange = parseInt(localStorage.getItem("bg_lastChange")) || Date.now();
+  // Get last background info from localStorage
+  let lastBg = localStorage.getItem("bg_current") || backgrounds[0];
+  let lastTimestamp = parseInt(localStorage.getItem("bg_timestamp")) || Date.now();
 
-  document.documentElement.style.setProperty("--bg-image", `url('${currentBg}')`);
+  // Show current background immediately
+  document.documentElement.style.setProperty("--bg-image", `url('${lastBg}')`);
+  bgImg.src = lastBg;
   fadeLayer.style.opacity = 0;
 
-  function pickNext() {
-    const choices = backgrounds.filter(b => b !== currentBg);
+  // Pick a new background different from current
+  function pickNext(current) {
+    const choices = backgrounds.filter(b => b !== current);
     return choices[Math.floor(Math.random() * choices.length)];
   }
 
+  // Fade to next background
   function crossfadeTo(nextBg) {
-    fadeLayer.style.backgroundImage = `url('${nextBg}')`;
     fadeLayer.style.transition = `opacity ${FADE_DURATION}ms ease`;
+    fadeLayer.style.backgroundImage = `url('${nextBg}')`;
     fadeLayer.style.opacity = 1;
 
     setTimeout(() => {
       document.documentElement.style.setProperty("--bg-image", `url('${nextBg}')`);
-      fadeLayer.style.transition = 'none';
       fadeLayer.style.opacity = 0;
 
-      currentBg = nextBg;
-      lastChange = Date.now();
-      localStorage.setItem("bg_current", nextBg);
-      localStorage.setItem("bg_lastChange", lastChange);
+      lastBg = nextBg;
+      lastTimestamp = Date.now();
+      localStorage.setItem("bg_current", lastBg);
+      localStorage.setItem("bg_timestamp", lastTimestamp);
     }, FADE_DURATION);
   }
 
-  function updateBackground() {
+  // Compute how much time passed since last change
+  function startInterval() {
     const now = Date.now();
-    if (now - lastChange >= CHANGE_INTERVAL) {
-      crossfadeTo(pickNext());
+    let elapsed = now - lastTimestamp;
+
+    // If elapsed >= interval, fade immediately
+    if (elapsed >= CHANGE_INTERVAL) {
+      crossfadeTo(pickNext(lastBg));
+      elapsed = 0;
     }
-    requestAnimationFrame(updateBackground);
+
+    // Set timeout for next fade based on remaining time
+    setTimeout(function run() {
+      crossfadeTo(pickNext(lastBg));
+      setTimeout(run, CHANGE_INTERVAL);
+    }, CHANGE_INTERVAL - elapsed);
   }
 
-  // Start the loop
-  updateBackground();
+  startInterval();
 });
