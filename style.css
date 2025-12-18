@@ -20,16 +20,16 @@ html, body {
   height: 100vh;
 }*/
 
-/*
+
 #background-root {
   position: fixed;
   inset: 0;
   z-index: -1; /*0*/
- /* background-image: var(--bg-image);
+  background-image: var(--bg-image);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-}*/
+}
 
 
 /*#background-img {
@@ -407,6 +407,7 @@ input.input-field:-webkit-autofill:active {
   -webkit-text-fill-color: #fff !important;
   transition: background-color 5000s ease-in-out 0s;
 }
+
 
 
 
