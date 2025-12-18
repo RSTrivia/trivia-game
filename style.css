@@ -24,11 +24,12 @@ html, body {
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: cover; /* ensures it scales like background-size: cover */
   z-index: -1;
-  opacity: 1;           /* visible immediately */
-  visibility: visible;  /* prevents alt text */
+  display: block;   /* prevents inline alt text */
+  visibility: visible;
 }
+
 
 #bg-fade-layer {
   position: absolute;
@@ -223,6 +224,7 @@ h1 {
   font-size: 0.85rem;
   z-index: 9999;
 }
+
 
 
 
