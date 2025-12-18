@@ -306,6 +306,41 @@ h1 {
 
 
 
+/* ====== INPUT & BUTTON ALIGNMENT FIX ===== */
+.input-field,
+.btn,
+.btn-small {
+  box-sizing: border-box; /* include padding/border in width */
+}
+
+/* Ensure input fields never overflow the container */
+.input-field {
+  max-width: 100%;
+}
+
+/* Small buttons in the same row share space evenly */
+.menu-row {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+/* Prevent .btn-small from overflowing row */
+.btn-small {
+  flex: 1;        /* evenly divide space */
+  width: auto;    /* prevent 100% width from breaking layout */
+  min-width: 0;   /* avoid flex overflow issues */
+}
+
+/* Make Back to Game button match container width */
+.login-row > .btn {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+
+
+
 
 
 
