@@ -33,6 +33,7 @@ html, body {
   opacity: 0;
   transition: opacity 1.2s ease;
   pointer-events: none;
+  background-color: transparent;
 }
 
 /* ====== APP WRAPPER ===== */
@@ -52,7 +53,7 @@ html, body {
 
 /* ====== CONTAINER ====== */
 .container {
-  background: rgba(0, 0, 0, 0.85); /* darkened to match OSRS theme */
+  background: rgba(0, 0, 0, 0.3); /* darkened to match OSRS theme */
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0 0 30px rgba(0,0,0,0.6);
@@ -153,7 +154,7 @@ button {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.35);
+  background: transparent; /*background: rgba(0,0,0,0.35); */
   border-radius: 10px;
   z-index: 0;
 }
@@ -257,6 +258,7 @@ h1 {
   font-size: 1.2rem;
   margin-top: 10px;
 }
+
 
 
 
