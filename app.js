@@ -77,7 +77,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const usernamePlaceholder = document.getElementById('usernamePlaceholder');
 
   // Show placeholders immediately
-  usernamePlaceholder.textContent = '        '; // reserve space
+  const usernameSpan = document.getElementById('usernameSpan');
+  usernameSpan.textContent = 'Guest'; // default value immediately
+
   authBtn.textContent = 'Log In';
   authBtn.onclick = () => window.location.href = 'login.html'; // default click
 
@@ -323,6 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // -------------------------
   loadCurrentUser();
 });
+
 
 
 
