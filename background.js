@@ -4,7 +4,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!bgImg || !fadeLayer) return;
 
-  const bgImg = document.getElementById('background-img');
   bgImg.src = 'images/background.jpg';  // your image path
   bgImg.style.display = 'block';
   bgImg.style.width = '100vw';
