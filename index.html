@@ -11,21 +11,15 @@
 </head>
 
 <body>
-   <script>
-    const lastBg = localStorage.getItem("bg_current") || "images/background.jpg";
-    document.getElementById("background-img").src = lastBg;
-  </script>
-  
   <!-- BACKGROUND LAYERS -->
   <div id="background-root">
     <img 
       id="background-img" 
-      src="" <!-- we’ll fill it with JS immediately -->
+      src="" 
       alt="Background"
     >
     <div id="bg-fade-layer"></div>
   </div>
-
 
   <!-- App wrapper -->
   <div id="app">
@@ -76,11 +70,14 @@
   <script type="module" src="app.js"></script>
   <script src="background.js" defer></script>
 
+  <!-- Set the last used background AFTER the element exists -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const lastBg = localStorage.getItem("bg_current") || "images/background.jpg";
+      const bgImg = document.getElementById("background-img");
+      if (bgImg) bgImg.src = lastBg;
+    });
+  </script>
+
 </body>
 </html>
-
-
-
-
-
-
