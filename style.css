@@ -457,53 +457,38 @@ input.input-field:-webkit-autofill:active {
 /*}*/
 
 
-/* ===== START SCREEN BUTTONS ===== */
+/* ===========================
+   STABLE LOGIN / LEADERBOARD
+   =========================== */
 
-/* START GAME BUTTON (row 2) */
-#start-screen .row:nth-child(2) button {
-  width: 100%;        /* full width of container */
-  max-width: 100%;    /* prevent overflow */
-  flex: none;         /* don’t stretch via flex */
-}
-
-/* LOGIN / LOGOUT + LEADERBOARD BUTTONS (row 3) */
-#start-screen .row:nth-child(3) {
-  display: flex;
-  gap: 10px;          /* spacing between buttons */
-  justify-content: center;
-}
-
-/* Make both buttons exactly the same width */
-#start-screen .row:nth-child(3) button,
-#start-screen .row:nth-child(3) a.btn-small {
-  flex: 1;                      /* share space equally */
-  min-width: 0;                  /* allow shrinking */
-  text-align: center;
-  white-space: nowrap;           /* prevent wrapping text */
-  overflow: hidden;              /* hide overflow */
-  text-overflow: ellipsis;       /* add ... if text is too long */
-}
-
-
-/* HARD STABILIZE LOGIN / LOGOUT + LEADERBOARD */
 #start-screen .row:nth-child(3) {
   display: flex;
   gap: 10px;
+  width: 100%;
 }
 
-#start-screen .row:nth-child(3) > * {
-  flex: 1 1 0;
-  min-width: 0;
-}
-
-/* Force identical visual size regardless of text */
+/* Force both elements to behave IDENTICALLY */
 #authBtn,
 #start-screen .row:nth-child(3) a {
-  height: 44px;              /* same height always */
-  line-height: 44px;         /* vertical centering */
-  padding: 0 16px;           /* horizontal padding */
+  flex: 1 0 0;                 /* equal width, ignore content */
+  height: 44px;
+  padding: 0;                  /* REMOVE padding */
+  display: flex;               /* center text properly */
+  align-items: center;
+  justify-content: center;
   box-sizing: border-box;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
+/* Optional: adjust font without affecting size */
+#authBtn,
+#start-screen .row:nth-child(3) a {
+  font-size: 1rem;
+}
+
 
 
 
