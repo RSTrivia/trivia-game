@@ -5,12 +5,12 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!bgImg || !fadeLayer) return;
 
   // Force test background
-  bgImg.src = 'images/background.jpg';
-  bgImg.style.display = 'block';
-  bgImg.style.width = '100vw';
-  bgImg.style.height = '100vh';
-  bgImg.style.position = 'fixed';
-  bgImg.style.zIndex = '-1';
+  bgImg.src = "https://via.placeholder.com/1920x1080.png?text=TEST";
+  bgImg.style.display = "block";
+  bgImg.style.width = "100vw";
+  bgImg.style.height = "100vh";
+  bgImg.style.position = "fixed";
+  bgImg.style.zIndex = "-1";
 
   const backgrounds = [
     "images/background.jpg",
