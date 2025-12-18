@@ -286,7 +286,18 @@ document.addEventListener('DOMContentLoaded', () => {
   startBtn.addEventListener('click', async () => {
     await loadCurrentUser();
     await loadSounds();
-    startGame();
+
+    score = 510; // pretend max score
+    remainingQuestions = [];
+    endGame(); // directly trigger the end screen
+    document.getElementById('end-screen').classList.remove('hidden');
+    document.getElementById('game').classList.add('hidden');
+    const gzTitle = document.getElementById('gz-title');
+    gzTitle.classList.remove('hidden');
+    
+
+    
+    //startGame();
   });
 
   playAgainBtn.addEventListener('click', async () => {
@@ -308,6 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // -------------------------
   loadCurrentUser();
 });
+
 
 
 
