@@ -17,8 +17,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const questionImage = document.getElementById('questionImage');
   const answersBox = document.getElementById('answers');
   const timeDisplay = document.getElementById('time');
-  const bgImg = document.getElementById('background-img');
-  const muteBtn = document.getElementById('muteBtn');
   const appDiv = document.getElementById('app');
 
   let username = '';
@@ -35,22 +33,22 @@ document.addEventListener('DOMContentLoaded', () => {
   appDiv.style.opacity = '1';
 
   // -------------------------
-  // Persistent Mute
+  // Audio & Mute
   // -------------------------
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   let muted = localStorage.getItem('muted') === 'true';
-  muteBtn.textContent = muted ? '🔇' : '🔊';
+  let correctBuffer, wrongBuffer;
+
+  const muteBtn = document.getElementById('muteBtn');
+  const updateMuteIcon = () => muteBtn.textContent = muted ? '🔇' : '🔊';
+  updateMuteIcon();
+
   muteBtn.addEventListener('click', () => {
     muted = !muted;
     localStorage.setItem('muted', muted);
-    muteBtn.textContent = muted ? '🔇' : '🔊';
-    if (audioCtx.state === 'suspended') audioCtx.resume(); // ensure audio plays after unmute
+    updateMuteIcon();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
   });
-
-  // -------------------------
-  // Sounds
-  // -------------------------
-  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  let correctBuffer, wrongBuffer;
 
   async function loadSounds() {
     correctBuffer = await loadAudio('./sounds/correct.mp3');
@@ -73,93 +71,6 @@ document.addEventListener('DOMContentLoaded', () => {
     source.start();
   }
 
- // -------------------------
-// Background (random every 10 minutes)
-// -------------------------
-const backgrounds = [
-  "images/background.jpg",
-  "images/background2.png",
-  "images/background3.jpg",
-  "images/background4.jpg",
-  "images/background5.jpg",
-  "images/background6.png"
-];
-const CHANGE_INTERVAL = 600000; // 10 minutes
-
-// preload
-backgrounds.forEach(src => new Image().src = src);
-
-// fade layer
-let fadeLayer = document.getElementById('bg-fade-layer');
-if (!fadeLayer) {
-  fadeLayer = document.createElement('div');
-  fadeLayer.id = 'bg-fade-layer';
-  Object.assign(fadeLayer.style, {
-    position: 'fixed',
-    inset: 0,
-    zIndex: '-2',
-    pointerEvents: 'none',
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    opacity: 0,
-    transition: 'opacity 1.5s ease'
-  });
-  document.body.appendChild(fadeLayer);
-}
-
-// helper
-function pickRandomBackground(exclude) {
-  const filtered = backgrounds.filter(bg => bg !== exclude);
-  return filtered[Math.floor(Math.random() * filtered.length)];
-}
-
-// apply fade
-function applyBackground(newBg) {
-  fadeLayer.style.backgroundImage = `url('${newBg}')`;
-  fadeLayer.style.opacity = 1;
-
-  setTimeout(() => {
-    bgImg.src = newBg;
-    fadeLayer.style.opacity = 0;
-  }, 1500);
-}
-
-// update background if interval passed
-function updateBackground() {
-  const now = Date.now();
-  const lastChange = Number(localStorage.getItem("bg_last_change")) || 0;
-  const currentBg = localStorage.getItem("bg_current") || backgrounds[0];
-
-  if (now - lastChange < CHANGE_INTERVAL) return; // not time yet
-
-  const nextBg = pickRandomBackground(currentBg);
-  localStorage.setItem("bg_current", nextBg);
-  localStorage.setItem("bg_last_change", now);
-
-  applyBackground(nextBg);
-}
-
-// --- INIT: Smooth background on load ---
-(function initBackground() {
-  const savedBg = localStorage.getItem("bg_current") || backgrounds[0];
-  const lastChange = Number(localStorage.getItem("bg_last_change")) || 0;
-  const now = Date.now();
-
-  // Apply saved background immediately to both layers
-  bgDiv.style.backgroundImage = `url('${savedBg}')`;
-  fadeLayer.style.backgroundImage = `url('${savedBg}')`;
-  fadeLayer.style.opacity = 0;
-
-  // If enough time passed, pick a new random background
-  if (now - lastChange >= CHANGE_INTERVAL) {
-    updateBackground();
-  }
-})();
-
-// set interval for future updates
-setInterval(updateBackground, CHANGE_INTERVAL);
-
-  
   // -------------------------
   // User/Auth
   // -------------------------
@@ -170,7 +81,6 @@ setInterval(updateBackground, CHANGE_INTERVAL);
     authBtn.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
 
     const { data: { session } } = await supabase.auth.getSession();
-
     if (!session?.user) {
       username = '';
       userDisplay.textContent = 'Player: Guest';
@@ -209,8 +119,8 @@ setInterval(updateBackground, CHANGE_INTERVAL);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const userId = user.id;
 
+      const userId = user.id;
       const { data: existingScore, error: fetchError } = await supabase
         .from('scores')
         .select('score')
@@ -399,8 +309,3 @@ setInterval(updateBackground, CHANGE_INTERVAL);
   // -------------------------
   loadCurrentUser();
 });
-
-
-
-
-
