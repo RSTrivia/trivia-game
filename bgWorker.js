@@ -1,28 +1,17 @@
-// bgWorker.js
+let currentBg;
+let backgrounds;
+const CHANGE_INTERVAL = 4000;
 
-const backgrounds = [
-  "images/background.jpg",
-  "images/background2.png",
-  "images/background3.jpg",
-  "images/background4.jpg",
-  "images/background5.jpg"
-];
+onmessage = (e) => {
+  currentBg = e.data.current;
+  backgrounds = e.data.backgrounds;
 
-const CHANGE_INTERVAL = 4000; // ms
-let currentIndex = 0;
+  setInterval(() => {
+    // pick a new background different from current
+    const choices = backgrounds.filter(b => b !== currentBg);
+    const nextBg = choices[Math.floor(Math.random() * choices.length)];
 
-// Send initial background
-postMessage(backgrounds[currentIndex]);
-
-setInterval(() => {
-  // pick next index
-  let nextIndex;
-  do {
-    nextIndex = Math.floor(Math.random() * backgrounds.length);
-  } while (nextIndex === currentIndex);
-
-  currentIndex = nextIndex;
-
-  // send to main thread
-  postMessage(backgrounds[currentIndex]);
-}, CHANGE_INTERVAL);
+    currentBg = nextBg;
+    postMessage(nextBg);
+  }, CHANGE_INTERVAL);
+};
