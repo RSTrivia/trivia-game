@@ -38,31 +38,25 @@ function crossfadeTo(newBg) {
 }
 
 function initBackground() {
-  // Fallback to first background if localStorage value invalid
   let savedBg = localStorage.getItem("bg_current");
-  if (!backgrounds.includes(savedBg)) savedBg = backgrounds[0];
+  if (!backgrounds.includes(savedBg)) savedBg = backgrounds[0]; // fallback
 
-  // Preload first image
-  const firstImg = new Image();
-  firstImg.src = savedBg;
-  firstImg.onload = () => {
+  const preload = new Image();
+  preload.src = savedBg;
+  preload.onload = () => {
     bgImg.src = savedBg;
     bgImg.style.opacity = 1;
+    bgImg.style.visibility = "visible"; // make sure it's visible
     fadeLayer.style.backgroundImage = `url('${savedBg}')`;
     fadeLayer.style.opacity = 0;
   };
-  firstImg.onerror = () => {
-    console.error("Failed to load background:", savedBg);
-    bgImg.src = backgrounds[0];
-    bgImg.style.opacity = 1;
-  };
-
-  // Start interval rotation
+  
   setInterval(() => {
     const current = localStorage.getItem("bg_current") || savedBg;
     const next = pickNext(current);
     crossfadeTo(next);
   }, CHANGE_INTERVAL);
 }
+
 
 document.addEventListener("DOMContentLoaded", initBackground);
