@@ -14,47 +14,62 @@
     margin: 0;
     padding: 0;
     height: 100%;
-    overflow-x: hidden;
+    overflow: hidden;
     font-family: Arial, sans-serif;
     color: #fff;
+    background: #000; /* fallback */
   }
 
-  #background {
+  /* BACKGROUND LAYERS */
+  #background-root {
     position: fixed;
     inset: 0;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    z-index: -1;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+    background-color: #000;
+    overflow: hidden;
   }
 
+  #background-img, #bg-fade-layer {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transition: opacity 1.5s ease;
+  }
+
+  #background-img { z-index: -2; opacity: 1; }
+  #bg-fade-layer { z-index: -1; pointer-events: none; }
+
+  /* APP CONTAINER */
   #app {
     min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: flex-start;
     padding: 40px;
+    position: relative;
+    z-index: 1;
+    opacity: 0;
+    transition: opacity 0.15s ease;
   }
 
-  h1 {
-    font-family: 'Cinzel', serif;
-    font-size: 3.2rem;
-    margin-bottom: 25px;
-    text-align: center;
-    letter-spacing: 2px;
-    background: linear-gradient(145deg, #fff8dc 0%, #ffdd44 25%, #f2b705 50%, #c28f0c 75%, #a77b0a 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 0 0 4px rgba(0,0,0,0.8), 1px 1px 0 #000, 2px 2px 2px rgba(0,0,0,0.6), 0 0 8px rgba(255, 223, 0, 0.8);
-  }
+  #app.visible { opacity: 1; }
 
   .container {
-    background-color: rgba(0,0,0,0.85);
+    background: rgba(0,0,0,0.85);
     padding: 20px;
     border-radius: 10px;
     max-width: 900px;
     box-shadow: 0 0 30px rgba(0,0,0,0.5);
     text-align: center;
+    position: relative;
+    z-index: 1;
   }
 
   #user-controls {
@@ -73,20 +88,11 @@
   }
 
   #question { display: flex; flex-direction: column; align-items: center; }
-
-  .menu-row {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 12px;
-  }
-
+  .menu-row { display: flex; justify-content: space-between; margin-top: 12px; }
   .menu-row .btn-small { width: 48%; }
 
   .hidden { display: none; }
   .red-timer { color: red; font-weight: bold; }
-
-  .app-hidden { visibility: hidden; }
-  .app-ready { visibility: visible; }
 
   #muteBtn {
     background: none;
@@ -96,7 +102,6 @@
     color: #ffd700;
     padding: 0;
   }
-
   #muteBtn:hover { color: #fff; }
 
   #userDisplay { font-size: 1.2rem; color: #ffd700; min-height: 24px; }
@@ -106,12 +111,12 @@
 
 <!-- BACKGROUND LAYERS -->
 <div id="background-root">
-  <img id="background-img" alt="Background image" style="opacity:1;">
+  <img id="background-img" alt="Background image">
   <div id="bg-fade-layer"></div>
 </div>
 
 <!-- App wrapper -->
-<div id="app" style="opacity:0;">
+<div id="app">
   <div class="container">
     <h1>OSRS Trivia</h1>
 
@@ -124,12 +129,10 @@
     <!-- Game Screen -->
     <div id="game" class="hidden">
       <div id="score">Score: 0</div>
-
       <div id="question">
         <p id="questionText"></p>
         <img id="questionImage" alt="Question image">
       </div>
-
       <div id="answers"></div>
       <div id="timer">Time: <span id="time">15</span>s</div>
     </div>
@@ -157,24 +160,68 @@
 <!-- Scripts -->
 <script type="module" src="supabase.js"></script>
 <script type="module" src="app.js"></script>
-<script src="background.js"></script>
+
+<script>
+// ---------- BACKGROUND CROSSFADE FIX ----------
+const app = document.getElementById('app');
+const bgImg = document.getElementById('background-img');
+const fadeLayer = document.getElementById('bg-fade-layer');
+
+const backgrounds = [
+  "images/background.jpg",
+  "images/background2.png",
+  "images/background3.jpg",
+  "images/background4.jpg",
+  "images/background5.jpg",
+  "images/background6.png"
+];
+
+const CHANGE_INTERVAL = 180000; // 3 minutes
+
+// 1️⃣ Show first background immediately
+let savedBg = localStorage.getItem("bg_current") || backgrounds[0];
+bgImg.src = savedBg;
+bgImg.style.opacity = 1;
+localStorage.setItem("bg_current", savedBg);
+
+// 2️⃣ Show the app container immediately
+app.classList.add('visible');
+
+// 3️⃣ Preload other backgrounds
+backgrounds.forEach(src => {
+  if (src !== savedBg) {
+    const img = new Image();
+    img.src = src;
+  }
+});
+
+// 4️⃣ Crossfade logic
+function pickNext(current) {
+  const list = backgrounds.filter(b => b !== current);
+  return list[Math.floor(Math.random() * list.length)];
+}
+
+function crossfadeTo(newBg) {
+  fadeLayer.style.backgroundImage = `url('${newBg}')`;
+  fadeLayer.style.opacity = 1;
+
+  const img = new Image();
+  img.src = newBg;
+  img.onload = () => {
+    bgImg.src = newBg;
+    bgImg.style.opacity = 1;
+    fadeLayer.style.opacity = 0;
+    localStorage.setItem("bg_current", newBg);
+  };
+}
+
+// 5️⃣ Rotate backgrounds automatically
+setInterval(() => {
+  const current = localStorage.getItem("bg_current") || savedBg;
+  const next = pickNext(current);
+  crossfadeTo(next);
+}, CHANGE_INTERVAL);
+</script>
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
