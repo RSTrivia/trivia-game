@@ -36,6 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function crossfadeTo(nextBg) {
     // Fade in overlay immediately
     fadeLayer.style.backgroundImage = `url('${nextBg}')`;
+    fadeLayer.style.transition = `opacity ${FADE_DURATION}ms ease`;
     fadeLayer.style.opacity = 1;
 
     setTimeout(() => {
@@ -48,13 +49,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }, FADE_DURATION);
   }
 
-  // Self-scheduling background rotation (more precise than setInterval)
-  function scheduleNext() {
-    const nextBg = pickNext();
-    crossfadeTo(nextBg);
-    setTimeout(scheduleNext, CHANGE_INTERVAL);
-  }
+  // Start rotation using setInterval (simpler and reliable)
+  setInterval(() => crossfadeTo(pickNext()), CHANGE_INTERVAL);
 
-  // Start rotation
-  scheduleNext();
+  // Optional: start first fade after a small delay so it’s visible immediately
+  setTimeout(() => crossfadeTo(pickNext()), 1000);
 });
