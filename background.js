@@ -39,19 +39,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
       currentBg = nextBg;
       localStorage.setItem("bg_current", nextBg);
-      lastChange = Date.now(); // reset timer after fade completes
+      lastChange = Date.now();
     }, FADE_DURATION);
   }
 
-  // Start the loop
-  function loop() {
+  // Use setInterval to keep background changing regardless of user actions
+  setInterval(() => {
     const now = Date.now();
     if (now - lastChange >= CHANGE_INTERVAL) {
       crossfadeTo(pickNext());
-      lastChange = now; // immediately reset timer to prevent multiple changes
+      lastChange = now; // prevent multiple changes
     }
-    requestAnimationFrame(loop);
-  }
-
-  requestAnimationFrame(loop); // start the loop
+  }, 1000); // check every 1 second
 });
