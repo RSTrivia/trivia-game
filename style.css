@@ -458,6 +458,10 @@ input.input-field:-webkit-autofill:active {
   overflow: hidden;
 }
 
+#authBtn {
+  min-width: 70px; /* enough for "Log Out" */
+}
+
 
 
 
