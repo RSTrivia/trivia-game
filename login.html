@@ -19,16 +19,6 @@
     color: #fff;
   }
 
-  /* Background handled ONLY by background.js */
-  #background {
-    position: fixed;
-    inset: 0;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    z-index: -1;
-  }
-
   /* App wrapper */
   #app {
     min-height: 100vh;
@@ -36,6 +26,8 @@
     justify-content: center;
     align-items: flex-start;
     padding: 40px;
+    position: relative;
+    z-index: 1;
   }
 
   .container {
@@ -46,6 +38,8 @@
     margin: 0 auto;
     text-align: center;
     box-shadow: 0 0 30px rgba(0,0,0,0.5);
+    position: relative;
+    z-index: 1;
   }
 
   h1 {
@@ -115,17 +109,46 @@
   /* Prevent flash */
   .app-hidden { visibility: hidden; }
   .app-ready { visibility: visible; }
+
+  /* Background layers handled by background.js */
+  #background-root {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+  }
+
+  #background-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 1;
+  }
+
+  #bg-fade-layer {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transition: opacity 1.2s ease;
+    pointer-events: none;
+  }
 </style>
 </head>
 
 <body>
 
 <!-- Background -->
-<div id="background"></div>
+<div id="background-root">
+  <img id="background-img" alt="Background">
+  <div id="bg-fade-layer"></div>
+</div>
 
 <!-- App wrapper -->
 <div id="app" class="app-hidden">
-
   <div class="container">
     <h1>OSRS Trivia</h1>
 
@@ -139,7 +162,6 @@
 
     <a href="index.html" class="btn-back">Back to Game</a>
   </div>
-
 </div>
 
 <!-- Scripts -->
