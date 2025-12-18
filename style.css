@@ -448,13 +448,13 @@ input.input-field:-webkit-autofill:active {
 }
 
 /* Make both buttons in the row have the same width */
-#start-screen .row button,
+/*#start-screen .row button,
 #start-screen .row a.btn-small {
   display: inline-block;
   width: 120px; /* fixed width, matches longest button text */
-  text-align: center;
+  /*text-align: center;
   flex: none; /* prevent flex from resizing it */
-}
+/*}*/
 
 
 /* ===== START SCREEN BUTTONS ===== */
@@ -480,6 +480,7 @@ input.input-field:-webkit-autofill:active {
   max-width: 180px;   /* optional: prevent buttons from getting too wide */
   text-align: center;
 }
+
 
 
 
