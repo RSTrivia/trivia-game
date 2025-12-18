@@ -18,6 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.documentElement.style.setProperty("--bg-image", `url('${currentBg}')`);
   fadeLayer.style.opacity = 0;
 
+  const FADE_DURATION = 1200; // fade time in ms
   const CHANGE_INTERVAL = 4000;
 
   function pickNext() {
@@ -25,11 +26,22 @@ document.addEventListener("DOMContentLoaded", () => {
     return choices[Math.floor(Math.random() * choices.length)];
   }
 
-  // Change overlay background every interval
-  setInterval(() => {
-    const nextBg = pickNext();
+  function crossfadeTo(nextBg) {
+    // Set overlay image and fade in
+    fadeLayer.style.transition = `opacity ${FADE_DURATION}ms ease`;
     fadeLayer.style.backgroundImage = `url('${nextBg}')`;
-    currentBg = nextBg;
-    localStorage.setItem("bg_current", nextBg);
-  }, CHANGE_INTERVAL);
+    fadeLayer.style.opacity = 1;
+
+    // After fade completes, update main background and hide overlay
+    setTimeout(() => {
+      document.documentElement.style.setProperty("--bg-image", `url('${nextBg}')`);
+      fadeLayer.style.opacity = 0;
+
+      currentBg = nextBg;
+      localStorage.setItem("bg_current", nextBg);
+    }, FADE_DURATION);
+  }
+
+  // Start interval to crossfade
+  setInterval(() => crossfadeTo(pickNext()), CHANGE_INTERVAL);
 });
