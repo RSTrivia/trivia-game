@@ -27,15 +27,17 @@ document.addEventListener("DOMContentLoaded", () => {
   bgImg.style.opacity = 1;
 
   // -----------------------------
-  // Preload all backgrounds
+  // Preload all backgrounds (so crossfade is instant)
   // -----------------------------
   backgrounds.forEach(src => {
-    const img = new Image();
-    img.src = src;
+    if (src !== savedBg) {
+      const img = new Image();
+      img.src = src;
+    }
   });
 
   // -----------------------------
-  // Pick a random next background
+  // Pick next background
   // -----------------------------
   function pickNext(current) {
     const list = backgrounds.filter(b => b !== current);
@@ -46,20 +48,27 @@ document.addEventListener("DOMContentLoaded", () => {
   // Crossfade to next background
   // -----------------------------
   function crossfadeTo(newBg) {
+    // Set fade layer image
     fadeLayer.style.backgroundImage = `url('${newBg}')`;
     fadeLayer.style.opacity = 1;
 
+    // Preload the new image
     const img = new Image();
     img.src = newBg;
     img.onload = () => {
+      // Switch main image once loaded
       bgImg.src = newBg;
+
+      // Fade out the layer smoothly
       fadeLayer.style.opacity = 0;
+
+      // Save current background
       localStorage.setItem("bg_current", newBg);
     };
   }
 
   // -----------------------------
-  // Rotate backgrounds
+  // Rotate backgrounds every interval
   // -----------------------------
   setInterval(() => {
     const current = localStorage.getItem("bg_current") || savedBg;
