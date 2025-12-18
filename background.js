@@ -14,29 +14,19 @@ document.addEventListener("DOMContentLoaded", () => {
   // Preload all images
   backgrounds.forEach(src => new Image().src = src);
 
-  // Set initial background instantly (no fade)
+  // Get last background from localStorage
   let currentBg = localStorage.getItem("bg_current") || backgrounds[0];
   document.documentElement.style.setProperty("--bg-image", `url('${currentBg}')`);
   fadeLayer.style.opacity = 0;
 
-  // Start worker
+  // Start the worker
   const worker = new Worker("bgWorker.js");
 
-  let firstMessage = true;
+  // Send the current background to the worker so it starts counting from there
+  worker.postMessage({ current: currentBg, backgrounds });
 
   worker.onmessage = (e) => {
     const nextBg = e.data;
-
-    // On first message, just skip fading to avoid flicker
-    if (firstMessage) {
-      firstMessage = false;
-      if (nextBg !== currentBg) {
-        currentBg = nextBg;
-        document.documentElement.style.setProperty("--bg-image", `url('${currentBg}')`);
-        localStorage.setItem("bg_current", currentBg);
-      }
-      return;
-    }
 
     // Only fade if the background is actually different
     if (nextBg === currentBg) return;
