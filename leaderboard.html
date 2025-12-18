@@ -84,11 +84,14 @@
     color: #FFD700; /* gold text */
     font-weight: 700;
   }
+  
   #leaderboard li.second {
-    background: rgba(192, 192, 192, 0.3); /* silver background */
-    color: #C0C0C0; /* silver text */
+    background: linear-gradient(135deg, #d8d8d8 0%, #c0c0c0 100%);
+    color: #C0C0C0;
     font-weight: 700;
+    box-shadow: 0 0 10px rgba(192,192,192,0.5);
   }
+
   #leaderboard li.third {
     background: rgba(205, 127, 50, 0.3); /* bronze background */
     color: #CD7F32; /* bronze text */
@@ -188,3 +191,4 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
