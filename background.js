@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
+  const bgImg = document.getElementById("background-img");
   const fadeLayer = document.getElementById("bg-fade-layer");
-  if (!fadeLayer) return; // only need fadeLayer to run
+  if (!bgImg || !fadeLayer) return;
 
   const backgrounds = [
     "images/background.jpg",
@@ -10,18 +11,22 @@ document.addEventListener("DOMContentLoaded", () => {
     "images/background5.jpg"
   ];
 
-  // Preload images for smoother transitions
-  backgrounds.forEach(src => new Image().src = src);
+  // Preload images
+  backgrounds.forEach(src => {
+    const img = new Image();
+    img.src = src;
+  });
 
-  // Start with the last background or default
+  // Start with the last background
   let currentBg = localStorage.getItem("bg_current") || backgrounds[0];
 
-  // 🔥 Set initial background via CSS variable immediately (no flicker)
+  // 🔥 Set initial background immediately (no flicker)
   document.documentElement.style.setProperty("--bg-image", `url('${currentBg}')`);
+  bgImg.src = currentBg;
   fadeLayer.style.opacity = 0;
 
   const FADE_DURATION = 1200;
-  const CHANGE_INTERVAL = 4000; // 4 seconds for testing
+  const CHANGE_INTERVAL = 4000; // 4 seconds
 
   function pickNext() {
     const choices = backgrounds.filter(b => b !== currentBg);
@@ -29,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function crossfadeTo(nextBg) {
-    // Fade in overlay immediately, image already preloaded
+    // Fade in overlay immediately
     fadeLayer.style.backgroundImage = `url('${nextBg}')`;
     fadeLayer.style.opacity = 1;
 
@@ -43,6 +48,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }, FADE_DURATION);
   }
 
-  // Start interval to change background
-  setInterval(() => crossfadeTo(pickNext()), CHANGE_INTERVAL);
+  // Self-scheduling background rotation (more precise than setInterval)
+  function scheduleNext() {
+    const nextBg = pickNext();
+    crossfadeTo(nextBg);
+    setTimeout(scheduleNext, CHANGE_INTERVAL);
+  }
+
+  // Start rotation
+  scheduleNext();
 });
