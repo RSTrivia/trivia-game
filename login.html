@@ -1,215 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OSRS Trivia Login</title>
-
-<!-- Font -->
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
-
-<style>
-  html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    overflow-x: hidden;
-    font-family: Arial, sans-serif;
-    color: #fff;
-  }
-
-  /* App wrapper */
-  #app {
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 40px;
-    position: relative;
-    z-index: 1;
-  }
-
-  .container {
-    background-color: rgba(0,0,0,0.85);
-    padding: 20px;
-    border-radius: 10px;
-    max-width: 900px;
-    margin: 0 auto;
-    text-align: center;
-    box-shadow: 0 0 30px rgba(0,0,0,0.5);
-    position: relative;
-    z-index: 1;
-  }
-
-  h1 {
-    font-family: 'Cinzel', serif;
-    font-size: 3.2rem;
-    margin-bottom: 25px;
-    letter-spacing: 2px;
-  }
-
-  input {
-    display: block;
-    width: 100%;
-    max-width: 360px;
-    padding: 10px;
-    margin: 8px auto;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    box-sizing: border-box;
-  }
-
-  .btn-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-    margin: 12px auto;
-    max-width: 360px;
-  }
-
-  .btn-small {
-    flex: 1;
-    padding: 10px 16px;
-    font-size: 1rem;
-    border-radius: 8px;
-    background: rgba(0,0,0,0.6);
-    color: #ffd700;
-    border: 2px solid #ffd700;
-    cursor: pointer;
-    transition: 0.2s;
-  }
-
-  .btn-small:hover {
-    background: rgba(0,0,0,0.85);
-    border-color: #ffea8a;
-  }
-
-  a.btn-back {
-    display: block;
-    width: 100%;
-    max-width: 360px;
-    margin: 10px auto;
-    padding: 12px 0;
-    font-size: 1.05rem;
-    border-radius: 8px;
-    background: rgba(0,0,0,0.6);
-    color: #ffd700;
-    border: 2px solid #ffd700;
-    text-decoration: none;
-    text-align: center;
-    transition: 0.2s;
-  }
-
-  a.btn-back:hover {
-    background: rgba(0,0,0,0.85);
-    border-color: #ffea8a;
-  }
-
-  /* Prevent flash */
-  .app-hidden { visibility: hidden; }
-  .app-ready { visibility: visible; }
-
-  /* Background layers handled by background.js */
-  #background-root {
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    overflow: hidden;
-  }
-
-  #background-img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: 1;
-  }
-
-  #bg-fade-layer {
-    position: absolute;
-    inset: 0;
-    background-size: cover;
-    background-position: center;
-    opacity: 0;
-    transition: opacity 1.2s ease;
-    pointer-events: none;
-  }
-</style>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-
-<!-- Background -->
-<div id="background-root">
-  <img id="background-img" alt="Background">
-  <div id="bg-fade-layer"></div>
-</div>
-
-<!-- App wrapper -->
-<div id="app" class="app-hidden">
-  <div class="container">
-    <h1>OSRS Trivia</h1>
-
-    <input id="username" placeholder="Username" autocomplete="username" />
-    <input id="password" type="password" placeholder="Password" autocomplete="current-password" />
-
-    <div class="btn-row">
-      <button id="signupBtn" class="btn-small">Sign Up</button>
-      <button id="loginBtn" class="btn-small">Log In</button>
-    </div>
-
-    <a href="index.html" class="btn-back">Back to Game</a>
+  <div id="background-root">
+    <img id="background-img" alt="Background">
+    <div id="bg-fade-layer"></div>
   </div>
-</div>
 
-<!-- Scripts -->
-<script src="background.js"></script>
-<script type="module">
-import { supabase } from './supabase.js';
+  <div id="app" class="app-hidden">
+    <div class="container">
+      <h1>OSRS Trivia</h1>
+      <input id="username" placeholder="Username" autocomplete="username" />
+      <input id="password" type="password" placeholder="Password" autocomplete="current-password" />
+      <div class="btn-row">
+        <button id="signupBtn" class="btn-small">Sign Up</button>
+        <button id="loginBtn" class="btn-small">Log In</button>
+      </div>
+      <a href="index.html" class="btn-back">Back to Game</a>
+    </div>
+  </div>
 
-const app = document.getElementById('app');
-const usernameInput = document.getElementById('username');
-const passwordInput = document.getElementById('password');
-const loginBtn = document.getElementById('loginBtn');
-const signupBtn = document.getElementById('signupBtn');
-
-signupBtn.addEventListener('click', async () => {
-  const username = usernameInput.value.trim();
-  const password = passwordInput.value;
-  if (!username || !password) { alert('Enter a username and password'); return; }
-
-  const email = username.toLowerCase() + '@example.com';
-  const { data, error } = await supabase.auth.signUp({ email, password });
-  if (error) { alert('Sign-up failed: ' + error.message); return; }
-  if (!data.user) { alert('Sign-up failed: no user returned'); return; }
-
-  const { error: profileError } = await supabase
-    .from('profiles')
-    .insert({ id: data.user.id, username });
-
-  if (profileError) { alert('Profile creation failed: ' + profileError.message); return; }
-  alert('Account created! You can now log in.');
-});
-
-loginBtn.addEventListener('click', async () => {
-  const username = usernameInput.value.trim();
-  const password = passwordInput.value;
-  if (!username || !password) { alert('Enter a username and password'); return; }
-
-  const email = username.toLowerCase() + '@example.com';
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) { alert('Login failed: ' + error.message); return; }
-  if (!data.user) { alert('Login failed: no user returned'); return; }
-
-  window.location.href = 'index.html';
-});
-
-// Reveal UI once JS is ready
-app.classList.remove('app-hidden');
-app.classList.add('app-ready');
-</script>
-
+  <script src="background.js"></script>
+  <script type="module" src="login.js"></script>
 </body>
-</html>
