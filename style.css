@@ -73,6 +73,7 @@ html, body {
   height: 100%;
   pointer-events: none;
   opacity: 0;
+  will-change: opacity;
   transition: opacity 1.2s ease; /* fade duration */
   background-size: cover;
   background-position: center;
@@ -409,6 +410,7 @@ input.input-field:-webkit-autofill:active {
   -webkit-text-fill-color: #fff !important;
   transition: background-color 5000s ease-in-out 0s;
 }
+
 
 
 
