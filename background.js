@@ -24,15 +24,13 @@ function crossfadeTo(newBg) {
   fadeLayer.style.backgroundImage = `url('${newBg}')`;
   fadeLayer.style.opacity = 1;
 
-  setTimeout(() => {
-    const img = new Image();
-    img.src = newBg;
-    img.onload = () => {
-      bgImg.src = newBg;
-      fadeLayer.style.opacity = 0;
-      localStorage.setItem("bg_current", newBg);
-    };
-  }, 1600);
+  const img = new Image();
+  img.src = newBg;
+  img.onload = () => {
+    bgImg.src = newBg;
+    fadeLayer.style.opacity = 0;
+    localStorage.setItem("bg_current", newBg);
+  };
 }
 
 function initBackground() {
@@ -42,30 +40,26 @@ function initBackground() {
   const preload = new Image();
   preload.src = savedBg;
   preload.onload = () => {
-    // Temporarily remove transition for initial load
-    const prevTransition = bgImg.style.transition;
-    bgImg.style.transition = 'none';
+    // Disable any transition during initial load
+    bgImg.style.transition = "none";
+    fadeLayer.style.transition = "none";
 
-    // Set src and make fully visible immediately
+    // Set the image instantly
     bgImg.src = savedBg;
     bgImg.style.opacity = 1;
 
-    // Restore transition for future crossfades
-    requestAnimationFrame(() => {
-      bgImg.style.transition = prevTransition || 'opacity 0.3s ease';
-    });
-
-    // Set fadeLayer for crossfade system
+    // Set fade layer to the same image (ready for next crossfade)
     fadeLayer.style.backgroundImage = `url('${savedBg}')`;
     fadeLayer.style.opacity = 0;
 
-    // Enable fade layer transition
+    // Force next frame and enable transitions for future changes
     requestAnimationFrame(() => {
+      bgImg.style.transition = "opacity 0.3s ease";
       fadeLayer.style.transition = "opacity 1.5s ease";
     });
   };
 
-  // Background rotation
+  // Rotate background every CHANGE_INTERVAL
   setInterval(() => {
     const current = localStorage.getItem("bg_current") || savedBg;
     const next = pickNext(current);
