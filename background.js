@@ -13,63 +13,51 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const CHANGE_INTERVAL = 180000; // 3 minutes
 
-  // -----------------------------
-  // Get saved background from localStorage or default
-  // -----------------------------
-  let savedBg = localStorage.getItem("bg_current");
-  if (!backgrounds.includes(savedBg)) savedBg = backgrounds[0];
-
-  // -----------------------------
-  // Immediately set src to avoid alt text showing
-  // -----------------------------
+  // ----------------------
+  // 1️⃣ Load last used background immediately
+  // ----------------------
+  const savedBg = localStorage.getItem("bg_current") || backgrounds[0];
   bgImg.src = savedBg;
-  bgImg.style.visibility = "visible";
   bgImg.style.opacity = 1;
+  bgImg.style.visibility = "visible";
+  fadeLayer.style.opacity = 0;
 
-  // -----------------------------
-  // Preload all backgrounds (so crossfade is instant)
-  // -----------------------------
+  // ----------------------
+  // 2️⃣ Preload all backgrounds
+  // ----------------------
   backgrounds.forEach(src => {
-    if (src !== savedBg) {
-      const img = new Image();
-      img.src = src;
-    }
+    const img = new Image();
+    img.src = src;
   });
 
-  // -----------------------------
-  // Pick next background
-  // -----------------------------
+  // ----------------------
+  // 3️⃣ Helper to pick next background randomly
+  // ----------------------
   function pickNext(current) {
     const list = backgrounds.filter(b => b !== current);
     return list[Math.floor(Math.random() * list.length)];
   }
 
-  // -----------------------------
-  // Crossfade to next background
-  // -----------------------------
+  // ----------------------
+  // 4️⃣ Crossfade to next background
+  // ----------------------
   function crossfadeTo(newBg) {
-    // Set fade layer image
     fadeLayer.style.backgroundImage = `url('${newBg}')`;
     fadeLayer.style.opacity = 1;
 
-    // Preload the new image
+    // Wait for fadeLayer to show then switch bgImg
     const img = new Image();
     img.src = newBg;
     img.onload = () => {
-      // Switch main image once loaded
       bgImg.src = newBg;
-
-      // Fade out the layer smoothly
       fadeLayer.style.opacity = 0;
-
-      // Save current background
       localStorage.setItem("bg_current", newBg);
     };
   }
 
-  // -----------------------------
-  // Rotate backgrounds every interval
-  // -----------------------------
+  // ----------------------
+  // 5️⃣ Rotate backgrounds
+  // ----------------------
   setInterval(() => {
     const current = localStorage.getItem("bg_current") || savedBg;
     const next = pickNext(current);
