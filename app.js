@@ -25,6 +25,8 @@ if (authLabel) {
   authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
 }
 
+// Call this immediately to prevent flicker
+await preloadAuth();
 // Show app AFTER everything is populated
 if (appDiv) appDiv.style.opacity = '1';
 
@@ -105,8 +107,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
 
-    // Call this immediately to prevent flicker
-  await preloadAuth();
+
 
  
   // -------------------------
@@ -368,6 +369,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   };
 });
+
 
 
 
