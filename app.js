@@ -14,8 +14,6 @@ let username = cachedLoggedIn ? cachedUsername : '';
 let muted = localStorage.getItem('muted') === 'true';
 
 // ===== INITIAL UI (instant, no flicker) =====
-if (usernameSpan) usernameSpan.textContent = ' ' + cachedUsername;
-if (authLabel) authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
 if (muteIcon) muteIcon.textContent = muted ? '🔇' : '🔊';
 
 
@@ -62,11 +60,6 @@ supabase.auth.onAuthStateChange(async (_event, session) => {
 
 document.addEventListener('DOMContentLoaded', async () => {
 
-  if (!startBtn || !authBtn) {
-  console.error('Buttons missing in DOM');
-  return;
-}
-
   // DOM Elements
   const startBtn = document.getElementById('startBtn');
   const playAgainBtn = document.getElementById('playAgainBtn');
@@ -79,7 +72,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   const questionImage = document.getElementById('questionImage');
   const answersBox = document.getElementById('answers');
   const timeDisplay = document.getElementById('time'); 
-  
+
+
+    if (!startBtn || !authBtn) {
+      console.error('Buttons missing in DOM');
+      return;
+    }
+    if (usernameSpan) usernameSpan.textContent = ' ' + cachedUsername;
+    if (authLabel) authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
+
   // Main state
   let score = 0;
   let questions = [];
@@ -341,41 +342,21 @@ async function loadQuestion() {
   // -------------------------
   // Buttons
   // -------------------------
-  startBtn.addEventListener('click', async () => {
-    console.log('Start clicked');
-    await startGame();
-    }
-  };
+startBtn.addEventListener('click', async () => {
+  console.log('Start clicked');
+  await startGame();
+});
 
-  playAgainBtn.onclick = startGame;
 
-  mainMenuBtn.onclick = () => {
+  playAgainBtn.addEventListener('click', startGame);
+  
+  mainMenuBtn.addEventListener('click', () => {
     resetGame();
     game.classList.add('hidden');
     endScreen.classList.add('hidden');
     document.getElementById('start-screen').classList.remove('hidden');
     updateScore();
-  };
-});
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  });
 
 
 
