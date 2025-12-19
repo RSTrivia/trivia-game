@@ -282,6 +282,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadSounds();
 
     const { data } = await supabase.from('questions').select('*');
+    console.log('Questions loaded:', data); // <-- add this here
     if (!data?.length) return alert('Could not load questions!');
 
     questions = data;
@@ -396,6 +397,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   };
 });
+
 
 
 
