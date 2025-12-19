@@ -382,9 +382,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   // -------------------------
   // Buttons
   // -------------------------
-  startBtn.onclick = async () => {
-    await loadSounds();
-    startGame();
+   startBtn.onclick = async () => {
+    try {
+      await loadSounds();
+      await startGame();
+    } catch (err) {
+      console.error('Failed to start game', err);
+    }
   };
 
   playAgainBtn.onclick = startGame;
@@ -397,6 +401,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   };
 });
+
 
 
 
