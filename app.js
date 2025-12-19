@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const timeDisplay = document.getElementById('time');
   
   // Main state
-  let username = cachedLoggedIn ? cachedUsername : '';
+  let username = cachedUsername;
   let score = 0;
   let questions = [];
   let remainingQuestions = [];
@@ -197,15 +197,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   // -------------------------
   // Auth Button
   // -------------------------
-  authBtn.onclick = async () => {
-    if (authLabel) {
-      if (authLabel.textContent === 'Log Out') {
-        await supabase.auth.signOut();
-      } else {
-        window.location.href = 'login.html';
-      }
+  authBtn?.addEventListener('click', async () => {
+  if (authLabel) {
+    const label = authLabel.textContent.trim();
+    if (label === 'Log Out') {
+      await supabase.auth.signOut();
+    } else {
+      window.location.href = 'login.html';
     }
-  };
+  }
+});
+
 
   // -------------------------
   // Audio
@@ -394,6 +396,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   };
 });
+
 
 
 
