@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   muteBtn.addEventListener('click', () => {
     muted = !muted;
     localStorage.setItem('muted', muted);
-    if (muteIcon) muteIcon.textContent = muted ? '🔇' : '🔊';
+    muteIcon.textContent = muted ? '🔇' : '🔊';
   });
 
   // ====== PRELOAD AUTH ======
@@ -412,6 +412,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   };
 });
+
 
 
 
