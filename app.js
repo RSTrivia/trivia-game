@@ -8,16 +8,23 @@ let muted = localStorage.getItem('muted') === 'true';
 const appDiv = document.getElementById('app');
 const userDisplay = document.getElementById('userDisplay');
 const authBtn = document.getElementById('authBtn');
-let authLabel = authBtn?.querySelector('.btn-label');
 const usernameSpan = userDisplay?.querySelector('#usernameSpan');
 const muteBtn = document.getElementById('muteBtn');
+const authLabel = authBtn?.querySelector('.btn-label');
 
-// Set immediate UI to prevent flicker
-if (usernameSpan) usernameSpan.textContent = ' ' + cachedUsername;
+// Fix widths to prevent reflow
+if (usernameSpan) {
+  usernameSpan.style.minWidth = '12ch'; // enough for longest username
+  usernameSpan.textContent = ' ' + cachedUsername;
+}
+
 if (authLabel) authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
-if (muteBtn) muteBtn.textContent = muted ? '🔇' : '🔊';
-if (appDiv) appDiv.style.opacity = '1';
+if (muteBtn) {
+  muteBtn.style.width = '2ch';  // reserve space for 🔊 / 🔇
+  muteBtn.textContent = muted ? '🔇' : '🔊';
+}
 
+if (appDiv) appDiv.style.opacity = '1';
 
 document.addEventListener('DOMContentLoaded', async () => {
   // DOM Elements
@@ -32,7 +39,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const questionImage = document.getElementById('questionImage');
   const answersBox = document.getElementById('answers');
   const timeDisplay = document.getElementById('time');
-  const muteBtn = document.getElementById('muteBtn');
   
   // Main state
   let username = cachedLoggedIn ? cachedUsername : '';
@@ -318,6 +324,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   };
 });
+
 
 
 
