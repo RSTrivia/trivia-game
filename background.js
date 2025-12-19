@@ -26,16 +26,19 @@ document.addEventListener("DOMContentLoaded", () => {
   worker.postMessage({ current: currentBg, backgrounds });
 
   worker.onmessage = (e) => {
-    const nextBg = e.data;
+const nextBg = e.data;
 
-    // Only fade if the background is actually different
-    if (nextBg === currentBg) return;
+  // Only fade if the background is actually different
+  if (nextBg === currentBg) return;
 
-    // Fade overlay
+  // Preload the next image
+  const img = new Image();
+  img.src = nextBg;
+  img.onload = () => {
+    // Fade overlay once image is loaded
     fadeLayer.style.transition = `opacity ${FADE_DURATION}ms ease-in-out`;
     fadeLayer.style.backgroundImage = `url('${nextBg}')`;
     fadeLayer.style.opacity = 1;
-    fadeLayer.style.transform = 'translateZ(0)';
     fadeLayer.style.transform = 'translateZ(0)';
 
     setTimeout(() => {
@@ -45,4 +48,5 @@ document.addEventListener("DOMContentLoaded", () => {
       localStorage.setItem("bg_current", currentBg);
     }, FADE_DURATION);
   };
+};
 });
