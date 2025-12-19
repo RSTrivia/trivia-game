@@ -59,6 +59,7 @@ supabase.auth.onAuthStateChange(async (_event, session) => {
 document.addEventListener('DOMContentLoaded', async () => {
   // DOM Elements
   const startBtn = document.getElementById('startBtn');
+  console.log('startBtn is', startBtn); // <--- check this
   const playAgainBtn = document.getElementById('playAgainBtn');
   const mainMenuBtn = document.getElementById('mainMenuBtn');
   const game = document.getElementById('game');
@@ -401,6 +402,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   };
 });
+
 
 
 
