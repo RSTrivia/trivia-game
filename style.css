@@ -188,12 +188,14 @@ button {
   display: inline-block;
   flex: 1;
   text-align: center;
+  text-decoration: none; /* <- add this */
   transition: 0.2s;
 }
 
 .btn-small:hover {
   background: rgba(0,0,0,0.85);
   border-color: #ffea8a;
+  text-decoration: none; /* keep no underline on hover */
 }
 
 /* ====== MENU ROW ===== */
@@ -495,6 +497,7 @@ input.input-field:-webkit-autofill:active {
   min-width: 120px;
   text-align: center;
 }
+
 
 
 
