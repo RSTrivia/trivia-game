@@ -469,34 +469,28 @@ input.input-field:-webkit-autofill:active {
   width: 100%;
 }
 
-/* Force both elements to behave IDENTICALLY */
-#authBtn,
+/* Force login & leaderboard buttons to match in height */
+#start-screen .row:nth-child(3) button,
 #start-screen .row:nth-child(3) a {
-  flex: 1 0 0;                 /* equal width, ignore content */
-  height: 44px;
-  padding: 0;                  /* REMOVE padding */
-  display: flex;               /* center text properly */
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  flex: 1;                   /* evenly share space */
+  display: flex;             /* use flex to center text */
+  align-items: center;       /* vertical center */
+  justify-content: center;   /* horizontal center */
+  height: 44px;              /* same fixed height for both */
+  padding: 0 12px;           /* horizontal padding only */
+  font-size: 1rem;           /* same font size */
+  box-sizing: border-box;    
+  text-align: center;
+  white-space: nowrap;       /* prevent wrapping */
+  text-decoration: none;     /* remove underline from <a> */
 }
-
-/* Optional: adjust font without affecting size */
-#authBtn,
-#start-screen .row:nth-child(3) a {
-  font-size: 1rem;
-}
-
 
 /* ====== AUTH BUTTON FIX (NO FLICKER) ====== */
 #authBtn {
   min-width: 120px;
   text-align: center;
 }
+
 
 
 
