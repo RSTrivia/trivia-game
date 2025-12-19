@@ -18,21 +18,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const answersBox = document.getElementById('answers');
   const timeDisplay = document.getElementById('time');
   const appDiv = document.getElementById('app');
-  
-  // Show cached username immediately to prevent blank flicker
-  const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
-  userDisplay.querySelector('#usernameSpan').textContent = ' ' + cachedUsername;
-  // Show cached login state immediately
-  const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
-  authBtn.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
-  // Set the username variable so game logic is correct
-  username = cachedLoggedIn ? cachedUsername : '';
-  // Show cached mute state immediately
-  let muted = localStorage.getItem('muted') === 'true';
-  const muteBtn = document.getElementById('muteBtn');
-  updateMuteIcon();
 
-  
   let username = '';
   let score = 0;
   let questions = [];
@@ -43,6 +29,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   let correctBuffer, wrongBuffer;
   let muted = localStorage.getItem('muted') === 'true';
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+ 
+  // -------------------------
+  // Mute button helper
+  // -------------------------
+  const updateMuteIcon = () => muteBtn.textContent = muted ? '🔇' : '🔊';
+  updateMuteIcon(); // show immediately
+  
+  // -------------------------
+  // Show cached username & login state immediately
+  // -------------------------
+  const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
+  const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
+  username = cachedLoggedIn ? cachedUsername : '';
+  userDisplay.querySelector('#usernameSpan').textContent = ' ' + cachedUsername;
+  authBtn.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
+
 
   // -------------------------
   // Show App Immediately
@@ -316,6 +318,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   };
 });
+
 
 
 
