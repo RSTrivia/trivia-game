@@ -17,7 +17,7 @@ onmessage = (e) => {
 };
 let currentBg;
 let backgrounds;
-const CHANGE_INTERVAL = 1800; // 4 minutes
+const CHANGE_INTERVAL = 240000; // 4 minutes
 
 onmessage = (e) => {
   currentBg = e.data.current;
