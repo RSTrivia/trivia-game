@@ -472,46 +472,36 @@ input.input-field:-webkit-autofill:active {
 }
 
 
-/* ====== LOGIN / LEADERBOARD BUTTONS ===== */
+/* Container row for both buttons */
 #start-screen .row:nth-child(3) {
   display: flex;
   gap: 10px;
   width: 100%;
+  align-items: stretch; /* make children same height */
 }
 
-/* Both buttons: equal width and same height */
+/* Both buttons share equal width and height */
 #start-screen .row:nth-child(3) button,
 #start-screen .row:nth-child(3) a {
-  flex: 1;                    /* equal width */
-  height: 56px;               /* fixed height to match 2-line leaderboard button on mobile */
-  display: flex;
-  align-items: center;        /* vertically center text */
-  justify-content: center;    /* horizontally center text */
-  padding: 0 12px;            /* horizontal padding */
-  font-size: 1rem;
+  flex: 1;                  /* share available space */
+  display: flex;            /* center content */
+  align-items: center;      /* vertical centering */
+  justify-content: center;  /* horizontal centering */
   box-sizing: border-box;
   text-align: center;
-  white-space: normal;        /* allow text wrapping if needed */
-  text-decoration: none;      /* remove underline from links */
+  white-space: normal;      /* allow text wrapping */
+  overflow: hidden;
+  font-size: 1rem;
+  padding: 8px 12px;        /* vertical + horizontal padding */
+  min-height: 56px;         /* ensure enough height for 2-line text */
 }
 
-/* Optional: hover effect */
-#start-screen .row:nth-child(3) button:hover,
-#start-screen .row:nth-child(3) a:hover {
-  background: rgba(0,0,0,0.85);
-  border-color: #ffea8a;
-}
-
+/* Optional: slightly taller on small screens */
 @media (max-width: 480px) {
   #start-screen .row:nth-child(3) button,
   #start-screen .row:nth-child(3) a {
-    height: 56px;
+    min-height: 64px;       /* give extra space for wrapping */
   }
-}
-
-#authBtn {
-  flex-basis: 50%;
-  max-width: 50%;
 }
 
 /* Buttons */
@@ -539,6 +529,7 @@ input.input-field:-webkit-autofill:active {
     font-size: 1.05rem;      
   }
 }*/
+
 
 
 
