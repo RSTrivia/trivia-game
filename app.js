@@ -60,8 +60,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // -------------------------
   async function preloadAuth() {
     const { data: { session } } = await supabase.auth.getSession();
-  
-    if (!session?.user) return; // nothing to do, keep cachedUsername
+    if (!session?.user) return; // nothing to do
   
     const { data: profile } = await supabase
       .from('profiles')
@@ -71,8 +70,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   
     if (!profile?.username) return;
   
-    // Only update if the profile username is different from cached
-    if (profile.username !== localStorage.getItem('cachedUsername')) {
+    // Only update if different
+    if (profile.username !== username) {
       localStorage.setItem('cachedUsername', profile.username);
       localStorage.setItem('cachedLoggedIn', 'true');
       username = profile.username;
@@ -80,7 +79,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       authBtn.textContent = 'Log Out';
     }
   }
-
 
     // Call this immediately to prevent flicker
   await preloadAuth();
@@ -312,6 +310,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   };
 });
+
 
 
 
