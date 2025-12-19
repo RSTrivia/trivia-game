@@ -463,36 +463,46 @@ input.input-field:-webkit-autofill:active {
    STABLE LOGIN / LEADERBOARD
    =========================== */
 
-/* Row for login + leaderboard */
+/* Row containing Auth + Leaderboard buttons */
 #start-screen .row:nth-child(3) {
   display: flex;
   gap: 10px;
   width: 100%;
-  align-items: stretch; /* ensures both buttons take full row height */
+  justify-content: center; /* center row inside container */
 }
 
-#authBtn,
+/* Make both buttons share the same height, vertically centered */
+#start-screen .row:nth-child(3) button,
 #start-screen .row:nth-child(3) a {
-  flex: 1 0 auto;          /* equal width, prevent shrinking */
   display: flex;
   align-items: center;
   justify-content: center;
-  box-sizing: border-box;
-  height: 50px;            /* fixed height for desktop */
-  padding: 0 16px;         /* horizontal padding */
+  height: 44px;             /* consistent height */
+  padding: 0 12px;          /* horizontal padding */
   font-size: 1rem;
-  text-align: center;
+  text-decoration: none;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  box-sizing: border-box;
+  flex-shrink: 0;           /* prevent shrinking */
 }
 
+/* Auth button takes exactly half the width of Start Game button */
+#authBtn {
+  flex-basis: 50%;           /* half of available row space */
+  max-width: 50%;
+}
+
+/* View leaderboard fills remaining space */
+#start-screen .row:nth-child(3) a {
+  flex: 1;                   /* take the rest */
+  min-width: 0;              /* allow shrinking if needed */
+}
+
+/* Optional: on small screens, slightly taller buttons */
 @media (max-width: 480px) {
-  #authBtn,
+  #start-screen .row:nth-child(3) button,
   #start-screen .row:nth-child(3) a {
-    height: 56px;           /* taller for mobile */
-    padding: 0 16px;        /* horizontal padding same */
-    font-size: 1rem;
+    height: 56px;
   }
 }
 
@@ -523,14 +533,6 @@ input.input-field:-webkit-autofill:active {
   }
 }*/
 
-
-
-
-/* ====== AUTH BUTTON FIX (NO FLICKER) ====== */
-#authBtn {
-  min-width: 120px;
-  text-align: center;
-}
 
 
 
