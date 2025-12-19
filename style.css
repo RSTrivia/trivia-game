@@ -312,8 +312,8 @@ h1 {
 #user-controls {
   display: flex;            /* horizontal layout */
   align-items: center;      /* vertically center mic and text */
-  justify-content: space-between;  /* horizontally center inside container */
-  gap: 8px;                 /* space between mic and name */
+  justify-content: center;  /* horizontally center inside container */
+  gap: 10px;                 /* space between mic and name */
   margin-bottom: 15px;      /* optional spacing below */
 }
 
@@ -565,6 +565,7 @@ input.input-field:-webkit-autofill:active {
     padding: 12px;
   }
 }
+
 
 
 
