@@ -387,12 +387,36 @@ h1 {
   width: 100%;
 }
 
-/* Prevent .btn-small from overflowing row */
+/* ====== SMALL BUTTONS (STABLE, NO FLICKER) ====== */
 .btn-small {
-  flex: 1;        /* evenly divide space */
-  width: auto;    /* prevent 100% width from breaking layout */
-  min-width: 0;   /* avoid flex overflow issues */
+  background: rgba(0,0,0,0.6);
+  color: #ffd700;
+
+  padding: 10px 16px;
+  font-size: 1rem;
+
+  border: 2px solid #d4af37; /* border defined ONCE */
+  border-radius: 8px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  flex: 1;
+  min-width: 0;
+
+  text-align: center;
+  text-decoration: none;
+  box-sizing: border-box;
+
+  transition: background-color 0.2s, border-color 0.2s;
 }
+
+.btn-small:hover {
+  background: rgba(0,0,0,0.85);
+  border-color: #ffea8a; /* COLOR ONLY */
+}
+
 
 /* Make Back to Game button match container width */
 .login-row > .btn {
@@ -505,11 +529,7 @@ input.input-field:-webkit-autofill:active {
 }
 
 
-button,
-a.btn-small {
-  box-sizing: border-box;
-  border: 2px solid transparent; /* reserve space ALWAYS */
-}
+
 
 
 
