@@ -7,6 +7,10 @@ const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
 const appDiv = document.getElementById('app');
 const userDisplay = document.getElementById('userDisplay');
 const authBtn = document.getElementById('authBtn');
+let authLabel;
+if (authBtn) {
+  authLabel = authBtn.querySelector('.btn-label');
+}
 
 if (userDisplay) {
   const span = userDisplay.querySelector('#usernameSpan');
@@ -14,7 +18,7 @@ if (userDisplay) {
 }
 
 if (authBtn) {
-  authBtn.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
+  authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
 }
 
 if (appDiv) {
@@ -47,7 +51,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let correctBuffer, wrongBuffer;
   let muted = localStorage.getItem('muted') === 'true';
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
+  
   // Set initial icon
   const updateMuteIcon = () => muteBtn.textContent = muted ? '🔇' : '🔊';
   updateMuteIcon();
@@ -79,18 +83,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       localStorage.setItem('cachedUsername', profile.username);
       localStorage.setItem('cachedLoggedIn', 'true');
       username = profile.username;
-    
-      const span = userDisplay.querySelector('#usernameSpan');
+      if (userDisplay) {
+        const span = userDisplay.querySelector('#usernameSpan');
+      }
       if (span && span.textContent !== ' ' + profile.username) {
         span.textContent = ' ' + profile.username;
       }
-    
-      if (authBtn.textContent !== 'Log Out') {
-        authBtn.textContent = 'Log Out';
-      }
+      
+     if (authLabel) authLabel.textContent = 'Log Out';
+
     }
-
-
   }
 
     // Call this immediately to prevent flicker
@@ -105,8 +107,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       localStorage.setItem('cachedLoggedIn', 'false');
       localStorage.setItem('cachedUsername', 'Guest');
       username = '';
-      userDisplay.querySelector('#usernameSpan').textContent = ' Guest';
-      authBtn.textContent = 'Log In';
+      if (userDisplay) {
+        userDisplay.querySelector('#usernameSpan').textContent = ' Guest';
+      }
+      if (authLabel) authLabel.textContent = 'Log In';
       return;
     }
 
@@ -120,8 +124,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       localStorage.setItem('cachedLoggedIn', 'true');
       localStorage.setItem('cachedUsername', profile.username);
       username = profile.username;
-      userDisplay.querySelector('#usernameSpan').textContent = ' ' + profile.username;
-      authBtn.textContent = 'Log Out';
+      if (userDisplay) {
+        userDisplay.querySelector('#usernameSpan').textContent = ' ' + profile.username;
+      }
+      if (authLabel) authLabel.textContent = 'Log Out';
     }
   });
 
@@ -129,10 +135,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Auth Button
   // -------------------------
   authBtn.onclick = async () => {
-    if (authBtn.textContent === 'Log Out') {
-      await supabase.auth.signOut();
-    } else {
-      window.location.href = 'login.html';
+    if (authLabel) {
+      if (authLabel.textContent === 'Log Out') {
+        await supabase.auth.signOut();
+      } else {
+        window.location.href = 'login.html';
+      }
     }
   };
 
@@ -323,6 +331,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   };
 });
+
 
 
 
