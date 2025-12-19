@@ -469,27 +469,28 @@ input.input-field:-webkit-autofill:active {
   width: 100%;
 }
 
-/* Force login & leaderboard buttons to match in height */
 #start-screen .row:nth-child(3) button,
 #start-screen .row:nth-child(3) a {
-  flex: 1;                   /* evenly share space */
-  display: flex;             /* use flex to center text */
-  align-items: center;       /* vertical center */
-  justify-content: center;   /* horizontal center */
-  height: 44px;              /* same fixed height for both */
-  padding: 0 12px;           /* horizontal padding only */
-  font-size: 1rem;           /* same font size */
+  flex: 1;                   /* share space evenly */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 50px;              /* fixed height */
+  padding: 0 16px;           /* horizontal padding only */
+  font-size: 1rem;
   box-sizing: border-box;    
   text-align: center;
-  white-space: nowrap;       /* prevent wrapping */
-  text-decoration: none;     /* remove underline from <a> */
+  white-space: nowrap;
+  text-decoration: none;     /* remove underline */
 }
+
 
 /* ====== AUTH BUTTON FIX (NO FLICKER) ====== */
 #authBtn {
   min-width: 120px;
   text-align: center;
 }
+
 
 
 
