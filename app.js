@@ -68,9 +68,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   const questionImage = document.getElementById('questionImage');
   const answersBox = document.getElementById('answers');
   const timeDisplay = document.getElementById('time');
+  const authBtn = document.getElementById('authBtn'); 
   
   // Main state
-  let username = cachedUsername;
+  let username = cachedLoggedIn ? cachedUsername : '';
   let score = 0;
   let questions = [];
   let remainingQuestions = [];
@@ -212,7 +213,7 @@ authBtn.onclick = async () => {
   async function startGame() {
   try {
     console.log('startGame called');
-
+    
     endGame.running = false;
     resetGame();
     game.classList.remove('hidden');
@@ -224,8 +225,10 @@ authBtn.onclick = async () => {
     await loadSounds();
 
     // Fetch questions from Supabase
+    console.log('Querying questions table...');
     const { data, error } = await supabase.from('questions').select('*');
-    console.log('Fetched questions from Supabase:', data, 'Error:', error);
+    console.log('Query result:', data, error);
+
       
 
     if (error) {
@@ -392,6 +395,7 @@ async function loadQuestion() {
     updateScore();
   };
 });
+
 
 
 
