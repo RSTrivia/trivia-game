@@ -471,25 +471,27 @@ input.input-field:-webkit-autofill:active {
 
 #start-screen .row:nth-child(3) button,
 #start-screen .row:nth-child(3) a {
-  flex: 1;
+  flex: 1 0 0;           /* disable shrinking */
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 50px;       /* fixed height for desktop */
-  padding: 0 16px;    /* horizontal padding only */
+  height: 50px;          /* fixed height */
+  padding: 0 16px;       /* horizontal padding only */
   font-size: 1rem;
   box-sizing: border-box;
   text-align: center;
   white-space: nowrap;
-  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 @media (max-width: 480px) {
   #start-screen .row:nth-child(3) button,
   #start-screen .row:nth-child(3) a {
-    height: 56px;      /* taller for mobile */
+    height: 56px;
   }
 }
+
 
 
 
@@ -498,6 +500,7 @@ input.input-field:-webkit-autofill:active {
   min-width: 120px;
   text-align: center;
 }
+
 
 
 
