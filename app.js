@@ -83,8 +83,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (profile.username !== cachedUsername) {
     localStorage.setItem('cachedUsername', profile.username);
     localStorage.setItem('cachedLoggedIn', 'true');
-    usernameSpan && (usernameSpan.textContent = ' ' + profile.username);
-    authLabel && (authLabel.textContent = 'Log Out');
+    if (usernameSpan && usernameSpan.textContent !== ' ' + profile.username) {
+      usernameSpan.textContent = ' ' + profile.username;
+    }
+    
+    if (authLabel && authLabel.textContent !== 'Log Out') {
+      authLabel.textContent = 'Log Out';
+}
+
   }
 }
 
@@ -324,6 +330,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   };
 });
+
 
 
 
