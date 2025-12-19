@@ -60,28 +60,27 @@ document.addEventListener('DOMContentLoaded', async () => {
   // -------------------------
   async function preloadAuth() {
     const { data: { session } } = await supabase.auth.getSession();
-    
-    let loggedIn = false;
-    let cachedUsername = 'Guest';
-
-    if (session?.user) {
-      loggedIn = true;
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('id', session.user.id)
-        .single();
-      
-      if (profile?.username) cachedUsername = profile.username;
+  
+    if (!session?.user) return; // nothing to do, keep cachedUsername
+  
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('id', session.user.id)
+      .single();
+  
+    if (!profile?.username) return;
+  
+    // Only update if the profile username is different from cached
+    if (profile.username !== localStorage.getItem('cachedUsername')) {
+      localStorage.setItem('cachedUsername', profile.username);
+      localStorage.setItem('cachedLoggedIn', 'true');
+      username = profile.username;
+      userDisplay.querySelector('#usernameSpan').textContent = ' ' + profile.username;
+      authBtn.textContent = 'Log Out';
     }
-
-    localStorage.setItem('cachedLoggedIn', loggedIn);
-    localStorage.setItem('cachedUsername', cachedUsername);
-
-    username = loggedIn ? cachedUsername : '';
-    userDisplay.querySelector('#usernameSpan').textContent = ' ' + cachedUsername;
-    authBtn.textContent = loggedIn ? 'Log Out' : 'Log In';
   }
+
 
     // Call this immediately to prevent flicker
   await preloadAuth();
@@ -313,6 +312,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   };
 });
+
 
 
 
