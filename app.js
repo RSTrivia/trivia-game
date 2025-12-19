@@ -1,9 +1,7 @@
 import { supabase } from './supabase.js';
 
-document.addEventListener('DOMContentLoaded', async () => {
-  // -------------------------
+  document.addEventListener('DOMContentLoaded', async () => {
   // DOM Elements
-  // -------------------------
   const startBtn = document.getElementById('startBtn');
   const playAgainBtn = document.getElementById('playAgainBtn');
   const mainMenuBtn = document.getElementById('mainMenuBtn');
@@ -18,7 +16,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const answersBox = document.getElementById('answers');
   const timeDisplay = document.getElementById('time');
   const appDiv = document.getElementById('app');
+  const muteBtn = document.getElementById('muteBtn');
 
+  // Main state
   let username = '';
   let score = 0;
   let questions = [];
@@ -29,16 +29,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   let correctBuffer, wrongBuffer;
   let muted = localStorage.getItem('muted') === 'true';
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
- 
-  // -------------------------
-  // Mute button helper
-  // -------------------------
+
+  // Mute helper
   const updateMuteIcon = () => muteBtn.textContent = muted ? '🔇' : '🔊';
   updateMuteIcon(); // show immediately
-  
-  // -------------------------
+
   // Show cached username & login state immediately
-  // -------------------------
   const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
   const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
   username = cachedLoggedIn ? cachedUsername : '';
@@ -51,6 +47,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   // -------------------------
   appDiv.style.opacity = '1';
   
+    // Call this immediately to prevent flicker
+  await preloadAuth();
+
   // -------------------------
   // Preload Auth: Correct Username & Button
   // -------------------------
@@ -79,8 +78,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     authBtn.textContent = loggedIn ? 'Log Out' : 'Log In';
   }
 
-  // Call this immediately to prevent flicker
-  await preloadAuth();
 
   // -------------------------
   // Supabase auth listener (updates UI if session changes)
@@ -318,6 +315,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   };
 });
+
 
 
 
