@@ -463,36 +463,39 @@ input.input-field:-webkit-autofill:active {
    STABLE LOGIN / LEADERBOARD
    =========================== */
 
-#start-screen .row:nth-child(3) {
-  display: flex;
-  gap: 10px;
-  width: 100%;
-  align-items: stretch; /* ensures both buttons same height */
-}
-
-/* ====== PC: prevent Log In button flicker ===== */
+/* ====== STABLE LOGIN / LEADERBOARD BUTTONS PC ===== */
 @media (min-width: 481px) {
   #start-screen .row:nth-child(3) {
     display: flex;
     gap: 10px;
     width: 100%;
-    align-items: stretch; /* ensures buttons have same height */
+    align-items: stretch; /* match button heights */
   }
 
   #start-screen .row:nth-child(3) button,
   #start-screen .row:nth-child(3) a {
-    flex: 1;                 /* equal width */
+    flex: 1;                        /* equal width */
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
-    box-sizing: border-box;  /* include padding & border in height */
-    height: 60px;            /* FIXED height prevents flicker */
+    box-sizing: border-box;         /* include padding & border */
+    min-height: 60px;               /* stable height */
     padding: 12px;
     font-size: 1rem;
-    line-height: 1;          /* keep text centered */
-    white-space: nowrap;      /* single line text */
+    line-height: 1.2;               /* allow multi-line if needed */
+    border: 2px solid #d4af37;      /* constant border width */
+    border-radius: 8px;
     overflow: hidden;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    background: rgba(0,0,0,0.6);
+    color: #ffd700;
+  }
+
+  #start-screen .row:nth-child(3) button:hover,
+  #start-screen .row:nth-child(3) a:hover {
+    background: rgba(0,0,0,0.85);
+    border-color: #ffea8a;          /* color only, width stays same */
   }
 }
 
