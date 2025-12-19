@@ -471,39 +471,35 @@ input.input-field:-webkit-autofill:active {
   justify-content: center; /* center row inside container */
 }
 
-/* Make both buttons share the same height, vertically centered */
+
+/* ====== LOGIN / LEADERBOARD BUTTONS ===== */
+#start-screen .row:nth-child(3) {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+/* Both buttons: equal width and same height */
 #start-screen .row:nth-child(3) button,
 #start-screen .row:nth-child(3) a {
+  flex: 1;                    /* equal width */
+  height: 56px;               /* fixed height to match 2-line leaderboard button on mobile */
   display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 44px;             /* consistent height */
-  padding: 0 12px;          /* horizontal padding */
+  align-items: center;        /* vertically center text */
+  justify-content: center;    /* horizontally center text */
+  padding: 0 12px;            /* horizontal padding */
   font-size: 1rem;
-  text-decoration: none;
-  white-space: nowrap;
   box-sizing: border-box;
-  flex-shrink: 0;           /* prevent shrinking */
+  text-align: center;
+  white-space: normal;        /* allow text wrapping if needed */
+  text-decoration: none;      /* remove underline from links */
 }
 
-/* Auth button takes exactly half the width of Start Game button */
-#authBtn {
-  flex-basis: 50%;           /* half of available row space */
-  max-width: 50%;
-}
-
-/* View leaderboard fills remaining space */
-#start-screen .row:nth-child(3) a {
-  flex: 1;                   /* take the rest */
-  min-width: 0;              /* allow shrinking if needed */
-}
-
-/* Optional: on small screens, slightly taller buttons */
-@media (max-width: 480px) {
-  #start-screen .row:nth-child(3) button,
-  #start-screen .row:nth-child(3) a {
-    height: 56px;
-  }
+/* Optional: hover effect */
+#start-screen .row:nth-child(3) button:hover,
+#start-screen .row:nth-child(3) a:hover {
+  background: rgba(0,0,0,0.85);
+  border-color: #ffea8a;
 }
 
 
@@ -532,6 +528,7 @@ input.input-field:-webkit-autofill:active {
     font-size: 1.05rem;      
   }
 }*/
+
 
 
 
