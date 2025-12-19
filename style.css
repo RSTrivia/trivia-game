@@ -490,6 +490,12 @@ input.input-field:-webkit-autofill:active {
 }
 
 
+/* ====== AUTH BUTTON FIX (NO FLICKER) ====== */
+#authBtn {
+  min-width: 120px;
+  text-align: center;
+}
+
 
 
 
