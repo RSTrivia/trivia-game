@@ -288,7 +288,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Fetch questions from Supabase
     const { data, error } = await supabase.from('questions').select('*');
-    console.log('Questions fetched:', data, 'Error:', error);
+    console.log('Fetched questions from Supabase:', data, 'Error:', error);
+      
 
     if (error) {
       console.error('Supabase query error:', error);
@@ -454,6 +455,7 @@ async function loadQuestion() {
     updateScore();
   };
 });
+
 
 
 
