@@ -1,69 +1,20 @@
 import { supabase } from './supabase.js';
 
-// ===== DOM Elements =====
-const authBtn = document.getElementById('authBtn');
-const muteBtn = document.getElementById('muteBtn');
-const usernameSpan = document.getElementById('usernameSpan');
-const muteIcon = document.getElementById('muteIcon');
-const authLabel = document.querySelector('#authBtn .btn-label');
+document.addEventListener('DOMContentLoaded', () => {
 
-// ===== STATE =====
-let cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
-let cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
-let username = cachedLoggedIn ? cachedUsername : '';
-let muted = localStorage.getItem('muted') === 'true';
+  // ======================
+  // DOM ELEMENTS
+  // ======================
+  const authBtn = document.getElementById('authBtn');
+  const authLabel = authBtn?.querySelector('.btn-label');
+  const usernameSpan = document.getElementById('usernameSpan');
+  const muteBtn = document.getElementById('muteBtn');
+  const muteIcon = document.getElementById('muteIcon');
 
-// ===== INITIAL UI (instant, no flicker) =====
-if (muteIcon) muteIcon.textContent = muted ? '🔇' : '🔊';
-
-
-supabase.auth.onAuthStateChange(async (_event, session) => {
-  if (!session?.user) {
-    // Logged out / Guest
-    cachedUsername = 'Guest';
-    cachedLoggedIn = false;
-    username = '';
-
-    localStorage.setItem('cachedUsername', 'Guest');
-    localStorage.setItem('cachedLoggedIn', 'false');
-
-    if (usernameSpan) usernameSpan.textContent = ' Guest';
-    if (authLabel) authLabel.textContent = 'Log In';
-    return;
-  }
-
-  // Logged in
-  const { data: profile, error } = await supabase
-    .from('profiles')
-    .select('username')
-    .eq('id', session.user.id)
-    .single();
-
-  if (error) {
-    console.error('Profile fetch failed:', error);
-    return;
-  }
-
-  cachedUsername = profile?.username || 'Guest';
-  cachedLoggedIn = true;
-  username = cachedUsername;
-
-  localStorage.setItem('cachedUsername', cachedUsername);
-  localStorage.setItem('cachedLoggedIn', 'true');
-
-  if (usernameSpan) usernameSpan.textContent = ' ' + cachedUsername;
-  if (authLabel) authLabel.textContent = 'Log Out';
-});
-
-
-
-
-document.addEventListener('DOMContentLoaded', async () => {
-
-  // DOM Elements
   const startBtn = document.getElementById('startBtn');
   const playAgainBtn = document.getElementById('playAgainBtn');
   const mainMenuBtn = document.getElementById('mainMenuBtn');
+
   const game = document.getElementById('game');
   const endScreen = document.getElementById('end-screen');
   const finalScore = document.getElementById('finalScore');
@@ -71,316 +22,215 @@ document.addEventListener('DOMContentLoaded', async () => {
   const questionText = document.getElementById('questionText');
   const questionImage = document.getElementById('questionImage');
   const answersBox = document.getElementById('answers');
-  const timeDisplay = document.getElementById('time'); 
+  const timeDisplay = document.getElementById('time');
 
+  if (!authBtn || !startBtn) {
+    console.error('Critical DOM elements missing');
+    return;
+  }
 
-    if (!startBtn || !authBtn) {
-      console.error('Buttons missing in DOM');
-      return;
-    }
-    if (usernameSpan) usernameSpan.textContent = ' ' + cachedUsername;
-    if (authLabel) authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
+  // ======================
+  // STATE
+  // ======================
+  let username = '';
+  let muted = localStorage.getItem('muted') === 'true';
 
-  // Main state
   let score = 0;
   let questions = [];
   let remainingQuestions = [];
   let currentQuestion = null;
   let timer;
   let timeLeft = 15;
-  let correctBuffer, wrongBuffer;
-  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  
-  const updateMuteIcon = () => {
-    if (muteIcon) muteIcon.textContent = muted ? '🔇' : '🔊';
-  };
-  updateMuteIcon();
 
-  // Mute button click handler
-  muteBtn.addEventListener('click', () => {
-    muted = !muted; // update global state
-    localStorage.setItem('muted', muted); // persist state
-    if (muteIcon) muteIcon.textContent = muted ? '🔇' : '🔊'; // update only the icon
-    if (audioCtx.state === 'suspended') audioCtx.resume(); // resume audio if needed
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  let correctBuffer, wrongBuffer;
+
+  // ======================
+  // INITIAL UI
+  // ======================
+  muteIcon.textContent = muted ? '🔇' : '🔊';
+  usernameSpan.textContent = ' Guest';
+  authLabel.textContent = 'Log In';
+
+  // ======================
+  // AUTH STATE (SOURCE OF TRUTH)
+  // ======================
+  supabase.auth.onAuthStateChange(async (_event, session) => {
+    if (!session?.user) {
+      username = '';
+      usernameSpan.textContent = ' Guest';
+      authLabel.textContent = 'Log In';
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('id', session.user.id)
+      .single();
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    username = data?.username || 'Guest';
+    usernameSpan.textContent = ' ' + username;
+    authLabel.textContent = 'Log Out';
   });
 
-  
-   // -------------------------
-  // Preload Auth: Correct Username & Button
-  // -------------------------
- 
-  
-  // -------------------------
-  // Auth Button
-  // -------------------------
-authBtn.addEventListener('click', async () => {
-  const isLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
+  // ======================
+  // AUTH BUTTON
+  // ======================
+  authBtn.addEventListener('click', async () => {
+    const { data } = await supabase.auth.getSession();
 
-  if (isLoggedIn) {
-    await supabase.auth.signOut();
-  } else {
-    window.location.href = 'login.html';
-  }
-});
+    if (data.session) {
+      await supabase.auth.signOut();
+    } else {
+      window.location.href = 'login.html';
+    }
+  });
 
+  // ======================
+  // MUTE
+  // ======================
+  muteBtn.addEventListener('click', () => {
+    muted = !muted;
+    localStorage.setItem('muted', muted);
+    muteIcon.textContent = muted ? '🔇' : '🔊';
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  });
 
-
-  // -------------------------
-  // Audio
-  // -------------------------
-
+  // ======================
+  // AUDIO
+  // ======================
   async function loadSounds() {
     correctBuffer = await loadAudio('./sounds/correct.mp3');
     wrongBuffer = await loadAudio('./sounds/wrong.mp3');
   }
 
   async function loadAudio(url) {
-    const response = await fetch(url);
-    const arrayBuffer = await response.arrayBuffer();
-    return audioCtx.decodeAudioData(arrayBuffer);
+    const res = await fetch(url);
+    const buf = await res.arrayBuffer();
+    return audioCtx.decodeAudioData(buf);
   }
 
   function playSound(buffer) {
     if (!buffer || muted) return;
-    const source = audioCtx.createBufferSource();
-    source.buffer = buffer;
-    const gainNode = audioCtx.createGain();
-    gainNode.gain.value = 0.5;
-    source.connect(gainNode).connect(audioCtx.destination);
-    source.start();
+    const src = audioCtx.createBufferSource();
+    src.buffer = buffer;
+    src.connect(audioCtx.destination);
+    src.start();
   }
 
-  // -------------------------
-  // Leaderboard
-  // -------------------------
-  async function submitLeaderboardScore(username, score) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { data: existingScore } = await supabase
-      .from('scores')
-      .select('score')
-      .eq('user_id', user.id)
-      .single();
-
-    if (!existingScore || score > existingScore.score) {
-      await supabase
-        .from('scores')
-        .upsert({ user_id: user.id, username, score }, { onConflict: 'user_id' });
-    }
-  }
-  
-  // -------------------------
-  // Game Logic (UNCHANGED)
-  // -------------------------
+  // ======================
+  // GAME LOGIC
+  // ======================
   function resetGame() {
     clearInterval(timer);
     score = 0;
-    questions = [];
     remainingQuestions = [];
-    currentQuestion = null;
-    questionText.textContent = '';
     answersBox.innerHTML = '';
+    questionText.textContent = '';
     questionImage.style.display = 'none';
     timeLeft = 15;
     timeDisplay.textContent = timeLeft;
-    timeDisplay.classList.remove('red-timer');
   }
 
   async function startGame() {
-  if (startGame.running) return;
-  startGame.running = true;
-
-  try {
-    console.log('startGame called');
-
-    endGame.running = false;
     resetGame();
+
     game.classList.remove('hidden');
-    document.getElementById('start-screen').classList.add('hidden');
     endScreen.classList.add('hidden');
-    updateScore();
+    document.getElementById('start-screen').classList.add('hidden');
 
     await loadSounds();
 
-    console.log('Querying questions table...');
     const { data, error } = await supabase.from('questions').select('*');
-    console.log('Query result:', data, error);
-
-    if (error) throw error;
-    if (!data?.length) throw new Error('No questions available');
+    if (error || !data.length) {
+      alert('Failed to load questions');
+      return;
+    }
 
     questions = data;
     remainingQuestions = [...questions];
-
-    await loadQuestion();
-  } catch (err) {
-    console.error('startGame failed:', err);
-    alert('Failed to start game. Check console.');
-  } finally {
-    startGame.running = false;
+    loadQuestion();
   }
-}
 
-
-
-async function loadQuestion() {
-  try {
-    console.log('loadQuestion called, remainingQuestions:', remainingQuestions.length);
-
-    // Clear previous answers
+  function loadQuestion() {
     answersBox.innerHTML = '';
 
-    // No questions left
     if (!remainingQuestions.length) {
-      console.log('No remaining questions, ending game');
-      return await endGame();
+      return endGame();
     }
 
-    // Pick a random question
-    const index = Math.floor(Math.random() * remainingQuestions.length);
-    currentQuestion = remainingQuestions.splice(index, 1)[0];
-    console.log('Current question:', currentQuestion);
+    const i = Math.floor(Math.random() * remainingQuestions.length);
+    currentQuestion = remainingQuestions.splice(i, 1)[0];
 
-    // Update question text and image
-    questionText.textContent = currentQuestion.question || 'No question text';
-    if (currentQuestion.question_image) {
-      questionImage.src = currentQuestion.question_image;
-      questionImage.style.display = 'block';
-    } else {
-      questionImage.style.display = 'none';
-    }
+    questionText.textContent = currentQuestion.question;
 
-    // Shuffle answers
     const answers = [
-      { text: currentQuestion.answer_a, correct: currentQuestion.correct_answer === 1 },
-      { text: currentQuestion.answer_b, correct: currentQuestion.correct_answer === 2 },
-      { text: currentQuestion.answer_c, correct: currentQuestion.correct_answer === 3 },
-      { text: currentQuestion.answer_d, correct: currentQuestion.correct_answer === 4 }
+      { t: currentQuestion.answer_a, c: 1 },
+      { t: currentQuestion.answer_b, c: 2 },
+      { t: currentQuestion.answer_c, c: 3 },
+      { t: currentQuestion.answer_d, c: 4 }
     ].sort(() => Math.random() - 0.5);
 
-    // Create buttons
-    answers.forEach((ans, i) => {
+    currentQuestion.correct_answer_shuffled =
+      answers.findIndex(a => a.c === currentQuestion.correct_answer) + 1;
+
+    answers.forEach((a, i) => {
       const btn = document.createElement('button');
-      btn.textContent = ans.text || 'No answer';
-      btn.classList.add('answer-btn');
+      btn.textContent = a.t;
+      btn.className = 'answer-btn';
       btn.onclick = () => checkAnswer(i + 1, btn);
       answersBox.appendChild(btn);
     });
 
-    // Track correct answer after shuffle
-    currentQuestion.correct_answer_shuffled = answers.findIndex(a => a.correct) + 1;
-    console.log('Correct answer is button #', currentQuestion.correct_answer_shuffled);
-
-    // Reset timer
     clearInterval(timer);
     timeLeft = 15;
     timeDisplay.textContent = timeLeft;
-    timeDisplay.classList.remove('red-timer');
 
     timer = setInterval(() => {
       timeLeft--;
       timeDisplay.textContent = timeLeft;
-      timeDisplay.classList.toggle('red-timer', timeLeft <= 5);
-
       if (timeLeft <= 0) {
         clearInterval(timer);
         playSound(wrongBuffer);
-        highlightCorrectAnswer();
-        setTimeout(() => endGame(), 1000);
+        endGame();
       }
     }, 1000);
-
-  } catch (err) {
-    console.error('loadQuestion failed:', err);
-    alert('Failed to load question. Check console.');
   }
-}
-
 
   function checkAnswer(selected, btn) {
     clearInterval(timer);
-    document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
 
     if (selected === currentQuestion.correct_answer_shuffled) {
       playSound(correctBuffer);
-      btn.classList.add('correct');
       score++;
       updateScore();
-      setTimeout(loadQuestion, 1000);
+      setTimeout(loadQuestion, 800);
     } else {
       playSound(wrongBuffer);
-      btn.classList.add('wrong');
-      highlightCorrectAnswer();
-      setTimeout(endGame, 1000);
+      setTimeout(endGame, 800);
     }
-  }
-
-  function highlightCorrectAnswer() {
-    document.querySelectorAll('.answer-btn').forEach((btn, i) => {
-      if (i + 1 === currentQuestion.correct_answer_shuffled)
-        btn.classList.add('correct');
-    });
   }
 
   function updateScore() {
     scoreDisplay.textContent = `Score: ${score}`;
   }
 
-  async function endGame() {
-    if (endGame.running) return;
-    endGame.running = true;
-
-    clearInterval(timer);
+  function endGame() {
     game.classList.add('hidden');
     endScreen.classList.remove('hidden');
     finalScore.textContent = score;
-
-    if (username) await submitLeaderboardScore(username, score);
   }
 
-  // -------------------------
-  // Buttons
-  // -------------------------
-startBtn.addEventListener('click', async () => {
-  console.log('Start clicked');
-  await startGame();
-});
-
-
+  // ======================
+  // BUTTONS
+  // ======================
+  startBtn.addEventListener('click', startGame);
   playAgainBtn.addEventListener('click', startGame);
-  
-  mainMenuBtn.addEventListener('click', () => {
-    resetGame();
-    game.classList.add('hidden');
-    endScreen.classList.add('hidden');
-    document.getElementById('start-screen').classList.remove('hidden');
-    updateScore();
-  });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  mainMenuBtn.addEventListener('click', () => location.reload());
+});
