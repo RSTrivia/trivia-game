@@ -31,20 +31,59 @@ document.addEventListener('DOMContentLoaded', () => {
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
   // -------------------------
-  // Show App Immediately (optional fade in)
+  // Show App Immediately
   // -------------------------
   appDiv.style.opacity = '1';
 
-  const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
-  const cachedUsername = localStorage.getItem('cachedUsername');
-  
-  if (cachedLoggedIn && cachedUsername) {
-    userDisplay.querySelector('#usernameSpan').textContent = ' ' + cachedUsername;
-    authBtn.textContent = 'Log Out';
-  } else {
-    userDisplay.querySelector('#usernameSpan').textContent = ' Guest';
-    authBtn.textContent = 'Log In';
+  // -------------------------
+  // AUTH UI (single source of truth)
+  // -------------------------
+  function renderAuthUI() {
+    const loggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
+    const cachedName = localStorage.getItem('cachedUsername') || 'Guest';
+
+    username = loggedIn ? cachedName : '';
+    userDisplay.querySelector('#usernameSpan').textContent = ' ' + cachedName;
+    authBtn.textContent = loggedIn ? 'Log Out' : 'Log In';
   }
+
+  // Initial paint from cache (NO flicker)
+  renderAuthUI();
+
+  // -------------------------
+  // Supabase auth listener (NO reloads)
+  // -------------------------
+  supabase.auth.onAuthStateChange(async (_event, session) => {
+    if (!session?.user) {
+      localStorage.setItem('cachedLoggedIn', 'false');
+      localStorage.setItem('cachedUsername', 'Guest');
+      renderAuthUI();
+      return;
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('id', session.user.id)
+      .single();
+
+    if (profile?.username) {
+      localStorage.setItem('cachedLoggedIn', 'true');
+      localStorage.setItem('cachedUsername', profile.username);
+      renderAuthUI();
+    }
+  });
+
+  // -------------------------
+  // Auth Button
+  // -------------------------
+  authBtn.onclick = async () => {
+    if (authBtn.textContent === 'Log Out') {
+      await supabase.auth.signOut();
+    } else {
+      window.location.href = 'login.html';
+    }
+  };
 
   // -------------------------
   // Audio & Mute
@@ -60,50 +99,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (audioCtx.state === 'suspended') audioCtx.resume();
   });
 
-
-  authBtn.onclick = async () => {
-  if (authBtn.textContent === 'Log Out') {
-    await supabase.auth.signOut();
-    localStorage.setItem('cachedLoggedIn', 'false');
-    localStorage.setItem('cachedUsername', '');
-    location.reload(); // hard reset, no intermediate paint
-  } else {
-    window.location.href = 'login.html';
-  }
-};
-
-async function validateSessionSilently() {
-  const { data: { session } } = await supabase.auth.getSession();
-
-  // If cache says logged in but session is dead → force reset
-  if (!session && cachedLoggedIn) {
-    localStorage.setItem('cachedLoggedIn', 'false');
-    localStorage.setItem('cachedUsername', '');
-    location.reload();
-  }
-
-  // If cache says guest but session exists → update cache & reload
-  if (session && !cachedLoggedIn) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('username')
-      .eq('id', session.user.id)
-      .single();
-
-    if (profile?.username) {
-      localStorage.setItem('cachedLoggedIn', 'true');
-      localStorage.setItem('cachedUsername', profile.username);
-      location.reload();
-    }
-  }
-}
-
-validateSessionSilently();
-  // -------------------------
-  // User/Auth
-  // -------------------------
-  
-
   async function loadSounds() {
     correctBuffer = await loadAudio('./sounds/correct.mp3');
     wrongBuffer = await loadAudio('./sounds/wrong.mp3');
@@ -112,7 +107,7 @@ validateSessionSilently();
   async function loadAudio(url) {
     const response = await fetch(url);
     const arrayBuffer = await response.arrayBuffer();
-    return await audioCtx.decodeAudioData(arrayBuffer);
+    return audioCtx.decodeAudioData(arrayBuffer);
   }
 
   function playSound(buffer) {
@@ -129,31 +124,24 @@ validateSessionSilently();
   // Leaderboard
   // -------------------------
   async function submitLeaderboardScore(username, score) {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
 
-      const userId = user.id;
-      const { data: existingScore, error: fetchError } = await supabase
+    const { data: existingScore } = await supabase
+      .from('scores')
+      .select('score')
+      .eq('user_id', user.id)
+      .single();
+
+    if (!existingScore || score > existingScore.score) {
+      await supabase
         .from('scores')
-        .select('score')
-        .eq('user_id', userId)
-        .single();
-
-      if (fetchError && fetchError.code !== 'PGRST116') return;
-
-      if (!existingScore || score > existingScore.score) {
-        await supabase
-          .from('scores')
-          .upsert({ user_id: userId, username, score }, { onConflict: 'user_id' });
-      }
-    } catch (err) {
-      console.error('Error submitting score:', err);
+        .upsert({ user_id: user.id, username, score }, { onConflict: 'user_id' });
     }
   }
 
   // -------------------------
-  // Game Functions
+  // Game Logic (UNCHANGED)
   // -------------------------
   function resetGame() {
     clearInterval(timer);
@@ -179,8 +167,8 @@ validateSessionSilently();
 
     await loadSounds();
 
-    const { data, error } = await supabase.from('questions').select('*');
-    if (error || !data?.length) return alert('Could not load questions!');
+    const { data } = await supabase.from('questions').select('*');
+    if (!data?.length) return alert('Could not load questions!');
 
     questions = data;
     remainingQuestions = [...questions];
@@ -189,36 +177,32 @@ validateSessionSilently();
 
   async function loadQuestion() {
     answersBox.innerHTML = '';
-    if (!remainingQuestions.length) return await endGame();
+    if (!remainingQuestions.length) return endGame();
 
     const index = Math.floor(Math.random() * remainingQuestions.length);
     currentQuestion = remainingQuestions.splice(index, 1)[0];
 
-    questionText.textContent = currentQuestion.question || 'No question text';
-    if (currentQuestion.question_image) {
-      questionImage.src = currentQuestion.question_image;
-      questionImage.style.display = 'block';
-    } else questionImage.style.display = 'none';
+    questionText.textContent = currentQuestion.question;
+    questionImage.style.display = currentQuestion.question_image ? 'block' : 'none';
+    if (currentQuestion.question_image) questionImage.src = currentQuestion.question_image;
 
     let answers = [
       { text: currentQuestion.answer_a, correct: currentQuestion.correct_answer === 1 },
       { text: currentQuestion.answer_b, correct: currentQuestion.correct_answer === 2 },
       { text: currentQuestion.answer_c, correct: currentQuestion.correct_answer === 3 },
       { text: currentQuestion.answer_d, correct: currentQuestion.correct_answer === 4 }
-    ];
-
-    // Shuffle
-    answers = answers.sort(() => Math.random() - 0.5);
+    ].sort(() => Math.random() - 0.5);
 
     answers.forEach((ans, i) => {
       const btn = document.createElement('button');
-      btn.textContent = ans.text || '';
+      btn.textContent = ans.text;
       btn.classList.add('answer-btn');
-      btn.addEventListener('click', () => checkAnswer(i + 1, btn));
+      btn.onclick = () => checkAnswer(i + 1, btn);
       answersBox.appendChild(btn);
     });
 
-    currentQuestion.correct_answer_shuffled = answers.findIndex(a => a.correct) + 1;
+    currentQuestion.correct_answer_shuffled =
+      answers.findIndex(a => a.correct) + 1;
 
     clearInterval(timer);
     timeLeft = 15;
@@ -239,20 +223,19 @@ validateSessionSilently();
     }, 1000);
   }
 
-  function checkAnswer(selected, clickedBtn) {
-    if (audioCtx.state === 'suspended') audioCtx.resume();
+  function checkAnswer(selected, btn) {
     clearInterval(timer);
-    document.querySelectorAll('.answer-btn').forEach(btn => btn.disabled = true);
+    document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
 
     if (selected === currentQuestion.correct_answer_shuffled) {
       playSound(correctBuffer);
-      clickedBtn.classList.add('correct');
+      btn.classList.add('correct');
       score++;
       updateScore();
       setTimeout(loadQuestion, 1000);
     } else {
       playSound(wrongBuffer);
-      clickedBtn.classList.add('wrong');
+      btn.classList.add('wrong');
       highlightCorrectAnswer();
       setTimeout(endGame, 1000);
     }
@@ -260,86 +243,42 @@ validateSessionSilently();
 
   function highlightCorrectAnswer() {
     document.querySelectorAll('.answer-btn').forEach((btn, i) => {
-      if (i + 1 === currentQuestion.correct_answer_shuffled) btn.classList.add('correct');
+      if (i + 1 === currentQuestion.correct_answer_shuffled)
+        btn.classList.add('correct');
     });
   }
 
   function updateScore() {
     scoreDisplay.textContent = `Score: ${score}`;
   }
-  
+
   async function endGame() {
     if (endGame.running) return;
     endGame.running = true;
-  
+
     clearInterval(timer);
     game.classList.add('hidden');
     endScreen.classList.remove('hidden');
     finalScore.textContent = score;
-  
-    const gameOverTitle = document.getElementById('game-over-title');
-    const gzTitle = document.getElementById('gz-title');
-  
-    if (score === questions.length && remainingQuestions.length === 0) {
-      const gzMessages = ['Gz', 'Go touch grass', 'See you in Lumbridge'];
-      const selectedMessage = gzMessages[Math.floor(Math.random() * gzMessages.length)];
-      console.log('Selected gz message:', selectedMessage); // <-- added log
-      gzTitle.textContent = selectedMessage;
-      gzTitle.classList.remove('hidden');
-      gameOverTitle.classList.add('hidden');
-    } else {
-      gzTitle.classList.add('hidden');
-      gameOverTitle.classList.remove('hidden');
-    }
-  
+
     if (username) await submitLeaderboardScore(username, score);
   }
 
-
-// -------------------------
-  // Event Listeners
   // -------------------------
-  startBtn.addEventListener('click', async () => {
-    await loadCurrentUser();
+  // Buttons
+  // -------------------------
+  startBtn.onclick = async () => {
     await loadSounds();
     startGame();
-  });
+  };
 
-  playAgainBtn.addEventListener('click', async () => {
-    resetGame();
-    await loadSounds();
-    startGame();
-  });
+  playAgainBtn.onclick = startGame;
 
-  mainMenuBtn.addEventListener('click', () => {
+  mainMenuBtn.onclick = () => {
     resetGame();
     game.classList.add('hidden');
     endScreen.classList.add('hidden');
     document.getElementById('start-screen').classList.remove('hidden');
     updateScore();
-  });
-
+  };
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
