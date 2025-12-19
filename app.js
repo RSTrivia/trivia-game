@@ -50,7 +50,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   username = cachedLoggedIn ? cachedUsername : '';
   userDisplay.querySelector('#usernameSpan').textContent = ' ' + cachedUsername;
   authBtn.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
-
+  authBtn.classList.add('ready');  // reveal button to prevent flicker
+  
   // Show app immediately
   appDiv.style.opacity = '1';
 
@@ -312,6 +313,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   };
 });
+
 
 
 
