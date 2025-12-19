@@ -22,11 +22,8 @@ document.getElementById('muteBtn').addEventListener('click', () => {
   if (muteIcon) muteIcon.textContent = muted ? '🔇' : '🔊';
 });
 
-// ===== AUTH LISTENER =====
 supabase.auth.onAuthStateChange(async (_event, session) => {
   if (!session?.user) {
-    usernameSpan.textContent = ' Guest';
-    authLabel.textContent = 'Log In';
     cachedUsername = 'Guest';
     cachedLoggedIn = false;
     localStorage.setItem('cachedUsername', cachedUsername);
@@ -395,6 +392,7 @@ async function loadQuestion() {
     updateScore();
   };
 });
+
 
 
 
