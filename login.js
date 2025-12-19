@@ -41,7 +41,9 @@ loginBtn.addEventListener('click', async () => {
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) { alert('Login failed: ' + error.message); return; }
   if (!data.user) { alert('Login failed: no user returned'); return; }
-
+  // Save username immediately
+  localStorage.setItem('cachedUsername', username);
+  localStorage.setItem('cachedLoggedIn', 'true');
   window.location.href = 'index.html';
 });
 
