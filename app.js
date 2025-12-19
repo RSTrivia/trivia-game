@@ -276,6 +276,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function startGame() {
   try {
     console.log('startGame called');
+    console.log('questionText =', questionText);
+    console.log('answersBox =', answersBox);
+
     endGame.running = false;
     resetGame();
     game.classList.remove('hidden');
@@ -455,6 +458,7 @@ async function loadQuestion() {
     updateScore();
   };
 });
+
 
 
 
