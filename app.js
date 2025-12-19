@@ -1,6 +1,8 @@
 import { supabase } from './supabase.js';
 
 // ===== DOM Elements =====
+const authBtn = document.getElementById('authBtn');
+const muteBtn = document.getElementById('muteBtn');
 const usernameSpan = document.getElementById('usernameSpan');
 const muteIcon = document.getElementById('muteIcon');
 const authLabel = document.querySelector('#authBtn .btn-label');
@@ -8,6 +10,7 @@ const authLabel = document.querySelector('#authBtn .btn-label');
 // ===== STATE =====
 let cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
 let cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
+let username = cachedLoggedIn ? cachedUsername : '';
 let muted = localStorage.getItem('muted') === 'true';
 
 // ===== INITIAL UI (instant, no flicker) =====
@@ -15,43 +18,45 @@ if (usernameSpan) usernameSpan.textContent = ' ' + cachedUsername;
 if (authLabel) authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
 if (muteIcon) muteIcon.textContent = muted ? '🔇' : '🔊';
 
-// ===== MUTE BUTTON =====
-document.getElementById('muteBtn').addEventListener('click', () => {
-  muted = !muted;
-  localStorage.setItem('muted', muted);
-  if (muteIcon) muteIcon.textContent = muted ? '🔇' : '🔊';
-});
 
 supabase.auth.onAuthStateChange(async (_event, session) => {
   if (!session?.user) {
+    // Logged out / Guest
     cachedUsername = 'Guest';
     cachedLoggedIn = false;
-    localStorage.setItem('cachedUsername', cachedUsername);
+    username = '';
+
+    localStorage.setItem('cachedUsername', 'Guest');
     localStorage.setItem('cachedLoggedIn', 'false');
 
-    if (usernameSpan) usernameSpan.textContent = ' ' + cachedUsername;
+    if (usernameSpan) usernameSpan.textContent = ' Guest';
     if (authLabel) authLabel.textContent = 'Log In';
     return;
   }
 
-  // fetch profile
-  const { data: profile } = await supabase
+  // Logged in
+  const { data: profile, error } = await supabase
     .from('profiles')
     .select('username')
     .eq('id', session.user.id)
     .single();
 
-  const newUsername = profile?.username || 'Guest';
-  if (newUsername !== cachedUsername) {
-    cachedUsername = newUsername;
-    cachedLoggedIn = true;
-    localStorage.setItem('cachedUsername', cachedUsername);
-    localStorage.setItem('cachedLoggedIn', 'true');
-
-    if (usernameSpan) usernameSpan.textContent = ' ' + cachedUsername;
-    if (authLabel) authLabel.textContent = 'Log Out';
+  if (error) {
+    console.error('Profile fetch failed:', error);
+    return;
   }
+
+  cachedUsername = profile?.username || 'Guest';
+  cachedLoggedIn = true;
+  username = cachedUsername;
+
+  localStorage.setItem('cachedUsername', cachedUsername);
+  localStorage.setItem('cachedLoggedIn', 'true');
+
+  if (usernameSpan) usernameSpan.textContent = ' ' + cachedUsername;
+  if (authLabel) authLabel.textContent = 'Log Out';
 });
+
 
 
 
@@ -67,11 +72,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const questionText = document.getElementById('questionText');
   const questionImage = document.getElementById('questionImage');
   const answersBox = document.getElementById('answers');
-  const timeDisplay = document.getElementById('time');
-  const authBtn = document.getElementById('authBtn'); 
+  const timeDisplay = document.getElementById('time'); 
   
   // Main state
-  let username = cachedLoggedIn ? cachedUsername : '';
   let score = 0;
   let questions = [];
   let remainingQuestions = [];
@@ -98,54 +101,18 @@ document.addEventListener('DOMContentLoaded', async () => {
    // -------------------------
   // Preload Auth: Correct Username & Button
   // -------------------------
-  // Preload auth async: update only if changed
-  async function preloadAuth() {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) return; // no user, nothing to update
-  
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('id', session.user.id)
-        .single();
-  
-      const newUsername = profile?.username;
-      if (!newUsername) return;
-  
-      // Update cached values only if different
-      if (newUsername !== cachedUsername) {
-        localStorage.setItem('cachedUsername', newUsername);
-        localStorage.setItem('cachedLoggedIn', 'true');
-  
-        // Update UI only if content is different
-        if (usernameSpan && usernameSpan.textContent !== ' ' + newUsername) {
-          usernameSpan.textContent = ' ' + newUsername;
-        }
-        if (authLabel && authLabel.textContent !== 'Log Out') {
-          authLabel.textContent = 'Log Out';
-        }
-      }
-    } catch (err) {
-      console.error('Failed to preload auth:', err);
-    }
-  }
-
+ 
   
   // -------------------------
   // Auth Button
   // -------------------------
 authBtn.onclick = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user) {
-        // User is logged in, so sign out
-        await supabase.auth.signOut();
-    } else {
-        // Not logged in, go to login page
-        window.location.href = 'login.html';
-    }
+  if (authLabel.textContent === 'Log Out') {
+    await supabase.auth.signOut();
+  } else {
+    window.location.href = 'login.html';
+  }
 };
-
 
 
   // -------------------------
@@ -211,9 +178,12 @@ authBtn.onclick = async () => {
   }
 
   async function startGame() {
+  if (startGame.running) return;
+  startGame.running = true;
+
   try {
     console.log('startGame called');
-    
+
     endGame.running = false;
     resetGame();
     game.classList.remove('hidden');
@@ -221,40 +191,27 @@ authBtn.onclick = async () => {
     endScreen.classList.add('hidden');
     updateScore();
 
-    // Load sounds
     await loadSounds();
 
-    // Fetch questions from Supabase
     console.log('Querying questions table...');
     const { data, error } = await supabase.from('questions').select('*');
     console.log('Query result:', data, error);
 
-      
+    if (error) throw error;
+    if (!data?.length) throw new Error('No questions available');
 
-    if (error) {
-      console.error('Supabase query error:', error);
-      alert('Could not load questions. See console for details.');
-      return;
-    }
-
-    if (!data?.length) {
-      console.warn('No questions returned from Supabase');
-      alert('No questions available.');
-      return;
-    }
-
-    // Store questions and remaining questions
     questions = data;
     remainingQuestions = [...questions];
-    console.log('Questions ready:', questions);
 
-    // Load first question
     await loadQuestion();
   } catch (err) {
     console.error('startGame failed:', err);
-    alert('Failed to start game. Check console for details.');
+    alert('Failed to start game. Check console.');
+  } finally {
+    startGame.running = false;
   }
 }
+
 
 
 async function loadQuestion() {
@@ -395,6 +352,7 @@ async function loadQuestion() {
     updateScore();
   };
 });
+
 
 
 
