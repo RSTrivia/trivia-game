@@ -80,11 +80,27 @@
     </div>
   </div>
 
+        <!-- Show cached username immediately -->
+      <script>
+        const appDiv = document.getElementById('app');
+        const userDisplay = document.getElementById('userDisplay');
+        const authBtn = document.getElementById('authBtn');
+      
+        const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
+        const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
+        const username = cachedLoggedIn ? cachedUsername : '';
+      
+        userDisplay.querySelector('#usernameSpan').textContent = ' ' + cachedUsername;
+        authBtn.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
+        appDiv.style.opacity = '1';
+      </script>
+
   <!-- Scripts -->
   <script type="module" src="supabase.js"></script>
   <script type="module" src="app.js"></script>
   <script src="background.js" defer></script>
 </body>
 </html>
+
 
 
