@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const fadeLayer = document.getElementById("bg-fade-layer");
   if (!fadeLayer) return;
 
-  const FADE_DURATION = 1200; // ms
+  const FADE_DURATION = 1500; // ms
   const backgrounds = [
     "images/background.jpg",
     "images/background2.png",
@@ -32,9 +32,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (nextBg === currentBg) return;
 
     // Fade overlay
-    fadeLayer.style.transition = `opacity ${FADE_DURATION}ms ease`;
+    fadeLayer.style.transition = `opacity ${FADE_DURATION}ms ease-in-out`;
     fadeLayer.style.backgroundImage = `url('${nextBg}')`;
     fadeLayer.style.opacity = 1;
+    fadeLayer.style.transform = 'translateZ(0)';
+    fadeLayer.style.transform = 'translateZ(0)';
 
     setTimeout(() => {
       document.documentElement.style.setProperty("--bg-image", `url('${nextBg}')`);
