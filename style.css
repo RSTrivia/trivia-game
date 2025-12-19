@@ -487,6 +487,14 @@ input.input-field:-webkit-autofill:active {
   overflow: hidden;
 }
 
+/* Slightly taller on mobile */
+@media (max-width: 480px) {
+  #start-screen .row:nth-child(3) button,
+  #start-screen .row:nth-child(3) a {
+    min-height: 72px;  /* match two-line wrap height */
+    padding: 10px 12px;
+  }
+}
 
 
 /* Buttons */
@@ -514,6 +522,7 @@ input.input-field:-webkit-autofill:active {
     font-size: 1.05rem;      
   }
 }*/
+
 
 
 
