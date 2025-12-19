@@ -497,7 +497,7 @@ input.input-field:-webkit-autofill:active {
 
 #usernameSpan {
   display: inline-block;
-  min-width: 6ch;  /*width: 10ch; reserve space for ~10 characters */
+  min-width: 10ch;  /*width: 10ch; reserve space for ~10 characters */
   text-align: left;
   margin-left: 0.4ch;   /* small space between Player: and username */
   white-space: nowrap;
@@ -563,6 +563,7 @@ input.input-field:-webkit-autofill:active {
     padding: 12px;
   }
 }
+
 
 
 
