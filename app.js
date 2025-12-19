@@ -1,3 +1,4 @@
+// app.js
 import { supabase } from './supabase.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -61,12 +62,12 @@ document.addEventListener('DOMContentLoaded', () => {
       username = '';
       cachedUsername = 'Guest';
       cachedLoggedIn = false;
-
       localStorage.setItem('cachedUsername', 'Guest');
       localStorage.setItem('cachedLoggedIn', 'false');
 
       usernameSpan.textContent = ' Guest';
       authLabel.textContent = 'Log In';
+      resetToMenu();
       return;
     }
 
@@ -79,7 +80,6 @@ document.addEventListener('DOMContentLoaded', () => {
     username = data?.username || 'Guest';
     cachedUsername = username;
     cachedLoggedIn = true;
-
     localStorage.setItem('cachedUsername', username);
     localStorage.setItem('cachedLoggedIn', 'true');
 
@@ -91,9 +91,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // BUTTONS
   // =========================
   authBtn.addEventListener('click', async () => {
-    const loggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
-    if (loggedIn) {
+    if (cachedLoggedIn) {
       await supabase.auth.signOut();
+      username = '';
+      cachedUsername = 'Guest';
+      cachedLoggedIn = false;
+      localStorage.setItem('cachedUsername', 'Guest');
+      localStorage.setItem('cachedLoggedIn', 'false');
+      usernameSpan.textContent = ' Guest';
+      authLabel.textContent = 'Log In';
+      resetToMenu();
     } else {
       window.location.href = 'login.html';
     }
@@ -114,8 +121,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // GAME LOGIC
   // =========================
   async function startGame() {
-    console.log('Start clicked');
-
     resetGame();
     game.classList.remove('hidden');
     document.getElementById('start-screen').classList.add('hidden');
@@ -131,15 +136,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     questions = data;
     remainingQuestions = [...questions];
+    score = 0;
+    updateScore();
     loadQuestion();
   }
 
   function resetGame() {
     clearInterval(timer);
     score = 0;
-    scoreDisplay.textContent = 'Score: 0';
+    updateScore();
     answersBox.innerHTML = '';
+    questionText.textContent = '';
     questionImage.style.display = 'none';
+    timeLeft = 15;
+    timeDisplay.textContent = timeLeft;
   }
 
   function resetToMenu() {
@@ -149,22 +159,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('start-screen').classList.remove('hidden');
   }
 
-  function loadQuestion() {
-    if (!remainingQuestions.length) return endGame();
-
-    answersBox.innerHTML = '';
-    currentQuestion = remainingQuestions.splice(
-      Math.floor(Math.random() * remainingQuestions.length), 1
-    )[0];
-
-    questionText.textContent = currentQuestion.question;
-  }
-
-  async function endGame() {
-    clearInterval(timer);
-    game.classList.add('hidden');
-    endScreen.classList.remove('hidden');
-    finalScore.textContent = score;
+  function updateScore() {
+    scoreDisplay.textContent = `Score: ${score}`;
   }
 
   async function loadSounds() {
@@ -175,5 +171,96 @@ document.addEventListener('DOMContentLoaded', () => {
   async function loadAudio(url) {
     const res = await fetch(url);
     return audioCtx.decodeAudioData(await res.arrayBuffer());
+  }
+
+  function playSound(buffer) {
+    if (!buffer || muted) return;
+    const source = audioCtx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(audioCtx.destination);
+    source.start();
+  }
+
+  function loadQuestion() {
+    if (!remainingQuestions.length) return endGame();
+
+    clearInterval(timer);
+    answersBox.innerHTML = '';
+    currentQuestion = remainingQuestions.splice(
+      Math.floor(Math.random() * remainingQuestions.length), 1
+    )[0];
+
+    questionText.textContent = currentQuestion.question;
+
+    if (currentQuestion.question_image) {
+      questionImage.src = currentQuestion.question_image;
+      questionImage.style.display = 'block';
+    } else {
+      questionImage.style.display = 'none';
+    }
+
+    // Create answer buttons
+    const answers = [
+      { text: currentQuestion.answer_a, correct: currentQuestion.correct_answer === 1 },
+      { text: currentQuestion.answer_b, correct: currentQuestion.correct_answer === 2 },
+      { text: currentQuestion.answer_c, correct: currentQuestion.correct_answer === 3 },
+      { text: currentQuestion.answer_d, correct: currentQuestion.correct_answer === 4 }
+    ].sort(() => Math.random() - 0.5);
+
+    answers.forEach((ans, i) => {
+      const btn = document.createElement('button');
+      btn.textContent = ans.text || 'No answer';
+      btn.classList.add('answer-btn');
+      btn.onclick = () => checkAnswer(i + 1, btn);
+      answersBox.appendChild(btn);
+    });
+
+    currentQuestion.correct_answer_shuffled = answers.findIndex(a => a.correct) + 1;
+
+    // Start timer
+    timeLeft = 15;
+    timeDisplay.textContent = timeLeft;
+    timer = setInterval(() => {
+      timeLeft--;
+      timeDisplay.textContent = timeLeft;
+      if (timeLeft <= 0) {
+        clearInterval(timer);
+        highlightCorrectAnswer();
+        playSound(wrongBuffer);
+        setTimeout(endGame, 1000);
+      }
+    }, 1000);
+  }
+
+  function checkAnswer(selected, btn) {
+    clearInterval(timer);
+    document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
+
+    if (selected === currentQuestion.correct_answer_shuffled) {
+      btn.classList.add('correct');
+      score++;
+      updateScore();
+      playSound(correctBuffer);
+      setTimeout(loadQuestion, 1000);
+    } else {
+      btn.classList.add('wrong');
+      highlightCorrectAnswer();
+      playSound(wrongBuffer);
+      setTimeout(endGame, 1000);
+    }
+  }
+
+  function highlightCorrectAnswer() {
+    document.querySelectorAll('.answer-btn').forEach((btn, i) => {
+      if (i + 1 === currentQuestion.correct_answer_shuffled)
+        btn.classList.add('correct');
+    });
+  }
+
+  async function endGame() {
+    clearInterval(timer);
+    game.classList.add('hidden');
+    endScreen.classList.remove('hidden');
+    finalScore.textContent = score;
   }
 });
