@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const fadeLayer = document.getElementById("bg-fade-layer");
   if (!fadeLayer) return;
 
-  const FADE_DURATION = 1200; // ms
+  const FADE_DURATION = 18000; // 4 mins
   const backgrounds = [
     "images/background.jpg",
     "images/background2.png",
