@@ -463,41 +463,52 @@ input.input-field:-webkit-autofill:active {
    STABLE LOGIN / LEADERBOARD
    =========================== */
 
-/* ====== STABLE LOGIN / LEADERBOARD BUTTONS PC ===== */
-@media (min-width: 481px) {
-  #start-screen .row:nth-child(3) {
-    display: flex;
-    gap: 10px;
-    width: 100%;
-    align-items: stretch; /* match button heights */
-  }
+/* ====== LOGIN / LEADERBOARD BUTTON ROW ===== */
+#start-screen .row:nth-child(3) {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  align-items: stretch; /* buttons same height */
+}
 
+/* Buttons inside that row */
+#start-screen .row:nth-child(3) button,
+#start-screen .row:nth-child(3) a {
+  flex: 1;                   /* take equal space */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap;       /* prevent multi-line flicker */
+  box-sizing: border-box;    /* include padding & border in width/height */
+  padding: 12px;
+  font-size: 1rem;
+  line-height: 1;
+  min-height: 60px;          /* equal height */
+  overflow: hidden;
+  min-width: 120px;          /* stable width for Log In / Log Out */
+}
+
+/* Optional: invisible content trick to fully reserve width for longest text */
+#start-screen .row:nth-child(3) button::after {
+  content: 'Log Out';
+  visibility: hidden;
+  position: absolute;
+}
+
+/* Mobile adjustments */
+@media (max-width: 480px) {
   #start-screen .row:nth-child(3) button,
   #start-screen .row:nth-child(3) a {
-    flex: 1;                        /* equal width */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    box-sizing: border-box;         /* include padding & border */
-    min-height: 60px;               /* stable height */
-    padding: 12px;
-    font-size: 1rem;
-    line-height: 1.2;               /* allow multi-line if needed */
-    border: 2px solid #d4af37;      /* constant border width */
-    border-radius: 8px;
-    overflow: hidden;
-    transition: background-color 0.2s ease, border-color 0.2s ease;
-    background: rgba(0,0,0,0.6);
-    color: #ffd700;
-  }
-
-  #start-screen .row:nth-child(3) button:hover,
-  #start-screen .row:nth-child(3) a:hover {
-    background: rgba(0,0,0,0.85);
-    border-color: #ffea8a;          /* color only, width stays same */
+    height: auto;           /* let height grow naturally */
+    padding: 12px 10px;     
+    line-height: 1.2;
+    white-space: normal;    /* allow wrapping if needed */
+    min-width: 0;           /* let flex shrink */
   }
 }
+
+
 
 
 
