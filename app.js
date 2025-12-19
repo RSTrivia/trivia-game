@@ -83,6 +83,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       localStorage.setItem('cachedUsername', profile.username);
       localStorage.setItem('cachedLoggedIn', 'true');
       username = profile.username;
+      let span;
       if (userDisplay) {
         const span = userDisplay.querySelector('#usernameSpan');
       }
@@ -331,6 +332,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   };
 });
+
 
 
 
