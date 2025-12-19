@@ -11,6 +11,10 @@ const authBtn = document.getElementById('authBtn');
 const usernameSpan = userDisplay?.querySelector('#usernameSpan');
 const muteBtn = document.getElementById('muteBtn');
 const authLabel = authBtn?.querySelector('.btn-label');
+const muteIcon = document.getElementById('muteIcon');
+
+// Initial set
+if (muteIcon) muteIcon.textContent = muted ? '🔇' : '🔊';
 
 // Pre-fill all UI elements synchronously to prevent flicker
 if (usernameSpan) {
@@ -19,10 +23,6 @@ if (usernameSpan) {
 }
 if (authLabel) {
   authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
-}
-if (muteBtn) {
-  muteBtn.textContent = muted ? '🔇' : '🔊';
-  muteBtn.style.width = '1.5em';
 }
 
 // Show app AFTER everything is populated
@@ -61,11 +61,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Mute button click (unchanged)
   muteBtn.addEventListener('click', () => {
-  muted = !muted;
-  localStorage.setItem('muted', muted);
-  muteBtn.textContent = muted ? '🔇' : '🔊';
-  if (audioCtx.state === 'suspended') audioCtx.resume();
-});
+    muted = !muted;
+    localStorage.setItem('muted', muted);
+    if (muteIcon) muteIcon.textContent = muted ? '🔇' : '🔊';
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  });
   
    // -------------------------
   // Preload Auth: Correct Username & Button
@@ -367,6 +367,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   };
 });
+
 
 
 
