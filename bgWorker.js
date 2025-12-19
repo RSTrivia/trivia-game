@@ -14,7 +14,7 @@ onmessage = (e) => {
     currentBg = nextBg;
     postMessage(nextBg);
   }, CHANGE_INTERVAL);*/
-};
+/*};*/
 let currentBg;
 let backgrounds;
 const CHANGE_INTERVAL = 240000; // 4 minutes
