@@ -275,7 +275,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function startGame() {
   try {
-    console.log('supabase object:', supabase);
     console.log('startGame called');
     endGame.running = false;
     resetGame();
@@ -456,6 +455,7 @@ async function loadQuestion() {
     updateScore();
   };
 });
+
 
 
 
