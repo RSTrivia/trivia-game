@@ -18,10 +18,21 @@ document.addEventListener('DOMContentLoaded', async () => {
   const answersBox = document.getElementById('answers');
   const timeDisplay = document.getElementById('time');
   const appDiv = document.getElementById('app');
+  
   // Show cached username immediately to prevent blank flicker
   const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
   userDisplay.querySelector('#usernameSpan').textContent = ' ' + cachedUsername;
+  // Show cached login state immediately
+  const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
+  authBtn.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
+  // Set the username variable so game logic is correct
+  username = cachedLoggedIn ? cachedUsername : '';
+  // Show cached mute state immediately
+  let muted = localStorage.getItem('muted') === 'true';
+  const muteBtn = document.getElementById('muteBtn');
+  updateMuteIcon();
 
+  
   let username = '';
   let score = 0;
   let questions = [];
@@ -305,5 +316,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   };
 });
+
 
 
