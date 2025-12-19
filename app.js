@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const timeDisplay = document.getElementById('time');
   const appDiv = document.getElementById('app');
   const muteBtn = document.getElementById('muteBtn');
-
+  
   // Main state
   let username = '';
   let score = 0;
@@ -28,17 +28,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   let muted = localStorage.getItem('muted') === 'true';
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-  // -------------------------
-  // Mute helper
-  // -------------------------
+  // Set initial icon
   const updateMuteIcon = () => muteBtn.textContent = muted ? '🔇' : '🔊';
-  updateMuteIcon(); // show immediately
+  updateMuteIcon();
+
+  // Add click listener to toggle mute
   muteBtn.addEventListener('click', () => {
-    muted = !muted;
-    localStorage.setItem('muted', muted);
-    updateMuteIcon();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-  });
+  muted = !muted;
+  localStorage.setItem('muted', muted);
+  updateMuteIcon();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+});
 
   // -------------------------
   // Show cached username & login state immediately
@@ -125,15 +125,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   };
 
   // -------------------------
-  // Audio & Mute
+  // Audio
   // -------------------------
-
-  muteBtn.addEventListener('click', () => {
-    muted = !muted;
-    localStorage.setItem('muted', muted);
-    updateMuteIcon();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-  });
 
   async function loadSounds() {
     correctBuffer = await loadAudio('./sounds/correct.mp3');
@@ -318,6 +311,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   };
 });
+
 
 
 
