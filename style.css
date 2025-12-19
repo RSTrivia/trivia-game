@@ -468,33 +468,35 @@ input.input-field:-webkit-autofill:active {
   display: flex;
   gap: 10px;
   width: 100%;
-  align-items: stretch; /* force both buttons same height */
+  align-items: stretch; /* ensures both buttons same height */
 }
 
 /* Buttons in that row */
 #start-screen .row:nth-child(3) button,
 #start-screen .row:nth-child(3) a {
-  flex: 1;                /* equal width */
-  display: flex;          /* flex for proper text centering */
+  flex: 1;                
+  display: flex;          
   align-items: center;
   justify-content: center;
   text-align: center;
-  white-space: normal;    /* allow wrapping for multi-line text */
+  white-space: normal;    
   box-sizing: border-box;
-  padding: 10px 12px;     /* vertical + horizontal padding */
+  padding: 10px 12px;     
   font-size: 1rem;
-  height: 60px;           /* fixed height for PC to prevent flicker */
+  line-height: 1.2;        /* help match multi-line height */
+  height: 60px;           /* fixed height on desktop to prevent flicker */
 }
 
-/* Mobile: adjust height for wrapping */
+/* Mobile: let height grow naturally */
 @media (max-width: 480px) {
   #start-screen .row:nth-child(3) button,
   #start-screen .row:nth-child(3) a {
-    height: auto;          /* allow height to grow for wrapped text */
-    min-height: 72px;      /* ensures at least 2-line height */
-    padding: 12px 12px;    /* slightly taller padding */
+    height: auto;          /* allow height to expand */
+    padding: 12px 12px;    
+    line-height: 1.2;      /* ensures 2-line text spacing */
   }
 }
+
 
 
 
@@ -523,6 +525,7 @@ input.input-field:-webkit-autofill:active {
     font-size: 1.05rem;      
   }
 }*/
+
 
 
 
