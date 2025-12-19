@@ -274,6 +274,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   async function startGame() {
+  try {
+    console.log('startGame called');
     endGame.running = false;
     resetGame();
     game.classList.remove('hidden');
@@ -281,53 +283,88 @@ document.addEventListener('DOMContentLoaded', async () => {
     endScreen.classList.add('hidden');
     updateScore();
 
+    // Load sounds
     await loadSounds();
 
+    // Fetch questions from Supabase
     const { data, error } = await supabase.from('questions').select('*');
     console.log('Questions fetched:', data, 'Error:', error);
-    if (error) return alert('Could not load questions!');
-    if (!data?.length) return alert('No questions available');
+
+    if (error) {
+      console.error('Supabase query error:', error);
+      alert('Could not load questions. See console for details.');
+      return;
+    }
+
+    if (!data?.length) {
+      console.warn('No questions returned from Supabase');
+      alert('No questions available.');
+      return;
+    }
+
+    // Store questions and remaining questions
     questions = data;
     remainingQuestions = [...questions];
     console.log('Questions ready:', questions);
-    loadQuestion();
-  }
 
-  async function loadQuestion() {
+    // Load first question
+    await loadQuestion();
+  } catch (err) {
+    console.error('startGame failed:', err);
+    alert('Failed to start game. Check console for details.');
+  }
+}
+
+
+async function loadQuestion() {
+  try {
     console.log('loadQuestion called, remainingQuestions:', remainingQuestions.length);
-    answersBox.innerHTML = '';
-    if (!remainingQuestions.length) {
-    console.log('No remaining questions, ending game');
-    return endGame();
-  }
-    answersBox.innerHTML = '';
-    if (!remainingQuestions.length) return endGame();
 
+    // Clear previous answers
+    answersBox.innerHTML = '';
+
+    // No questions left
+    if (!remainingQuestions.length) {
+      console.log('No remaining questions, ending game');
+      return await endGame();
+    }
+
+    // Pick a random question
     const index = Math.floor(Math.random() * remainingQuestions.length);
     currentQuestion = remainingQuestions.splice(index, 1)[0];
+    console.log('Current question:', currentQuestion);
 
-    questionText.textContent = currentQuestion.question;
-    questionImage.style.display = currentQuestion.question_image ? 'block' : 'none';
-    if (currentQuestion.question_image) questionImage.src = currentQuestion.question_image;
+    // Update question text and image
+    questionText.textContent = currentQuestion.question || 'No question text';
+    if (currentQuestion.question_image) {
+      questionImage.src = currentQuestion.question_image;
+      questionImage.style.display = 'block';
+    } else {
+      questionImage.style.display = 'none';
+    }
 
-    let answers = [
+    // Shuffle answers
+    const answers = [
       { text: currentQuestion.answer_a, correct: currentQuestion.correct_answer === 1 },
       { text: currentQuestion.answer_b, correct: currentQuestion.correct_answer === 2 },
       { text: currentQuestion.answer_c, correct: currentQuestion.correct_answer === 3 },
       { text: currentQuestion.answer_d, correct: currentQuestion.correct_answer === 4 }
     ].sort(() => Math.random() - 0.5);
 
+    // Create buttons
     answers.forEach((ans, i) => {
       const btn = document.createElement('button');
-      btn.textContent = ans.text;
+      btn.textContent = ans.text || 'No answer';
       btn.classList.add('answer-btn');
       btn.onclick = () => checkAnswer(i + 1, btn);
       answersBox.appendChild(btn);
     });
 
-    currentQuestion.correct_answer_shuffled =
-      answers.findIndex(a => a.correct) + 1;
+    // Track correct answer after shuffle
+    currentQuestion.correct_answer_shuffled = answers.findIndex(a => a.correct) + 1;
+    console.log('Correct answer is button #', currentQuestion.correct_answer_shuffled);
 
+    // Reset timer
     clearInterval(timer);
     timeLeft = 15;
     timeDisplay.textContent = timeLeft;
@@ -342,10 +379,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         clearInterval(timer);
         playSound(wrongBuffer);
         highlightCorrectAnswer();
-        setTimeout(endGame, 1000);
+        setTimeout(() => endGame(), 1000);
       }
     }, 1000);
+
+  } catch (err) {
+    console.error('loadQuestion failed:', err);
+    alert('Failed to load question. Check console.');
   }
+}
+
 
   function checkAnswer(selected, btn) {
     clearInterval(timer);
@@ -411,6 +454,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   };
 });
+
 
 
 
