@@ -565,6 +565,11 @@ input.input-field:-webkit-autofill:active {
   }
 }
 
+#startBtn {
+  position: relative;
+  z-index: 9999;
+}
+
 
 
 
