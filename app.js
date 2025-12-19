@@ -1,12 +1,31 @@
 import { supabase } from './supabase.js';
 
+// ====== IMMEDIATE CACHED UI (runs before paint) ======
+const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
+const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
+
+const appDiv = document.getElementById('app');
+const userDisplay = document.getElementById('userDisplay');
+const authBtn = document.getElementById('authBtn');
+
+if (userDisplay) {
+  const span = userDisplay.querySelector('#usernameSpan');
+  if (span) span.textContent = ' ' + cachedUsername;
+}
+
+if (authBtn) {
+  authBtn.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
+}
+
+if (appDiv) {
+  appDiv.style.opacity = '1';
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   // DOM Elements
   const startBtn = document.getElementById('startBtn');
   const playAgainBtn = document.getElementById('playAgainBtn');
   const mainMenuBtn = document.getElementById('mainMenuBtn');
-  const authBtn = document.getElementById('authBtn');
-  const userDisplay = document.getElementById('userDisplay');
   const game = document.getElementById('game');
   const endScreen = document.getElementById('end-screen');
   const finalScore = document.getElementById('finalScore');
@@ -15,11 +34,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   const questionImage = document.getElementById('questionImage');
   const answersBox = document.getElementById('answers');
   const timeDisplay = document.getElementById('time');
-  const appDiv = document.getElementById('app');
   const muteBtn = document.getElementById('muteBtn');
   
   // Main state
-  let username = '';
+  let username = cachedLoggedIn ? cachedUsername : '';
   let score = 0;
   let questions = [];
   let remainingQuestions = [];
@@ -42,19 +60,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (audioCtx.state === 'suspended') audioCtx.resume();
 });
 
-  // -------------------------
-  // Show cached username & login state immediately
-  // -------------------------
-  const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
-  const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
-  username = cachedLoggedIn ? cachedUsername : '';
-  userDisplay.querySelector('#usernameSpan').textContent = ' ' + cachedUsername;
-  authBtn.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
-  
-  // Show app immediately
-  appDiv.style.opacity = '1';
-
-
    // -------------------------
   // Preload Auth: Correct Username & Button
   // -------------------------
@@ -70,14 +75,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   
     if (!profile?.username) return;
   
-    // Only update if different
     if (profile.username !== username) {
       localStorage.setItem('cachedUsername', profile.username);
       localStorage.setItem('cachedLoggedIn', 'true');
       username = profile.username;
-      userDisplay.querySelector('#usernameSpan').textContent = ' ' + profile.username;
-      authBtn.textContent = 'Log Out';
+    
+      const span = userDisplay.querySelector('#usernameSpan');
+      if (span && span.textContent !== ' ' + profile.username) {
+        span.textContent = ' ' + profile.username;
+      }
+    
+      if (authBtn.textContent !== 'Log Out') {
+        authBtn.textContent = 'Log Out';
+      }
     }
+
+
   }
 
     // Call this immediately to prevent flicker
@@ -310,6 +323,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   };
 });
+
 
 
 
