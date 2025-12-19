@@ -1,77 +1,59 @@
 import { supabase } from './supabase.js';
 
-document.addEventListener('DOMContentLoaded', async () => {
-  // ====== DOM ELEMENTS ======
-  const appDiv = document.getElementById('app');
-  const userDisplay = document.getElementById('userDisplay');
-  const usernameSpan = document.getElementById('usernameSpan');
-  const muteBtn = document.getElementById('muteBtn');
-  const muteIcon = document.getElementById('muteIcon');
-  const authBtn = document.getElementById('authBtn');
-  const authLabel = authBtn?.querySelector('.btn-label');
+// ===== DOM Elements =====
+const usernameSpan = document.getElementById('usernameSpan');
+const muteIcon = document.getElementById('muteIcon');
+const authLabel = document.querySelector('#authBtn .btn-label');
 
-  // ====== STATE ======
-  const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
-  const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
-  let muted = localStorage.getItem('muted') === 'true';
-  let username = cachedUsername;
+// ===== STATE =====
+let cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
+let cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
+let muted = localStorage.getItem('muted') === 'true';
 
-  // ====== IMMEDIATE UI FILL (prevent flicker) ======
-    // Immediate UI fill
-  if (usernameSpan) usernameSpan.textContent = ' ' + username;
-  if (authLabel) authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
-    
-    if (authLabel) {
-      authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
-    }
+// ===== INITIAL UI (instant, no flicker) =====
+if (usernameSpan) usernameSpan.textContent = ' ' + cachedUsername;
+if (authLabel) authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
+if (muteIcon) muteIcon.textContent = muted ? '🔇' : '🔊';
 
+// ===== MUTE BUTTON =====
+document.getElementById('muteBtn').addEventListener('click', () => {
+  muted = !muted;
+  localStorage.setItem('muted', muted);
   if (muteIcon) muteIcon.textContent = muted ? '🔇' : '🔊';
+});
 
-  // ====== STABLE FLEX ALIGN ======
-  const userControls = document.getElementById('user-controls');
+// ===== AUTH LISTENER =====
+supabase.auth.onAuthStateChange(async (_event, session) => {
+  if (!session?.user) {
+    cachedUsername = 'Guest';
+    cachedLoggedIn = false;
+    localStorage.setItem('cachedUsername', cachedUsername);
+    localStorage.setItem('cachedLoggedIn', 'false');
 
-  // ====== SHOW APP ======
-  // preload auth and then show app
-  await preloadAuth();
-  if (appDiv) appDiv.style.opacity = '1';
-
-  // ====== MUTE BUTTON ======
-  muteBtn.addEventListener('click', () => {
-    muted = !muted;
-    localStorage.setItem('muted', muted);
-    muteIcon.textContent = muted ? '🔇' : '🔊';
-  });
-
-  // ====== PRELOAD AUTH ======
-  async function preloadAuth() {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) return;
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('id', session.user.id)
-        .single();
-
-      const newUsername = profile?.username;
-      if (!newUsername) return;
-
-      // Only update if different
-      if (usernameSpan && usernameSpan.textContent !== ' ' + newUsername) {
-        usernameSpan.textContent = ' ' + newUsername;
-        localStorage.setItem('cachedUsername', newUsername);
-        localStorage.setItem('cachedLoggedIn', 'true');
-        if (authLabel) authLabel.textContent = 'Log Out';
-        username = newUsername;
-      }
-    } catch (err) {
-      console.error('preloadAuth error', err);
-    }
+    if (usernameSpan) usernameSpan.textContent = ' ' + cachedUsername;
+    if (authLabel) authLabel.textContent = 'Log In';
+    return;
   }
 
-  await preloadAuth();
+  // fetch profile
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('username')
+    .eq('id', session.user.id)
+    .single();
+
+  const newUsername = profile?.username || 'Guest';
+  if (newUsername !== cachedUsername) {
+    cachedUsername = newUsername;
+    cachedLoggedIn = true;
+    localStorage.setItem('cachedUsername', cachedUsername);
+    localStorage.setItem('cachedLoggedIn', 'true');
+
+    if (usernameSpan) usernameSpan.textContent = ' ' + cachedUsername;
+    if (authLabel) authLabel.textContent = 'Log Out';
+  }
 });
+
 
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -412,6 +394,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   };
 });
+
 
 
 
