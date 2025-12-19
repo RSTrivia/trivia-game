@@ -61,6 +61,12 @@ supabase.auth.onAuthStateChange(async (_event, session) => {
 
 
 document.addEventListener('DOMContentLoaded', async () => {
+
+  if (!startBtn || !authBtn) {
+  console.error('Buttons missing in DOM');
+  return;
+}
+
   // DOM Elements
   const startBtn = document.getElementById('startBtn');
   const playAgainBtn = document.getElementById('playAgainBtn');
@@ -106,13 +112,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   // -------------------------
   // Auth Button
   // -------------------------
-authBtn.onclick = async () => {
-  if (authLabel.textContent === 'Log Out') {
+authBtn.addEventListener('click', async () => {
+  const isLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
+
+  if (isLoggedIn) {
     await supabase.auth.signOut();
   } else {
     window.location.href = 'login.html';
   }
-};
+});
+
 
 
   // -------------------------
@@ -332,13 +341,9 @@ async function loadQuestion() {
   // -------------------------
   // Buttons
   // -------------------------
-  startBtn.onclick = async () => {
+  startBtn.addEventListener('click', async () => {
     console.log('Start clicked');
-    try {
-      await startGame();
-      console.log('startGame finished');
-    } catch (err) {
-      console.error('startGame error:', err);
+    await startGame();
     }
   };
 
@@ -352,6 +357,7 @@ async function loadQuestion() {
     updateScore();
   };
 });
+
 
 
 
