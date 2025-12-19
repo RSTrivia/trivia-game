@@ -131,82 +131,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-
-
-
- 
-  // -------------------------
-  // Supabase auth listener (updates UI if session changes)
-  // -------------------------
-  supabase.auth.onAuthStateChange(async (_event, session) => {
-    try {
-      if (!session?.user) {
-        const cachedChanged =
-          cachedLoggedIn !== false || cachedUsername !== 'Guest';
   
-        // Only update localStorage if changed
-        if (cachedChanged) {
-          localStorage.setItem('cachedLoggedIn', 'false');
-          localStorage.setItem('cachedUsername', 'Guest');
-        }
-  
-        username = '';
-        if (usernameSpan && usernameSpan.textContent !== ' Guest') {
-          usernameSpan.textContent = ' Guest';
-        }
-        if (authLabel && authLabel.textContent !== 'Log In') {
-          authLabel.textContent = 'Log In';
-        }
-  
-        return;
-      }
-  
-      // Fetch user profile
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('id', session.user.id)
-        .single();
-  
-      const newUsername = profile?.username;
-      if (!newUsername) return;
-  
-      // Only update localStorage if changed
-      const cachedChanged =
-        cachedLoggedIn !== true || cachedUsername !== newUsername;
-  
-      if (cachedChanged) {
-        localStorage.setItem('cachedLoggedIn', 'true');
-        localStorage.setItem('cachedUsername', newUsername);
-        username = newUsername;
-  
-        // Update UI only if different
-        if (usernameSpan && usernameSpan.textContent !== ' ' + newUsername) {
-          usernameSpan.textContent = ' ' + newUsername;
-        }
-        if (authLabel && authLabel.textContent !== 'Log Out') {
-          authLabel.textContent = 'Log Out';
-        }
-      }
-    } catch (err) {
-      console.error('Auth state change error:', err);
-    }
-  });
-
-
   // -------------------------
   // Auth Button
   // -------------------------
-  authBtn?.addEventListener('click', async () => {
-  if (authLabel) {
-    const label = authLabel.textContent.trim();
-    if (label === 'Log Out') {
-      await supabase.auth.signOut();
+authBtn.onclick = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+        // User is logged in, so sign out
+        await supabase.auth.signOut();
     } else {
-      window.location.href = 'login.html';
+        // Not logged in, go to login page
+        window.location.href = 'login.html';
     }
-  }
-});
+};
+
 
 
   // -------------------------
@@ -454,6 +393,7 @@ async function loadQuestion() {
     updateScore();
   };
 });
+
 
 
 
