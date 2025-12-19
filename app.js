@@ -18,6 +18,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const answersBox = document.getElementById('answers');
   const timeDisplay = document.getElementById('time');
   const appDiv = document.getElementById('app');
+  // Show cached username immediately to prevent blank flicker
+  const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
+  userDisplay.querySelector('#usernameSpan').textContent = ' ' + cachedUsername;
 
   let username = '';
   let score = 0;
@@ -34,7 +37,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Show App Immediately
   // -------------------------
   appDiv.style.opacity = '1';
-
+  
   // -------------------------
   // Preload Auth: Correct Username & Button
   // -------------------------
@@ -302,4 +305,5 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   };
 });
+
 
