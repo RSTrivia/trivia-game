@@ -29,9 +29,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // ====== STABLE FLEX ALIGN ======
   const userControls = document.getElementById('user-controls');
-  if (userControls) userControls.style.justifyContent = 'flex-start'; // prevent jump
 
   // ====== SHOW APP ======
+  // preload auth and then show app
+  await preloadAuth();
   if (appDiv) appDiv.style.opacity = '1';
 
   // ====== MUTE BUTTON ======
@@ -411,6 +412,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   };
 });
+
 
 
 
