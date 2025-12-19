@@ -69,6 +69,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const questionText = document.getElementById('questionText');
   const questionImage = document.getElementById('questionImage');
   const answersBox = document.getElementById('answers');
+  console.log('answersBox =', answersBox);
   const timeDisplay = document.getElementById('time');
   
   // Main state
@@ -282,16 +283,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await loadSounds();
 
-    const { data } = await supabase.from('questions').select('*');
-    console.log('Questions loaded:', data); // <-- add this here
-    if (!data?.length) return alert('Could not load questions!');
-
+    const { data, error } = await supabase.from('questions').select('*');
+    console.log('Questions fetched:', data, 'Error:', error);
+    if (error) return alert('Could not load questions!');
+    if (!data?.length) return alert('No questions available');
     questions = data;
     remainingQuestions = [...questions];
+    console.log('Questions ready:', questions);
     loadQuestion();
   }
 
   async function loadQuestion() {
+    console.log('loadQuestion called, remainingQuestions:', remainingQuestions.length);
+    answersBox.innerHTML = '';
+    if (!remainingQuestions.length) {
+    console.log('No remaining questions, ending game');
+    return endGame();
+  }
     answersBox.innerHTML = '';
     if (!remainingQuestions.length) return endGame();
 
@@ -383,12 +391,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   // -------------------------
   // Buttons
   // -------------------------
-   startBtn.onclick = async () => {
+  startBtn.onclick = async () => {
+    console.log('Start clicked');
     try {
-      await loadSounds();
       await startGame();
+      console.log('startGame finished');
     } catch (err) {
-      console.error('Failed to start game', err);
+      console.error('startGame error:', err);
     }
   };
 
@@ -402,6 +411,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   };
 });
+
 
 
 
