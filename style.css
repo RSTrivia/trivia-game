@@ -317,13 +317,23 @@ h1 {
   margin-bottom: 15px;      /* optional spacing below */
 }
 
-#userDisplay {
+/*#userDisplay {
   font-size: 1.2rem;
   color: #ffd700;
   min-height: 24px;
+}*/
+
+#userDisplay {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* space between Player:, username, and mute button */
 }
 
 #muteBtn {
+  width: auto; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
   background: none;
   border: none;
   font-size: 1.5rem;
@@ -489,7 +499,7 @@ input.input-field:-webkit-autofill:active {
 
 #usernameSpan {
   display: inline-block;
-  width: 10ch; /* reserve space for ~10 characters */
+  min-width: 6ch;  /*width: 10ch; reserve space for ~10 characters */
   text-align: left;
   margin-left: 0.4ch;   /* small space between Player: and username */
   white-space: nowrap;
@@ -555,6 +565,7 @@ input.input-field:-webkit-autofill:active {
     padding: 12px;
   }
 }
+
 
 
 
