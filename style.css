@@ -387,7 +387,6 @@ h1 {
   width: 100%;
 }
 
-/* ====== SMALL BUTTONS (STABLE, NO FLICKER) ====== */
 .btn-small {
   background: rgba(0,0,0,0.6);
   color: #ffd700;
@@ -395,7 +394,7 @@ h1 {
   padding: 10px 16px;
   font-size: 1rem;
 
-  border: 2px solid #d4af37; /* border defined ONCE */
+  border: 2px solid #d4af37;   /* fixed border width */
   border-radius: 8px;
 
   display: inline-flex;
@@ -414,8 +413,9 @@ h1 {
 
 .btn-small:hover {
   background: rgba(0,0,0,0.85);
-  border-color: #ffea8a; /* COLOR ONLY */
+  border-color: #ffea8a;
 }
+
 
 
 /* Make Back to Game button match container width */
@@ -494,8 +494,9 @@ input.input-field:-webkit-autofill:active {
   display: flex;
   gap: 10px;
   width: 100%;
-  align-items: stretch; /* buttons same height */
+  align-items: stretch;
 }
+
 
 /* Buttons inside that row */
 #start-screen .row:nth-child(3) button,
@@ -505,7 +506,6 @@ input.input-field:-webkit-autofill:active {
   align-items: center;
   justify-content: center;
   text-align: center;
-  white-space: nowrap;       /* prevent multi-line flicker */
   box-sizing: border-box;    /* include padding & border in width/height */
   padding: 12px;
   font-size: 1rem;
@@ -516,15 +516,22 @@ input.input-field:-webkit-autofill:active {
 }
 
 
-/* Mobile adjustments */
+@media (min-width: 481px) {
+  #start-screen .row:nth-child(3) button,
+  #start-screen .row:nth-child(3) a {
+    height: 60px;       /* fixed = no reflow */
+    line-height: 1;
+  }
+}
+
+
 @media (max-width: 480px) {
   #start-screen .row:nth-child(3) button,
   #start-screen .row:nth-child(3) a {
-    height: auto;           /* let height grow naturally */
-    padding: 12px 10px;     
-    line-height: 1.2;
-    white-space: normal;    /* allow wrapping if needed */
-    min-width: 0;           /* let flex shrink */
+    height: auto;       /* allow growth */
+    min-height: 60px;   /* visual consistency */
+    line-height: 1.2;   /* better multi-line spacing */
+    padding: 12px;
   }
 }
 
