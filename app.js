@@ -1,6 +1,6 @@
 import { supabase } from './supabase.js';
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   // -------------------------
   // DOM Elements
   // -------------------------
@@ -36,28 +36,46 @@ document.addEventListener('DOMContentLoaded', () => {
   appDiv.style.opacity = '1';
 
   // -------------------------
-  // AUTH UI (single source of truth)
+  // Preload Auth: Correct Username & Button
   // -------------------------
-  function renderAuthUI() {
-    const loggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
-    const cachedName = localStorage.getItem('cachedUsername') || 'Guest';
+  async function preloadAuth() {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    let loggedIn = false;
+    let cachedUsername = 'Guest';
 
-    username = loggedIn ? cachedName : '';
-    userDisplay.querySelector('#usernameSpan').textContent = ' ' + cachedName;
+    if (session?.user) {
+      loggedIn = true;
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', session.user.id)
+        .single();
+      
+      if (profile?.username) cachedUsername = profile.username;
+    }
+
+    localStorage.setItem('cachedLoggedIn', loggedIn);
+    localStorage.setItem('cachedUsername', cachedUsername);
+
+    username = loggedIn ? cachedUsername : '';
+    userDisplay.querySelector('#usernameSpan').textContent = ' ' + cachedUsername;
     authBtn.textContent = loggedIn ? 'Log Out' : 'Log In';
   }
 
-  // Initial paint from cache (NO flicker)
-  renderAuthUI();
+  // Call this immediately to prevent flicker
+  await preloadAuth();
 
   // -------------------------
-  // Supabase auth listener (NO reloads)
+  // Supabase auth listener (updates UI if session changes)
   // -------------------------
   supabase.auth.onAuthStateChange(async (_event, session) => {
     if (!session?.user) {
       localStorage.setItem('cachedLoggedIn', 'false');
       localStorage.setItem('cachedUsername', 'Guest');
-      renderAuthUI();
+      username = '';
+      userDisplay.querySelector('#usernameSpan').textContent = ' Guest';
+      authBtn.textContent = 'Log In';
       return;
     }
 
@@ -70,7 +88,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (profile?.username) {
       localStorage.setItem('cachedLoggedIn', 'true');
       localStorage.setItem('cachedUsername', profile.username);
-      renderAuthUI();
+      username = profile.username;
+      userDisplay.querySelector('#usernameSpan').textContent = ' ' + profile.username;
+      authBtn.textContent = 'Log Out';
     }
   });
 
@@ -139,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .upsert({ user_id: user.id, username, score }, { onConflict: 'user_id' });
     }
   }
-
+  
   // -------------------------
   // Game Logic (UNCHANGED)
   // -------------------------
@@ -282,3 +302,4 @@ document.addEventListener('DOMContentLoaded', () => {
     updateScore();
   };
 });
+
