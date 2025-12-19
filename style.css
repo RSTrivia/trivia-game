@@ -502,6 +502,7 @@ input.input-field:-webkit-autofill:active {
   margin-left: 0.4ch;   /* small space between Player: and username */
   white-space: nowrap;
   overflow: hidden;
+  margin-left: 0.4ch;
 }
 
 /* Make both buttons in the row have the same width */
@@ -563,6 +564,7 @@ input.input-field:-webkit-autofill:active {
     padding: 12px;
   }
 }
+
 
 
 
