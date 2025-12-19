@@ -1,3 +1,5 @@
+import { supabase } from './supabase.js';
+
 document.addEventListener('DOMContentLoaded', async () => {
   // DOM Elements
   const startBtn = document.getElementById('startBtn');
@@ -311,6 +313,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   };
 });
+
 
 
 
