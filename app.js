@@ -1,34 +1,75 @@
 import { supabase } from './supabase.js';
 
-// ====== IMMEDIATE CACHED UI (before paint) =====
-const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
-const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
-let muted = localStorage.getItem('muted') === 'true';
+document.addEventListener('DOMContentLoaded', async () => {
+  // ====== DOM ELEMENTS ======
+  const appDiv = document.getElementById('app');
+  const userDisplay = document.getElementById('userDisplay');
+  const usernameSpan = document.getElementById('usernameSpan');
+  const muteBtn = document.getElementById('muteBtn');
+  const muteIcon = document.getElementById('muteIcon');
+  const authBtn = document.getElementById('authBtn');
+  const authLabel = authBtn?.querySelector('.btn-label');
 
-const appDiv = document.getElementById('app');
-const userDisplay = document.getElementById('userDisplay');
-const authBtn = document.getElementById('authBtn');
-const usernameSpan = userDisplay?.querySelector('#usernameSpan');
-const muteBtn = document.getElementById('muteBtn');
-const authLabel = authBtn?.querySelector('.btn-label');
-const muteIcon = document.getElementById('muteIcon');
+  // ====== STATE ======
+  const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
+  const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
+  let muted = localStorage.getItem('muted') === 'true';
+  let username = cachedLoggedIn ? cachedUsername : '';
 
-// Initial set
-if (muteIcon) muteIcon.textContent = muted ? '🔇' : '🔊';
+  // ====== IMMEDIATE UI FILL (prevent flicker) ======
+  if (usernameSpan) {
+    usernameSpan.style.minWidth = '12ch';   // reserve space
+    usernameSpan.textContent = ' ' + cachedUsername;
+  }
+  if (authLabel) {
+    authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
+  }
+  if (muteIcon) muteIcon.textContent = muted ? '🔇' : '🔊';
 
-// Pre-fill all UI elements synchronously to prevent flicker
-if (usernameSpan) {
-  usernameSpan.style.minWidth = '12ch';
-  usernameSpan.textContent = ' ' + cachedUsername;
-}
-if (authLabel) {
-  authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
-}
+  // ====== STABLE FLEX ALIGN ======
+  const userControls = document.getElementById('user-controls');
+  if (userControls) userControls.style.justifyContent = 'flex-start'; // prevent jump
 
-// Call this immediately to prevent flicker
-await preloadAuth();
-// Show app AFTER everything is populated
-if (appDiv) appDiv.style.opacity = '1';
+  // ====== SHOW APP ======
+  if (appDiv) appDiv.style.opacity = '1';
+
+  // ====== MUTE BUTTON ======
+  muteBtn.addEventListener('click', () => {
+    muted = !muted;
+    localStorage.setItem('muted', muted);
+    if (muteIcon) muteIcon.textContent = muted ? '🔇' : '🔊';
+  });
+
+  // ====== PRELOAD AUTH ======
+  async function preloadAuth() {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return;
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', session.user.id)
+        .single();
+
+      const newUsername = profile?.username;
+      if (!newUsername) return;
+
+      // Only update if different
+      if (usernameSpan && usernameSpan.textContent !== ' ' + newUsername) {
+        usernameSpan.textContent = ' ' + newUsername;
+        localStorage.setItem('cachedUsername', newUsername);
+        localStorage.setItem('cachedLoggedIn', 'true');
+        if (authLabel) authLabel.textContent = 'Log Out';
+        username = newUsername;
+      }
+    } catch (err) {
+      console.error('preloadAuth error', err);
+    }
+  }
+
+  await preloadAuth();
+});
 
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -369,6 +410,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   };
 });
+
 
 
 
