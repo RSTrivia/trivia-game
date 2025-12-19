@@ -20,8 +20,8 @@ if (usernameSpan) {
 
 if (authLabel) authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
 if (muteBtn) {
-  muteBtn.style.width = '2ch';  // reserve space for 🔊 / 🔇
   muteBtn.textContent = muted ? '🔇' : '🔊';
+  muteBtn.style.width = '1.5em';  // reserve space for 🔊 / 🔇
 }
 
 if (appDiv) appDiv.style.opacity = '1';
@@ -324,6 +324,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   };
 });
+
 
 
 
