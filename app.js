@@ -1,6 +1,4 @@
-import { supabase } from './supabase.js';
-
-  document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', async () => {
   // DOM Elements
   const startBtn = document.getElementById('startBtn');
   const playAgainBtn = document.getElementById('playAgainBtn');
@@ -30,27 +28,32 @@ import { supabase } from './supabase.js';
   let muted = localStorage.getItem('muted') === 'true';
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
+  // -------------------------
   // Mute helper
+  // -------------------------
   const updateMuteIcon = () => muteBtn.textContent = muted ? '🔇' : '🔊';
   updateMuteIcon(); // show immediately
+  muteBtn.addEventListener('click', () => {
+    muted = !muted;
+    localStorage.setItem('muted', muted);
+    updateMuteIcon();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  });
 
+  // -------------------------
   // Show cached username & login state immediately
+  // -------------------------
   const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
   const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
   username = cachedLoggedIn ? cachedUsername : '';
   userDisplay.querySelector('#usernameSpan').textContent = ' ' + cachedUsername;
   authBtn.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
 
-
-  // -------------------------
-  // Show App Immediately
-  // -------------------------
+  // Show app immediately
   appDiv.style.opacity = '1';
-  
-    // Call this immediately to prevent flicker
-  await preloadAuth();
 
-  // -------------------------
+
+   // -------------------------
   // Preload Auth: Correct Username & Button
   // -------------------------
   async function preloadAuth() {
@@ -78,7 +81,10 @@ import { supabase } from './supabase.js';
     authBtn.textContent = loggedIn ? 'Log Out' : 'Log In';
   }
 
+    // Call this immediately to prevent flicker
+  await preloadAuth();
 
+ 
   // -------------------------
   // Supabase auth listener (updates UI if session changes)
   // -------------------------
@@ -121,9 +127,6 @@ import { supabase } from './supabase.js';
   // -------------------------
   // Audio & Mute
   // -------------------------
-  const muteBtn = document.getElementById('muteBtn');
-  const updateMuteIcon = () => muteBtn.textContent = muted ? '🔇' : '🔊';
-  updateMuteIcon();
 
   muteBtn.addEventListener('click', () => {
     muted = !muted;
@@ -315,6 +318,7 @@ import { supabase } from './supabase.js';
     updateScore();
   };
 });
+
 
 
 
