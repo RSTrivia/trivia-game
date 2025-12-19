@@ -17,13 +17,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   let username = cachedLoggedIn ? cachedUsername : '';
 
   // ====== IMMEDIATE UI FILL (prevent flicker) ======
-  if (usernameSpan) {
-    usernameSpan.style.minWidth = '12ch';   // reserve space
-    usernameSpan.textContent = ' ' + cachedUsername;
-  }
-  if (authLabel) {
-    authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
-  }
+    if (usernameSpan) {
+      usernameSpan.textContent = ' ' + cachedUsername;
+    }
+    
+    if (authLabel) {
+      authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
+    }
+
   if (muteIcon) muteIcon.textContent = muted ? '🔇' : '🔊';
 
   // ====== STABLE FLEX ALIGN ======
@@ -410,6 +411,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   };
 });
+
 
 
 
