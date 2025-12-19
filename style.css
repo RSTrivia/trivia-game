@@ -463,7 +463,6 @@ input.input-field:-webkit-autofill:active {
    STABLE LOGIN / LEADERBOARD
    =========================== */
 
-/* Container row for Login + Leaderboard */
 #start-screen .row:nth-child(3) {
   display: flex;
   gap: 10px;
@@ -471,7 +470,6 @@ input.input-field:-webkit-autofill:active {
   align-items: stretch; /* ensures both buttons same height */
 }
 
-/* Buttons in that row */
 #start-screen .row:nth-child(3) button,
 #start-screen .row:nth-child(3) a {
   flex: 1;                
@@ -481,11 +479,12 @@ input.input-field:-webkit-autofill:active {
   text-align: center;
   white-space: normal;    
   box-sizing: border-box;
-  padding: 10px 12px;     
+  padding: 12px;     
   font-size: 1rem;
-  line-height: 1.2;        /* help match multi-line height */
-  height: 60px;           /* fixed height on desktop to prevent flicker */
+  line-height: 1.2;
+  overflow: hidden;
 }
+
 
 /* Mobile: let height grow naturally */
 @media (max-width: 480px) {
@@ -525,6 +524,7 @@ input.input-field:-webkit-autofill:active {
     font-size: 1.05rem;      
   }
 }*/
+
 
 
 
