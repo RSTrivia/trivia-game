@@ -463,46 +463,39 @@ input.input-field:-webkit-autofill:active {
    STABLE LOGIN / LEADERBOARD
    =========================== */
 
-/* Row containing Auth + Leaderboard buttons */
-#start-screen .row:nth-child(3) {
-  display: flex;
-  gap: 10px;
-  width: 100%;
-  justify-content: center; /* center row inside container */
-}
-
-
 /* Container row for both buttons */
 #start-screen .row:nth-child(3) {
   display: flex;
   gap: 10px;
   width: 100%;
-  align-items: stretch; /* make children same height */
+  align-items: stretch; /* force equal height */
 }
 
-/* Both buttons share equal width and height */
+/* Buttons in that row */
 #start-screen .row:nth-child(3) button,
 #start-screen .row:nth-child(3) a {
-  flex: 1;                  /* share available space */
-  display: flex;            /* center content */
-  align-items: center;      /* vertical centering */
-  justify-content: center;  /* horizontal centering */
+  flex: 1;                  /* equal width */
+  display: flex;            
+  align-items: center;      /* vertical center */
+  justify-content: center;  /* horizontal center */
   box-sizing: border-box;
   text-align: center;
-  white-space: normal;      /* allow text wrapping */
-  overflow: hidden;
-  font-size: 1rem;
+  white-space: normal;      /* allow wrapping */
   padding: 8px 12px;        /* vertical + horizontal padding */
-  min-height: 56px;         /* ensure enough height for 2-line text */
+  min-height: 60px;         /* ensure it’s tall enough for 2-line text */
+  font-size: 1rem;
+  overflow: hidden;
 }
 
-/* Optional: slightly taller on small screens */
+/* Slightly taller on mobile */
 @media (max-width: 480px) {
   #start-screen .row:nth-child(3) button,
   #start-screen .row:nth-child(3) a {
-    min-height: 64px;       /* give extra space for wrapping */
+    min-height: 72px;  /* match two-line wrap height */
+    padding: 10px 12px;
   }
 }
+
 
 /* Buttons */
 /*#start-screen .row:nth-child(3) button,
@@ -529,6 +522,7 @@ input.input-field:-webkit-autofill:active {
     font-size: 1.05rem;      
   }
 }*/
+
 
 
 
