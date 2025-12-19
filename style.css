@@ -463,38 +463,30 @@ input.input-field:-webkit-autofill:active {
    STABLE LOGIN / LEADERBOARD
    =========================== */
 
-/* Container row for both buttons */
+/* Container row for Login + Leaderboard */
 #start-screen .row:nth-child(3) {
   display: flex;
   gap: 10px;
   width: 100%;
-  align-items: stretch; /* force equal height */
+  align-items: stretch; /* ensures both buttons same height */
 }
 
 /* Buttons in that row */
 #start-screen .row:nth-child(3) button,
 #start-screen .row:nth-child(3) a {
-  flex: 1;                  /* equal width */
-  display: flex;            
-  align-items: center;      /* vertical center */
-  justify-content: center;  /* horizontal center */
-  box-sizing: border-box;
+  flex: 1;
+  display: inline-flex;       /* inline-flex allows proper text wrapping */
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  white-space: normal;      /* allow wrapping */
-  padding: 8px 12px;        /* vertical + horizontal padding */
-  min-height: 60px;         /* ensure it’s tall enough for 2-line text */
+  white-space: normal;        /* allow wrapping */
+  box-sizing: border-box;
+  padding: 10px 12px;         /* vertical + horizontal */
   font-size: 1rem;
+  min-height: 72px;           /* enough for 2 lines on mobile */
   overflow: hidden;
 }
 
-/* Slightly taller on mobile */
-@media (max-width: 480px) {
-  #start-screen .row:nth-child(3) button,
-  #start-screen .row:nth-child(3) a {
-    min-height: 72px;  /* match two-line wrap height */
-    padding: 10px 12px;
-  }
-}
 
 
 /* Buttons */
@@ -522,6 +514,7 @@ input.input-field:-webkit-autofill:active {
     font-size: 1.05rem;      
   }
 }*/
+
 
 
 
