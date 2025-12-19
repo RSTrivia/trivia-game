@@ -52,20 +52,21 @@ document.addEventListener('DOMContentLoaded', async () => {
   let timer;
   let timeLeft = 15;
   let correctBuffer, wrongBuffer;
-  let muted = localStorage.getItem('muted') === 'true';
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   
-  // Set initial icon
-  const updateMuteIcon = () => muteBtn.textContent = muted ? '🔇' : '🔊';
+  const updateMuteIcon = () => {
+    if (muteIcon) muteIcon.textContent = muted ? '🔇' : '🔊';
+  };
   updateMuteIcon();
 
-  // Mute button click (unchanged)
+  // Mute button click handler
   muteBtn.addEventListener('click', () => {
-    muted = !muted;
-    localStorage.setItem('muted', muted);
-    if (muteIcon) muteIcon.textContent = muted ? '🔇' : '🔊';
-    if (audioCtx.state === 'suspended') audioCtx.resume();
+    muted = !muted; // update global state
+    localStorage.setItem('muted', muted); // persist state
+    if (muteIcon) muteIcon.textContent = muted ? '🔇' : '🔊'; // update only the icon
+    if (audioCtx.state === 'suspended') audioCtx.resume(); // resume audio if needed
   });
+
   
    // -------------------------
   // Preload Auth: Correct Username & Button
@@ -367,6 +368,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   };
 });
+
 
 
 
