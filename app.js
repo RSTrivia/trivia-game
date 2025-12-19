@@ -1,6 +1,6 @@
 import { supabase } from './supabase.js';
 
-// ====== IMMEDIATE CACHED UI (runs before paint) ======
+// ====== IMMEDIATE CACHED UI (before paint) =====
 const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
 const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
 let muted = localStorage.getItem('muted') === 'true';
@@ -12,19 +12,22 @@ const usernameSpan = userDisplay?.querySelector('#usernameSpan');
 const muteBtn = document.getElementById('muteBtn');
 const authLabel = authBtn?.querySelector('.btn-label');
 
-// Fix widths to prevent reflow
+// Pre-fill all UI elements synchronously to prevent flicker
 if (usernameSpan) {
-  usernameSpan.style.minWidth = '12ch'; // enough for longest username
+  usernameSpan.style.minWidth = '12ch';
   usernameSpan.textContent = ' ' + cachedUsername;
 }
-
-if (authLabel) authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
+if (authLabel) {
+  authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
+}
 if (muteBtn) {
   muteBtn.textContent = muted ? '🔇' : '🔊';
-  muteBtn.style.width = '1.5em';  // reserve space for 🔊 / 🔇
+  muteBtn.style.width = '1.5em';
 }
 
+// Show app AFTER everything is populated
 if (appDiv) appDiv.style.opacity = '1';
+
 
 document.addEventListener('DOMContentLoaded', async () => {
   // DOM Elements
@@ -69,30 +72,37 @@ document.addEventListener('DOMContentLoaded', async () => {
   // -------------------------
   // Preload auth async: update only if changed
   async function preloadAuth() {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session?.user) return;
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('username')
-    .eq('id', session.user.id)
-    .single();
-
-  if (!profile?.username) return;
-
-  if (profile.username !== cachedUsername) {
-    localStorage.setItem('cachedUsername', profile.username);
-    localStorage.setItem('cachedLoggedIn', 'true');
-    if (usernameSpan && usernameSpan.textContent !== ' ' + profile.username) {
-      usernameSpan.textContent = ' ' + profile.username;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return; // no user, nothing to update
+  
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', session.user.id)
+        .single();
+  
+      const newUsername = profile?.username;
+      if (!newUsername) return;
+  
+      // Update cached values only if different
+      if (newUsername !== cachedUsername) {
+        localStorage.setItem('cachedUsername', newUsername);
+        localStorage.setItem('cachedLoggedIn', 'true');
+  
+        // Update UI only if content is different
+        if (usernameSpan && usernameSpan.textContent !== ' ' + newUsername) {
+          usernameSpan.textContent = ' ' + newUsername;
+        }
+        if (authLabel && authLabel.textContent !== 'Log Out') {
+          authLabel.textContent = 'Log Out';
+        }
+      }
+    } catch (err) {
+      console.error('Failed to preload auth:', err);
     }
-    
-    if (authLabel && authLabel.textContent !== 'Log Out') {
-      authLabel.textContent = 'Log Out';
-}
-
   }
-}
+
 
     // Call this immediately to prevent flicker
   await preloadAuth();
@@ -102,33 +112,60 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Supabase auth listener (updates UI if session changes)
   // -------------------------
   supabase.auth.onAuthStateChange(async (_event, session) => {
-    if (!session?.user) {
-      localStorage.setItem('cachedLoggedIn', 'false');
-      localStorage.setItem('cachedUsername', 'Guest');
-      username = '';
-      if (userDisplay) {
-        userDisplay.querySelector('#usernameSpan').textContent = ' Guest';
+    try {
+      if (!session?.user) {
+        const cachedChanged =
+          cachedLoggedIn !== false || cachedUsername !== 'Guest';
+  
+        // Only update localStorage if changed
+        if (cachedChanged) {
+          localStorage.setItem('cachedLoggedIn', 'false');
+          localStorage.setItem('cachedUsername', 'Guest');
+        }
+  
+        username = '';
+        if (usernameSpan && usernameSpan.textContent !== ' Guest') {
+          usernameSpan.textContent = ' Guest';
+        }
+        if (authLabel && authLabel.textContent !== 'Log In') {
+          authLabel.textContent = 'Log In';
+        }
+  
+        return;
       }
-      if (authLabel) authLabel.textContent = 'Log In';
-      return;
-    }
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('username')
-      .eq('id', session.user.id)
-      .single();
-
-    if (profile?.username) {
-      localStorage.setItem('cachedLoggedIn', 'true');
-      localStorage.setItem('cachedUsername', profile.username);
-      username = profile.username;
-      if (userDisplay) {
-        userDisplay.querySelector('#usernameSpan').textContent = ' ' + profile.username;
+  
+      // Fetch user profile
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', session.user.id)
+        .single();
+  
+      const newUsername = profile?.username;
+      if (!newUsername) return;
+  
+      // Only update localStorage if changed
+      const cachedChanged =
+        cachedLoggedIn !== true || cachedUsername !== newUsername;
+  
+      if (cachedChanged) {
+        localStorage.setItem('cachedLoggedIn', 'true');
+        localStorage.setItem('cachedUsername', newUsername);
+        username = newUsername;
+  
+        // Update UI only if different
+        if (usernameSpan && usernameSpan.textContent !== ' ' + newUsername) {
+          usernameSpan.textContent = ' ' + newUsername;
+        }
+        if (authLabel && authLabel.textContent !== 'Log Out') {
+          authLabel.textContent = 'Log Out';
+        }
       }
-      if (authLabel) authLabel.textContent = 'Log Out';
+    } catch (err) {
+      console.error('Auth state change error:', err);
     }
   });
+
 
   // -------------------------
   // Auth Button
@@ -330,6 +367,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   };
 });
+
 
 
 
