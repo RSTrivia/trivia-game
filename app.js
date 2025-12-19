@@ -14,12 +14,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
   const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
   let muted = localStorage.getItem('muted') === 'true';
-  let username = cachedLoggedIn ? cachedUsername : '';
+  let username = cachedUsername;
 
   // ====== IMMEDIATE UI FILL (prevent flicker) ======
-    if (usernameSpan) {
-      usernameSpan.textContent = ' ' + cachedUsername;
-    }
+    // Immediate UI fill
+  if (usernameSpan) usernameSpan.textContent = ' ' + username;
+  if (authLabel) authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
     
     if (authLabel) {
       authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
@@ -412,6 +412,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   };
 });
+
 
 
 
