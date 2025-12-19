@@ -3,27 +3,21 @@ import { supabase } from './supabase.js';
 // ====== IMMEDIATE CACHED UI (runs before paint) ======
 const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
 const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
+let muted = localStorage.getItem('muted') === 'true';
 
 const appDiv = document.getElementById('app');
 const userDisplay = document.getElementById('userDisplay');
 const authBtn = document.getElementById('authBtn');
-let authLabel;
-if (authBtn) {
-  authLabel = authBtn.querySelector('.btn-label');
-}
+let authLabel = authBtn?.querySelector('.btn-label');
+const usernameSpan = userDisplay?.querySelector('#usernameSpan');
+const muteBtn = document.getElementById('muteBtn');
 
-if (userDisplay) {
-  const span = userDisplay.querySelector('#usernameSpan');
-  if (span) span.textContent = ' ' + cachedUsername;
-}
+// Set immediate UI to prevent flicker
+if (usernameSpan) usernameSpan.textContent = ' ' + cachedUsername;
+if (authLabel) authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
+if (muteBtn) muteBtn.textContent = muted ? '🔇' : '🔊';
+if (appDiv) appDiv.style.opacity = '1';
 
-if (authBtn) {
-  authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
-}
-
-if (appDiv) {
-  appDiv.style.opacity = '1';
-}
 
 document.addEventListener('DOMContentLoaded', async () => {
   // DOM Elements
@@ -56,45 +50,37 @@ document.addEventListener('DOMContentLoaded', async () => {
   const updateMuteIcon = () => muteBtn.textContent = muted ? '🔇' : '🔊';
   updateMuteIcon();
 
-  // Add click listener to toggle mute
+  // Mute button click (unchanged)
   muteBtn.addEventListener('click', () => {
   muted = !muted;
   localStorage.setItem('muted', muted);
-  updateMuteIcon();
+  muteBtn.textContent = muted ? '🔇' : '🔊';
   if (audioCtx.state === 'suspended') audioCtx.resume();
 });
-
+  
    // -------------------------
   // Preload Auth: Correct Username & Button
   // -------------------------
+  // Preload auth async: update only if changed
   async function preloadAuth() {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user) return; // nothing to do
-  
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('username')
-      .eq('id', session.user.id)
-      .single();
-  
-    if (!profile?.username) return;
-  
-    if (profile.username !== username) {
-      localStorage.setItem('cachedUsername', profile.username);
-      localStorage.setItem('cachedLoggedIn', 'true');
-      username = profile.username;
-      let span;
-      if (userDisplay) {
-        const span = userDisplay.querySelector('#usernameSpan');
-      }
-      if (span && span.textContent !== ' ' + profile.username) {
-        span.textContent = ' ' + profile.username;
-      }
-      
-     if (authLabel) authLabel.textContent = 'Log Out';
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.user) return;
 
-    }
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('username')
+    .eq('id', session.user.id)
+    .single();
+
+  if (!profile?.username) return;
+
+  if (profile.username !== cachedUsername) {
+    localStorage.setItem('cachedUsername', profile.username);
+    localStorage.setItem('cachedLoggedIn', 'true');
+    usernameSpan && (usernameSpan.textContent = ' ' + profile.username);
+    authLabel && (authLabel.textContent = 'Log Out');
   }
+}
 
     // Call this immediately to prevent flicker
   await preloadAuth();
@@ -332,6 +318,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   };
 });
+
 
 
 
