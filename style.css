@@ -468,33 +468,34 @@ input.input-field:-webkit-autofill:active {
   display: flex;
   gap: 10px;
   width: 100%;
-  align-items: stretch; /* ensures both buttons same height */
+  align-items: stretch; /* force both buttons same height */
 }
 
 /* Buttons in that row */
 #start-screen .row:nth-child(3) button,
 #start-screen .row:nth-child(3) a {
-  flex: 1;
-  display: inline-flex;       /* inline-flex allows proper text wrapping */
+  flex: 1;                /* equal width */
+  display: flex;          /* flex for proper text centering */
   align-items: center;
   justify-content: center;
   text-align: center;
-  white-space: normal;        /* allow wrapping */
+  white-space: normal;    /* allow wrapping for multi-line text */
   box-sizing: border-box;
-  padding: 10px 12px;         /* vertical + horizontal */
+  padding: 10px 12px;     /* vertical + horizontal padding */
   font-size: 1rem;
-  min-height: 72px;           /* enough for 2 lines on mobile */
-  overflow: hidden;
+  height: 60px;           /* fixed height for PC to prevent flicker */
 }
 
-/* Slightly taller on mobile */
+/* Mobile: adjust height for wrapping */
 @media (max-width: 480px) {
   #start-screen .row:nth-child(3) button,
   #start-screen .row:nth-child(3) a {
-    min-height: 72px;  /* match two-line wrap height */
-    padding: 10px 12px;
+    height: auto;          /* allow height to grow for wrapped text */
+    min-height: 72px;      /* ensures at least 2-line height */
+    padding: 12px 12px;    /* slightly taller padding */
   }
 }
+
 
 
 /* Buttons */
@@ -522,6 +523,7 @@ input.input-field:-webkit-autofill:active {
     font-size: 1.05rem;      
   }
 }*/
+
 
 
 
