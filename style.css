@@ -157,6 +157,11 @@ html, body {
   outline: none;
 }
 
+/* Only make <a> tags show pointer cursor when hover */
+a {
+  cursor: pointer;
+}
+
 /* ====== BIG GOLD BUTTONS ====== */
 .btn {
   background: rgba(0, 0, 0, 0.6);
@@ -572,6 +577,7 @@ input.input-field:-webkit-autofill:active {
     padding: 12px;
   }
 }
+
 
 
 
