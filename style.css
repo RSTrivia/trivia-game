@@ -603,8 +603,8 @@ input.input-field:-webkit-autofill:active {
 
 @media (max-width: 480px) {
   .container {
-    height: 90vh;              /* fixed-ish to avoid flicker */
-    max-height: 600px;         /* cap on phones */
+    height: 80vh;              /* fixed-ish to avoid flicker */
+    max-height: 550px;         /* cap on phones */
     display: flex;
     flex-direction: column;
     justify-content: flex-start; 
@@ -630,6 +630,7 @@ input.input-field:-webkit-autofill:active {
     flex-shrink: 0;             /* ensure it’s visible */
   }
 }
+
 
 
 
