@@ -282,32 +282,33 @@ h1 {
   z-index: 9999;
 }
 
-/* Center the whole group */
+/* ====== USER DISPLAY & MUTE BUTTON ===== */
 #user-controls {
-  display: inline-flex;        /* 👈 IMPORTANT */
-  align-items: center;
-  gap: 10px;
+  display: flex;            /* horizontal layout */
+  align-items: center;      /* vertically center mic and text */
+  justify-content: center;  /* horizontally center inside container */
+  gap: 10px;                 /* space between mic and name */
+  margin-bottom: 15px;      /* optional spacing below */
 }
 
-/* Player text */
 #userDisplay {
-  font-size: 1.2rem;
-  color: #ffd700;
-  white-space: nowrap;
-  display: inline-flex;
+  display: flex;
   align-items: center;
+  /*gap: 0.5rem; /* space between Player:, username, and mute button */
 }
 
-/* Mute button */
 #muteBtn {
+  width: auto; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
   background: none;
   border: none;
-  font-size: 1.4rem;
-  color: #ffd700;
+  font-size: 1.5rem;
   cursor: pointer;
+  color: #ffd700;
   padding: 0;
 }
-
 
 #muteBtn:hover {
   color: #fff;
@@ -448,10 +449,13 @@ input.input-field:-webkit-autofill:active {
   justify-content: center;  /* center the text horizontally */
 }
 
-/* Center that group inside the container */
+/* ====== ROW LAYOUT FIX ===== */
 .row {
   display: flex;
-  justify-content: center;
+  align-items: center;       /* vertically center content */
+  justify-content: center;   /* horizontally center content by default */
+  gap: 10px;                 /* space between elements */
+  margin: 10px 0;            /* spacing between rows */
 }
 
 /* Ensure user + mute icon row aligns left inside container */
@@ -466,12 +470,13 @@ input.input-field:-webkit-autofill:active {
 
 #usernameSpan {
   display: inline-block;
-  min-width: 10ch;          /* keep layout stable */
-  text-align: center;       /* 🔥 THIS is the key */
+  min-width: 10ch;  /*width: 10ch; reserve space for ~10 characters */
+  text-align: left;
+  margin-left: 0.4ch;   /* small space between Player: and username */
   white-space: nowrap;
+  overflow: hidden;
   margin-left: 0.4ch;
 }
-
 
 
 /* ===========================
@@ -659,10 +664,6 @@ a.btn,
 a.btn-small {
   cursor: default !important;
 }
-
-
-
-
 
 
 
