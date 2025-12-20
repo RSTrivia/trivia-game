@@ -210,6 +210,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   async function startGame() {
+  document.body.classList.add('game-active'); // 👈 ADD THIS
   endGame.running = false; // <-- reset at start
   resetGame();
   game.classList.remove('hidden');
@@ -312,7 +313,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Prevent multiple calls
     if (endGame.running) return;
     endGame.running = true;
-  
+     
+    document.body.classList.remove('game-active'); 
+     
     clearInterval(timer);
     game.classList.add('hidden');
     endScreen.classList.remove('hidden');
@@ -334,6 +337,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   playAgainBtn.onclick = startGame;
 
   mainMenuBtn.onclick = () => {
+    document.body.classList.remove('game-active');
+    
     resetGame();
     game.classList.add('hidden');
     endScreen.classList.add('hidden');
@@ -361,6 +366,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   }
 });
+
 
 
 
