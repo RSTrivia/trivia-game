@@ -448,13 +448,10 @@ input.input-field:-webkit-autofill:active {
   justify-content: center;  /* center the text horizontally */
 }
 
-/* ====== ROW LAYOUT FIX ===== */
+/* Center that group inside the container */
 .row {
   display: flex;
-  align-items: center;       /* vertically center content */
-  justify-content: center;   /* horizontally center content by default */
-  gap: 10px;                 /* space between elements */
-  margin: 10px 0;            /* spacing between rows */
+  justify-content: center;
 }
 
 /* Ensure user + mute icon row aligns left inside container */
@@ -662,6 +659,7 @@ a.btn,
 a.btn-small {
   cursor: default !important;
 }
+
 
 
 
