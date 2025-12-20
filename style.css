@@ -660,6 +660,16 @@ input.input-field:-webkit-autofill:active {
 }
 
 
+/* FORCE normal hand cursor on all clickable links */
+a,
+a:link,
+a:visited,
+a:hover,
+a:active,
+a:focus {
+  cursor: pointer !important;
+}
+
 
 
 
