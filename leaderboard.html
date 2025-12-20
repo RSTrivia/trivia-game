@@ -78,8 +78,8 @@
 .container {
   display: flex;
   flex-direction: column;
+  justify-content: space-between; /* spread: title on top, leaderboard middle, button bottom */
   align-items: center;
-  justify-content: flex-start; 
   background: rgba(0, 0, 0, 0.85);
   padding: 20px;
   border-radius: 10px;
@@ -96,10 +96,9 @@
   width: 100%;
   list-style: none;
   padding: 0;
-  margin: 20px 0;
-  height: 580px;       /* FIXED height exactly for 10 rows */
-  overflow-y: hidden;  /* no scrolling, all 10 rows always visible */
-  flex: none;          /* do NOT grow */
+  margin: 0;            /* remove extra margin, spacing handled by container */
+  height: 580px;        /* fixed height for exactly 10 rows */
+  overflow-y: hidden;   /* all rows visible, no scrolling */
 }
 
 
@@ -238,6 +237,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
