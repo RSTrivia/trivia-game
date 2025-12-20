@@ -4,6 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>OSRS Trivia</title>
+  <script>
+  const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
+  const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
+  // Replace directly in the HTML
+  document.addEventListener('DOMContentLoaded', () => {
+    const span = document.getElementById('usernameSpan');
+    const authLabel = document.querySelector('#authBtn .btn-label');
+    if (span) span.textContent = ' ' + cachedUsername;
+    if (authLabel) authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
+  });
+  </script>
 
   <!-- 🔥 Load last background BEFORE first paint (NO flicker) -->
   <script>
@@ -90,4 +101,5 @@
   <script src="background.js" defer></script>
 </body>
 </html>
+
 
