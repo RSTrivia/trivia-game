@@ -604,32 +604,35 @@ input.input-field:-webkit-autofill:active {
 
 @media (max-width: 480px) {
   .container {
-    height: auto !important;
+    /* Set container to exactly the height of the phone screen */
+    height: 90vh !important; 
     display: flex;
     flex-direction: column;
-    justify-content: flex-start !important;
-    align-items: center;
-    padding: 15px;
+    padding: 10px;
+    box-sizing: border-box;
+    justify-content: space-between; /* Pushes button to the bottom area */
   }
 
   #leaderboard {
-    /* Set this to the approximate height of your 10 rows */
-    /* Adjust 400px slightly up or down to match your row height */
-    min-height: 400px; 
-    
+    /* This allows the leaderboard to take up the space it needs 
+       but leaves room for the button */
+    flex: 0 1 auto; 
     width: 100%;
-    margin-bottom: 5px !important;
-    flex: 0 0 auto; /* Do not grow, do not shrink */
-    overflow: visible;
+    overflow-y: hidden; /* Since you only have 10 rows, no need to scroll */
+    margin-bottom: 10px;
   }
 
   .container a.btn-small {
-    margin-top: 5px !important;
+    /* This keeps the button visible on the screen */
+    margin-top: auto; 
+    margin-bottom: 20px;
     width: auto !important;
-    max-width: 240px;
-    display: block; /* Ensures it respects margins */
+    max-width: 200px;
+    display: block;
+    flex-shrink: 0; /* Prevents the button from squishing */
   }
 }
+
 
 
 
