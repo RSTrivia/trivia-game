@@ -184,35 +184,15 @@ const leaderboardEl = document.getElementById('leaderboard');
 const app = document.getElementById('app');
 
 function renderLeaderboard(data) {
-  // Ensure 10 rows
   while (data.length < 10) data.push({ username: '', score: null });
-  leaderboardEl.innerHTML = '';
-  
-  data.forEach((entry, i) => {
-    const li = document.createElement('li');
-    const left = document.createElement('span');
-    const right = document.createElement('span');
-
-    // Position and medal
-    let pos;
-    if (i === 0) pos = '🥇';
-    else if (i === 1) pos = '🥈';
-    else if (i === 2) pos = '🥉';
-    else pos = `${i+1}.`;
-
-    left.textContent = entry.username?.trim() ? `${pos} ${entry.username}` : pos;
-    right.textContent = entry.score != null ? entry.score : '';
-
-    li.appendChild(left);
-    li.appendChild(right);
-
-    // Apply medal classes for top 3
-    if (i === 0) li.classList.add('first');
-    else if (i === 1) li.classList.add('second');
-    else if (i === 2) li.classList.add('third');
-
-    leaderboardEl.appendChild(li);
-  });
+  const html = data.map((entry, i) => {
+    const pos = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}.`;
+    const username = entry.username?.trim() || '';
+    const score = entry.score ?? '';
+    const cls = i === 0 ? 'first' : i === 1 ? 'second' : i === 2 ? 'third' : '';
+    return `<li class="${cls}"><span>${pos} ${username}</span><span>${score}</span></li>`;
+  }).join('');
+  leaderboardEl.innerHTML = html;
 }
 
 (async () => {
@@ -232,6 +212,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
