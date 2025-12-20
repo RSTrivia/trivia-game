@@ -86,7 +86,7 @@
   box-shadow: 0 0 30px rgba(0,0,0,0.5);
   width: 400px;       
   max-width: 90%;     
-  height: 700px; /* fixed container height to prevent flicker */
+  height: 700px; /* fixed container height for 10 rows + title + button */
   text-align: center;
   margin: 0 auto;     
 }
@@ -97,10 +97,11 @@
   list-style: none;
   padding: 0;
   margin: 20px 0;
-  max-height: 580px;     /* limit to the height of 10 rows */
-  overflow-y: auto;      /* scroll if more rows added later */
-  flex: none;            /* do NOT expand */
+  height: 580px;       /* FIXED height exactly for 10 rows */
+  overflow-y: hidden;  /* no scrolling, all 10 rows always visible */
+  flex: none;          /* do NOT grow */
 }
+
 
   
   h1 {
@@ -237,6 +238,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
