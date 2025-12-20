@@ -564,13 +564,15 @@ input.input-field:-webkit-autofill:active {
 }
 
 #end-screen #game-over-title {
-  color: #f5f5f5 !important;              /* solid white text */
-  background: none !important;            /* remove gradient */
-  -webkit-text-fill-color: #f5f5f5 !important; /* force fill in Chrome/Safari */
-  -webkit-background-clip: initial !important; /* remove gradient clipping */
-  text-shadow: 0 0 4px rgba(0,0,0,0.8);
+  all: unset;                     /* remove inherited styles, including gradients and text-clip */
+  display: block;                 /* restore block display */
+  font-family: Arial, sans-serif; /* or whatever you want */
   font-size: 2rem;
+  color: #f5f5f5 !important;      /* force white */
+  text-shadow: 0 0 4px rgba(0,0,0,0.8);
 }
+
+
 
 
 
