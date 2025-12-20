@@ -575,31 +575,33 @@ input.input-field:-webkit-autofill:active {
 
 
 @media (max-width: 480px) {
-  /* Container wraps content naturally */
   .container {
-    height: auto !important;             
+    height: 650px;                 /* keep fixed height to prevent flicker */
     display: flex;
     flex-direction: column;
-    justify-content: flex-start !important; /* stack items from top */
+    justify-content: flex-start;   /* stack items from top */
     align-items: center;
-    padding: 15px;                        /* smaller padding for mobile */
+    padding: 15px;                 /* smaller padding for mobile */
   }
 
-  /* Reduce gap below leaderboard */
+  /* Leaderboard adapts inside fixed container */
   #leaderboard {
-    margin-bottom: 5px !important;        /* tiny gap to button */
-    height: auto !important;              
-    overflow-y: visible !important;       
+    flex: 1 1 auto;                /* allow it to grow/shrink inside container */
+    margin-bottom: 5px;            /* small gap to button */
+    overflow-y: auto;              /* enable scrolling if needed */
   }
 
   /* Main Menu button: same width as PC */
   .container a.btn-small {
-    margin-top: 5px !important;           /* small gap above button */
-    width: auto !important;               /* don’t stretch full width */
-    max-width: 240px;                     /* matches PC button width visually */
+    margin-top: 5px;
+    width: auto;                   /* natural width */
+    max-width: 240px;              /* match PC width */
     box-sizing: border-box;
+    align-self: center;            /* center horizontally */
   }
 }
+
+
 
 
 
