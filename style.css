@@ -568,7 +568,7 @@ input.input-field:-webkit-autofill:active {
   -webkit-text-fill-color: #f5f5f5 !important; /* force the color in WebKit #cccccc*/
   background: none !important;
   /*text-shadow: 0 0 4px rgba(0,0,0,0.8) !important;   subtle shadow like final score */
-  font-size: 1.8rem;                 /* bigger than final score */
+  font-size: 1.4rem;                 /* bigger than final score */
   text-align: center;
   font-family: Arial, sans-serif;       /* match final score */
 }
@@ -658,6 +658,7 @@ input.input-field:-webkit-autofill:active {
 .login-container .login-row.back-btn {
   margin-bottom: 0;          /* no extra space at bottom */
 }
+
 
 
 
