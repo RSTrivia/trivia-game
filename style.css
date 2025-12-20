@@ -632,19 +632,17 @@ input.input-field:-webkit-autofill:active {
   }
 }
 
-/* 🔥 FORCE LOGIN INPUT HEIGHT AND PADDING 🔥 */
-#app.login-page .login-container .login-row input.input-field#username,
-#app.login-page .login-container .login-row input.input-field#password {
-    height: 32px !important;           /* exact height */
-    min-height: 32px !important;       /* prevent auto-expansion */
-    padding-top: 4px !important;       /* vertical padding */
-    padding-bottom: 4px !important;
-    padding-left: 10px !important;     /* horizontal padding */
-    padding-right: 10px !important;
-    line-height: 24px !important;      /* vertical text alignment */
-    font-size: 0.95rem !important;     /* text size */
-    box-sizing: border-box !important; /* include padding in height */
+/* 🔥 Force login input height & padding */
+body #app.login-page .login-container input#username,
+body #app.login-page .login-container input#password {
+    height: 32px !important;
+    min-height: 32px !important;
+    padding: 4px 10px !important;
+    line-height: 24px !important;
+    font-size: 0.95rem !important;
+    box-sizing: border-box !important;
 }
+
 
 
 
