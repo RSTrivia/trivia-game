@@ -48,11 +48,7 @@
       <!-- First row: User + Mute -->
       <div id="user-controls" class="row">
         <button id="muteBtn" aria-label="Mute">
-          <span id="muteIcon">
-            <script>
-              document.write(localStorage.getItem('cachedMuted') === 'true' ? '🔇' : '🔊');
-            </script>
-          </span>
+          <span id="muteIcon">🔊</span>
         </button>
       <div id="userDisplay">
         Player:<span id="usernameSpan">
@@ -109,6 +105,7 @@
   <script src="background.js" defer></script>
 </body>
 </html>
+
 
 
 
