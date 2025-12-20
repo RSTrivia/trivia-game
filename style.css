@@ -623,13 +623,14 @@ input.input-field:-webkit-autofill:active {
   .container a.btn-small {
     margin-top: auto;           /* pushes it right below leaderboard */
     width: auto;                /* same as PC */
-    margin-bottom: 26px;    /* add a little space from container bottom */
+    margin-bottom: 10px;    /* add a little space from container bottom */
     max-width: 240px;
     box-sizing: border-box;
     align-self: center;
     flex-shrink: 0;             /* ensure it’s visible */
   }
 }
+
 
 
 
