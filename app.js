@@ -39,6 +39,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const answersBox = document.getElementById('answers');
   const timeDisplay = document.getElementById('time');
   const muteBtn = document.getElementById('muteBtn');
+  // Initialize the running flag
+  endGame.running = false;
   
   // Main state
   let username = cachedLoggedIn ? cachedUsername : '';
@@ -208,22 +210,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   async function startGame() {
-    endGame.running = false;
-    resetGame();
-    game.classList.remove('hidden');
-    document.getElementById('start-screen').classList.add('hidden');
-    endScreen.classList.add('hidden');
-    updateScore();
+  endGame.running = false; // <-- reset at start
+  resetGame();
+  game.classList.remove('hidden');
+  document.getElementById('start-screen').classList.add('hidden');
+  endScreen.classList.add('hidden');
+  updateScore();
 
-    await loadSounds();
+  await loadSounds();
 
-    const { data } = await supabase.from('questions').select('*');
-    if (!data?.length) return alert('Could not load questions!');
+  const { data } = await supabase.from('questions').select('*');
+  if (!data?.length) return alert('Could not load questions!');
 
-    questions = data;
-    remainingQuestions = [...questions];
-    loadQuestion();
-  }
+  questions = data;
+  remainingQuestions = [...questions];
+  loadQuestion();
+}
+
 
   async function loadQuestion() {
     answersBox.innerHTML = '';
@@ -302,15 +305,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     scoreDisplay.textContent = `Score: ${score}`;
   }
 
-  async function endGame() {
+   async function endGame() {
+    // Prevent multiple calls
     if (endGame.running) return;
     endGame.running = true;
-
+  
     clearInterval(timer);
     game.classList.add('hidden');
     endScreen.classList.remove('hidden');
     finalScore.textContent = score;
-
+  
     if (username) await submitLeaderboardScore(username, score);
   }
 
@@ -352,6 +356,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   }
 });
+
 
 
 
