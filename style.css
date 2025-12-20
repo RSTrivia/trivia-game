@@ -564,14 +564,15 @@ input.input-field:-webkit-autofill:active {
 }
 
 #end-screen #game-over-title {
-  color: #bbbbbb !important;             /* test color */
-  -webkit-text-fill-color: #bbbbbb !important; /* force the color in WebKit */
+  color: #cccccc !important;             /* test color */
+  -webkit-text-fill-color: #cccccc !important; /* force the color in WebKit */
   background: none !important;
   /*text-shadow: 0 0 4px rgba(0,0,0,0.8) !important;   subtle shadow like final score */
   font-size: 1.8rem;                 /* bigger than final score */
   text-align: center;
   font-family: Arial, sans-serif;       /* match final score */
 }
+
 
 
 
