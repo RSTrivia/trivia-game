@@ -662,10 +662,10 @@ input.input-field:-webkit-autofill:active {
   margin-bottom: 15px;  /* spacing below these buttons */
 }
 
-/* Back to Game button row */
+/* Back to Game button row: same gap as main menu buttons */
 .login-container .login-row.back-btn {
   width: 100%;
-  margin-top: auto;   /* pushes it down relative to buttons above */
+  margin-top: 10px;  /* small gap below login/signup buttons */
 }
 
 
