@@ -97,8 +97,9 @@
   list-style: none;
   padding: 0;
   margin: 20px 0;
-  flex: 1;               /* take remaining space inside container */
-  overflow-y: auto;      /* scroll if rows exceed */
+  max-height: 580px;     /* limit to the height of 10 rows */
+  overflow-y: auto;      /* scroll if more rows added later */
+  flex: none;            /* do NOT expand */
 }
 
   
@@ -236,6 +237,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
