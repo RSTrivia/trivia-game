@@ -1,30 +1,5 @@
 import { supabase } from './supabase.js';
 
-// ====== IMMEDIATE CACHED UI (runs before paint) ======
-const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
-const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
-
-const appDiv = document.getElementById('app');
-const userDisplay = document.getElementById('userDisplay');
-const authBtn = document.getElementById('authBtn');
-let authLabel;
-if (authBtn) {
-  authLabel = authBtn.querySelector('.btn-label');
-}
-
-if (userDisplay) {
-  const span = userDisplay.querySelector('#usernameSpan');
-  if (span) span.textContent = ' ' + cachedUsername;
-}
-
-if (authBtn) {
-  authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
-}
-
-if (appDiv) {
-  appDiv.style.opacity = '1';
-}
-
 document.addEventListener('DOMContentLoaded', async () => {
   // DOM Elements
   const startBtn = document.getElementById('startBtn');
@@ -39,9 +14,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   const answersBox = document.getElementById('answers');
   const timeDisplay = document.getElementById('time');
   const muteBtn = document.getElementById('muteBtn');
-  
-  // Main state
+  const muteIcon = document.getElementById('muteIcon');
+  const usernameSpan = document.getElementById('usernameSpan');
+  const authBtn = document.getElementById('authBtn');
+  const authLabel = authBtn.querySelector('.btn-label');
+
+  // State
+  let cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
+  let cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
   let username = cachedLoggedIn ? cachedUsername : '';
+  let muted = localStorage.getItem('muted') === 'true';
   let score = 0;
   let questions = [];
   let remainingQuestions = [];
@@ -49,117 +31,77 @@ document.addEventListener('DOMContentLoaded', async () => {
   let timer;
   let timeLeft = 15;
   let correctBuffer, wrongBuffer;
-  let muted = localStorage.getItem('muted') === 'true';
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  
-  // Set initial icon
-  const updateMuteIcon = () => muteBtn.textContent = muted ? '🔇' : '🔊';
-  updateMuteIcon();
 
-  // Add click listener to toggle mute
+  // Preload mute icon
+  muteIcon.textContent = muted ? '🔇' : '🔊';
+
+  // Toggle mute
   muteBtn.addEventListener('click', () => {
-  muted = !muted;
-  localStorage.setItem('muted', muted);
-  updateMuteIcon();
-  if (audioCtx.state === 'suspended') audioCtx.resume();
-});
-
-   // -------------------------
-  // Preload Auth: Correct Username & Button
-  // -------------------------
-  async function preloadAuth() {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user) return; // nothing to do
-  
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('username')
-      .eq('id', session.user.id)
-      .single();
-  
-    if (!profile?.username) return;
-  
-    if (profile.username !== username) {
-      localStorage.setItem('cachedUsername', profile.username);
-      localStorage.setItem('cachedLoggedIn', 'true');
-      username = profile.username;
-      if (userDisplay) {
-        const span = userDisplay.querySelector('#usernameSpan');
-      }
-      if (span && span.textContent !== ' ' + profile.username) {
-        span.textContent = ' ' + profile.username;
-      }
-      
-     if (authLabel) authLabel.textContent = 'Log Out';
-
-    }
-  }
-
-    // Call this immediately to prevent flicker
-  await preloadAuth();
-
- 
-  // -------------------------
-  // Supabase auth listener (updates UI if session changes)
-  // -------------------------
-  supabase.auth.onAuthStateChange(async (_event, session) => {
-    if (!session?.user) {
-      localStorage.setItem('cachedLoggedIn', 'false');
-      localStorage.setItem('cachedUsername', 'Guest');
-      username = '';
-      if (userDisplay) {
-        userDisplay.querySelector('#usernameSpan').textContent = ' Guest';
-      }
-      if (authLabel) authLabel.textContent = 'Log In';
-      return;
-    }
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('username')
-      .eq('id', session.user.id)
-      .single();
-
-    if (profile?.username) {
-      localStorage.setItem('cachedLoggedIn', 'true');
-      localStorage.setItem('cachedUsername', profile.username);
-      username = profile.username;
-      if (userDisplay) {
-        userDisplay.querySelector('#usernameSpan').textContent = ' ' + profile.username;
-      }
-      if (authLabel) authLabel.textContent = 'Log Out';
-    }
+    muted = !muted;
+    localStorage.setItem('muted', muted);
+    muteIcon.textContent = muted ? '🔇' : '🔊';
+    if (audioCtx.state === 'suspended') audioCtx.resume();
   });
 
   // -------------------------
-  // Auth Button
+  // Auth
   // -------------------------
-  authBtn.onclick = async () => {
-    if (authLabel) {
-      if (authLabel.textContent === 'Log Out') {
-        await supabase.auth.signOut();
-      } else {
-        window.location.href = 'login.html';
+  const preloadAuth = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', session.user.id)
+        .single();
+      if (profile?.username) {
+        username = profile.username;
+        cachedUsername = username;
+        cachedLoggedIn = true;
+        localStorage.setItem('cachedUsername', username);
+        localStorage.setItem('cachedLoggedIn', 'true');
+        usernameSpan.textContent = ' ' + username;
+        authLabel.textContent = 'Log Out';
       }
+    }
+  };
+  await preloadAuth();
+
+  supabase.auth.onAuthStateChange((_event, session) => {
+    if (!session?.user) {
+      username = '';
+      cachedUsername = 'Guest';
+      cachedLoggedIn = false;
+      localStorage.setItem('cachedUsername', 'Guest');
+      localStorage.setItem('cachedLoggedIn', 'false');
+      usernameSpan.textContent = ' Guest';
+      authLabel.textContent = 'Log In';
+    } else {
+      preloadAuth();
+    }
+  });
+
+  authBtn.onclick = async () => {
+    if (authLabel.textContent === 'Log Out') {
+      await supabase.auth.signOut();
+    } else {
+      window.location.href = 'login.html';
     }
   };
 
   // -------------------------
   // Audio
   // -------------------------
-
-  async function loadSounds() {
+  const loadAudio = async (url) => {
+    const res = await fetch(url);
+    return audioCtx.decodeAudioData(await res.arrayBuffer());
+  };
+  const loadSounds = async () => {
     correctBuffer = await loadAudio('./sounds/correct.mp3');
     wrongBuffer = await loadAudio('./sounds/wrong.mp3');
-  }
-
-  async function loadAudio(url) {
-    const response = await fetch(url);
-    const arrayBuffer = await response.arrayBuffer();
-    return audioCtx.decodeAudioData(arrayBuffer);
-  }
-
-  function playSound(buffer) {
+  };
+  const playSound = (buffer) => {
     if (!buffer || muted) return;
     const source = audioCtx.createBufferSource();
     source.buffer = buffer;
@@ -167,31 +109,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     gainNode.gain.value = 0.5;
     source.connect(gainNode).connect(audioCtx.destination);
     source.start();
-  }
+  };
 
   // -------------------------
-  // Leaderboard
+  // Game Logic
   // -------------------------
-  async function submitLeaderboardScore(username, score) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+  const updateScore = () => scoreDisplay.textContent = `Score: ${score}`;
 
-    const { data: existingScore } = await supabase
-      .from('scores')
-      .select('score')
-      .eq('user_id', user.id)
-      .single();
-
-    if (!existingScore || score > existingScore.score) {
-      await supabase
-        .from('scores')
-        .upsert({ user_id: user.id, username, score }, { onConflict: 'user_id' });
-    }
-  }
-  
-  // -------------------------
-  // Game Logic (UNCHANGED)
-  // -------------------------
   function resetGame() {
     clearInterval(timer);
     score = 0;
@@ -235,7 +159,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     questionImage.style.display = currentQuestion.question_image ? 'block' : 'none';
     if (currentQuestion.question_image) questionImage.src = currentQuestion.question_image;
 
-    let answers = [
+    const answers = [
       { text: currentQuestion.answer_a, correct: currentQuestion.correct_answer === 1 },
       { text: currentQuestion.answer_b, correct: currentQuestion.correct_answer === 2 },
       { text: currentQuestion.answer_c, correct: currentQuestion.correct_answer === 3 },
@@ -250,8 +174,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       answersBox.appendChild(btn);
     });
 
-    currentQuestion.correct_answer_shuffled =
-      answers.findIndex(a => a.correct) + 1;
+    currentQuestion.correct_answer_shuffled = answers.findIndex(a => a.correct) + 1;
 
     clearInterval(timer);
     timeLeft = 15;
@@ -262,7 +185,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       timeLeft--;
       timeDisplay.textContent = timeLeft;
       timeDisplay.classList.toggle('red-timer', timeLeft <= 5);
-
       if (timeLeft <= 0) {
         clearInterval(timer);
         playSound(wrongBuffer);
@@ -297,10 +219,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  function updateScore() {
-    scoreDisplay.textContent = `Score: ${score}`;
-  }
-
   async function endGame() {
     if (endGame.running) return;
     endGame.running = true;
@@ -309,20 +227,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     game.classList.add('hidden');
     endScreen.classList.remove('hidden');
     finalScore.textContent = score;
-
-    if (username) await submitLeaderboardScore(username, score);
   }
 
   // -------------------------
   // Buttons
   // -------------------------
-  startBtn.onclick = async () => {
-    await loadSounds();
-    startGame();
-  };
-
+  startBtn.onclick = startGame;
   playAgainBtn.onclick = startGame;
-
   mainMenuBtn.onclick = () => {
     resetGame();
     game.classList.add('hidden');
@@ -331,16 +242,3 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   };
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
