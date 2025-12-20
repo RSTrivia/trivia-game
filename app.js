@@ -337,9 +337,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   
     if (username) await submitLeaderboardScore(username, score);
   }
-
+  
   // Initialize the running flag **after the function exists**
   endGame.running = false;
+
+//test for GZ message !!!
+   startBtn.addEventListener('click', async () => {
+    await loadCurrentUser();
+    await loadSounds();
+
+    questions = new Array(510);
+    score = 510; // pretend max score
+    remainingQuestions = [];
+
+    document.getElementById('start-screen').classList.add('hidden');
+    await endGame();
+
+  
   // -------------------------
   // Buttons
   // -------------------------
@@ -380,6 +394,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   }
 });
+
 
 
 
