@@ -350,7 +350,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   //};
 
   startBtn.addEventListener('click', async () => {
-    await loadCurrentUser();
+    ;
     await loadSounds();
 
     questions = new Array(510);
@@ -396,6 +396,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   }
 });
+
 
 
 
