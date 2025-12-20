@@ -86,7 +86,7 @@
   box-shadow: 0 0 30px rgba(0,0,0,0.5);
   width: 400px;       
   max-width: 90%;     
-  height: 700px; /* FIXED height: title + 10 rows + button + padding */
+  height: 700px; /* fixed container height to prevent flicker */
   text-align: center;
   margin: 0 auto;     
 }
@@ -97,10 +97,10 @@
   list-style: none;
   padding: 0;
   margin: 20px 0;
-  flex: none;
-  height: 580px; /* FIXED height for 10 rows */
-  overflow-y: auto; /* scroll if more rows added later */
+  flex: 1;               /* take remaining space inside container */
+  overflow-y: auto;      /* scroll if rows exceed */
 }
+
   
   h1 {
     font-family: 'Cinzel', serif;
@@ -236,6 +236,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
