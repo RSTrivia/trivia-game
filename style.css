@@ -632,44 +632,21 @@ input.input-field:-webkit-autofill:active {
   }
 }
 
-/* Stable login container */
+/* Stable login container: reserve space to prevent flicker */
 #app.login-page .login-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;  /* stack inputs/buttons top-down */
-  align-items: center;
   width: 400px;
   max-width: 90%;
+  height: 300px;              /* reserve total container height */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;     /* center fields vertically */
+  align-items: center;
   padding: 20px;
-  min-height: 350px;            /* reserve enough height for inputs/buttons */
   background: rgba(0,0,0,0.85);
   border-radius: 10px;
   box-shadow: 0 0 30px rgba(0,0,0,0.5);
-  overflow: hidden;             /* prevent layout shift if inner content is delayed */
+  overflow: hidden;
 }
-
-/* Buttons row */
-.login-container .menu-row {
-  display: flex;
-  gap: 10px;
-  width: 100%;
-  margin-top: auto;          /* pushes row to bottom if needed */
-}
-
-/* Login / signup buttons */
-.login-container .menu-row button {
-  flex: 1;                   /* equal width */
-  min-width: 120px;           /* prevents reflow on text change */
-  height: 40px;
-}
-
-.login-container .login-row input {
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-  margin-bottom: 15px;
-}
-
 
 
 
