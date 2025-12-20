@@ -553,6 +553,12 @@ input.input-field:-webkit-autofill:active {
   font-size: 3.2rem;
 }
 
+@media (max-width: 480px) {
+  #leaderboard-title {
+    font-size: 2.5rem;
+  }
+}
+
 
 
 
