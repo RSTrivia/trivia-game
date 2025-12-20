@@ -74,23 +74,22 @@
   }
 
   
-    /* ===== CONTAINER ===== */
-    .container {
-      /* remove fixed height to allow flexibility */
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start; 
-      background: rgba(0, 0, 0, 0.85);
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 30px rgba(0,0,0,0.5);
-      width: 400px;       /* exact width of main menu */
-      max-width: 90%;     /* responsive on small screens */
-      min-height: 520px;  /* ensures stable height to prevent flicker */
-      text-align: center;
-      margin: 0 auto;     /* center horizontally */
-    }
+/* ===== CONTAINER ===== */
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start; 
+  background: rgba(0, 0, 0, 0.85);
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 30px rgba(0,0,0,0.5);
+  width: 400px;       /* exact width of main menu */
+  max-width: 90%;     /* responsive on small screens */
+  min-height: 600px;  /* enough to fit all 10 rows + title + button */
+  text-align: center;
+  margin: 0 auto;     
+}
 
   h1 {
     font-family: 'Cinzel', serif;
@@ -99,17 +98,15 @@
     letter-spacing: 2px;
   }
 
-    /* ===== LEADERBOARD ===== */
-  #leaderboard {
-    width: 100%;
-    list-style: none;
-    padding: 0;
-    margin: 20px 0;
-    flex: 1 1 auto;     /* allows the leaderboard to grow/shrink */
-    min-height: 360px;  /* ensures pre-filled rows give stable layout */
-    max-height: 400px;  /* prevents it from being too tall */
-    overflow-y: auto;   /* scrolls if content exceeds */
-  }
+/* ===== LEADERBOARD ===== */
+#leaderboard {
+  width: 100%;
+  list-style: none;
+  padding: 0;
+  margin: 20px 0;
+  flex: none;           /* leaderboard height fixed by its content */
+  overflow-y: auto;     /* scroll if needed */
+}
 
   #leaderboard li {
     display: flex;
@@ -238,6 +235,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
