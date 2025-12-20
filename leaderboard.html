@@ -43,23 +43,44 @@
   }
 
   /* App wrapper */
-  #app {
+  /*#app {
     min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center; /*flex-start*/
-    padding: 40px 20px; /* vertical + horizontal padding like main menu */ /*40px*/
-  }
+    /*padding: 40px 20px; /* vertical + horizontal padding like main menu */ /*40px*/
+  /*}
 
-  .container {
+  /*.container {
     background-color: rgba(0,0,0,0.85);
     padding: 20px;
     border-radius: 10px;
     max-width: 900px;
     text-align: center;
-    box-shadow: 0 0 30px rgba(0,0,0,0.5);
+    box-shadow: 0 0 30px rgba(0,0,0,0.5);*/
+  /*}*/
+  /* ===== APP WRAPPER ===== */
+  #app {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center; /* horizontal centering */
+    align-items: flex-start; /* top aligned */
+    padding: 60px 20px 20px 20px; /* top padding controls starting spot */
+    position: relative;
+    z-index: 1;
   }
-
+  
+  /* ===== CONTAINER ===== */
+  .container {
+    background: rgba(0, 0, 0, 0.85);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 30px rgba(0,0,0,0.5);
+    max-width: 900px;
+    width: 100%;
+    text-align: center;
+  }
+  
   h1 {
     font-family: 'Cinzel', serif;
     font-size: 2.5rem;
@@ -209,6 +230,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
