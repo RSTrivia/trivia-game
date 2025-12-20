@@ -602,6 +602,12 @@ input.input-field:-webkit-autofill:active {
 }
 
 
+@media (max-width: 480px) {
+  body.game-active #main-title {
+    display: none;
+  }
+}
+
 
 
 
