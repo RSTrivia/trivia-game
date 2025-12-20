@@ -654,6 +654,20 @@ input.input-field:-webkit-autofill:active {
   width: 100%;
 }
 
+/* Login / Signup buttons row */
+.login-container .menu-row {
+  display: flex;
+  gap: 10px;         /* space between login and signup */
+  width: 100%;
+  margin-bottom: 15px;  /* spacing below these buttons */
+}
+
+/* Back to Game button row */
+.login-container .login-row.back-btn {
+  width: 100%;
+  margin-top: auto;   /* pushes it down relative to buttons above */
+}
+
 
 
 
