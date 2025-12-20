@@ -604,33 +604,33 @@ input.input-field:-webkit-autofill:active {
 
 @media (max-width: 480px) {
   .container {
-    /* min-height prevents the 'jump' when content loads */
-    min-height: 650px; 
     height: auto !important;
-    
     display: flex;
     flex-direction: column;
-    justify-content: flex-start; /* Keeps everything at the top */
+    justify-content: flex-start !important;
     align-items: center;
     padding: 15px;
   }
 
   #leaderboard {
-    /* Prevent the leaderboard from expanding to fill the 650px */
-    flex: 0 1 auto; 
+    /* Set this to the approximate height of your 10 rows */
+    /* Adjust 400px slightly up or down to match your row height */
+    min-height: 400px; 
+    
     width: 100%;
     margin-bottom: 5px !important;
-    overflow-y: visible !important;
+    flex: 0 0 auto; /* Do not grow, do not shrink */
+    overflow: visible;
   }
 
   .container a.btn-small {
-    /* This will now sit directly under the leaderboard rows */
     margin-top: 5px !important;
     width: auto !important;
     max-width: 240px;
-    align-self: center;
+    display: block; /* Ensures it respects margins */
   }
 }
+
 
 
 
