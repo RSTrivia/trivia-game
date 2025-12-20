@@ -632,17 +632,8 @@ input.input-field:-webkit-autofill:active {
   }
 }
 
-/* only affects login container */
 .login-container {
-  background: rgba(0, 0, 0, 0.85);
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 0 30px rgba(0,0,0,0.5);
-  width: 400px;
-  max-width: 90%;
-  min-height: 600px; /* set same height as main menu container */
-  text-align: center;
-  position: relative;
+  min-height: 400px; /* match main menu container height */
 }
 
 
