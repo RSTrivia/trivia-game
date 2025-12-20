@@ -5,45 +5,14 @@ const usernameInput = document.getElementById('username');
 const passwordInput = document.getElementById('password');
 const loginBtn = document.getElementById('loginBtn');
 const signupBtn = document.getElementById('signupBtn');
+const messageDiv = document.getElementById('login-message'); // reserved in HTML
 
-// Create a message area inside the login container
-let messageDiv = document.createElement('div');
-messageDiv.style.color = '#ffd700';
-messageDiv.style.margin = '10px 0';
-messageDiv.style.minHeight = '24px'; // keeps layout stable
-messageDiv.style.textAlign = 'center';
-document.querySelector('.login-container').appendChild(messageDiv);
-
-// Function to display messages
 function showMessage(msg, isError = false) {
   messageDiv.textContent = msg;
   messageDiv.style.color = isError ? '#ff3b3b' : '#ffd700';
 }
 
-// Function to log in (reuse for signup)
-async function loginUser(username, password) {
-  const email = username.toLowerCase() + '@example.com';
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
-  if (error) { 
-    showMessage('Login failed: ' + error.message, true); 
-    return false; 
-  }
-  if (!data.user) { 
-    showMessage('Login failed: no user returned', true); 
-    return false; 
-  }
-
-  // Save username/session
-  localStorage.setItem('cachedUsername', username);
-  localStorage.setItem('cachedLoggedIn', 'true');
-
-  // Redirect to main page
-  window.location.href = 'index.html';
-  return true;
-}
-
-// Sign Up + automatic login
+// Sign Up and auto-login
 signupBtn.addEventListener('click', async () => {
   const username = usernameInput.value.trim();
   const password = passwordInput.value;
@@ -53,33 +22,45 @@ signupBtn.addEventListener('click', async () => {
   }
 
   const email = username.toLowerCase() + '@example.com';
-
-  // 1️⃣ Sign up the user
-  const { data, error } = await supabase.auth.signUp({ email, password });
-  if (error) { 
-    showMessage('Sign-up failed: ' + error.message, true);
-    return; 
+  
+  // Sign up
+  const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
+  if (signUpError) {
+    showMessage('Sign-up failed: ' + signUpError.message, true);
+    return;
   }
-  if (!data.user) { 
+  if (!signUpData.user) {
     showMessage('Sign-up failed: no user returned', true);
-    return; 
+    return;
   }
 
-  // 2️⃣ Create profile
+  // Create profile
   const { error: profileError } = await supabase
     .from('profiles')
-    .insert({ id: data.user.id, username });
-  if (profileError) { 
+    .insert({ id: signUpData.user.id, username });
+  if (profileError) {
     showMessage('Profile creation failed: ' + profileError.message, true);
-    return; 
+    return;
   }
 
-  // 3️⃣ Log in automatically
-  showMessage('Account created! Logging in...');
-  await loginUser(username, password);
+  // Auto login after sign-up
+  const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({ email, password });
+  if (loginError) {
+    showMessage('Auto-login failed: ' + loginError.message, true);
+    return;
+  }
+  if (!loginData.user) {
+    showMessage('Auto-login failed: no user returned', true);
+    return;
+  }
+
+  // Save username & redirect
+  localStorage.setItem('cachedUsername', username);
+  localStorage.setItem('cachedLoggedIn', 'true');
+  window.location.href = 'index.html';
 });
 
-// Log In button
+// Log In
 loginBtn.addEventListener('click', async () => {
   const username = usernameInput.value.trim();
   const password = passwordInput.value;
@@ -87,7 +68,22 @@ loginBtn.addEventListener('click', async () => {
     showMessage('Enter a username and password', true);
     return;
   }
-  await loginUser(username, password);
+
+  const email = username.toLowerCase() + '@example.com';
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) {
+    showMessage('Login failed: ' + error.message, true);
+    return;
+  }
+  if (!data.user) {
+    showMessage('Login failed: no user returned', true);
+    return;
+  }
+
+  // Save username & redirect
+  localStorage.setItem('cachedUsername', username);
+  localStorage.setItem('cachedLoggedIn', 'true');
+  window.location.href = 'index.html';
 });
 
 // Reveal UI once JS is ready
