@@ -5,24 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>OSRS Trivia</title>
 
-<!-- 🔥 Cached UI before first paint -->
-<script>
-(function(){
-    const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
-    const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
-    const mute = localStorage.getItem('muted') === 'true';
-
-    const span = document.querySelector('#usernameSpan');
-    if(span) span.textContent = ' ' + cachedUsername;
-
-    const authLabel = document.querySelector('#authBtn .btn-label');
-    if(authLabel) authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
-
-    const muteIcon = document.querySelector('#muteIcon');
-    if(muteIcon) muteIcon.textContent = mute ? '🔇' : '🔊';
-})();
-</script>
-  
   <!-- 🔥 Load last background BEFORE first paint (NO flicker) -->
   <script>
     (function () {
@@ -36,8 +18,7 @@
     })();
   
 </script>
-
-    
+  
   <!-- OSRS Title Font -->
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
@@ -110,6 +91,7 @@
   <script src="background.js" defer></script>
 </body>
 </html>
+
 
 
 
