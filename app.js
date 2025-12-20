@@ -344,11 +344,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   // -------------------------
   // Buttons
   // -------------------------
-  startBtn.onclick = async () => {
+//startBtn.onclick = async () => {
     //await loadSounds();
     //startGame();
+  //};
 
-    //test for gz msg
+  startBtn.addEventListener('click', async () => {
     await loadCurrentUser();
     await loadSounds();
 
@@ -358,7 +359,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('start-screen').classList.add('hidden');
     await endGame();
-  //
+
+    
+    //startGame();
   });
 
   playAgainBtn.onclick = startGame;
@@ -393,6 +396,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   }
 });
+
 
 
 
