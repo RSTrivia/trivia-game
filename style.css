@@ -648,6 +648,11 @@ input.input-field:-webkit-autofill:active {
   overflow: hidden;
 }
 
+.login-container .login-row,
+.login-container .menu-row {
+  width: 100%;
+}
+
 
 
 
