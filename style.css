@@ -577,32 +577,22 @@ input.input-field:-webkit-autofill:active {
 
 
 
-
-
-
-
 @media (max-width: 480px) {
-  /* Let container wrap content naturally instead of spreading everything */
+  /* Keep container height fixed to avoid flicker, just tweak padding */
   .container {
-    height: auto !important;           /* remove fixed height */
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start !important; /* stack items from top */
-    align-items: center;
-    padding: 15px;
+    padding-bottom: 10px; /* reduce bottom padding to move button up */
   }
 
-  /* Reduce gap below leaderboard */
+  /* Reduce the gap below leaderboard */
   #leaderboard {
-    margin-bottom: 5px !important;
-    height: auto !important;          /* remove fixed height */
-    overflow-y: visible !important;
+    margin-bottom: 5px;   /* smaller gap between last row and button */
   }
 
-  /* Main Menu button full width & small top margin */
+  /* Adjust Main Menu button spacing only */
   .container a.btn-small {
-    margin-top: 5px !important;       /* tiny gap above button */
-    width: 100% !important;
+    margin-top: 5px;      /* smaller top margin */
+    width: auto;           /* restore normal width */
+    max-width: 200px;      /* optional: prevent it from getting too wide */
   }
 }
 
