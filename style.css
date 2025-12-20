@@ -565,12 +565,16 @@ input.input-field:-webkit-autofill:active {
 
 @media (max-width: 480px) {
   .container {
-    justify-content: flex-start; /* stack elements naturally from top */
+    height: auto;              /* let content define height */
+    justify-content: flex-start; /* stack from top */
   }
 
-  /* Optional: add a little gap below leaderboard */
   #leaderboard {
-    margin-bottom: 10px; 
+    margin-bottom: 10px;       /* smaller gap below rows */
+  }
+
+  .container a.btn-small {      /* optional: tweak button spacing */
+    margin-top: 5px;
   }
 }
 
@@ -584,6 +588,7 @@ input.input-field:-webkit-autofill:active {
   text-align: center;
   font-family: Arial, sans-serif;       /* match final score */
 }
+
 
 
 
