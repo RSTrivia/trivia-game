@@ -601,41 +601,31 @@ input.input-field:-webkit-autofill:active {
   }
 } */
 
-
 @media (max-width: 480px) {
-  /* 1. Reset container to wrap content naturally */
   .container {
-    height: auto !important;
-    width: auto !important; /* Let it be defined by content/PC settings */
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    padding: 10px !important;
+    height: 650px;                 /* keep fixed height to prevent flicker */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;   /* stack items from top */
+    align-items: center;
+    padding: 15px;                 /* smaller padding for mobile */
   }
 
-  /* 2. Smaller reserved space for 10 rows */
   #leaderboard {
-    display: block !important;
-    width: 100% !important;
-    /* Reduced this significantly so the button is pulled UP */
-    min-height: 320px !important; 
-    margin-bottom: 0px !important;
-    overflow: visible !important;
+    width: 100%;
+    margin-bottom: 0;              /* remove extra gap; button will handle spacing */
+    flex: 0 0 auto;                /* only take needed height */
+    overflow-y: visible;           /* show all rows without scroll */
   }
 
-  /* 3. Force button to be visible and close */
   .container a.btn-small {
-    display: block !important;
-    margin-top: 5px !important; /* Tiny gap to rows */
-    width: 200px !important;    /* PC-like width */
-    position: relative !important;
-    z-index: 999;               /* Ensure it's not hidden behind anything */
+    margin-top: auto;              /* push button just below leaderboard */
+    width: auto;                   /* natural width */
+    max-width: 240px;              /* same width as PC */
+    box-sizing: border-box;
+    align-self: center;            /* center horizontally */
   }
 }
-
-
-
-
 
 
 
