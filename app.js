@@ -207,7 +207,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     timeLeft = 15;
     timeDisplay.textContent = timeLeft;
     timeWrap.classList.remove('red-timer');
-    timeDisplay.parentElement.classList.remove('red-timer');
   }
 
   async function startGame() {
@@ -362,6 +361,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   }
 });
+
 
 
 
