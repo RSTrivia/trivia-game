@@ -39,7 +39,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const answersBox = document.getElementById('answers');
   const timeDisplay = document.getElementById('time');
   const muteBtn = document.getElementById('muteBtn');
-  
+  const timeWrap = document.getElementById('time-wrap');
+
   // Main state
   let username = cachedLoggedIn ? cachedUsername : '';
   let score = 0;
@@ -205,7 +206,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     questionImage.style.display = 'none';
     timeLeft = 15;
     timeDisplay.textContent = timeLeft;
-    timeDisplay.classList.remove('red-timer');
+    timeWrap.classList.remove('red-timer');
     timeDisplay.parentElement.classList.remove('red-timer');
   }
 
@@ -261,13 +262,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     timeLeft = 15;
     timeDisplay.textContent = timeLeft;
     timeDisplay.classList.remove('red-timer');
-    timeDisplay.parentElement.classList.remove('red-timer');
+    timeWrap.classList.remove('red-timer');
 
     timer = setInterval(() => {
       timeLeft--;
       timeDisplay.textContent = timeLeft;
-      timeDisplay.parentElement.classList.toggle('red-timer', timeLeft <= 5);
-
+    
+      timeWrap.classList.toggle('red-timer', timeLeft <= 5);
+    
       if (timeLeft <= 0) {
         clearInterval(timer);
         playSound(wrongBuffer);
@@ -275,6 +277,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         setTimeout(endGame, 1000);
       }
     }, 1000);
+
   }
 
   function checkAnswer(selected, btn) {
@@ -359,6 +362,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   }
 });
+
 
 
 
