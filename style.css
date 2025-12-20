@@ -671,6 +671,11 @@ a:focus {
 }
 
 
+button,
+.btn,
+.btn-small {
+  cursor: pointer;
+}
 
 
 
