@@ -563,6 +563,13 @@ input.input-field:-webkit-autofill:active {
   }
 }
 
+@media (max-width: 480px) {
+  /* Move Main Menu button up */
+  .container > a.btn-small {
+    margin-top: 5px; /* reduce gap from leaderboard rows */
+  }
+}
+
 #end-screen #game-over-title {
   color: #cccccc !important;             /* test color */
   -webkit-text-fill-color: #cccccc !important; /* force the color in WebKit */
@@ -572,6 +579,7 @@ input.input-field:-webkit-autofill:active {
   text-align: center;
   font-family: Arial, sans-serif;       /* match final score */
 }
+
 
 
 
