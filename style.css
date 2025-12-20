@@ -563,38 +563,6 @@ input.input-field:-webkit-autofill:active {
   }
 }
 
-/* ====== MOBILE ADJUSTMENTS ===== */
-@media (max-width: 480px) {
-  /* Make container height auto and stack content naturally */
-  .container {
-    height: auto;               /* let content define height */
-    justify-content: flex-start; /* stack from top */
-    padding: 15px;              /* optional: slightly smaller padding */
-  }
-
-  /* Reduce spacing below leaderboard rows */
-  #leaderboard {
-    height: auto;               /* remove fixed height */
-    margin-bottom: 10px;        /* smaller gap between rows and button */
-    overflow-y: visible;        /* show all rows */
-  }
-
-  /* Adjust Main Menu button spacing */
-  .container a.btn-small {
-    margin-top: 5px;            /* smaller gap above button */
-    width: 100%;                /* ensure full container width */
-  }
-
-  /* Slightly reduce font-size for leaderboard rows */
-  #leaderboard li {
-    font-size: 0.9rem;
-    padding: 6px 10px;
-    margin-bottom: 4px;
-  }
-
-}
-
-
 #end-screen #game-over-title {
   color: #cccccc !important;             /* test color */
   -webkit-text-fill-color: #cccccc !important; /* force the color in WebKit */
@@ -608,6 +576,35 @@ input.input-field:-webkit-autofill:active {
 
 
 
+
+
+
+
+
+@media (max-width: 480px) {
+  /* Let container wrap content naturally instead of spreading everything */
+  .container {
+    height: auto !important;           /* remove fixed height */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start !important; /* stack items from top */
+    align-items: center;
+    padding: 15px;
+  }
+
+  /* Reduce gap below leaderboard */
+  #leaderboard {
+    margin-bottom: 5px !important;
+    height: auto !important;          /* remove fixed height */
+    overflow-y: visible !important;
+  }
+
+  /* Main Menu button full width & small top margin */
+  .container a.btn-small {
+    margin-top: 5px !important;       /* tiny gap above button */
+    width: 100% !important;
+  }
+}
 
 
 
