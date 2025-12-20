@@ -379,8 +379,8 @@ h1 {
 }
 
 /* ====== TIMER WARNING ====== */
-#time.red-timer {
-  color: #ff3b3b;               /* OSRS-style red */
+#timer.red-timer {
+  color: #ff3b3b;
   font-weight: bold;
   text-shadow:
     0 0 4px rgba(255, 0, 0, 0.8),
@@ -587,6 +587,7 @@ input.input-field:-webkit-autofill:active {
     padding: 12px;
   }
 }
+
 
 
 
