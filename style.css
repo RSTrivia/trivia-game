@@ -549,9 +549,11 @@ input.input-field:-webkit-autofill:active {
 }
 
 
-.container h1 {
-  font-size: 3.4rem;
+#leaderboard-title {
+  font-size: 3.2rem;
 }
+
+
 
 
 
