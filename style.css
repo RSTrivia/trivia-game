@@ -633,16 +633,14 @@ input.input-field:-webkit-autofill:active {
 }
 
 /* FORCE LOGIN INPUT HEIGHT */
-#app.login-page .login-container input.input-field {
-    height: 32px !important;       /* desired height */
-    padding-top: 4px !important;   /* control inner spacing */
-    padding-bottom: 4px !important;
-    line-height: 1.2 !important;   /* prevent extra height from font */
-    font-size: 0.95rem !important; /* adjust text size */
+#app.login-page .login-container input#username,
+#app.login-page .login-container input#password {
+    height: 32px !important;        /* desired height */
+    padding: 0 10px !important;     /* horizontal padding only */
+    line-height: 32px !important;   /* vertical alignment */
+    font-size: 0.95rem !important;  /* text size */
     box-sizing: border-box !important;
 }
-
-
 
 
 
