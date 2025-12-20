@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let questions = [];
   let remainingQuestions = [];
   let currentQuestion = null;
-  let nextQuestion = null; 
+  let preloadQueue = []; // holds up to 2 questions 
   let timer;
   let timeLeft = 15;
   let correctBuffer, wrongBuffer;
@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     questions = [];
     remainingQuestions = [];
     currentQuestion = null;
-    nextQuestion = null; // HARD RESET ONLY
+    preloadQueue = []; // full reset only
     questionText.textContent = '';
     answersBox.innerHTML = '';
     questionImage.style.display = 'none';
@@ -236,11 +236,9 @@ questions = data;
 remainingQuestions = [...questions];
 
 // ✅ If we have a carried-over preloaded question
-if (nextQuestion) {
-  currentQuestion = nextQuestion;
-  nextQuestion = null;
+if (preloadQueue.length) {
+  currentQuestion = preloadQueue.shift();
 
-  // remove it from remainingQuestions
   const idx = remainingQuestions.findIndex(
     q => q.id === currentQuestion.id
   );
@@ -255,29 +253,44 @@ loadQuestion();
 
 }
 
-function preloadNextQuestion() {
-  if (!remainingQuestions.length) return;
-  const index = Math.floor(Math.random() * remainingQuestions.length);
-  nextQuestion = remainingQuestions[index]; // do NOT remove from array yet
-  if (nextQuestion.question_image) preloadImage(nextQuestion.question_image);
+function preloadNextQuestions() {
+  while (preloadQueue.length < 2 && remainingQuestions.length) {
+    const index = Math.floor(Math.random() * remainingQuestions.length);
+    const q = remainingQuestions[index];
+
+    // prevent duplicates
+    if (
+      q === currentQuestion ||
+      preloadQueue.some(p => p.id === q.id)
+    ) {
+      continue;
+    }
+
+    preloadQueue.push(q);
+
+    if (q.question_image) {
+      preloadImage(q.question_image);
+    }
+  }
 }
+
 
   async function loadQuestion() {
     answersBox.innerHTML = '';
     if (!remainingQuestions.length) return endGame();
 
-    // NEW
-    if (nextQuestion) {
-      // Use the preloaded question
-      currentQuestion = nextQuestion;
-      // Remove it from remainingQuestions
-      const idx = remainingQuestions.indexOf(currentQuestion);
+    if (preloadQueue.length) {
+      currentQuestion = preloadQueue.shift();
+    
+      const idx = remainingQuestions.findIndex(
+        q => q.id === currentQuestion.id
+      );
       if (idx > -1) remainingQuestions.splice(idx, 1);
-      nextQuestion = null;
     } else {
       const index = Math.floor(Math.random() * remainingQuestions.length);
       currentQuestion = remainingQuestions.splice(index, 1)[0];
     }
+
 
     questionText.textContent = currentQuestion.question;
     if (currentQuestion.question_image) {
@@ -304,7 +317,7 @@ function preloadNextQuestion() {
       btn.onclick = () => checkAnswer(i + 1, btn);
       answersBox.appendChild(btn);
     });
-    preloadNextQuestion(); // start preloading the next question in background
+    preloadNextQuestions(); // start preloading the next question in background
 
     currentQuestion.correct_answer_shuffled =
       answers.findIndex(a => a.correct) + 1;
@@ -445,6 +458,7 @@ startBtn.onclick = async () => {
     updateScore();
   }
 });
+
 
 
 
