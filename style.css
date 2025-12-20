@@ -639,12 +639,14 @@ input.input-field:-webkit-autofill:active {
 /* Login page only */
 #app.login-page #username,
 #app.login-page #password {
-  padding: 4px 8px !important;   /* smaller padding */
-  font-size: 0.9rem !important;  /* smaller text */
-  height: 32px !important;       /* explicit height */
-  max-width: 90%;                /* avoid stretching fully */
-  box-sizing: border-box;        /* include padding in height */
+  width: 100%;                 /* full width of container */
+  padding: 4px 10px !important; /* less vertical padding */
+  font-size: 0.9rem !important; /* smaller text */
+  height: 32px !important;      /* explicit height to reduce vertical size */
+  box-sizing: border-box;       /* include padding in height */
 }
+
+
 
 
 
