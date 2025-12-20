@@ -564,11 +564,16 @@ input.input-field:-webkit-autofill:active {
 }
 
 @media (max-width: 480px) {
-  /* Move Main Menu button up */
-  .container > a.btn-small {
-    margin-top: 5px; /* reduce gap from leaderboard rows */
+  .container {
+    justify-content: flex-start; /* stack elements naturally from top */
+  }
+
+  /* Optional: add a little gap below leaderboard */
+  #leaderboard {
+    margin-bottom: 10px; 
   }
 }
+
 
 #end-screen #game-over-title {
   color: #cccccc !important;             /* test color */
@@ -579,6 +584,7 @@ input.input-field:-webkit-autofill:active {
   text-align: center;
   font-family: Arial, sans-serif;       /* match final score */
 }
+
 
 
 
