@@ -636,22 +636,24 @@ input.input-field:-webkit-autofill:active {
 #app.login-page .login-container {
   width: 400px;
   max-width: 90%;
-  height: 300px;              /* reserve total container height */
+  min-height: 300px;          /* reserve minimum height to prevent flicker */
   display: flex;
   flex-direction: column;
-  justify-content: center;     /* center fields vertically */
+  justify-content: flex-start; /* keep title at top */
   align-items: center;
   padding: 20px;
   background: rgba(0,0,0,0.85);
   border-radius: 10px;
   box-shadow: 0 0 30px rgba(0,0,0,0.5);
-  overflow: hidden;
+  overflow: visible;           /* allow container to grow downward if needed */
 }
 
+/* Make rows take full width */
 .login-container .login-row,
 .login-container .menu-row {
   width: 100%;
 }
+
 
 
 
