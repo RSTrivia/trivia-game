@@ -636,141 +636,15 @@ input.input-field:-webkit-autofill:active {
   min-height: 300px; /* match main menu container height */
 }
 
-/* Login page only */
-#app.login-page #username,
-#app.login-page #password {
-  width: 100%;                 /* full width of container */
-  padding: 4px 10px !important; /* less vertical padding */
-  font-size: 0.9rem !important; /* smaller text */
-  height: 32px !important;      /* explicit height to reduce vertical size */
-  box-sizing: border-box;       /* include padding in height */
+/* Target only login page inputs */
+#app #username,
+#app #password {
+  width: 100%;            /* full container width */
+  padding: 4px 10px !important;  /* smaller padding vertically */
+  font-size: 0.9rem !important;  /* smaller text */
+  height: 32px !important;       /* explicit height */
+  box-sizing: border-box;        /* include padding in height */
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
