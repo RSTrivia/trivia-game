@@ -604,7 +604,7 @@ input.input-field:-webkit-autofill:active {
 @media (max-width: 480px) {
   .container {
     height: 88vh;              /*90 fixed-ish to avoid flicker */
-    max-height: 590px;         /*600 cap on phones */
+    max-height: 585px;         /*600 cap on phones */
     display: flex;
     flex-direction: column;
     justify-content: flex-start; 
@@ -623,13 +623,14 @@ input.input-field:-webkit-autofill:active {
   .container a.btn-small {
     margin-top: auto;           /* pushes it right below leaderboard */
     width: auto;                /* same as PC */
-    margin-bottom: 30px;    /* add a little space from container bottom */
+    margin-bottom: 26px;    /* add a little space from container bottom */
     max-width: 240px;
     box-sizing: border-box;
     align-self: center;
     flex-shrink: 0;             /* ensure it’s visible */
   }
 }
+
 
 
 
