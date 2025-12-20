@@ -359,9 +359,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('start-screen').classList.add('hidden');
     await endGame();
   //
-
-    
-  };
+  });
 
   playAgainBtn.onclick = startGame;
 
@@ -395,6 +393,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   }
 });
+
 
 
 
