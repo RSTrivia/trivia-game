@@ -563,14 +563,15 @@ input.input-field:-webkit-autofill:active {
   }
 }
 
-#end-screen #game-over-title {
-  font-size: 2rem;                    /* original size */
-  color: #f5f5f5 !important;          /* solid white */
-  background: none !important;        /* remove any gradient background */
-  -webkit-background-clip: unset !important;
-  -webkit-text-fill-color: #f5f5f5 !important; /* force solid color */
-  text-shadow: 0 0 4px rgba(0,0,0,0.8);        /* subtle shadow */
+#end-screen h2 {
+  font-size: 2rem;               /* original size */
+  color: #f5f5f5 !important;     /* solid white text */
+  background: none !important;    /* remove gradient background */
+  -webkit-background-clip: unset !important; /* undo gradient clipping */
+  -webkit-text-fill-color: #f5f5f5 !important; /* solid color for Safari/Chrome */
+  text-shadow: 0 0 4px rgba(0,0,0,0.8); /* optional subtle shadow */
 }
+
 
 
 
