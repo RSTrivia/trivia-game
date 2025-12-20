@@ -636,17 +636,15 @@ input.input-field:-webkit-autofill:active {
   min-height: 300px; /* match main menu container height */
 }
 
-/* Only login page inputs */
+/* TARGET LOGIN PAGE INPUTS ONLY */
 .login-container input.input-field {
-    height: 32px !important;          /* fixed height */
-    padding-top: 4px !important;      /* adjust vertical padding */
-    padding-bottom: 4px !important;
-    padding-left: 10px !important;    /* horizontal padding */
-    padding-right: 10px !important;
-    font-size: 0.95rem !important;    /* optional: smaller font */
-    line-height: normal !important;   /* prevent extra height */
-    box-sizing: border-box !important;
+    height: 32px !important;       /* exact height you want */
+    padding: 4px 10px !important;  /* smaller padding inside */
+    font-size: 0.95rem !important; /* slightly smaller font */
+    line-height: 1.2 !important;   /* prevent extra height */
+    box-sizing: border-box !important; /* include border/padding in height */
 }
+
 
 
 
