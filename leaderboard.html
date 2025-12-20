@@ -151,9 +151,6 @@
     border-color: #ffea8a;
   }
 
-  /* Prevent flash */
-  .app-hidden { visibility: hidden; }
-  .app-ready { visibility: visible; }
 </style>
 </head>
 
@@ -167,7 +164,7 @@
 
 
 <!-- App wrapper -->
-<div id="app" class="app-hidden">
+<div id="app">
   <div class="container">
     <h1>Leaderboard</h1>
     <ul id="leaderboard"></ul>
@@ -219,9 +216,6 @@ function renderLeaderboard(data) {
       }
     });
 
-  // 3️⃣ Reveal the app UI immediately
-  app.classList.remove('app-hidden');
-  app.classList.add('app-ready');
 })();
 
 
@@ -229,6 +223,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
