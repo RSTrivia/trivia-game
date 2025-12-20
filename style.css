@@ -632,40 +632,31 @@ input.input-field:-webkit-autofill:active {
   }
 }
 
-/* Stable login container: reserve space to prevent flicker */
+/* Stable login container: grows naturally, no forced gaps */
 #app.login-page .login-container {
   width: 400px;
   max-width: 90%;
-  min-height: 300px;          /* reserve minimum height to prevent flicker */
+  min-height: 300px;         /* reserve space to prevent flicker */
   display: flex;
   flex-direction: column;
-  justify-content: flex-start; /* keep title at top */
+  justify-content: flex-start; /* stack rows from top */
   align-items: center;
   padding: 20px;
   background: rgba(0,0,0,0.85);
   border-radius: 10px;
   box-shadow: 0 0 30px rgba(0,0,0,0.5);
-  overflow: visible;           /* allow container to grow downward if needed */
+  overflow: visible;          /* allow container to grow if needed */
 }
 
-/* Make rows take full width */
-.login-container .login-row,
-.login-container .menu-row {
+/* Each login row has a bottom margin for spacing */
+.login-container .login-row {
   width: 100%;
+  margin-bottom: 10px;       /* same as main menu button gap */
 }
 
-/* Login / Signup buttons row */
-.login-container .menu-row {
-  display: flex;
-  gap: 10px;         /* space between login and signup */
-  width: 100%;
-  margin-bottom: 15px;  /* spacing below these buttons */
-}
-
-/* Back to Game button row: same gap as main menu buttons */
+/* Remove margin-top / auto from Back to Game button */
 .login-container .login-row.back-btn {
-  width: 100%;
-  margin-top: 10px;  /* small gap below login/signup buttons */
+  margin-bottom: 0;          /* no extra space at bottom */
 }
 
 
