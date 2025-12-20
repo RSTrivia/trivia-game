@@ -209,24 +209,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     timeWrap.classList.remove('red-timer');
   }
 
-  async function startGame() {
-  document.body.classList.add('game-active'); // 👈 ADD THIS
-  endGame.running = false; // <-- reset at start
+async function startGame() {
+  document.body.classList.add('game-active'); 
+  endGame.running = false;
   resetGame();
+
+  // Show the game container immediately
   game.classList.remove('hidden');
   document.getElementById('start-screen').classList.add('hidden');
   endScreen.classList.add('hidden');
   updateScore();
 
-  await loadSounds();
+  // Load sounds in background
+  loadSounds(); 
 
+  // Load questions
   const { data } = await supabase.from('questions').select('*');
   if (!data?.length) return alert('Could not load questions!');
-
   questions = data;
   remainingQuestions = [...questions];
+
+  // Load first question asynchronously, but container is already visible
   loadQuestion();
 }
+
 
 
   async function loadQuestion() {
@@ -237,8 +243,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     currentQuestion = remainingQuestions.splice(index, 1)[0];
 
     questionText.textContent = currentQuestion.question;
-    questionImage.style.display = currentQuestion.question_image ? 'block' : 'none';
-    if (currentQuestion.question_image) questionImage.src = currentQuestion.question_image;
+    if (currentQuestion.question_image) {
+        questionImage.style.display = 'none';      // hide until loaded
+        questionImage.onload = () => {
+            questionImage.style.display = 'block'; // show once loaded
+        };
+        questionImage.src = currentQuestion.question_image;
+    } else {
+        questionImage.style.display = 'none';      // hide if no image
+    }
 
     let answers = [
       { text: currentQuestion.answer_a, correct: currentQuestion.correct_answer === 1 },
@@ -394,6 +407,7 @@ startBtn.onclick = async () => {
     updateScore();
   }
 });
+
 
 
 
