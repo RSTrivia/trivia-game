@@ -48,7 +48,11 @@
       <!-- First row: User + Mute -->
       <div id="user-controls" class="row">
         <button id="muteBtn" aria-label="Mute">
-          <span id="muteIcon">🔊</span>
+          <span id="muteIcon">
+            <script>
+              document.write(localStorage.getItem('cachedMuted') === 'true' ? '🔇' : '🔊');
+            </script>
+          </span>
         </button>
       <div id="userDisplay">
         Player:<span id="usernameSpan">
@@ -82,7 +86,7 @@
         <!-- Third row: Login + Leaderboard -->
         <div class="row">
           <button id="authBtn" class="btn-small">
-            <span class="btn-label" id="authLabel">Log In</span>
+            <span class="btn-label">Log In</span>
           </button>
           <a href="leaderboard.html" class="btn-small">Leaderboard</a>
         </div>
@@ -100,17 +104,12 @@
   </div>
 
   <!-- Scripts -->
-  <script>
-          const authLabel = document.getElementById('authLabel');
-          if (authLabel) {
-            authLabel.textContent = localStorage.getItem('cachedLoggedIn') === 'true' ? 'Log Out' : 'Log In';
-          }
-  </script>
   <script type="module" src="supabase.js"></script>
   <script type="module" src="app.js"></script>
   <script src="background.js" defer></script>
 </body>
 </html>
+
 
 
 
