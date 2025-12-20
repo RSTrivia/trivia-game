@@ -324,7 +324,7 @@ h1 {
 #userDisplay {
   display: flex;
   align-items: center;
-  gap: 0.5rem; /* space between Player:, username, and mute button */
+  /*gap: 0.5rem; /* space between Player:, username, and mute button */
 }
 
 #muteBtn {
@@ -564,6 +564,7 @@ input.input-field:-webkit-autofill:active {
     padding: 12px;
   }
 }
+
 
 
 
