@@ -574,34 +574,63 @@ input.input-field:-webkit-autofill:active {
 }
 
 
-@media (max-width: 480px) {
+ /*@media (max-width: 480px) {
   .container {
-    height: 650px;                 /* keep fixed height to prevent flicker */
+    height: 650px;                 
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;   /* stack items from top */
+    justify-content: flex-start;  
     align-items: center;
-    padding: 15px;                 /* smaller padding for mobile */
+    padding: 15px;              
   }
 
   /* Leaderboard adapts inside fixed container */
-  #leaderboard {
-    flex: 1 1 auto;                /* allow it to grow/shrink inside container */
-    margin-bottom: 5px;            /* small gap to button */
-    overflow-y: auto;              /* enable scrolling if needed */
+ /* #leaderboard {
+    flex: 1 1 auto;             
+    margin-bottom: 5px;         
+    overflow-y: auto;           
   }
 
   /* Main Menu button: same width as PC */
-  .container a.btn-small {
+  /*.container a.btn-small {
     margin-top: 5px;
-    width: auto;                   /* natural width */
-    max-width: 240px;              /* match PC width */
+    width: auto;                 
+    max-width: 240px;              
     box-sizing: border-box;
-    align-self: center;            /* center horizontally */
+    align-self: center;           
+  }
+} */
+
+
+@media (max-width: 480px) {
+  .container {
+    /* min-height prevents the 'jump' when content loads */
+    min-height: 650px; 
+    height: auto !important;
+    
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* Keeps everything at the top */
+    align-items: center;
+    padding: 15px;
+  }
+
+  #leaderboard {
+    /* Prevent the leaderboard from expanding to fill the 650px */
+    flex: 0 1 auto; 
+    width: 100%;
+    margin-bottom: 5px !important;
+    overflow-y: visible !important;
+  }
+
+  .container a.btn-small {
+    /* This will now sit directly under the leaderboard rows */
+    margin-top: 5px !important;
+    width: auto !important;
+    max-width: 240px;
+    align-self: center;
   }
 }
-
-
 
 
 
