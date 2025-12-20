@@ -5,6 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>OSRS Trivia</title>
 
+<!-- 🔥 Cached UI before first paint -->
+<script>
+(function(){
+    const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
+    const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
+    const mute = localStorage.getItem('muted') === 'true';
+
+    const span = document.querySelector('#usernameSpan');
+    if(span) span.textContent = ' ' + cachedUsername;
+
+    const authLabel = document.querySelector('#authBtn .btn-label');
+    if(authLabel) authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
+
+    const muteIcon = document.querySelector('#muteIcon');
+    if(muteIcon) muteIcon.textContent = mute ? '🔇' : '🔊';
+})();
+</script>
+  
   <!-- 🔥 Load last background BEFORE first paint (NO flicker) -->
   <script>
     (function () {
@@ -30,27 +48,6 @@
   <div id="background-root">
     <div id="bg-fade-layer"></div>
   </div>
-
-    <!-- Prevent flicker: set initial cached UI before paint -->
-  <script type="module">
-    import { supabase } from './supabase.js';
-    
-    const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
-    const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
-    const muted = localStorage.getItem('muted') === 'true';
-
-    const appDiv = document.getElementById('app');
-    const usernameSpan = document.getElementById('usernameSpan');
-    const authBtn = document.getElementById('authBtn');
-    const authLabel = authBtn?.querySelector('.btn-label');
-    const muteIcon = document.getElementById('muteIcon');
-
-    // Apply cached UI immediately
-    if (usernameSpan) usernameSpan.textContent = ' ' + cachedUsername;
-    if (authLabel) authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
-    if (muteIcon) muteIcon.textContent = muted ? '🔇' : '🔊';
-    if (appDiv) appDiv.style.opacity = '1';
-  </script>
   
   <!-- App wrapper -->
   <div id="app">
@@ -113,6 +110,7 @@
   <script src="background.js" defer></script>
 </body>
 </html>
+
 
 
 
