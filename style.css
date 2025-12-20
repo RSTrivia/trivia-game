@@ -566,12 +566,13 @@ input.input-field:-webkit-autofill:active {
 #game-over-title {
   font-family: Arial, sans-serif;  /* or same as finalScore */
   font-size: 2.2rem;               /* bigger than finalScore */
-  color: #f5f5f5 !important;       /* solid white */
+  color: red !important;       /* solid white */
   -webkit-text-fill-color: #f5f5f5 !important; /* override any gradient */
   background: none !important;     /* remove inherited gradient */
   text-shadow: none !important;    /* optional: remove shadows */
   text-align: center;
 }
+
 
 
 
