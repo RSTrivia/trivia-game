@@ -576,24 +576,33 @@ input.input-field:-webkit-autofill:active {
 
 
 @media (max-width: 480px) {
+  /* Container wraps content naturally */
   .container {
-    /* keep flex layout intact; no height changes */
+    height: auto !important;             /* remove fixed height */
+    display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start !important; /* stack items from top */
+    align-items: center;
+    padding: 15px;                        /* smaller padding for mobile */
   }
 
+  /* Reduce gap below leaderboard */
   #leaderboard {
-    margin-bottom: 5px; /* small gap between last row and button */
-    height: auto;       /* allow leaderboard to shrink slightly on small screens */
+    margin-bottom: 5px !important;        /* tiny gap to button */
+    height: auto !important;              /* remove fixed height */
+    overflow-y: visible !important;       /* show all rows without scroll */
   }
 
+  /* Main Menu button placement */
   .container a.btn-small {
-    margin-top: 0;      /* button hugs leaderboard */
-    width: auto;        /* don’t stretch across container */
-    max-width: 200px;   /* optional: prevent excessive width */
-    align-self: center; /* center the button horizontally */
+    margin-top: 5px !important;           /* tiny gap above button */
+    width: 100% !important;               /* full container width */
+    max-width: 400px;                      /* prevent it from stretching too far */
+    box-sizing: border-box;               /* include padding/border in width */
   }
 }
+
+
 
 
 
