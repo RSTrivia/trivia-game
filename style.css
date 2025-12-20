@@ -575,26 +575,27 @@ input.input-field:-webkit-autofill:active {
 
 
 
-
-
 @media (max-width: 480px) {
-  /* Keep container height fixed to avoid flicker, just tweak padding */
   .container {
-    padding-bottom: 10px; /* reduce bottom padding to move button up */
+    /* keep flex layout intact; no height changes */
+    flex-direction: column;
+    justify-content: space-between;
   }
 
-  /* Reduce the gap below leaderboard */
   #leaderboard {
-    margin-bottom: 5px;   /* smaller gap between last row and button */
+    margin-bottom: 5px; /* small gap between last row and button */
+    height: auto;       /* allow leaderboard to shrink slightly on small screens */
   }
 
-  /* Adjust Main Menu button spacing only */
   .container a.btn-small {
-    margin-top: 5px;      /* smaller top margin */
-    width: auto;           /* restore normal width */
-    max-width: 200px;      /* optional: prevent it from getting too wide */
+    margin-top: 0;      /* button hugs leaderboard */
+    width: auto;        /* don’t stretch across container */
+    max-width: 200px;   /* optional: prevent excessive width */
+    align-self: center; /* center the button horizontally */
   }
 }
+
+
 
 
 
