@@ -588,6 +588,19 @@ input.input-field:-webkit-autofill:active {
 }
 
 
+@media (max-width: 480px) {
+  #leaderboard li {
+    padding: 6px 10px;   /* was ~10–12px */
+    margin-bottom: 4px; /* was ~6px */
+    font-size: 0.9rem;  /* slightly smaller text */
+    line-height: 1.2;   /* tighter vertical spacing */
+  }
+
+  #leaderboard {
+    margin: 12px 0;     /* reduce top/bottom gap */
+  }
+}
+
 
 
 
