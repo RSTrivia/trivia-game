@@ -316,6 +316,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (username) await submitLeaderboardScore(username, score);
   }
 
+  // Initialize the running flag **after the function exists**
+  endGame.running = false;
   // -------------------------
   // Buttons
   // -------------------------
@@ -354,6 +356,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   }
 });
+
 
 
 
