@@ -603,29 +603,31 @@ input.input-field:-webkit-autofill:active {
 
 @media (max-width: 480px) {
   .container {
-    height: 650px;                 /* keep fixed height to prevent flicker */
+    height: 90vh;                  /* fixed-ish, but smaller than full PC height */
+    max-height: 600px;             /* cap height so it fits most phones */
     display: flex;
     flex-direction: column;
     justify-content: flex-start;   /* stack items from top */
     align-items: center;
-    padding: 15px;                 /* smaller padding for mobile */
+    padding: 15px;
   }
 
   #leaderboard {
     width: 100%;
-    margin-bottom: 0;              /* remove extra gap; button will handle spacing */
-    flex: 0 0 auto;                /* only take needed height */
-    overflow-y: visible;           /* show all rows without scroll */
+    flex: 0 0 auto;                /* only take needed space */
+    margin-bottom: 0;              /* remove gap; button will handle spacing */
+    overflow-y: visible;
   }
 
   .container a.btn-small {
-    margin-top: auto;              /* push button just below leaderboard */
-    width: auto;                   /* natural width */
-    max-width: 240px;              /* same width as PC */
+    margin-top: auto;              /* push button right below leaderboard */
+    width: auto;                   /* natural width, same as PC */
+    max-width: 240px;              
     box-sizing: border-box;
-    align-self: center;            /* center horizontally */
+    align-self: center;
   }
 }
+
 
 
 
