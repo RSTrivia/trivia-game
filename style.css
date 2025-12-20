@@ -563,19 +563,35 @@ input.input-field:-webkit-autofill:active {
   }
 }
 
+/* ====== MOBILE ADJUSTMENTS ===== */
 @media (max-width: 480px) {
+  /* Make container height auto and stack content naturally */
   .container {
-    height: auto;              /* let content define height */
+    height: auto;               /* let content define height */
     justify-content: flex-start; /* stack from top */
+    padding: 15px;              /* optional: slightly smaller padding */
   }
 
+  /* Reduce spacing below leaderboard rows */
   #leaderboard {
-    margin-bottom: 10px;       /* smaller gap below rows */
+    height: auto;               /* remove fixed height */
+    margin-bottom: 10px;        /* smaller gap between rows and button */
+    overflow-y: visible;        /* show all rows */
   }
 
-  .container a.btn-small {      /* optional: tweak button spacing */
-    margin-top: 5px;
+  /* Adjust Main Menu button spacing */
+  .container a.btn-small {
+    margin-top: 5px;            /* smaller gap above button */
+    width: 100%;                /* ensure full container width */
   }
+
+  /* Slightly reduce font-size for leaderboard rows */
+  #leaderboard li {
+    font-size: 0.9rem;
+    padding: 6px 10px;
+    margin-bottom: 4px;
+  }
+
 }
 
 
@@ -588,6 +604,7 @@ input.input-field:-webkit-autofill:active {
   text-align: center;
   font-family: Arial, sans-serif;       /* match final score */
 }
+
 
 
 
