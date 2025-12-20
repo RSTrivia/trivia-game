@@ -84,19 +84,12 @@
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0 0 30px rgba(0,0,0,0.5);
-  width: 400px;       /* exact width of main menu */
-  max-width: 90%;     /* responsive on small screens */
-  min-height: 600px;  /* enough to fit all 10 rows + title + button */
+  width: 400px;       
+  max-width: 90%;     
+  height: 700px; /* FIXED height: title + 10 rows + button + padding */
   text-align: center;
   margin: 0 auto;     
 }
-
-  h1 {
-    font-family: 'Cinzel', serif;
-    font-size: 2.5rem;
-    margin-bottom: 25px; /* same as main menu */
-    letter-spacing: 2px;
-  }
 
 /* ===== LEADERBOARD ===== */
 #leaderboard {
@@ -104,9 +97,17 @@
   list-style: none;
   padding: 0;
   margin: 20px 0;
-  flex: none;           /* leaderboard height fixed by its content */
-  overflow-y: auto;     /* scroll if needed */
+  flex: none;
+  height: 580px; /* FIXED height for 10 rows */
+  overflow-y: auto; /* scroll if more rows added later */
 }
+  
+  h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 2.5rem;
+    margin-bottom: 25px; /* same as main menu */
+    letter-spacing: 2px;
+  }
 
   #leaderboard li {
     display: flex;
@@ -235,6 +236,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
