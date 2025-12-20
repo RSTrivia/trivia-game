@@ -206,6 +206,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     questions = [];
     remainingQuestions = [];
     currentQuestion = null;
+    nextQuestion = null; // HARD RESET ONLY
     questionText.textContent = '';
     answersBox.innerHTML = '';
     questionImage.style.display = 'none';
@@ -231,11 +232,27 @@ async function startGame() {
   // Load questions
   const { data } = await supabase.from('questions').select('*');
   if (!data?.length) return alert('Could not load questions!');
-  questions = data;
-  remainingQuestions = [...questions];
+questions = data;
+remainingQuestions = [...questions];
 
-  // Load first question asynchronously, but container is already visible
+// ✅ If we have a carried-over preloaded question
+if (nextQuestion) {
+  currentQuestion = nextQuestion;
+  nextQuestion = null;
+
+  // remove it from remainingQuestions
+  const idx = remainingQuestions.findIndex(
+    q => q.id === currentQuestion.id
+  );
+  if (idx > -1) remainingQuestions.splice(idx, 1);
+
   loadQuestion();
+  return;
+}
+
+// Otherwise random start
+loadQuestion();
+
 }
 
 function preloadNextQuestion() {
@@ -286,8 +303,8 @@ function preloadNextQuestion() {
       btn.classList.add('answer-btn');
       btn.onclick = () => checkAnswer(i + 1, btn);
       answersBox.appendChild(btn);
-      preloadNextQuestion(); // start preloading the next question in background
     });
+    preloadNextQuestion(); // start preloading the next question in background
 
     currentQuestion.correct_answer_shuffled =
       answers.findIndex(a => a.correct) + 1;
@@ -428,6 +445,7 @@ startBtn.onclick = async () => {
     updateScore();
   }
 });
+
 
 
 
