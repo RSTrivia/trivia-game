@@ -282,21 +282,21 @@ h1 {
   z-index: 9999;
 }
 
-/* ====== USER DISPLAY & MUTE BUTTON ===== */
 #user-controls {
-  display: flex;            /* horizontal layout */
-  align-items: center;      /* vertically center mic and text */
-  justify-content: center;  /* horizontally center inside container */
-  gap: 10px;                 /* space between mic and name */
-  margin-bottom: 15px;      /* optional spacing below */
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 15px;
 }
 
 #userDisplay {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   font-size: 1.2rem;
   color: #ffd700;
+  white-space: nowrap;
 }
 
 
@@ -666,6 +666,7 @@ a.btn,
 a.btn-small {
   cursor: default !important;
 }
+
 
 
 
