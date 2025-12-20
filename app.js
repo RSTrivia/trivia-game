@@ -1,7 +1,31 @@
 import { supabase } from './supabase.js';
 
+// ====== IMMEDIATE CACHED UI (pre-paint) ======
+const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
+const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
+const mutedCached = localStorage.getItem('muted') === 'true';
+
+const appDiv = document.getElementById('app');
+const userDisplay = document.getElementById('userDisplay');
+const authBtn = document.getElementById('authBtn');
+let authLabel = null;
+const muteBtn = document.getElementById('muteBtn');
+const muteIcon = document.getElementById('muteIcon');
+
+if (userDisplay) {
+  const span = userDisplay.querySelector('#usernameSpan');
+  if (span) span.textContent = ' ' + cachedUsername;
+}
+
+if (authBtn) authLabel = authBtn.querySelector('.btn-label');
+if (authLabel) authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
+
+if (muteIcon) muteIcon.textContent = mutedCached ? '🔇' : '🔊';
+if (appDiv) appDiv.style.opacity = '1';
+
+// ====== DOMContentLoaded & GAME LOGIC ======
 document.addEventListener('DOMContentLoaded', async () => {
-  // ===== DOM ELEMENTS =====
+  // DOM Elements
   const startBtn = document.getElementById('startBtn');
   const playAgainBtn = document.getElementById('playAgainBtn');
   const mainMenuBtn = document.getElementById('mainMenuBtn');
@@ -13,39 +37,35 @@ document.addEventListener('DOMContentLoaded', async () => {
   const questionImage = document.getElementById('questionImage');
   const answersBox = document.getElementById('answers');
   const timeDisplay = document.getElementById('time');
-  const muteBtn = document.getElementById('muteBtn');
-  const muteIcon = document.getElementById('muteIcon');
-  const userDisplay = document.getElementById('userDisplay');
-  const authBtn = document.getElementById('authBtn');
-  const authLabel = authBtn?.querySelector('.btn-label');
 
   // ===== STATE =====
-  let cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
-  let cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
   let username = cachedLoggedIn ? cachedUsername : '';
-  let muted = localStorage.getItem('muted') === 'true';
   let score = 0;
   let questions = [];
   let remainingQuestions = [];
   let currentQuestion = null;
   let timer;
   let timeLeft = 15;
-  let correctBuffer, wrongBuffer;
-  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  let muted = mutedCached;
 
-  // ===== MUTE ICON =====
-  const updateMuteIcon = () => { if(muteIcon) muteIcon.textContent = muted ? '🔇' : '🔊'; };
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  let correctBuffer, wrongBuffer;
+
+  // ===== Mute Icon =====
+  const updateMuteIcon = () => {
+    if (muteIcon) muteIcon.textContent = muted ? '🔇' : '🔊';
+  };
   updateMuteIcon();
 
   muteBtn?.addEventListener('click', () => {
     muted = !muted;
     localStorage.setItem('muted', muted);
     updateMuteIcon();
-    if(audioCtx.state === 'suspended') audioCtx.resume();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
   });
 
-  // ===== LOAD PROFILE & PREVENT FLICKER =====
-  async function fetchProfile() {
+  // ===== Preload Auth (async) =====
+  async function preloadAuth() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) return;
 
@@ -55,34 +75,26 @@ document.addEventListener('DOMContentLoaded', async () => {
       .eq('id', session.user.id)
       .single();
 
-    if(profile?.username && profile.username !== username) {
+    if (!profile?.username) return;
+    if (profile.username !== username) {
       username = profile.username;
-      localStorage.setItem('cachedUsername', username);
+      localStorage.setItem('cachedUsername', profile.username);
       localStorage.setItem('cachedLoggedIn', 'true');
-
-      // smooth fade update
-      const span = userDisplay?.querySelector('#usernameSpan');
-      if(span) {
-        span.style.opacity = 0;
-        span.textContent = ' ' + username;
-        span.style.transition = 'opacity 0.3s';
-        requestAnimationFrame(() => { span.style.opacity = 1; });
-      }
-
-      if(authLabel) authLabel.textContent = 'Log Out';
+      const span = userDisplay.querySelector('#usernameSpan');
+      if (span) span.textContent = ' ' + profile.username;
+      if (authLabel) authLabel.textContent = 'Log Out';
     }
   }
-  await fetchProfile();
+  await preloadAuth(); // run immediately to prevent flicker
 
-  // ===== AUTH STATE CHANGE =====
+  // ===== Supabase Auth State Listener =====
   supabase.auth.onAuthStateChange(async (_event, session) => {
-    if(!session?.user) {
-      username = '';
+    if (!session?.user) {
       localStorage.setItem('cachedLoggedIn', 'false');
       localStorage.setItem('cachedUsername', 'Guest');
-
-      if(userDisplay?.querySelector('#usernameSpan')) userDisplay.querySelector('#usernameSpan').textContent = ' Guest';
-      if(authLabel) authLabel.textContent = 'Log In';
+      username = '';
+      if (userDisplay) userDisplay.querySelector('#usernameSpan').textContent = ' Guest';
+      if (authLabel) authLabel.textContent = 'Log In';
       return;
     }
 
@@ -92,55 +104,61 @@ document.addEventListener('DOMContentLoaded', async () => {
       .eq('id', session.user.id)
       .single();
 
-    if(profile?.username) {
+    if (profile?.username) {
       username = profile.username;
-      localStorage.setItem('cachedUsername', username);
       localStorage.setItem('cachedLoggedIn', 'true');
-
-      const span = userDisplay?.querySelector('#usernameSpan');
-      if(span) span.textContent = ' ' + username;
-      if(authLabel) authLabel.textContent = 'Log Out';
+      localStorage.setItem('cachedUsername', profile.username);
+      if (userDisplay) userDisplay.querySelector('#usernameSpan').textContent = ' ' + profile.username;
+      if (authLabel) authLabel.textContent = 'Log Out';
     }
   });
 
-  // ===== AUTH BUTTON =====
+  // ===== Auth Button =====
   authBtn?.addEventListener('click', async () => {
-    if(authLabel?.textContent === 'Log Out') {
+    if (!authLabel) return;
+    if (authLabel.textContent === 'Log Out') {
       await supabase.auth.signOut();
     } else {
       window.location.href = 'login.html';
     }
   });
 
-  // ===== AUDIO =====
-  async function loadAudioFile(url) {
-    const res = await fetch(url);
-    const buffer = await res.arrayBuffer();
-    return audioCtx.decodeAudioData(buffer);
+  // ===== Audio =====
+  async function loadSounds() {
+    correctBuffer = await loadAudio('./sounds/correct.mp3');
+    wrongBuffer = await loadAudio('./sounds/wrong.mp3');
   }
 
-  async function loadSounds() {
-    correctBuffer = await loadAudioFile('./sounds/correct.mp3');
-    wrongBuffer = await loadAudioFile('./sounds/wrong.mp3');
+  async function loadAudio(url) {
+    const res = await fetch(url);
+    return audioCtx.decodeAudioData(await res.arrayBuffer());
   }
 
   function playSound(buffer) {
-    if(!buffer || muted) return;
+    if (!buffer || muted) return;
     const source = audioCtx.createBufferSource();
     source.buffer = buffer;
-    const gain = audioCtx.createGain();
-    gain.gain.value = 0.5;
-    source.connect(gain).connect(audioCtx.destination);
+    const gainNode = audioCtx.createGain();
+    gainNode.gain.value = 0.5;
+    source.connect(gainNode).connect(audioCtx.destination);
     source.start();
   }
 
-  // ===== LEADERBOARD =====
+  // ===== Leaderboard =====
   async function submitLeaderboardScore(username, score) {
     const { data: { user } } = await supabase.auth.getUser();
-    if(!user) return;
-    const { data: existing } = await supabase.from('scores').select('score').eq('user_id', user.id).single();
-    if(!existing || score > existing.score) {
-      await supabase.from('scores').upsert({ user_id: user.id, username, score }, { onConflict: 'user_id' });
+    if (!user) return;
+
+    const { data: existingScore } = await supabase
+      .from('scores')
+      .select('score')
+      .eq('user_id', user.id)
+      .single();
+
+    if (!existingScore || score > existingScore.score) {
+      await supabase
+        .from('scores')
+        .upsert({ user_id: user.id, username, score }, { onConflict: 'user_id' });
     }
   }
 
@@ -157,7 +175,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     timeLeft = 15;
     timeDisplay.textContent = timeLeft;
     timeDisplay.classList.remove('red-timer');
-    scoreDisplay.textContent = `Score: 0`;
   }
 
   async function startGame() {
@@ -165,95 +182,107 @@ document.addEventListener('DOMContentLoaded', async () => {
     game.classList.remove('hidden');
     document.getElementById('start-screen').classList.add('hidden');
     endScreen.classList.add('hidden');
+    updateScore();
 
     await loadSounds();
 
     const { data } = await supabase.from('questions').select('*');
-    if(!data?.length) return alert('Could not load questions!');
+    if (!data?.length) return alert('Could not load questions!');
+
     questions = data;
     remainingQuestions = [...questions];
     loadQuestion();
   }
 
-  function loadQuestion() {
+  async function loadQuestion() {
     answersBox.innerHTML = '';
-    if(!remainingQuestions.length) return endGame();
+    if (!remainingQuestions.length) return endGame();
 
     const index = Math.floor(Math.random() * remainingQuestions.length);
     currentQuestion = remainingQuestions.splice(index, 1)[0];
 
     questionText.textContent = currentQuestion.question;
     questionImage.style.display = currentQuestion.question_image ? 'block' : 'none';
-    if(currentQuestion.question_image) questionImage.src = currentQuestion.question_image;
+    if (currentQuestion.question_image) questionImage.src = currentQuestion.question_image;
 
-    const answers = [
+    let answers = [
       { text: currentQuestion.answer_a, correct: currentQuestion.correct_answer === 1 },
       { text: currentQuestion.answer_b, correct: currentQuestion.correct_answer === 2 },
       { text: currentQuestion.answer_c, correct: currentQuestion.correct_answer === 3 },
       { text: currentQuestion.answer_d, correct: currentQuestion.correct_answer === 4 }
     ].sort(() => Math.random() - 0.5);
 
-    answers.forEach((ans,i)=>{
+    answers.forEach((ans, i) => {
       const btn = document.createElement('button');
       btn.textContent = ans.text;
       btn.classList.add('answer-btn');
-      btn.onclick = () => checkAnswer(i+1, btn);
+      btn.onclick = () => checkAnswer(i + 1, btn);
       answersBox.appendChild(btn);
     });
 
-    currentQuestion.correct_answer_shuffled = answers.findIndex(a => a.correct)+1;
+    currentQuestion.correct_answer_shuffled = answers.findIndex(a => a.correct) + 1;
 
     clearInterval(timer);
     timeLeft = 15;
     timeDisplay.textContent = timeLeft;
     timeDisplay.classList.remove('red-timer');
 
-    timer = setInterval(()=>{
+    timer = setInterval(() => {
       timeLeft--;
       timeDisplay.textContent = timeLeft;
-      timeDisplay.classList.toggle('red-timer', timeLeft<=5);
-      if(timeLeft<=0){
+      timeDisplay.classList.toggle('red-timer', timeLeft <= 5);
+
+      if (timeLeft <= 0) {
         clearInterval(timer);
         playSound(wrongBuffer);
         highlightCorrectAnswer();
-        setTimeout(endGame,1000);
+        setTimeout(endGame, 1000);
       }
-    },1000);
+    }, 1000);
   }
 
-  function checkAnswer(selected, btn){
+  function checkAnswer(selected, btn) {
     clearInterval(timer);
-    document.querySelectorAll('.answer-btn').forEach(b=>b.disabled=true);
+    document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
 
-    if(selected===currentQuestion.correct_answer_shuffled){
+    if (selected === currentQuestion.correct_answer_shuffled) {
       playSound(correctBuffer);
       btn.classList.add('correct');
       score++;
-      scoreDisplay.textContent = `Score: ${score}`;
-      setTimeout(loadQuestion,1000);
-    }else{
+      updateScore();
+      setTimeout(loadQuestion, 1000);
+    } else {
       playSound(wrongBuffer);
       btn.classList.add('wrong');
       highlightCorrectAnswer();
-      setTimeout(endGame,1000);
+      setTimeout(endGame, 1000);
     }
   }
 
-  function highlightCorrectAnswer(){
-    document.querySelectorAll('.answer-btn').forEach((btn,i)=>{
-      if(i+1===currentQuestion.correct_answer_shuffled) btn.classList.add('correct');
+  function highlightCorrectAnswer() {
+    document.querySelectorAll('.answer-btn').forEach((btn, i) => {
+      if (i + 1 === currentQuestion.correct_answer_shuffled)
+        btn.classList.add('correct');
     });
   }
 
-  async function endGame(){
+  function updateScore() {
+    scoreDisplay.textContent = `Score: ${score}`;
+  }
+
+  async function endGame() {
+    if (endGame.running) return;
+    endGame.running = true;
+
     clearInterval(timer);
     game.classList.add('hidden');
     endScreen.classList.remove('hidden');
     finalScore.textContent = score;
-    if(username) await submitLeaderboardScore(username, score);
+
+    if (username) await submitLeaderboardScore(username, score);
   }
 
-  // ===== BUTTONS =====
+  // ===== Button Handlers =====
   startBtn?.addEventListener('click', startGame);
   playAgainBtn?.addEventListener('click', startGame);
   mainMenuBtn?.addEventListener('click', () => {
@@ -261,5 +290,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     game.classList.add('hidden');
     endScreen.classList.add('hidden');
     document.getElementById('start-screen').classList.remove('hidden');
+    updateScore();
   });
 });
