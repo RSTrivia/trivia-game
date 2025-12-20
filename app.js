@@ -83,13 +83,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       localStorage.setItem('cachedUsername', profile.username);
       localStorage.setItem('cachedLoggedIn', 'true');
       username = profile.username;
+      let span;
       if (userDisplay) {
         span = userDisplay.querySelector('#usernameSpan');
       }
-      if (span && span.textContent !== ' ' + profile.username) { ... }
-
+      if (span && span.textContent !== ' ' + profile.username) {
         span.textContent = ' ' + profile.username;
       }
+
       
      if (authLabel) authLabel.textContent = 'Log Out';
 
@@ -356,6 +357,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   }
 });
+
 
 
 
