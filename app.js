@@ -39,8 +39,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const answersBox = document.getElementById('answers');
   const timeDisplay = document.getElementById('time');
   const muteBtn = document.getElementById('muteBtn');
-  // Initialize the running flag
-  endGame.running = false;
   
   // Main state
   let username = cachedLoggedIn ? cachedUsername : '';
@@ -356,6 +354,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   }
 });
+
 
 
 
