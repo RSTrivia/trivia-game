@@ -83,11 +83,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       localStorage.setItem('cachedUsername', profile.username);
       localStorage.setItem('cachedLoggedIn', 'true');
       username = profile.username;
-      let span;
       if (userDisplay) {
-        const span = userDisplay.querySelector('#usernameSpan');
+        span = userDisplay.querySelector('#usernameSpan');
       }
-      if (span && span.textContent !== ' ' + profile.username) {
+      if (span && span.textContent !== ' ' + profile.username) { ... }
+
         span.textContent = ' ' + profile.username;
       }
       
@@ -331,10 +331,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('start-screen').classList.remove('hidden');
     updateScore();
   };
+
+  // Handle page restore from back/forward cache (mobile back button)
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+      resetGame();
+      document.getElementById('start-screen').classList.remove('hidden');
+      game.classList.add('hidden');
+      endScreen.classList.add('hidden');
+      updateScore();
+    }
+  });
+  
+  // Optional safeguard if game is visible but questions empty
+  if (!questions.length && !game.classList.contains('hidden')) {
+    resetGame();
+    document.getElementById('start-screen').classList.remove('hidden');
+    game.classList.add('hidden');
+    endScreen.classList.add('hidden');
+    updateScore();
+  }
 });
-
-
-
 
 
 
