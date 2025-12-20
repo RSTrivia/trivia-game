@@ -643,6 +643,12 @@ body #app.login-page .login-container input#password {
     box-sizing: border-box !important;
 }
 
+input#username:-webkit-autofill,
+input#password:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0px 1000px rgba(22,22,22,0.9) inset !important;
+    -webkit-text-fill-color: #fff !important;
+}
+
 
 
 
