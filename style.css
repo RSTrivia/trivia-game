@@ -636,6 +636,12 @@ input.input-field:-webkit-autofill:active {
   min-height: 300px; /* match main menu container height */
 }
 
+#username, #password {
+  padding: 4px 10px;
+  font-size: 0.9rem;
+  height: auto;
+}
+
 
 
 
