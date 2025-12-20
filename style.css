@@ -603,38 +603,36 @@ input.input-field:-webkit-autofill:active {
 
 
 @media (max-width: 480px) {
-  /* 1. Restore the natural container width/feel */
+  /* 1. Reset container to wrap content naturally */
   .container {
-    height: auto !important; 
-    width: 90%;            /* Adjust percentage to match your "better" width */
-    max-width: 400px;      /* Prevents it from getting too wide */
-    margin: 0 auto;        /* Centers the container on the screen */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 15px;
-    box-sizing: border-box;
+    height: auto !important;
+    width: auto !important; /* Let it be defined by content/PC settings */
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    padding: 10px !important;
   }
 
-  /* 2. Prevent flicker by giving the 10 rows a reserved area */
+  /* 2. Smaller reserved space for 10 rows */
   #leaderboard {
-    display: block;
-    width: 100%;
-    /* Use a height that fits 10 rows but isn't taller than the screen */
-    min-height: 380px !important; 
-    margin-bottom: 5px !important;
-    overflow: visible;
+    display: block !important;
+    width: 100% !important;
+    /* Reduced this significantly so the button is pulled UP */
+    min-height: 320px !important; 
+    margin-bottom: 0px !important;
+    overflow: visible !important;
   }
 
-  /* 3. The Button: Naturally follows the leaderboard */
+  /* 3. Force button to be visible and close */
   .container a.btn-small {
-    margin-top: 5px !important;
-    width: auto !important;
-    min-width: 180px;      /* Keeps the button shape consistent */
-    max-width: 240px;
-    display: inline-block;
+    display: block !important;
+    margin-top: 5px !important; /* Tiny gap to rows */
+    width: 200px !important;    /* PC-like width */
+    position: relative !important;
+    z-index: 999;               /* Ensure it's not hidden behind anything */
   }
 }
+
 
 
 
