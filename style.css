@@ -102,9 +102,9 @@ html, body {
 
 /* ====== CONTAINER ====== */
 .container {
-  background: rgba(0, 0, 0, 0.80); /* darkened to match OSRS theme */
-  padding: 30px; /*20px*/
-  border-radius: 12px; /*10px*/
+  background: rgba(0, 0, 0, 0.85); /* darkened to match OSRS theme */
+  padding: 20px; 
+  border-radius: 10px; 
   box-shadow: 0 0 30px rgba(0,0,0,0.5); /*0 0 30px rgba(0,0,0,0.6)*/
   width: 400px;
   max-width: 90%;
@@ -564,6 +564,7 @@ input.input-field:-webkit-autofill:active {
     padding: 12px;
   }
 }
+
 
 
 
