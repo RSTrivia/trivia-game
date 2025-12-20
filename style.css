@@ -66,17 +66,19 @@ html, body {
 }
 
 #bg-fade-layer {
-  position: fixed;        /* cover entire viewport */
-  inset: 0;               /* top:0; right:0; bottom:0; left:0 */
-  pointer-events: none;   /* allow clicks through */
-  opacity: 0;             /* start fully transparent */
-  will-change: opacity;   /* optimize fade animations */
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  will-change: opacity;
+  transition: opacity 1.2s ease; /* fade duration */
   background-size: cover;
   background-position: center;
-  background-repeat: no-repeat;
-  z-index: -1;            /* above #background-root but below #app */
+  z-index: 1;
 }
-
 
 
 @keyframes fadeLoop {
@@ -310,28 +312,18 @@ h1 {
 #user-controls {
   display: flex;            /* horizontal layout */
   align-items: center;      /* vertically center mic and text */
-  justify-content: center;  /* horizontally center inside container */
-  gap: 10px;                 /* space between mic and name */
+  justify-content: space-between;  /* horizontally center inside container */
+  gap: 8px;                 /* space between mic and name */
   margin-bottom: 15px;      /* optional spacing below */
 }
 
-/*#userDisplay {
+#userDisplay {
   font-size: 1.2rem;
   color: #ffd700;
   min-height: 24px;
-}*/
-
-#userDisplay {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem; /* space between Player:, username, and mute button */
 }
 
 #muteBtn {
-  width: auto; 
-  display: flex;
-  justify-content: center;
-  align-items: center;
   background: none;
   border: none;
   font-size: 1.5rem;
@@ -395,57 +387,12 @@ h1 {
   width: 100%;
 }
 
+/* Prevent .btn-small from overflowing row */
 .btn-small {
-  background: rgba(0,0,0,0.6);
-  color: #ffd700;
-
-  padding: 10px 16px;
-  font-size: 1rem;
-
-  border: 2px solid #d4af37;   /* fixed border width */
-  border-radius: 8px;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  flex: 1;
-  min-width: 0;
-
-  text-align: center;
-  text-decoration: none;
-  box-sizing: border-box;
-
-  transition: background-color 0.2s, border-color 0.2s;
+  flex: 1;        /* evenly divide space */
+  width: auto;    /* prevent 100% width from breaking layout */
+  min-width: 0;   /* avoid flex overflow issues */
 }
-
-.btn-small:hover {
-  background: rgba(0,0,0,0.85);
-  border-color: #ffea8a;
-}
-
-#start-screen .row:nth-child(3) .btn-small {
-  width: 100%;
-  height: 60px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border: 2px solid #d4af37;
-  box-sizing: border-box;
-
-  flex: 1;
-}
-
-/* Text can change freely */
-.btn-label {
-  display: inline-block;
-  min-width: 7ch;     /* fits "Log Out" */
-  text-align: center;
-  white-space: nowrap;
-}
-
 
 /* Make Back to Game button match container width */
 .login-row > .btn {
@@ -497,12 +444,11 @@ input.input-field:-webkit-autofill:active {
 
 #usernameSpan {
   display: inline-block;
-  min-width: 10ch;  /*width: 10ch; reserve space for ~10 characters */
+  width: 10ch; /* reserve space for ~10 characters */
   text-align: left;
   margin-left: 0.4ch;   /* small space between Player: and username */
   white-space: nowrap;
   overflow: hidden;
-  margin-left: 0.4ch;
 }
 
 /* Make both buttons in the row have the same width */
@@ -524,9 +470,8 @@ input.input-field:-webkit-autofill:active {
   display: flex;
   gap: 10px;
   width: 100%;
-  align-items: stretch;
+  align-items: stretch; /* buttons same height */
 }
-
 
 /* Buttons inside that row */
 #start-screen .row:nth-child(3) button,
@@ -536,6 +481,7 @@ input.input-field:-webkit-autofill:active {
   align-items: center;
   justify-content: center;
   text-align: center;
+  white-space: nowrap;       /* prevent multi-line flicker */
   box-sizing: border-box;    /* include padding & border in width/height */
   padding: 12px;
   font-size: 1rem;
@@ -546,48 +492,24 @@ input.input-field:-webkit-autofill:active {
 }
 
 
-@media (min-width: 481px) {
-  #start-screen .row:nth-child(3) button,
-  #start-screen .row:nth-child(3) a {
-    height: 60px;       /* fixed = no reflow */
-    line-height: 1;
-  }
-}
-
-
+/* Mobile adjustments */
 @media (max-width: 480px) {
   #start-screen .row:nth-child(3) button,
   #start-screen .row:nth-child(3) a {
-    height: auto;       /* allow growth */
-    min-height: 60px;   /* visual consistency */
-    line-height: 1.2;   /* better multi-line spacing */
-    padding: 12px;
+    height: auto;           /* let height grow naturally */
+    padding: 12px 10px;     
+    line-height: 1.2;
+    white-space: normal;    /* allow wrapping if needed */
+    min-width: 0;           /* let flex shrink */
   }
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+button,
+a.btn-small {
+  box-sizing: border-box;
+  border: 2px solid transparent; /* reserve space ALWAYS */
+}
 
 
 
