@@ -47,6 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let questions = [];
   let remainingQuestions = [];
   let currentQuestion = null;
+  let nextQuestion = null; 
   let timer;
   let timeLeft = 15;
   let correctBuffer, wrongBuffer;
@@ -172,6 +173,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     source.start();
   }
 
+  function preloadImage(url) {
+  const img = new Image();
+  img.src = url;
+}
   // -------------------------
   // Leaderboard
   // -------------------------
@@ -233,14 +238,29 @@ async function startGame() {
   loadQuestion();
 }
 
-
+function preloadNextQuestion() {
+  if (!remainingQuestions.length) return;
+  const index = Math.floor(Math.random() * remainingQuestions.length);
+  nextQuestion = remainingQuestions[index]; // do NOT remove from array yet
+  if (nextQuestion.question_image) preloadImage(nextQuestion.question_image);
+}
 
   async function loadQuestion() {
     answersBox.innerHTML = '';
     if (!remainingQuestions.length) return endGame();
 
-    const index = Math.floor(Math.random() * remainingQuestions.length);
-    currentQuestion = remainingQuestions.splice(index, 1)[0];
+    // NEW
+    if (nextQuestion) {
+      // Use the preloaded question
+      currentQuestion = nextQuestion;
+      // Remove it from remainingQuestions
+      const idx = remainingQuestions.indexOf(currentQuestion);
+      if (idx > -1) remainingQuestions.splice(idx, 1);
+      nextQuestion = null;
+    } else {
+      const index = Math.floor(Math.random() * remainingQuestions.length);
+      currentQuestion = remainingQuestions.splice(index, 1)[0];
+    }
 
     questionText.textContent = currentQuestion.question;
     if (currentQuestion.question_image) {
@@ -266,6 +286,7 @@ async function startGame() {
       btn.classList.add('answer-btn');
       btn.onclick = () => checkAnswer(i + 1, btn);
       answersBox.appendChild(btn);
+      preloadNextQuestion(); // start preloading the next question in background
     });
 
     currentQuestion.correct_answer_shuffled =
@@ -407,6 +428,7 @@ startBtn.onclick = async () => {
     updateScore();
   }
 });
+
 
 
 
