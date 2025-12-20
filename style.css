@@ -551,15 +551,16 @@ input.input-field:-webkit-autofill:active {
 
 #leaderboard-title {
   font-size: 3.2rem;
-  margin-top: 10px;   /* reduce top margin */
-  margin-bottom: 10px; /* optional: reduce space between title and rows */
 }
 
 @media (max-width: 480px) {
   #leaderboard-title {
     font-size: 2.5rem;
+      margin-top: 10px;   /* reduce top margin */
+      margin-bottom: 10px; /* optional: reduce space between title and rows */
   }
 }
+
 
 
 
