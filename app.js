@@ -264,7 +264,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     timer = setInterval(() => {
       timeLeft--;
       timeDisplay.textContent = timeLeft;
-      timeDisplay.classList.toggle('red-timer', timeLeft <= 5);
+      timeDisplay.parentElement.classList.toggle('red-timer', timeLeft <= 5);
 
       if (timeLeft <= 0) {
         clearInterval(timer);
@@ -357,6 +357,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   }
 });
+
 
 
 
