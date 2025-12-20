@@ -574,11 +574,10 @@ input.input-field:-webkit-autofill:active {
 }
 
 
-
 @media (max-width: 480px) {
   /* Container wraps content naturally */
   .container {
-    height: auto !important;             /* remove fixed height */
+    height: auto !important;             
     display: flex;
     flex-direction: column;
     justify-content: flex-start !important; /* stack items from top */
@@ -589,20 +588,18 @@ input.input-field:-webkit-autofill:active {
   /* Reduce gap below leaderboard */
   #leaderboard {
     margin-bottom: 5px !important;        /* tiny gap to button */
-    height: auto !important;              /* remove fixed height */
-    overflow-y: visible !important;       /* show all rows without scroll */
+    height: auto !important;              
+    overflow-y: visible !important;       
   }
 
-  /* Main Menu button placement */
+  /* Main Menu button: same width as PC */
   .container a.btn-small {
-    margin-top: 5px !important;           /* tiny gap above button */
-    width: 100% !important;               /* full container width */
-    max-width: 400px;                      /* prevent it from stretching too far */
-    box-sizing: border-box;               /* include padding/border in width */
+    margin-top: 5px !important;           /* small gap above button */
+    width: auto !important;               /* don’t stretch full width */
+    max-width: 240px;                     /* matches PC button width visually */
+    box-sizing: border-box;
   }
 }
-
-
 
 
 
