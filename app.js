@@ -341,8 +341,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Initialize the running flag **after the function exists**
   endGame.running = false;
 
-//test for GZ message !!!
-   startBtn.addEventListener('click', async () => {
+  // -------------------------
+  // Buttons
+  // -------------------------
+  startBtn.onclick = async () => {
+    //await loadSounds();
+    //startGame();
+
+    //test for gz msg
     await loadCurrentUser();
     await loadSounds();
 
@@ -352,14 +358,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('start-screen').classList.add('hidden');
     await endGame();
+  //
 
-  
-  // -------------------------
-  // Buttons
-  // -------------------------
-  startBtn.onclick = async () => {
-    await loadSounds();
-    startGame();
+    
   };
 
   playAgainBtn.onclick = startGame;
@@ -394,6 +395,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   }
 });
+
 
 
 
