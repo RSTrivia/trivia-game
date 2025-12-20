@@ -74,22 +74,23 @@
   }
 
   
-  /* ===== CONTAINER ===== */
-  .container {
-    height: 520px; /* adjust: title + leaderboard + button height */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start; /* avoid vertical jump */
-    background: rgba(0, 0, 0, 0.85);
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 30px rgba(0,0,0,0.5);
-    width: 400px;       /* exact width of main menu */
-    max-width: 90%;     /* responsive on small screens */
-    text-align: center;
-    margin: 0 auto;     /* center horizontally */
-  }
+    /* ===== CONTAINER ===== */
+    .container {
+      /* remove fixed height to allow flexibility */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start; 
+      background: rgba(0, 0, 0, 0.85);
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 30px rgba(0,0,0,0.5);
+      width: 400px;       /* exact width of main menu */
+      max-width: 90%;     /* responsive on small screens */
+      min-height: 520px;  /* ensures stable height to prevent flicker */
+      text-align: center;
+      margin: 0 auto;     /* center horizontally */
+    }
 
   h1 {
     font-family: 'Cinzel', serif;
@@ -98,14 +99,16 @@
     letter-spacing: 2px;
   }
 
+    /* ===== LEADERBOARD ===== */
   #leaderboard {
-    height: 360px; /* fixed */
-    flex: none; /* takes available space */
     width: 100%;
     list-style: none;
     padding: 0;
     margin: 20px 0;
-    overflow-y: auto; /* if rows exceed */
+    flex: 1 1 auto;     /* allows the leaderboard to grow/shrink */
+    min-height: 360px;  /* ensures pre-filled rows give stable layout */
+    max-height: 400px;  /* prevents it from being too tall */
+    overflow-y: auto;   /* scrolls if content exceeds */
   }
 
   #leaderboard li {
@@ -235,6 +238,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
