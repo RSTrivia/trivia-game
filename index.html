@@ -16,6 +16,27 @@
         );
       }
     })();
+  
+</script>
+  <!-- Prevent flicker: set initial cached UI before paint -->
+  <script type="module">
+    import { supabase } from './supabase.js';
+    
+    const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
+    const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
+    const muted = localStorage.getItem('muted') === 'true';
+
+    const appDiv = document.getElementById('app');
+    const usernameSpan = document.getElementById('usernameSpan');
+    const authBtn = document.getElementById('authBtn');
+    const authLabel = authBtn?.querySelector('.btn-label');
+    const muteIcon = document.getElementById('muteIcon');
+
+    // Apply cached UI immediately
+    if (usernameSpan) usernameSpan.textContent = ' ' + cachedUsername;
+    if (authLabel) authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
+    if (muteIcon) muteIcon.textContent = muted ? '🔇' : '🔊';
+    if (appDiv) appDiv.style.opacity = '1';
   </script>
     
   <!-- OSRS Title Font -->
@@ -84,31 +105,13 @@
     </div>
   </div>
 
-    <script type="module">
-    import { supabase } from './supabase.js';
-
-    const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
-    const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
-    const muted = localStorage.getItem('muted') === 'true';
-
-    const appDiv = document.getElementById('app');
-    const usernameSpan = document.getElementById('usernameSpan');
-    const authBtn = document.getElementById('authBtn');
-    const authLabel = authBtn?.querySelector('.btn-label');
-    const muteIcon = document.getElementById('muteIcon');
-
-    // Apply cached UI immediately
-    if (usernameSpan) usernameSpan.textContent = ' ' + cachedUsername;
-    if (authLabel) authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
-    if (muteIcon) muteIcon.textContent = muted ? '🔇' : '🔊';
-    if (appDiv) appDiv.style.opacity = '1';
-  </script>
   <!-- Scripts -->
   <script type="module" src="supabase.js"></script>
   <script type="module" src="app.js"></script>
   <script src="background.js" defer></script>
 </body>
 </html>
+
 
 
 
