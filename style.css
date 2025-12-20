@@ -201,7 +201,6 @@ html, body {
 
 .btn, .btn-small {
   position: relative; /* ensures click area is on top */
-  cursor: pointer;    /* always show pointer on hover */
   user-select: none;   /* optional: prevent text selection when clicking */
   z-index: 2;          /* ensure above all background layers */
 }
@@ -573,6 +572,7 @@ input.input-field:-webkit-autofill:active {
     padding: 12px;
   }
 }
+
 
 
 
