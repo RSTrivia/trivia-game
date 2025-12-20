@@ -29,6 +29,7 @@ html, body {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  pointer-events: none;
 }
 
 
@@ -197,6 +198,14 @@ html, body {
   background: rgba(0,0,0,0.85);
   border-color: #ffea8a;
 }
+
+.btn, .btn-small {
+  position: relative; /* ensures click area is on top */
+  cursor: pointer;    /* always show pointer on hover */
+  user-select: none;   /* optional: prevent text selection when clicking */
+  z-index: 2;          /* ensure above all background layers */
+}
+
 
 /* ====== MENU ROW ===== */
 .menu-row {
@@ -564,6 +573,7 @@ input.input-field:-webkit-autofill:active {
     padding: 12px;
   }
 }
+
 
 
 
