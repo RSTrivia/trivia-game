@@ -320,6 +320,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     game.classList.add('hidden');
     endScreen.classList.remove('hidden');
     finalScore.textContent = score;
+
+    const gameOverTitle = document.getElementById('game-over-title');
+    const gzTitle = document.getElementById('gz-title');
+
+    if (score === questions.length && remainingQuestions.length === 0) {
+      const gzMessages = ['Gz!', 'Go touch grass', 'See you in Lumbridge'];
+      const randomMessage = gzMessages[Math.floor(Math.random() * gzMessages.length)];
+      gzTitle.textContent = randomMessage;
+      gzTitle.classList.remove('hidden');
+      gameOverTitle.classList.add('hidden');
+    } else {
+      gzTitle.classList.add('hidden');
+      gameOverTitle.classList.remove('hidden');
+    }
   
     if (username) await submitLeaderboardScore(username, score);
   }
@@ -366,6 +380,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   }
 });
+
 
 
 
