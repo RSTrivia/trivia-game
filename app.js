@@ -206,7 +206,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     questions = [];
     remainingQuestions = [];
     currentQuestion = null;
-    preloadQueue = []; // full reset only
     questionText.textContent = '';
     answersBox.innerHTML = '';
     questionImage.style.display = 'none';
@@ -254,25 +253,28 @@ loadQuestion();
 }
 
 function preloadNextQuestions() {
-  while (preloadQueue.length < 2 && remainingQuestions.length) {
+  let attempts = 0;
+
+  while (
+    preloadQueue.length < 2 &&
+    remainingQuestions.length &&
+    attempts < 10
+  ) {
+    attempts++;
+
     const index = Math.floor(Math.random() * remainingQuestions.length);
     const q = remainingQuestions[index];
 
-    // prevent duplicates
     if (
       q === currentQuestion ||
       preloadQueue.some(p => p.id === q.id)
-    ) {
-      continue;
-    }
+    ) continue;
 
     preloadQueue.push(q);
-
-    if (q.question_image) {
-      preloadImage(q.question_image);
-    }
+    if (q.question_image) preloadImage(q.question_image);
   }
 }
+
 
 
   async function loadQuestion() {
@@ -302,7 +304,9 @@ function preloadNextQuestions() {
     } else {
         questionImage.style.display = 'none';      // hide if no image
     }
-
+    
+    preloadNextQuestions(); // start preloading the next question in background
+    
     let answers = [
       { text: currentQuestion.answer_a, correct: currentQuestion.correct_answer === 1 },
       { text: currentQuestion.answer_b, correct: currentQuestion.correct_answer === 2 },
@@ -317,8 +321,7 @@ function preloadNextQuestions() {
       btn.onclick = () => checkAnswer(i + 1, btn);
       answersBox.appendChild(btn);
     });
-    preloadNextQuestions(); // start preloading the next question in background
-
+    
     currentQuestion.correct_answer_shuffled =
       answers.findIndex(a => a.correct) + 1;
 
@@ -431,6 +434,8 @@ startBtn.onclick = async () => {
   mainMenuBtn.onclick = () => {
     document.body.classList.remove('game-active');
     
+    preloadQueue = []; // full reset only here
+    
     resetGame();
     game.classList.add('hidden');
     endScreen.classList.add('hidden');
@@ -458,6 +463,7 @@ startBtn.onclick = async () => {
     updateScore();
   }
 });
+
 
 
 
