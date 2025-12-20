@@ -633,8 +633,9 @@ input.input-field:-webkit-autofill:active {
 }
 
 .login-container {
-  min-height: 400px; /* match main menu container height */
+  min-height: 300px; /* match main menu container height */
 }
+
 
 
 
