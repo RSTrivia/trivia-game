@@ -636,14 +636,13 @@ input.input-field:-webkit-autofill:active {
   min-height: 300px; /* match main menu container height */
 }
 
-/* Shrink only the height of login inputs */
-#username.input-field,
-#password.input-field {
-    height: 32px !important;         /* set desired height */
-    padding-top: 4px !important;     /* adjust vertical padding */
-    padding-bottom: 4px !important;  /* adjust vertical padding */
-    box-sizing: border-box !important; /* include padding in height */
-    font-size: 0.95rem !important;   /* optional: slightly smaller text */
+/* Only affect login page inputs */
+.login-container input.input-field {
+    height: 32px !important;          /* explicit height */
+    padding: 4px 10px !important;     /* vertical + horizontal padding */
+    line-height: normal !important;    /* prevent inherited tall line-height */
+    font-size: 0.95rem !important;    /* optional, slightly smaller text */
+    box-sizing: border-box !important; /* include padding/border in height */
 }
 
 
