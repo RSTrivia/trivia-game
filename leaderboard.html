@@ -76,7 +76,7 @@
   
   /* ===== CONTAINER ===== */
   .container {
-    min-height: 520px; /* adjust: title + leaderboard + button height */
+    height: 520px; /* adjust: title + leaderboard + button height */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -99,12 +99,13 @@
   }
 
   #leaderboard {
-    flex: 1; /* takes available space */
+    height: 360px; /* fixed */
+    flex: none; /* takes available space */
     width: 100%;
     list-style: none;
     padding: 0;
     margin: 20px 0;
-    min-height: 360px; /* roughly 10 rows x row height */
+    overflow-y: auto; /* if rows exceed */
   }
 
   #leaderboard li {
@@ -234,6 +235,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
