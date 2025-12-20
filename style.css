@@ -632,15 +632,17 @@ input.input-field:-webkit-autofill:active {
   }
 }
 
-/* FORCE login input height and padding */
+/*  FORCE login input height and padding */
 #app.login-page .login-container .login-row input#username,
 #app.login-page .login-container .login-row input#password {
-    height: 32px !important;
-    min-height: 32px !important;
-    padding: 4px 10px !important;
-    line-height: 24px !important;
-    font-size: 0.95rem !important;
-    box-sizing: border-box !important;
+    height: 32px !important;           /* fixed height */
+    min-height: 32px !important;       /* prevent expansion */
+    padding: 4px 10px !important;      /* vertical + horizontal padding */
+    line-height: 24px !important;      /* vertical text alignment */
+    font-size: 0.95rem !important;     /* text size */
+    box-sizing: border-box !important; /* include padding in height */
+    background: rgba(22,22,22,0.9) !important; /* override autofill */
+    color: #fff !important;                     /* override autofill */
 }
 
 /* Chrome / Edge autofill fix */
@@ -649,7 +651,6 @@ input#password:-webkit-autofill {
     -webkit-box-shadow: 0 0 0px 1000px rgba(22,22,22,0.9) inset !important;
     -webkit-text-fill-color: #fff !important;
 }
-
 
 
 
