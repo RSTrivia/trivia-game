@@ -378,8 +378,7 @@ h1 {
   color: #f5f5f5;
 }
 
-/* ====== TIMER WARNING ====== */
-#timer.red-timer {
+#time-wrap.red-timer {
   color: #ff3b3b;
   font-weight: bold;
   text-shadow:
@@ -587,6 +586,7 @@ input.input-field:-webkit-autofill:active {
     padding: 12px;
   }
 }
+
 
 
 
