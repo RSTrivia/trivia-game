@@ -196,33 +196,40 @@ function renderLeaderboard(data) {
 }
 
 (async () => {
-  // 1️⃣ Show cached leaderboard immediately if available
+  // 0️⃣ Pre-fill leaderboard with empty rows immediately
+  const empty = Array.from({ length: 10 }, (_, i) => ({ username: '', score: null }));
+  renderLeaderboard(empty);
+
+  // 1️⃣ Show cached leaderboard if available
   const cached = localStorage.getItem('leaderboard');
   if (cached) renderLeaderboard(JSON.parse(cached));
 
   // 2️⃣ Fetch latest leaderboard from Supabase
-  const { data, error } = await supabase
+  supabase
     .from('public_leaderboard')
     .select('username, score')
     .order('score', { ascending: false })
-    .limit(10);
+    .limit(10)
+    .then(({ data, error }) => {
+      if (!error && data) {
+        // Save fresh data in cache
+        localStorage.setItem('leaderboard', JSON.stringify(data));
+        // Render fresh leaderboard
+        renderLeaderboard(data);
+      }
+    });
 
-  if (!error && data) {
-    // Save fresh data in cache
-    localStorage.setItem('leaderboard', JSON.stringify(data));
-    // Render fresh leaderboard
-    renderLeaderboard(data);
-  }
-
-  // 3️⃣ Reveal the app UI
+  // 3️⃣ Reveal the app UI immediately
   app.classList.remove('app-hidden');
   app.classList.add('app-ready');
 })();
+
 
 </script>
 
 </body>
 </html>
+
 
 
 
