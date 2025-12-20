@@ -636,15 +636,15 @@ input.input-field:-webkit-autofill:active {
   min-height: 300px; /* match main menu container height */
 }
 
-/* Login page input shrink */
-#app.login-page .input-field#username,
-#app.login-page .input-field#password {
-  width: 100%;
-  padding: 4px 10px !important;     /* smaller padding */
-  font-size: 0.9rem !important;     /* smaller text */
-  height: 32px !important;          /* explicit height */
-  box-sizing: border-box;
+/* Login page input shrink - VERY specific to override everything */
+#app.login-page .container.login-container input.input-field {
+    width: calc(100% - 20px); /* slightly smaller than container */
+    padding: 4px 10px !important;   /* smaller padding vertically and horizontally */
+    font-size: 0.85rem !important;  /* smaller font */
+    height: 32px !important;        /* explicit height */
+    box-sizing: border-box;         /* include padding in height/width */
 }
+
 
 
 
