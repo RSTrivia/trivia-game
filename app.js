@@ -1,29 +1,30 @@
 import { supabase } from './supabase.js';
 
-// ====== IMMEDIATE CACHED UI (pre-paint) ======
+// ====== IMMEDIATE CACHED UI (runs before paint) ======
 const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
 const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
-const mutedCached = localStorage.getItem('muted') === 'true';
 
 const appDiv = document.getElementById('app');
 const userDisplay = document.getElementById('userDisplay');
 const authBtn = document.getElementById('authBtn');
-let authLabel = null;
-const muteBtn = document.getElementById('muteBtn');
-const muteIcon = document.getElementById('muteIcon');
+let authLabel;
+if (authBtn) {
+  authLabel = authBtn.querySelector('.btn-label');
+}
 
 if (userDisplay) {
   const span = userDisplay.querySelector('#usernameSpan');
   if (span) span.textContent = ' ' + cachedUsername;
 }
 
-if (authBtn) authLabel = authBtn.querySelector('.btn-label');
-if (authLabel) authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
+if (authBtn) {
+  authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
+}
 
-if (muteIcon) muteIcon.textContent = mutedCached ? '🔇' : '🔊';
-if (appDiv) appDiv.style.opacity = '1';
+if (appDiv) {
+  appDiv.style.opacity = '1';
+}
 
-// ====== DOMContentLoaded & GAME LOGIC ======
 document.addEventListener('DOMContentLoaded', async () => {
   // DOM Elements
   const startBtn = document.getElementById('startBtn');
@@ -37,8 +38,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const questionImage = document.getElementById('questionImage');
   const answersBox = document.getElementById('answers');
   const timeDisplay = document.getElementById('time');
-
-  // ===== STATE =====
+  const muteBtn = document.getElementById('muteBtn');
+  
+  // Main state
   let username = cachedLoggedIn ? cachedUsername : '';
   let score = 0;
   let questions = [];
@@ -46,54 +48,69 @@ document.addEventListener('DOMContentLoaded', async () => {
   let currentQuestion = null;
   let timer;
   let timeLeft = 15;
-  let muted = mutedCached;
-
-  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   let correctBuffer, wrongBuffer;
-
-  // ===== Mute Icon =====
-  const updateMuteIcon = () => {
-    if (muteIcon) muteIcon.textContent = muted ? '🔇' : '🔊';
-  };
+  let muted = localStorage.getItem('muted') === 'true';
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  
+  // Set initial icon
+  const updateMuteIcon = () => muteBtn.textContent = muted ? '🔇' : '🔊';
   updateMuteIcon();
 
-  muteBtn?.addEventListener('click', () => {
-    muted = !muted;
-    localStorage.setItem('muted', muted);
-    updateMuteIcon();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-  });
+  // Add click listener to toggle mute
+  muteBtn.addEventListener('click', () => {
+  muted = !muted;
+  localStorage.setItem('muted', muted);
+  updateMuteIcon();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+});
 
-  // ===== Preload Auth (async) =====
+   // -------------------------
+  // Preload Auth: Correct Username & Button
+  // -------------------------
   async function preloadAuth() {
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user) return;
-
+    if (!session?.user) return; // nothing to do
+  
     const { data: profile } = await supabase
       .from('profiles')
       .select('username')
       .eq('id', session.user.id)
       .single();
-
+  
     if (!profile?.username) return;
+  
     if (profile.username !== username) {
-      username = profile.username;
       localStorage.setItem('cachedUsername', profile.username);
       localStorage.setItem('cachedLoggedIn', 'true');
-      const span = userDisplay.querySelector('#usernameSpan');
-      if (span) span.textContent = ' ' + profile.username;
-      if (authLabel) authLabel.textContent = 'Log Out';
+      username = profile.username;
+      let span;
+      if (userDisplay) {
+        const span = userDisplay.querySelector('#usernameSpan');
+      }
+      if (span && span.textContent !== ' ' + profile.username) {
+        span.textContent = ' ' + profile.username;
+      }
+      
+     if (authLabel) authLabel.textContent = 'Log Out';
+
     }
   }
-  await preloadAuth(); // run immediately to prevent flicker
 
-  // ===== Supabase Auth State Listener =====
+    // Call this immediately to prevent flicker
+  await preloadAuth();
+
+ 
+  // -------------------------
+  // Supabase auth listener (updates UI if session changes)
+  // -------------------------
   supabase.auth.onAuthStateChange(async (_event, session) => {
     if (!session?.user) {
       localStorage.setItem('cachedLoggedIn', 'false');
       localStorage.setItem('cachedUsername', 'Guest');
       username = '';
-      if (userDisplay) userDisplay.querySelector('#usernameSpan').textContent = ' Guest';
+      if (userDisplay) {
+        userDisplay.querySelector('#usernameSpan').textContent = ' Guest';
+      }
       if (authLabel) authLabel.textContent = 'Log In';
       return;
     }
@@ -105,33 +122,42 @@ document.addEventListener('DOMContentLoaded', async () => {
       .single();
 
     if (profile?.username) {
-      username = profile.username;
       localStorage.setItem('cachedLoggedIn', 'true');
       localStorage.setItem('cachedUsername', profile.username);
-      if (userDisplay) userDisplay.querySelector('#usernameSpan').textContent = ' ' + profile.username;
+      username = profile.username;
+      if (userDisplay) {
+        userDisplay.querySelector('#usernameSpan').textContent = ' ' + profile.username;
+      }
       if (authLabel) authLabel.textContent = 'Log Out';
     }
   });
 
-  // ===== Auth Button =====
-  authBtn?.addEventListener('click', async () => {
-    if (!authLabel) return;
-    if (authLabel.textContent === 'Log Out') {
-      await supabase.auth.signOut();
-    } else {
-      window.location.href = 'login.html';
+  // -------------------------
+  // Auth Button
+  // -------------------------
+  authBtn.onclick = async () => {
+    if (authLabel) {
+      if (authLabel.textContent === 'Log Out') {
+        await supabase.auth.signOut();
+      } else {
+        window.location.href = 'login.html';
+      }
     }
-  });
+  };
 
-  // ===== Audio =====
+  // -------------------------
+  // Audio
+  // -------------------------
+
   async function loadSounds() {
     correctBuffer = await loadAudio('./sounds/correct.mp3');
     wrongBuffer = await loadAudio('./sounds/wrong.mp3');
   }
 
   async function loadAudio(url) {
-    const res = await fetch(url);
-    return audioCtx.decodeAudioData(await res.arrayBuffer());
+    const response = await fetch(url);
+    const arrayBuffer = await response.arrayBuffer();
+    return audioCtx.decodeAudioData(arrayBuffer);
   }
 
   function playSound(buffer) {
@@ -144,7 +170,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     source.start();
   }
 
-  // ===== Leaderboard =====
+  // -------------------------
+  // Leaderboard
+  // -------------------------
   async function submitLeaderboardScore(username, score) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
@@ -161,8 +189,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         .upsert({ user_id: user.id, username, score }, { onConflict: 'user_id' });
     }
   }
-
-  // ===== GAME LOGIC =====
+  
+  // -------------------------
+  // Game Logic (UNCHANGED)
+  // -------------------------
   function resetGame() {
     clearInterval(timer);
     score = 0;
@@ -178,6 +208,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   async function startGame() {
+    endGame.running = false;
     resetGame();
     game.classList.remove('hidden');
     document.getElementById('start-screen').classList.add('hidden');
@@ -220,7 +251,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       answersBox.appendChild(btn);
     });
 
-    currentQuestion.correct_answer_shuffled = answers.findIndex(a => a.correct) + 1;
+    currentQuestion.correct_answer_shuffled =
+      answers.findIndex(a => a.correct) + 1;
 
     clearInterval(timer);
     timeLeft = 15;
@@ -282,14 +314,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (username) await submitLeaderboardScore(username, score);
   }
 
-  // ===== Button Handlers =====
-  startBtn?.addEventListener('click', startGame);
-  playAgainBtn?.addEventListener('click', startGame);
-  mainMenuBtn?.addEventListener('click', () => {
+  // -------------------------
+  // Buttons
+  // -------------------------
+  startBtn.onclick = async () => {
+    await loadSounds();
+    startGame();
+  };
+
+  playAgainBtn.onclick = startGame;
+
+  mainMenuBtn.onclick = () => {
     resetGame();
     game.classList.add('hidden');
     endScreen.classList.add('hidden');
     document.getElementById('start-screen').classList.remove('hidden');
     updateScore();
-  });
+  };
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
