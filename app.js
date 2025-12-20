@@ -260,6 +260,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     timeLeft = 15;
     timeDisplay.textContent = timeLeft;
     timeDisplay.classList.remove('red-timer');
+    timeDisplay.parentElement.classList.remove('red-timer');
 
     timer = setInterval(() => {
       timeLeft--;
@@ -357,6 +358,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateScore();
   }
 });
+
 
 
 
