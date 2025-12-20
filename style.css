@@ -632,35 +632,43 @@ input.input-field:-webkit-autofill:active {
   }
 }
 
-/* Force login input appearance completely */
-#app.login-page .login-container .login-row input#username,
-#app.login-page .login-container .login-row input#password {
-    -webkit-appearance: none !important; /* reset browser style */
-    -moz-appearance: none !important;
-    appearance: none !important;
-
-    height: 32px !important;
-    min-height: 32px !important;
-    padding: 4px 10px !important;
-    line-height: 24px !important;
-    font-size: 0.95rem !important;
-    box-sizing: border-box !important;
-
-    background-color: rgba(22,22,22,0.9) !important;
-    color: #fff !important;
-    border: 1px solid #d4af37 !important;
-    border-radius: 8px !important;
+/* Stable login container */
+#app.login-page .login-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;  /* stack inputs/buttons top-down */
+  align-items: center;
+  width: 400px;
+  max-width: 90%;
+  padding: 20px;
+  min-height: 350px;            /* reserve enough height for inputs/buttons */
+  background: rgba(0,0,0,0.85);
+  border-radius: 10px;
+  box-shadow: 0 0 30px rgba(0,0,0,0.5);
+  overflow: hidden;             /* prevent layout shift if inner content is delayed */
 }
 
-/* 🔹 Chrome / Edge autofill fix */
-#app.login-page .login-container .login-row input#username:-webkit-autofill,
-#app.login-page .login-container .login-row input#password:-webkit-autofill {
-    -webkit-box-shadow: 0 0 0px 1000px rgba(22,22,22,0.9) inset !important;
-    -webkit-text-fill-color: #fff !important;
-    transition: background-color 5000s ease-in-out 0s !important;
+/* Buttons row */
+.login-container .menu-row {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  margin-top: auto;          /* pushes row to bottom if needed */
 }
 
+/* Login / signup buttons */
+.login-container .menu-row button {
+  flex: 1;                   /* equal width */
+  min-width: 120px;           /* prevents reflow on text change */
+  height: 40px;
+}
 
+.login-container .login-row input {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 15px;
+}
 
 
 
