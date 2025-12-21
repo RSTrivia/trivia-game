@@ -231,22 +231,29 @@ function updateLeaderboard(data) {
     const entry = data[i] || { username: '', score: '' };
     const pos = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
     
-    // Apply styling classes based on rank
-    row.className = i === 0 ? 'first' : i === 1 ? 'second' : i === 2 ? 'third' : '';
+    // 1. Only update classes if they changed
+    const newClass = i === 0 ? 'first' : i === 1 ? 'second' : i === 2 ? 'third' : '';
+    if (row.className !== newClass) row.className = newClass;
     
-    // Update the content (Rank + Name in first span, Score in second span)
-    row.innerHTML = `<span>${pos} ${entry.username || '&nbsp;'}</span><span>${entry.score ?? '&nbsp;'}</span>`;
+    // 2. Prepare new HTML
+    const newHTML = `<span>${pos} ${entry.username || '&nbsp;'}</span><span>${entry.score ?? '&nbsp;'}</span>`;
+    
+    // 3. ONLY update the innerHTML if the content is actually different
+    // This prevents the browser from re-painting unnecessarily
+    if (row.innerHTML !== newHTML) {
+      row.innerHTML = newHTML;
+    }
   });
 }
 
 (async () => {
-  // 1️⃣ Immediately show cached data if we have it
-  const cached = localStorage.getItem('leaderboard');
-  if (cached) {
-    updateLeaderboard(JSON.parse(cached));
+  // 1️⃣ Immediately show cached data
+  const cachedString = localStorage.getItem('leaderboard');
+  if (cachedString) {
+    updateLeaderboard(JSON.parse(cachedString));
   }
 
-  // 2️⃣ Fetch fresh data from Supabase
+  // 2️⃣ Fetch fresh data
   const { data, error } = await supabase
     .from('public_leaderboard')
     .select('username, score')
@@ -254,8 +261,13 @@ function updateLeaderboard(data) {
     .limit(10);
 
   if (!error && data) {
-    localStorage.setItem('leaderboard', JSON.stringify(data));
-    updateLeaderboard(data);
+    const freshString = JSON.stringify(data);
+    
+    // 3️⃣ ONLY trigger a re-render if the live data is different from cache
+    if (freshString !== cachedString) {
+      localStorage.setItem('leaderboard', freshString);
+      updateLeaderboard(data);
+    }
   }
 })();
 
@@ -263,6 +275,7 @@ function updateLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
