@@ -663,45 +663,20 @@ input.input-field:-webkit-autofill:active {
 }
 
 
-/* 1. Define the 'Glow' Animation */
-@keyframes mobile-flash {
-  0% {
-    /* Instant Gold Glow */
-    background: rgba(0, 0, 0, 0.9);
-    border-color: #ffea8a;
-    color: #ffea8a;
-  }
-  40% {
-    /* Stay bright for 40% of the time (approx 0.4s) */
-    background: rgba(0, 0, 0, 0.9);
-    border-color: #ffea8a;
-    color: #ffea8a;
-  }
-  100% {
-    /* Fade back to your Aged Gold */
-    background: rgba(0, 0, 0, 0.6);
-    border-color: #d4af37;
-    color: #d4af37;
-  }
-}
-
-/* 2. Apply it ONLY on mobile touch */
 @media (pointer: coarse) {
-  .btn:active, .btn-small:active {
-    /* The animation lasts 1 second total */
-    /* You can change '1s' to '2s' if you want it even slower */
-    animation: mobile-flash 1s forwards;
+  /* 1. Kill hover entirely so it doesn't get stuck gold */
+  .btn:hover, .btn-small:hover {
+    background: rgba(0, 0, 0, 0.6) !important;
+    border-color: #d4af37 !important;
   }
-}
 
-@media (pointer: coarse) {
+  /* 2. Use 'Active' for the flash. This only triggers while the finger is DOWN */
   .btn:active, .btn-small:active {
-    transition: 0s !important; /* Removes the delay so the flash is instant on tap */
     background: rgba(0, 0, 0, 0.9) !important;
     border-color: #ffea8a !important;
+    transition: 0s !important; /* Instant on/off so it can't "freeze" */
   }
 }
-
 
 
 
