@@ -142,21 +142,23 @@ muteBtn.addEventListener('click', () => {
   // Supabase auth listener (Resilient Multi-Session)
   // -------------------------
 supabase.auth.onAuthStateChange(async (event, session) => {
-    // CHANGE: Only revert to Guest if the user EXPLICITLY signs out
-    if (event === 'SIGNED_OUT') {
-      console.log("User signed out. Reverting to Guest.");
-      username = ''; 
-      localStorage.setItem('cachedLoggedIn', 'false');
-      localStorage.setItem('cachedUsername', 'Guest');
-      
-      if (userDisplay) {
-        const span = userDisplay.querySelector('#usernameSpan');
-        if (span) span.textContent = ' Guest';
-      }
-      if (authLabel) authLabel.textContent = 'Log In';
-      return;
+  // If the Phone logs out, the PC might hear 'SIGNED_OUT'.
+  // We tell the PC: "Only revert to Guest if I specifically clicked Log Out on THIS PC."
+  if (event === 'SIGNED_OUT') {
+    // If the session is gone but we still have a username in memory,
+    // we IGNORE the logout signal to stay logged in.
+    if (username && username !== 'Guest') {
+        console.log("Ignored global sign-out to maintain local session.");
+        return; 
     }
-
+    
+    // Otherwise, do the normal guest revert
+    username = '';
+    localStorage.setItem('cachedLoggedIn', 'false');
+    if (userDisplay) userDisplay.querySelector('#usernameSpan').textContent = ' Guest';
+    if (authLabel) authLabel.textContent = 'Log In';
+    return;
+  }
     // Keep your existing session logic below
     if (session?.user) {
       const { data: profile } = await supabase
@@ -181,15 +183,15 @@ supabase.auth.onAuthStateChange(async (event, session) => {
   // -------------------------
   // Auth Button
   // -------------------------
-  authBtn.onclick = async () => {
-      authBtn.blur();
-      // We check the variable 'username' instead of the label text 
-      // because variables are more reliable than reading the UI text.
-      if (username && username !== 'Guest') {
-          await supabase.auth.signOut();
-      } else {
-          window.location.href = 'login.html';
-      }
+    // --- Update your Auth Button Logic ---
+    authBtn.onclick = async () => {
+        authBtn.blur();
+        if (username && username !== 'Guest') {
+            // Change this line to include { scope: 'local' }
+            await supabase.auth.signOut({ scope: 'local' });
+        } else {
+            window.location.href = 'login.html';
+        }
   };
 
   // -------------------------
@@ -567,6 +569,7 @@ startBtn.onclick = () => {
 //muteBtn.addEventListener('click', () => {
   //if (isTouch) mobileFlash(muteBtn);
 //});
+
 
 
 
