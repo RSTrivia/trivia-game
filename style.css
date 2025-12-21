@@ -438,12 +438,15 @@ h1 {
 
 /* ====== LOGIN PAGE SPECIFIC (CLEAN & SNUG) ====== */
 
+/* Update the container to use a consistent gap */
 #app.login-page .login-container {
-  width: 440px;             /* Match the new global width */
+  width: 440px;
   display: flex;
   flex-direction: column;
   padding: 25px;
   box-sizing: border-box;
+  /* Add this line to control the gap between ALL rows */
+  gap: 20px !important; 
 }
 
 /* Sharp, thin login fields */
@@ -476,14 +479,19 @@ h1 {
 }
 
 /* BACK TO GAME BUTTON */
+/* Remove the margin-top that was pushing the 'Back to Game' button away */
 #app.login-page .btn {
-  margin-top: 15px !important; 
+  margin-top: 0 !important; 
   padding: 12px 0;
   text-decoration: none !important;
   font-size: 1rem;
 }
 
-
+/* Ensure the login rows don't add their own extra vertical margins */
+#app.login-page .row {
+  margin: 0 !important;
+  width: 100%;
+}
 
 
 
@@ -743,15 +751,13 @@ input.input-field:-webkit-autofill:active {
   }
 }
 
-/* Snug up the spacing ONLY for the input rows on the login page */
+/* Keep the inputs snug (overriding the 20px gap for just the inputs) */
 #app.login-page .login-container .row:has(.input-field) {
-  margin: 0 !important;   /* Remove the row's outer margin */
-  gap: 0 !important;      /* Remove any internal gaps */
+  margin-bottom: -16px !important; /* This cancels the 20px gap for the username row */
 }
 
-/* Control the exact distance between the two inputs here */
 #app.login-page .input-field {
-  margin-bottom: 6px !important; /* This is now the ONLY thing controlling the gap */
+  margin-bottom: 4px !important; /* This is the tiny gap between user and pass */
 }
 
 
