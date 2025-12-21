@@ -116,8 +116,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
       if (authLabel) { 
         authLabel.textContent = 'Log In';
-        authBtn.blur();
-      } // Add this here too!
+        authBtn.blur(); // Forces the mobile browser to "drop" the focus/hover
+        authBtn.classList.remove('mobile-tap'); // Clears the slow-fade animation
+        // 3. The "Deep Clean" (Optional but highly effective)
+        // This forces the button to re-render its style state
+      setTimeout(() => {
+          authBtn.style.display = 'inline-flex'; 
+        }, 10);
+      } 
       return;
     }
 
@@ -468,6 +474,7 @@ startBtn.onclick = async () => {
     updateScore();
   }
 });
+
 
 
 
