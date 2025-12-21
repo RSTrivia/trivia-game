@@ -729,21 +729,24 @@ input.input-field:-webkit-autofill:active {
   }
 }
 
-/* Specific stability for the Login/Logout button */
+/* 1. Target the button to ensure it stays a 'half' */
 #authBtn {
-  min-width: 120px; /* Reserves enough space for 'Log Out' */
-  max-width: 120px; /* Locks the size so it never grows or shrinks */
+  flex: 1;            /* This makes it 50% width again */
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  white-space: nowrap;
+  min-width: 0;       /* Prevents flex-box from bulging */
+  padding: 12px;      /* Matches your other small buttons */
 }
 
-/* Ensure the label inside doesn't cause alignment shifts */
+/* 2. Target the LABEL to stabilize the width */
 #authBtn .btn-label {
   display: inline-block;
   text-align: center;
-  width: 100%;
+  /* We use a width that fits 'Log Out' comfortably 
+     without pushing the button's actual size. */
+  width: 80px; 
+  white-space: nowrap;
 }
 
 
