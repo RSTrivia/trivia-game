@@ -73,18 +73,18 @@ html, body {
 /* ====== CONTAINER ====== */
 .container {
   background: rgba(0, 0, 0, 0.85);
-  padding: 20px; 
+  padding: 25px;            /* Increased padding for better breathing room */
   border-radius: 10px; 
-  width: 400px;
-  height: 420px;      /* Fixed height */
-  max-width: 90%;
+  box-shadow: 0 0 30px rgba(0,0,0,0.5);
+  width: 440px;             /* Increased width as requested (+40px total) */
+  max-width: 95%;
   text-align: center;
   position: relative;
   box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  /* Remove fixed height: let it be natural */
+  min-height: auto; 
 }
+
 /* Login row spacing */
 .login-row {
   margin-bottom: 15px;
@@ -436,54 +436,39 @@ h1 {
   white-space: nowrap;
 }
 
-/* ====== LOGIN PAGE SPECIFIC ====== */
-/* ====== LOGIN PAGE SPECIFIC (CONSISTENT SIZE) ====== */
-
-/* ====== LOGIN PAGE SPECIFIC (IDENTICAL ALIGNMENT) ====== */
+/* ====== LOGIN PAGE SPECIFIC (CLEAN & SNUG) ====== */
 
 #app.login-page .login-container {
-  height: 420px !important; 
-  padding: 20px;
+  width: 440px;             /* Match the new global width */
+  display: flex;
+  flex-direction: column;
+  padding: 25px;
+  box-sizing: border-box;
 }
 
-/* 1. Ensure the Title and User-Controls match the Main Menu exactly */
-#app.login-page h1 {
-  margin-bottom: 25px; /* Matches your global h1 margin */
-}
-
-#app.login-page #user-controls {
-  margin-bottom: 30px; /* Matches your global #user-controls margin */
-}
-
-/* 2. Style the Input Area */
-#app.login-page .login-row {
-  margin-bottom: 10px;
-  width: 100%;
-}
-
+/* THINNER INPUTS */
 #app.login-page .input-field {
-  height: 30px;
-  font-size: 0.85rem;
-  border-width: 1px;
+  height: 32px;             /* Sleek and thin */
+  font-size: 0.9rem;
+  margin-bottom: 8px;       /* Tight gap between fields */
 }
 
-/* 3. Position the bottom buttons at the EXACT same height as the Main Menu */
+/* AUTH BUTTON ROW (Log In / Sign Up) */
 #app.login-page .menu-row {
-  margin-top: 10px; /* Space above Sign up / Log in */
+  margin-top: 10px;
+  gap: 10px;
 }
 
 #app.login-page .btn-small {
-  height: 60px !important; /* Matches your Start Screen Row 3 height */
+  height: 45px;             /* Slightly shorter than main menu for login */
 }
 
-/* 4. The "Back to Game" button */
+/* BACK TO GAME BUTTON */
 #app.login-page .btn {
-  margin-top: 20px !important; /* Matches the 'gap: 20px' in your #start-screen */
-  height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  margin-top: 15px !important; 
+  padding: 12px 0;
   text-decoration: none !important;
+  font-size: 1rem;
 }
 
 
@@ -711,6 +696,7 @@ input.input-field:-webkit-autofill:active {
 @media (max-width: 480px) {
    /* Only the leaderboard container */
   #app .container:has(#leaderboard) {
+    height: auto;           /* Let it grow to fit the 10 rows */
     height: 86vh;              /*90 fixed-ish to avoid flicker */
     max-height: 580px;         /*600 cap on phones */
     display: flex;
@@ -721,11 +707,10 @@ input.input-field:-webkit-autofill:active {
     overflow: hidden;          /* prevent flicker */
   }
 
-  #app .container:has(#leaderboard) #leaderboard {
-    width: 100%;
-    flex: 1 1 auto;            /* take remaining space */
-    margin-bottom: 0;
-    overflow-y: auto;           /* allow scrolling if content too tall */
+   /* Desktop Leaderboard override */
+  #app .container:has(#leaderboard) {
+    height: auto; 
+    min-height: 500px;        /* Ensures space for the 10 rows */
   }
 
   #app .container:has(#leaderboard) a.btn-small {
@@ -811,6 +796,7 @@ input.input-field:-webkit-autofill:active {
   margin: 0;
   font-size: 1.2rem;
 }
+
 
 
 
