@@ -114,7 +114,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (userDisplay) {
         userDisplay.querySelector('#usernameSpan').textContent = ' Guest';
       }
-      if (authLabel) authLabel.textContent = 'Log In';
+      if (authLabel) { 
+        authLabel.textContent = 'Log In';
+        authBtn.blur();
+      } // Add this here too!
       return;
     }
 
@@ -139,6 +142,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Auth Button
   // -------------------------
   authBtn.onclick = async () => {
+    // 1. Force the button to lose focus/hover state immediately
+    authBtn.blur();
     if (authLabel) {
       if (authLabel.textContent === 'Log Out') {
         await supabase.auth.signOut();
@@ -463,6 +468,7 @@ startBtn.onclick = async () => {
     updateScore();
   }
 });
+
 
 
 
