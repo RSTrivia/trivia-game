@@ -65,21 +65,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   let timer;
   let timeLeft = 15;
   let correctBuffer, wrongBuffer;
-  let muted = localStorage.getItem('muted') === 'true';
+  let muted = cachedMuted;
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   
-  // Set initial icon
-  const updateMuteIcon = () => {
-    // 1. Swap the emoji text
-    muteBtn.textContent = muted ? '🔇' : '🔊';
-    
-    // 2. Add or remove the 'is-muted' class on the BUTTON
-    if (muted) {
-      muteBtn.classList.add('is-muted');
-    } else {
-      muteBtn.classList.remove('is-muted');
-    }
-  };
+ const updateMuteIcon = () => {
+  muteBtn.textContent = muted ? '🔇' : '🔊';
+  muteBtn.classList.toggle('is-muted', muted);
+};
   updateMuteIcon();
   
 // Add click listener to toggle mute
@@ -566,6 +558,7 @@ document.querySelectorAll('a.btn-small').forEach(link => {
 //muteBtn.addEventListener('click', () => {
   //if (isTouch) mobileFlash(muteBtn);
 //});
+
 
 
 
