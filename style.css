@@ -619,16 +619,18 @@ input.input-field:-webkit-autofill:active {
     overflow-y: auto;           /* allow scrolling if content too tall */
   }
 
+  /* Target Main Menu button ONLY on the Leaderboard page */
   #app .container:has(#leaderboard) a.btn-small {
-    margin-top: 10px;    /* Space from the leaderboard list */
-    width: 120px;        /* Force the width to match Log In */
-    height: 60px;        /* Force the height to match Log In */
-    max-width: none;     /* Remove the 240px cap */
-    align-self: center;
-    display: flex;
+    width: 185px;          /* Match the half-width of main menu buttons */
+    max-width: 185px;
+    height: 60px;          /* Match the height of Log In/Leaderboard */
+    display: inline-flex;
     align-items: center;
     justify-content: center;
+    margin: 15px auto;     /* Centered with space above */
+    flex: none;            /* Prevent stretching */
   }
+  
 }
 
 /* Stable login container: grows naturally, no forced gaps */
@@ -684,21 +686,12 @@ input.input-field:-webkit-autofill:active {
   }
 }
 
-
-/* Make Main Menu button match the small button sizing from the start screen */
-#mainMenuBtn, 
-.container a[href="index.html"].btn-small {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: auto;           /* Don't fill 100% width */
-  min-width: 120px;      /* Match the Log In button width */
-  height: 60px;          /* Match the height from the start screen */
-  flex: none;            /* Prevent it from stretching in flex containers */
-  padding: 12px 24px;
-  margin: 10px auto;     /* Center it horizontally */
+/* Ensure the End Screen button stays full width (or its default) */
+#end-screen #mainMenuBtn {
+  width: 100%;
+  height: auto; 
+  display: block;
 }
-
 
 
 
