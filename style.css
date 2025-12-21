@@ -663,18 +663,20 @@ input.input-field:-webkit-autofill:active {
 }
 
 
+/* --- 2. MOBILE TAP BEHAVIOR --- */
 @media (pointer: coarse) {
-  /* When you tap (Active), it turns gold instantly */
-  .btn:active, .btn-small:active {
+  /* Disable hover entirely to prevent stickiness */
+  .btn:hover, .btn-small:hover {
+    background: rgba(0, 0, 0, 0.6) !important;
+    border-color: #d4af37 !important;
+  }
+
+  /* Create a 'tapped' class that we will trigger with JS */
+  .btn.tapped, .btn-small.tapped {
     background: rgba(0, 0, 0, 0.9) !important;
     border-color: #ffea8a !important;
     color: #ffea8a !important;
-    transition: 0s !important; 
-  }
-
-  /* When you LET GO, it stays gold for 0.1s then fades out */
-  .btn, .btn-small {
-    transition: all 0.2s ease 0.1s !important; /* The 0.1s at the end is the delay */
+    transition: 0s !important;
   }
 }
 
