@@ -83,7 +83,11 @@ muteBtn.addEventListener('click', () => {
   localStorage.setItem('muted', muted);
   updateMuteIcon();
 
-  // On PC, this is the "Key" that turns the speakers on
+  // Trigger the gold flash for visual feedback
+  if (isTouch) {
+    mobileFlash(muteBtn);
+  }
+
   if (audioCtx.state === 'suspended') {
     audioCtx.resume();
   }
@@ -557,6 +561,7 @@ document.querySelectorAll('a.btn-small').forEach(link => {
 muteBtn.addEventListener('click', () => {
   if (isTouch) mobileFlash(muteBtn);
 });
+
 
 
 
