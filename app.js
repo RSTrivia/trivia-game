@@ -420,25 +420,30 @@ function preloadNextQuestions() {
   // -------------------------
   // Buttons
   // -------------------------
-startBtn.onclick = async () => {
-    // If questions aren't loaded, fetch them (Both PC/Mobile need this)
-    if (questions.length === 0) {
-      const { data } = await supabase.from('questions').select('*');
-      if (data) questions = data;
-    }
 
-    if (isTouch) {
-      // MOBILE: Apply the gold hold
-      startBtn.classList.add('tapped');
-      setTimeout(() => {
-        startBtn.classList.remove('tapped');
-        startGame();
-      }, 150);
-    } else {
-      // PC: Instant start
+startBtn.onclick = async () => {
+  // 1. Fetch questions if needed
+  if (questions.length === 0) {
+    const { data } = await supabase.from('questions').select('*');
+    if (data) questions = data;
+  }
+
+  if (isTouch) {
+    // 2. Add the gold hold
+    startBtn.classList.add('tapped');
+
+    // 3. Wait 150ms before transitioning
+    setTimeout(() => {
+      // 4. REMOVE the class here so it doesn't "flash" back to black 
+      // before the screen hides
+      startBtn.classList.remove('tapped');
       startGame();
-    }
-  };
+    }, 150);
+  } else {
+    // PC: Instant start
+    startGame();
+  }
+};
 
   //test for GZ message !!! replace endgame.onclick
   /*startBtn.addEventListener('click', async () => {
@@ -521,6 +526,7 @@ authBtn.addEventListener('click', () => {
 document.querySelectorAll('a.btn-small').forEach(link => {
   link.addEventListener('click', () => mobileFlash(link));
 });
+
 
 
 
