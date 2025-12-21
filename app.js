@@ -118,8 +118,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       
       if (authLabel) { 
         authLabel.textContent = 'Log In';
-        // Just blur it, don't kill the pointer events. 
-        // This allows the CSS transition to play naturally.
+        authBtn.classList.remove('tapped'); 
         authBtn.blur();
       } 
       return;
@@ -473,6 +472,25 @@ startBtn.onclick = async () => {
   }
 });
 
+// Function to create that "Nice" flash on mobile
+function mobileFlash(el) {
+  el.classList.add('tapped');
+  setTimeout(() => {
+    el.classList.remove('tapped');
+    el.blur();
+  }, 150); // This duration is the "Leaderboard" feeling you liked
+}
+
+// Apply this to your Auth Button
+authBtn.addEventListener('click', () => {
+  mobileFlash(authBtn);
+  // Your existing logout/login logic...
+});
+
+// Apply this to the Leaderboard Link (and any other menu links)
+document.querySelectorAll('a.btn-small').forEach(link => {
+  link.addEventListener('click', () => mobileFlash(link));
+});
 
 
 
