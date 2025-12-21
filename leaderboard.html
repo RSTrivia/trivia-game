@@ -155,23 +155,29 @@
     border-color: #ffea8a;
   }*/
 
-  .btn-small {
+ /* Update this inside leaderboard.html <style> */
+.btn-small {
   background: rgba(0,0,0,0.6);
   color: #d4af37;
   padding: 10px 16px;
   font-size: 1rem;
-  border-color: #d4af37;   /* color only */
+  border: 2px solid #d4af37;
   border-radius: 8px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex: 1;
   text-align: center;
   text-decoration: none;
-  transition: all 0.2s ease; /* This ensures color, border, and bg all flash together */
+  transition: all 0.2s ease;
   cursor: pointer;
-}
 
+  /* ADD THESE TO FIX THE SIZE */
+  width: 175px;           
+  max-width: 175px;
+  height: 45px;           
+  margin: 20px auto 10px; 
+  flex: none;
+}
 
 .btn-small:hover {
   background: rgba(0,0,0,0.85);
@@ -256,6 +262,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
