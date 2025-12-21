@@ -421,33 +421,24 @@ function preloadNextQuestions() {
   // Buttons
   // -------------------------
 startBtn.onclick = async () => {
-  // If questions aren't loaded, fetch them (Both PC/Mobile need this)
-  if (questions.length === 0) {
-    const { data } = await supabase.from('questions').select('*');
-    questions = data;
-  }
+    // If questions aren't loaded, fetch them (Both PC/Mobile need this)
+    if (questions.length === 0) {
+      const { data } = await supabase.from('questions').select('*');
+      if (data) questions = data;
+    }
 
-  if (isTouch) {
-    // MOBILE: Apply the gold hold
-    startBtn.classList.add('tapped');
-    setTimeout(() => {
-      startBtn.classList.remove('tapped');
+    if (isTouch) {
+      // MOBILE: Apply the gold hold
+      startBtn.classList.add('tapped');
+      setTimeout(() => {
+        startBtn.classList.remove('tapped');
+        startGame();
+      }, 150);
+    } else {
+      // PC: Instant start
       startGame();
-    }, 150);
-  } else {
-    // PC: Instant start
-    startGame();
-  }
-};
-  
-  // 3. Wait for the flash to finish (150ms), then start the actual game
-  setTimeout(() => {
-    startBtn.classList.remove('tapped');
-    
-    // This calls your existing function that sets up the game UI
-    startGame(); 
-  }, 150);
-};
+    }
+  };
 
   //test for GZ message !!! replace endgame.onclick
   /*startBtn.addEventListener('click', async () => {
@@ -530,6 +521,7 @@ authBtn.addEventListener('click', () => {
 document.querySelectorAll('a.btn-small').forEach(link => {
   link.addEventListener('click', () => mobileFlash(link));
 });
+
 
 
 
