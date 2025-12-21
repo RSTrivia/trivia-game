@@ -68,14 +68,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   };
   updateMuteIcon();
-
-  // Add click listener to toggle mute
-  //muteBtn.addEventListener('click', () => {
-  //muted = !muted;
-  //localStorage.setItem('muted', muted);
-  //updateMuteIcon();
- // if (audioCtx.state === 'suspended') audioCtx.resume();
-//});
   
 // Add click listener to toggle mute
 muteBtn.addEventListener('click', () => {
@@ -561,6 +553,7 @@ document.querySelectorAll('a.btn-small').forEach(link => {
 //muteBtn.addEventListener('click', () => {
   //if (isTouch) mobileFlash(muteBtn);
 //});
+
 
 
 
