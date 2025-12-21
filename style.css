@@ -621,40 +621,6 @@ input.input-field:-webkit-autofill:active {
   }
 }*/
 
-
-@media (max-width: 480px) {
-  #leaderboard li {
-    padding: 6px 10px;   /* was ~10–12px */
-    margin-bottom: 4px; /* was ~6px */
-    font-size: 0.9rem;  /* slightly smaller text */
-    line-height: 1.2;   /* tighter vertical spacing */
-  }
-
-  #leaderboard {
-    margin: 12px 0;     /* reduce top/bottom gap */
-  }
-}
-
-
-@media (max-width: 480px) {
-  body.game-active #main-title {
-    display: none;
-  }
-}
-
-
-#leaderboard-title {
-  font-size: 3.2rem;
-}
-
-@media (max-width: 480px) {
-  #leaderboard-title {
-    font-size: 2.5rem;
-      margin-top: 10px;   /* reduce top margin */
-      margin-bottom: 10px; /* optional: reduce space between title and rows */
-  }
-}
-
 #end-screen #game-over-title {
   color: #f5f5f5 !important;             /* test color */
   -webkit-text-fill-color: #f5f5f5 !important; /* force the color in WebKit #cccccc*/
@@ -693,38 +659,6 @@ input.input-field:-webkit-autofill:active {
   }
 } */
 
-@media (max-width: 480px) {
-   /* Only the leaderboard container */
-  #app .container:has(#leaderboard) {
-    height: auto;           /* Let it grow to fit the 10 rows */
-    height: 86vh;              /*90 fixed-ish to avoid flicker */
-    max-height: 580px;         /*600 cap on phones */
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start; 
-    align-items: center;
-    padding: 15px;
-    overflow: hidden;          /* prevent flicker */
-  }
-
-   /* Desktop Leaderboard override */
-  #app .container:has(#leaderboard) {
-    height: auto; 
-    min-height: 500px;        /* Ensures space for the 10 rows */
-  }
-
-  #app .container:has(#leaderboard) a.btn-small {
-    margin-top: auto;           /* pushes it right below leaderboard */
-    width: auto;                /* same as PC */
-    margin-bottom: 10px;    /* add a little space from container bottom */
-    max-width: 240px;
-    box-sizing: border-box;
-    align-self: center;
-    flex-shrink: 0;             /* ensure it’s visible */
-  }
-}
-
-
 /* mobile tap */
 @media (pointer: coarse) {
   /* 1. Prevent "sticky" hover from ever happening */
@@ -750,25 +684,6 @@ input.input-field:-webkit-autofill:active {
     transition: all 0.2s ease 0.1s !important; 
   }
 }
-
-/* Target Main Menu button ONLY on the Leaderboard page */
-#app .container:has(#leaderboard) a.btn-small {
-  flex: none;            /* Stop it from trying to fill the width */
-  width: 175px;          /* Matches the Log In button width precisely */
-  max-width: 175px;
-  margin: 15px auto;     /* Centers it horizontally */
-  display: inline-flex;  /* Ensures it respects the width and stays centered */
-}
-
-/* Ensure mobile override doesn't force a different width */
-@media (max-width: 480px) {
-  #app .container:has(#leaderboard) a.btn-small {
-    width: 175px !important;
-    max-width: 175px !important;
-    margin-top: auto;    /* Keeps your mobile placement logic */
-  }
-}
-
 
 #authBtn .btn-label {
   display: inline-block;
@@ -796,6 +711,7 @@ input.input-field:-webkit-autofill:active {
   margin: 0;
   font-size: 1.2rem;
 }
+
 
 
 
