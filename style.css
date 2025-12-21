@@ -668,7 +668,7 @@ input.input-field:-webkit-autofill:active {
   .btn, .btn-small {
     /* When the touch ends, force the button to transition back to normal 
        in 0.2 seconds, overriding the "sticky" hover state */
-    transition: all 0.2s ease-in-out !important;
+    transition: all 0.8s ease-in-out !important;
   }
   
   /* This ensures the button looks "pressed" only while the finger is down */
@@ -678,6 +678,7 @@ input.input-field:-webkit-autofill:active {
     color: #ffea8a !important;
   }
 }
+
 
 
 
