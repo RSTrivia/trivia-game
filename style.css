@@ -298,7 +298,11 @@ h1 {
 /* ====== MUTE BUTTON MATCHING (TONED DOWN) ====== */
 /* ====== MUTE BUTTON EXACT #d4af37 MATCH ====== */
 #muteBtn {
-  width: auto; 
+  /* Set fixed dimensions to reserve space and prevent layout flicker */
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0; /* Prevents the button from shrinking if the username is long */
+  
   display: flex;
   justify-content: center;
   align-items: center;
@@ -310,6 +314,7 @@ h1 {
   transition: all 0.2s ease;
   outline: none;
   -webkit-tap-highlight-color: transparent;
+  line-height: 1;
 
   /* Targets the #d4af37 "Muted Gold" spectrum */
   filter: sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85);
@@ -326,6 +331,13 @@ h1 {
 #muteBtn.is-muted {
   filter: grayscale(1) brightness(0.4) !important;
   opacity: 0.5;
+}
+
+/* Ensure the span inside doesn't add extra height/width */
+#muteIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Tapped State: If you use the mobileFlash function, this matches the gold flash */
@@ -723,6 +735,7 @@ input.input-field:-webkit-autofill:active {
     margin-top: auto;    /* Keeps your mobile placement logic */
   }
 }
+
 
 
 
