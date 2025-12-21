@@ -185,6 +185,28 @@ muteBtn.addEventListener('click', () => {
     }
   });
 
+    // 1. Monitor the session heartbeat
+setInterval(async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  
+  // If we thought we were logged in, but the session is now null
+  if (!session && localStorage.getItem('cachedLoggedIn') === 'true') {
+    console.log("Heartbeat: Session lost. Reverting to Guest.");
+    
+    // Update variables
+    username = '';
+    localStorage.setItem('cachedLoggedIn', 'false');
+    localStorage.setItem('cachedUsername', 'Guest');
+
+    // Update UI instantly
+    if (userDisplay) {
+      const span = userDisplay.querySelector('#usernameSpan');
+      if (span) span.textContent = ' Guest';
+    }
+    if (authLabel) authLabel.textContent = 'Log In';
+  }
+}, 5000); // Checks every 5 seconds
+  
   // -------------------------
   // Auth Button
   // -------------------------
@@ -270,6 +292,8 @@ function playSound(buffer) {
   }
 
 async function startGame() {
+  // Force a fresh session check before loading questions
+  await supabase.auth.getSession();
   document.body.classList.add('game-active'); 
   endGame.running = false;
   resetGame();
@@ -557,6 +581,7 @@ startBtn.onclick = () => {
 //muteBtn.addEventListener('click', () => {
   //if (isTouch) mobileFlash(muteBtn);
 //});
+
 
 
 
