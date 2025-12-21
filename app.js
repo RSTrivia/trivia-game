@@ -184,16 +184,23 @@ supabase.auth.onAuthStateChange(async (event, session) => {
   // Auth Button
   // -------------------------
     // --- Update your Auth Button Logic ---
-    authBtn.onclick = async () => {
-        authBtn.blur();
-        if (username && username !== 'Guest') {
-            // Change this line to include { scope: 'local' }
-            await supabase.auth.signOut({ scope: 'local' });
-        } else {
-            window.location.href = 'login.html';
-        }
-  };
-
+authBtn.onclick = async () => {
+    authBtn.blur();
+    
+    if (username && username !== 'Guest') {
+        // This is the magic line that makes devices independent
+        await supabase.auth.signOut({ scope: 'local' });
+        
+        // Manually trigger the UI change for THIS device immediately
+        username = '';
+        localStorage.setItem('cachedLoggedIn', 'false');
+        localStorage.setItem('cachedUsername', 'Guest');
+        if (userDisplay) userDisplay.querySelector('#usernameSpan').textContent = ' Guest';
+        if (authLabel) authLabel.textContent = 'Log In';
+    } else {
+        window.location.href = 'login.html';
+    }
+};
   // -------------------------
   // Audio
   // -------------------------
@@ -569,6 +576,7 @@ startBtn.onclick = () => {
 //muteBtn.addEventListener('click', () => {
   //if (isTouch) mobileFlash(muteBtn);
 //});
+
 
 
 
