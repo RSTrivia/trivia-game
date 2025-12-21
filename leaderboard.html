@@ -50,6 +50,7 @@
 
 .container {
   display: flex;
+  height: 720px; /* Keep this fixed on desktop */
   flex-direction: column;
   align-items: center;
   background: rgba(0, 0, 0, 0.85);
@@ -57,7 +58,6 @@
   border-radius: 10px;
   width: 440px;            
   max-width: 95%;     
-  height: 720px;           /* Increased height to fit your preferred row sizing */
   text-align: center;
   margin: 0 auto;
   box-sizing: border-box;
@@ -91,9 +91,10 @@ h1#leaderboard-title {
   width: 100%;
   list-style: none;
   padding: 0;
-  margin: 10px 0 15px 0; /* Spacing between title and button */
-  height: auto;
-  min-height: 480px;      /* Holds the space for your 10 preferred rows */
+  margin: 10px 0; 
+  /* This is the key: Force the list to always take up this much space */
+  min-height: 480px; 
+  height: 480px; 
 }
 
 #leaderboard li {
@@ -139,7 +140,7 @@ h1#leaderboard-title {
   width: 175px;           
   height: 45px;
   flex: none;
-
+  
   /* This pushes the button to the bottom of the container.
      By using 'auto', it stays at the bottom of the 640px box 
      even before the leaderboard data arrives.
@@ -170,7 +171,7 @@ h1#leaderboard-title {
     padding-bottom: 20px !important;
     
     /* 2. FORCE the container to only be as big as the content */
-    height: auto !important;
+    height: 620px !important;
     min-height: auto !important; 
     max-height: none !important;
     width: 95% !important;
@@ -193,8 +194,8 @@ h1#leaderboard-title {
   #leaderboard {
     width: 100%;
     margin-bottom: 10px !important; 
-    height: auto !important;
-    min-height: auto !important;
+    height: 380px !important;
+    min-height: 380px !important;
   }
 
   #leaderboard li {
@@ -205,8 +206,8 @@ h1#leaderboard-title {
 
   .btn-small {
     /* 4. KILL the 'margin-top: auto' that pushes the button to the screen edge */
-    margin-top: 15px !important; 
-    margin-bottom: 5px !important;
+    margin-top: auto !important; 
+    margin-bottom: 10px !important;
     
     width: 175px !important;                
     height: 45px !important;
@@ -288,6 +289,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
