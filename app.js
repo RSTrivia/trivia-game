@@ -111,18 +111,21 @@ document.addEventListener('DOMContentLoaded', async () => {
       localStorage.setItem('cachedLoggedIn', 'false');
       localStorage.setItem('cachedUsername', 'Guest');
       username = '';
+      
       if (userDisplay) {
         userDisplay.querySelector('#usernameSpan').textContent = ' Guest';
       }
+      
       if (authLabel) { 
         authLabel.textContent = 'Log In';
+        authBtn.style.pointerEvents = 'none'; // Temporarily ignore the finger touch
         authBtn.blur(); // Forces the mobile browser to "drop" the focus/hover
         authBtn.classList.remove('mobile-tap'); // Clears the slow-fade animation
         // 3. The "Deep Clean" (Optional but highly effective)
         // This forces the button to re-render its style state
-      setTimeout(() => {
-          authBtn.style.display = 'inline-flex'; 
-        }, 10);
+        setTimeout(() => {
+          authBtn.style.pointerEvents = 'auto'; // Re-enable touch after 100ms
+        }, 100);
       } 
       return;
     }
@@ -474,6 +477,7 @@ startBtn.onclick = async () => {
     updateScore();
   }
 });
+
 
 
 
