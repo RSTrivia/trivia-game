@@ -148,12 +148,12 @@
   }
 
   #leaderboard {
-    /* 1. RESERVE SPACE INSTANTLY */
-    /* This height should match exactly what 10 rows look like */
-    min-height: 420px !important; 
-    height: 420px !important; 
+    /* 1. INCREASE THIS from 420px to 450px */
+    /* This gives enough room for all 10 rows plus their margins */
+    min-height: 450px !important; 
+    height: 450px !important; 
     
-    margin: 0 0 15px 0 !important;
+    margin: 0 0 10px 0 !important;
     padding: 0 !important;
     display: block !important;
     flex-shrink: 0; 
@@ -162,15 +162,14 @@
   #leaderboard li {
     padding: 8px 10px !important;
     font-size: 0.9rem !important;
-    height: 38px !important; /* Fixed height per row to keep it stable */
+    height: 38px !important; 
+    margin-bottom: 5px !important; /* Fixed margin to keep spacing consistent */
     box-sizing: border-box !important;
   }
 
   .btn-small {
-    /* 2. ANCHOR THE BUTTON */
-    /* By forcing the leaderboard height above, the button will 
-       already be at the bottom before the names load. */
-    margin-top: 0 !important; 
+    /* 2. PUSH DOWN slightly more */
+    margin-top: 15px !important; 
     margin-bottom: 10px !important;
     width: 175px !important;
     height: 45px !important;
@@ -252,6 +251,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
