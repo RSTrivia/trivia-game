@@ -156,56 +156,55 @@ h1#leaderboard-title {
 }
 
 /*  mobile */
+/* mobile */
 @media (max-width: 480px) {
   #app {
-    padding: 10px !important;
+    padding: 5px !important; /* Smaller outside padding */
   }
 
   #app .container {
-    /* 35px at the very top */
-    padding-top: 35px !important; 
-    padding-left: 15px !important;
-    padding-right: 15px !important;
-    padding-bottom: 20px !important;
+    /* Reduced to 20px to save space for the button */
+    padding-top: 20px !important; 
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    padding-bottom: 15px !important;
     
     height: auto !important;                
     min-height: 0 !important; 
-    width: 95% !important;
+    width: 98% !important; /* Slightly wider to give rows room */
     display: flex !important;
     flex-direction: column !important;
   }
 
   h1#leaderboard-title {
-    font-size: 2.1rem !important;   
+    font-size: 1.8rem !important; /* Smaller title for mobile screens */
     margin-top: 0 !important;
-    /* 1.0 removes the invisible box around the text for perfect symmetry */
     line-height: 1.0 !important; 
-    /* 35px gap under the title */
-    margin-bottom: 35px !important; 
+    /* Match the 20px top gap for symmetry */
+    margin-bottom: 20px !important; 
     padding: 0 !important;
   }
 
   #leaderboard {
     width: 100%;
-    /* Tighten gap between table and button to save space */
     margin-bottom: 10px !important; 
   }
 
   #leaderboard li {
-    /* Slightly thinner rows (8px) so the button fits on the screen */
-    padding: 8px 12px !important; 
-    margin-bottom: 4px !important;
+    /* Compact rows: 6px padding is the secret to fitting 10 rows on mobile */
+    padding: 6px 10px !important; 
+    margin-bottom: 3px !important;
     font-size: 0.85rem !important;           
   }
 
   .btn-small {
-    width: 175px !important;                
-    height: 42px !important;
+    width: 160px !important;                
+    height: 38px !important; /* Slightly shorter button */
     margin-top: 5px !important; 
-    margin-bottom: 5px !important;
+    margin-bottom: 0 !important;
     align-self: center !important;
-    /* Ensure no overlap */
     flex-shrink: 0 !important;
+    font-size: 0.9rem !important;
   }
 }
   
@@ -282,6 +281,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
