@@ -154,6 +154,42 @@ h1#leaderboard-title {
   background: rgba(0, 0, 0, 0.85);
   border-color: #ffea8a;
 }
+
+/* ===== MOBILE OPTIMIZATIONS ===== */
+@media (max-width: 480px) {
+  #app {
+    padding: 10px; /* Reduce outside air */
+  }
+
+  .container {
+    padding: 30px 15px 15px 15px; /* Ignore the 63px desktop alignment on mobile */
+    height: auto;                /* Let it shrink to fit the screen */
+    min-height: 90vh;            /* But keep it mostly full-screen */
+    width: 95%;
+  }
+
+  h1#leaderboard-title {
+    font-size: 2.2rem;           /* Scale title down so it doesn't wrap */
+    margin-bottom: 15px !important;
+  }
+
+  #leaderboard {
+    min-height: auto;            /* Allow the list to be tighter */
+    margin-bottom: 10px;
+  }
+
+  #leaderboard li {
+    padding: 8px 10px;           /* Slightly thinner rows for mobile */
+    margin-bottom: 4px;
+    font-size: 0.9rem;           /* Smaller text to prevent overflow */
+  }
+
+  .btn-small {
+    width: 150px;                /* Slightly smaller button */
+    height: 40px;
+    margin-top: 10px !important; /* Move it closer to the table */
+  }
+}
   
 </style>
   
@@ -228,6 +264,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
