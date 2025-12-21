@@ -729,24 +729,23 @@ input.input-field:-webkit-autofill:active {
   }
 }
 
-/* 1. Target the button to ensure it stays a 'half' */
+/* Force exact matching with Leaderboard button */
 #authBtn {
-  flex: 1;            /* This makes it 50% width again */
-  display: inline-flex;
+  flex: 1;
+  height: 60px;       /* Forces exact height matching */
+  display: flex;      /* Changed from inline-flex to flex */
   justify-content: center;
   align-items: center;
-  min-width: 0;       /* Prevents flex-box from bulging */
-  padding: 12px;      /* Matches your other small buttons */
+  padding: 0;         /* Padding 0 prevents height "bloating" */
+  box-sizing: border-box;
 }
 
-/* 2. Target the LABEL to stabilize the width */
 #authBtn .btn-label {
   display: inline-block;
   text-align: center;
-  /* We use a width that fits 'Log Out' comfortably 
-     without pushing the button's actual size. */
-  width: 80px; 
+  width: 7ch;         /* Reserves space for exactly 7 characters */
   white-space: nowrap;
+  line-height: 60px;  /* Centers text vertically within the 60px height */
 }
 
 
