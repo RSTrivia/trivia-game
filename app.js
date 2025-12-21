@@ -30,10 +30,10 @@ if (appDiv) {
 }
 
 if (muteBtn) {
-  // Set the emoji immediately
-  muteBtn.textContent = cachedMuted ? '🔇' : '🔊';
-  
-  // Set the class immediately so the CSS filter is already there
+  const muteIcon = muteBtn.querySelector('#muteIcon');
+  if (muteIcon) {
+    muteIcon.textContent = cachedMuted ? '🔇' : '🔊';
+  }
   if (cachedMuted) {
     muteBtn.classList.add('is-muted');
   }
@@ -68,45 +68,37 @@ document.addEventListener('DOMContentLoaded', async () => {
   let muted = cachedMuted;
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   
-  // This function should be called whenever you want to toggle or set the state
-  const updateMuteUI = () => {
-    const muteBtn = document.getElementById('muteBtn');
-    const muteIcon = document.getElementById('muteIcon');
-    
-    if (!muteBtn || !muteIcon) return;
-  
-    // 1. Set the emoji text based on the global 'muted' variable
-    muteIcon.textContent = muted ? '🔇' : '🔊';
-  
-    // 2. Toggle the class on the BUTTON, not the icon
-    if (muted) {
-      muteBtn.classList.add('is-muted');
-    } else {
-      muteBtn.classList.remove('is-muted');
-    }
+
+// Function to sync UI with the 'muted' variable
+const syncMuteUI = () => {
+  const muteIcon = document.getElementById('muteIcon');
+  if (!muteBtn || !muteIcon) return;
+
+  muteIcon.textContent = muted ? '🔇' : '🔊';
+
+  if (muted) {
+    muteBtn.classList.add('is-muted');
+  } else {
+    muteBtn.classList.remove('is-muted');
+  }
 };
 
-// Inside your click listener
+  // Single, clean Click Listener
 muteBtn.addEventListener('click', () => {
-  muted = !muted; // Toggle the global variable
-  localStorage.setItem('gameMuted', muted); // Save it
-  updateMuteUI(); // Run the UI update
-});
-
-// Add click listener to toggle mute
-muteBtn.addEventListener('click', () => {
-  muted = !muted;
+  muted = !muted; 
   localStorage.setItem('muted', muted);
-  updateMuteIcon();
-
+  
   // Trigger the gold flash for visual feedback
   //if (isTouch) {
     //mobileFlash(muteBtn);
   //}
-
+  
+  // Resume AudioContext if it's the first interaction
   if (audioCtx.state === 'suspended') {
     audioCtx.resume();
   }
+
+  syncMuteUI();
 });
   
    // -------------------------
@@ -577,6 +569,7 @@ document.querySelectorAll('a.btn-small').forEach(link => {
 //muteBtn.addEventListener('click', () => {
   //if (isTouch) mobileFlash(muteBtn);
 //});
+
 
 
 
