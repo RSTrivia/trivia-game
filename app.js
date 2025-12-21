@@ -419,10 +419,18 @@ function preloadNextQuestions() {
   // -------------------------
   // Buttons
   // -------------------------
-startBtn.onclick = async () => {
-    await loadSounds();
-    startGame();
-  };
+startBtn.onclick = () => {
+  // Add the 'tapped' class manually to ensure the glow shows
+  startBtn.classList.add('tapped');
+
+  // Wait 150ms (the gold border duration) before switching screens
+  setTimeout(() => {
+    startBtn.classList.remove('tapped');
+    document.getElementById('start-screen').classList.add('hidden');
+    game.classList.remove('hidden');
+    // ... rest of your startGame() logic
+  }, 150);
+};
 
   //test for GZ message !!! replace endgame.onclick
   /*startBtn.addEventListener('click', async () => {
@@ -491,6 +499,7 @@ authBtn.addEventListener('click', () => {
 document.querySelectorAll('a.btn-small').forEach(link => {
   link.addEventListener('click', () => mobileFlash(link));
 });
+
 
 
 
