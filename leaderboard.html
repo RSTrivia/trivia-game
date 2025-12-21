@@ -162,7 +162,7 @@ h1#leaderboard-title {
   }
 
   #app .container {
-    /* Reduced top padding to 35px */
+    /* 35px at the very top */
     padding-top: 35px !important; 
     padding-left: 15px !important;
     padding-right: 15px !important;
@@ -178,32 +178,34 @@ h1#leaderboard-title {
   h1#leaderboard-title {
     font-size: 2.1rem !important;   
     margin-top: 0 !important;
-    /* Reduced bottom margin to 35px to match the top gap */
+    /* 1.0 removes the invisible box around the text for perfect symmetry */
+    line-height: 1.0 !important; 
+    /* 35px gap under the title */
     margin-bottom: 35px !important; 
-    line-height: 1.1 !important;
+    padding: 0 !important;
   }
 
   #leaderboard {
     width: 100%;
-    margin-bottom: 15px !important; 
+    /* Tighten gap between table and button to save space */
+    margin-bottom: 10px !important; 
   }
 
   #leaderboard li {
-    /* Keeping the "fat" rows you liked */
-    padding: 10px 12px !important; 
-    margin-bottom: 5px !important;
-    font-size: 0.9rem !important;           
+    /* Slightly thinner rows (8px) so the button fits on the screen */
+    padding: 8px 12px !important; 
+    margin-bottom: 4px !important;
+    font-size: 0.85rem !important;           
   }
 
   .btn-small {
     width: 175px !important;                
-    height: 45px !important;
+    height: 42px !important;
     margin-top: 5px !important; 
     margin-bottom: 5px !important;
     align-self: center !important;
-    /* Ensure it's clickable and not overlapped */
-    position: relative;
-    z-index: 10;
+    /* Ensure no overlap */
+    flex-shrink: 0 !important;
   }
 }
   
@@ -280,6 +282,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
