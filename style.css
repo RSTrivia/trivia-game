@@ -328,12 +328,12 @@ h1 {
 }
 
 /* Tapped State: If you use the mobileFlash function, this matches the gold flash */
-#muteBtn.tapped {
+/*#muteBtn.tapped {
   /* Reduced brightness from 1.3 to 1.0 and saturation from 4 to 2.5 */
-  filter: sepia(1) saturate(2.5) hue-rotate(-15deg) brightness(1.0) !important;
+  /*filter: sepia(1) saturate(2.5) hue-rotate(-15deg) brightness(1.0) !important;
   opacity: 1;
   transition: none; /* Makes the tap feel instant/responsive */
-}
+/*}*/
 
 /* ====== GAME SCREEN TEXT ===== */
 
@@ -722,6 +722,7 @@ input.input-field:-webkit-autofill:active {
     margin-top: auto;    /* Keeps your mobile placement logic */
   }
 }
+
 
 
 
