@@ -132,7 +132,7 @@
     font-weight: 700;
   }
 
-  a.btn-small {
+  /*a.btn-small {
     display: inline-block;
     margin-top: 10px;
     padding: 10px 16px;
@@ -146,8 +146,37 @@
   a.btn-small:hover {
     background: rgba(0,0,0,0.85);
     border-color: #ffea8a;
-  }
+  }*/
 
+  .btn-small {
+  background: rgba(0,0,0,0.6);
+  color: #d4af37;
+  padding: 10px 16px;
+  font-size: 1rem;
+  border-color: #d4af37;   /* color only */
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  text-align: center;
+  text-decoration: none;
+  transition: all 0.2s ease; /* This ensures color, border, and bg all flash together */
+  cursor: pointer;
+}
+
+
+.btn-small:hover {
+  background: rgba(0,0,0,0.85);
+  border-color: #ffea8a;
+}
+
+.btn, .btn-small {
+  position: relative; /* ensures click area is on top */
+  user-select: none;   /* optional: prevent text selection when clicking */
+  z-index: 2;          /* ensure above all background layers */
+}
+  
 </style>
 </head>
 
@@ -220,6 +249,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
