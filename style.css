@@ -126,7 +126,7 @@ a {
 /* ====== BIG GOLD BUTTONS ====== */
 .btn {
   background: rgba(0, 0, 0, 0.6);
-  color: #d4af37; /*#ffd700;*/
+  color: #ffd700;
   padding: 14px 22px;
   border: 2px solid #d4af37; /*#ffd700;*/
   border-radius: 8px;
@@ -135,19 +135,17 @@ a {
   display: block;
   margin: 8px 0;
   transition: 0.2s;
-  cursor: pointer;
 }
 
 .btn:hover {
   background: rgba(0, 0, 0, 0.85);
   border-color: #ffea8a;
-  color: #ffea8a;
 }
 
 /* ====== SMALL BUTTONS ====== */
 .btn-small {
   background: rgba(0,0,0,0.6);
-  color: #d4af37;
+  color: #ffd700;
   padding: 10px 16px;
   font-size: 1rem;
   border-color: #d4af37;   /* color only */
@@ -158,8 +156,7 @@ a {
   flex: 1;
   text-align: center;
   text-decoration: none;
-  transition: all 0.2s ease; /* This ensures color, border, and bg all flash together */
-  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
 }
 
 
@@ -194,7 +191,6 @@ a {
   border-radius: 6px;
   font-size: 1rem;
   transition: background-color 0.15s ease;
-  cursor: pointer;
 }
 
 .answer-btn:hover {
@@ -203,11 +199,11 @@ a {
 
 .answer-btn:disabled:hover {
   background-color: #181A1B;
-  cursor: pointer;
+  cursor: default;
 }
 
-.correct { background-color: #3d8c40 !important; } /*#4caf50*/
-.wrong { background-color: #a63232 !important; } /*#f44336*/
+.correct { background-color: #4caf50 !important; }
+.wrong { background-color: #f44336 !important; }
 
 /* ====== GAME SCREEN ===== */
 #game {
@@ -295,6 +291,12 @@ h1 {
   margin-bottom: 15px;      /* optional spacing below */
 }
 
+#userDisplay {
+  display: flex;
+  align-items: center;
+  /*gap: 0.5rem; /* space between Player:, username, and mute button */
+}
+
 #muteBtn {
   width: auto; 
   display: flex;
@@ -371,7 +373,7 @@ h1 {
 
 .btn-small {
   background: rgba(0,0,0,0.6);
-  color: #d4af37;
+  color: #ffd700;
 
   padding: 10px 16px;
   font-size: 1rem;
@@ -440,7 +442,7 @@ input.input-field:-webkit-autofill:active {
 
 #userDisplay {
   font-size: 1.2rem;
-  color: #d4af37;
+  color: #ffd700;
   min-height: 24px;
   display: flex;            /* make it inline-flex to center text vertically */
   align-items: center;
@@ -619,18 +621,15 @@ input.input-field:-webkit-autofill:active {
     overflow-y: auto;           /* allow scrolling if content too tall */
   }
 
-  /* Target Main Menu button ONLY on the Leaderboard page */
   #app .container:has(#leaderboard) a.btn-small {
-    width: 185px;          /* Match the half-width of main menu buttons */
-    max-width: 185px;
-    height: 60px;          /* Match the height of Log In/Leaderboard */
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    margin: 15px auto;     /* Centered with space above */
-    flex: none;            /* Prevent stretching */
+    margin-top: auto;           /* pushes it right below leaderboard */
+    width: auto;                /* same as PC */
+    margin-bottom: 10px;    /* add a little space from container bottom */
+    max-width: 240px;
+    box-sizing: border-box;
+    align-self: center;
+    flex-shrink: 0;             /* ensure it’s visible */
   }
-  
 }
 
 /* Stable login container: grows naturally, no forced gaps */
@@ -660,57 +659,9 @@ input.input-field:-webkit-autofill:active {
   margin-bottom: 0;          /* no extra space at bottom */
 }
 
-/* mobile tap */
-@media (pointer: coarse) {
-  /* 1. Prevent "sticky" hover from ever happening */
-  .btn:hover, .btn-small:hover {
-    background: rgba(0, 0, 0, 0.6) !important;
-    border-color: #d4af37 !important;
-  }
 
-  /* 2. The Flash: Triggered by finger touch (active) or our JS class (tapped) */
-  .btn:active, .btn-small:active,
-  .btn.tapped, .btn-small.tapped {
-    background: rgba(0, 0, 0, 0.9) !important;
-    border-color: #ffea8a !important;
-    color: #ffea8a !important;
-    /* transition 0s makes it turn gold INSTANTLY when finger hits screen */
-    transition: 0s !important; 
-  }
-
-  /* 3. The "Leaderboard" Feeling: The Fade Out */
-  .btn, .btn-small {
-    /* 0.2s duration to fade, but 0.1s DELAY before it starts fading.
-       This "holds" the gold border so it doesn't just flicker. */
-    transition: all 0.2s ease 0.1s !important; 
-  }
+a.btn,
+a.btn-small {
+  cursor: default !important;
 }
-
-/* Target Main Menu button ONLY on the Leaderboard page */
-#app .container:has(#leaderboard) a.btn-small {
-  width: 185px;
-  max-width: 185px;
-  height: 60px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin: 15px auto;
-  flex: none;
-}
-
-/* Ensure the End Screen button stays full width everywhere */
-#end-screen #mainMenuBtn {
-  width: 100%;
-  height: auto; 
-  display: block;
-}
-
-
-
-
-
-
-
-
-
 
