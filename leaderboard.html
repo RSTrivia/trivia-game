@@ -257,13 +257,8 @@ function updateLeaderboard(data) {
 }
 
 (async () => {
-  // 1️⃣ Immediately show cached data
-  const cachedString = localStorage.getItem('leaderboard');
-  if (cachedString) {
-    updateLeaderboard(JSON.parse(cachedString));
-  }
-
-  // 2️⃣ Fetch fresh data
+// 1️⃣ Function to fetch data from Supabase
+async function fetchLeaderboard() {
   const { data, error } = await supabase
     .from('public_leaderboard')
     .select('username, score')
@@ -271,20 +266,42 @@ function updateLeaderboard(data) {
     .limit(10);
 
   if (!error && data) {
-    const freshString = JSON.stringify(data);
-    
-    // 3️⃣ ONLY trigger a re-render if the live data is different from cache
-    if (freshString !== cachedString) {
-      localStorage.setItem('leaderboard', freshString);
-      updateLeaderboard(data);
-    }
+    localStorage.setItem('leaderboard', JSON.stringify(data));
+    updateLeaderboard(data);
   }
+}
+
+// 2️⃣ Setup Realtime Listener
+// This "listens" for any changes to the public_leaderboard view/table
+const leaderboardSubscription = supabase
+  .channel('public-leaderboard-changes')
+  .on(
+    'postgres_changes', 
+    { event: '*', schema: 'public', table: 'scores' }, // Listen to the source table
+    () => {
+      console.log('Leaderboard updated live!');
+      fetchLeaderboard();
+    }
+  )
+  .subscribe();
+
+// 3️⃣ Initial Load
+(async () => {
+  // Show cached data immediately for speed
+  const cachedString = localStorage.getItem('leaderboard');
+  if (cachedString) {
+    updateLeaderboard(JSON.parse(cachedString));
+  }
+
+  // Fetch fresh data immediately
+  await fetchLeaderboard();
 })();
 
 </script>
 
 </body>
 </html>
+
 
 
 
