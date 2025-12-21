@@ -522,55 +522,40 @@ input.input-field:-webkit-autofill:active {
 /*}*/
 
 /* ====== LOGIN / LEADERBOARD BUTTON ROW ===== */
-/* ====== LOGIN / LEADERBOARD BUTTON ROW ===== */
-
-#start-screen {
-  display: flex;
-  flex-direction: column;
-  gap: 20px; /* This forces exactly 20px between EVERY row vertically */
-  margin-top: 10px;
-}
-/* Update the rows to match the horizontal gap */
-#start-screen .row {
-  display: flex;
-  gap: 20px; /* This forces exactly 20px between Log In and Leaderboard */
-  margin: 0;  /* Remove margins so they don't interfere with the 20px gap above */
-  width: 100%;
-}
-
+/* This targets BOTH the Log In button and the Leaderboard link */
 /* ====== LOGIN / LEADERBOARD BUTTON ROW ===== */
 #start-screen .row:nth-child(3) {
   display: flex;
-  gap: 20px; /* Must match the 20px above */
+  gap: 20px;          /* 20px gap between the two buttons */
   width: 100%;
   align-items: stretch;
+  margin: 0;          /* Removes extra margins to let the start-screen gap work */
 }
 
-/* This targets BOTH the Log In button and the Leaderboard link */
+/* Force both elements to be identical halves with fixed height */
 #start-screen .row:nth-child(3) #authBtn,
 #start-screen .row:nth-child(3) a.btn-small {
   flex: 1;
-  height: 60px !important;      /* Forces identical height */
-  padding: 0 !important;       /* Removes internal bloating */
-  margin: 0;
+  height: 60px !important; 
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 0 !important;
   box-sizing: border-box;
   border: 2px solid #d4af37;
   font-size: 1rem;
   text-decoration: none;
-  min-width: 0;                /* Stops long text from growing the button */
+  min-width: 0;
+  margin: 0;
 }
 
-/* Keeps the text inside centered and stable */
+/* Keeps the "Log In / Log Out" text centered */
 #authBtn .btn-label {
   display: block;
   width: 100%;
   text-align: center;
   white-space: nowrap;
 }
-
 
  /*@media (min-width: 481px) {
   #start-screen .row:nth-child(3) button,
@@ -772,6 +757,7 @@ input.input-field:-webkit-autofill:active {
   width: 100%; /* Let the flex parent handle the centering */
   white-space: nowrap;
 }
+
 
 
 
