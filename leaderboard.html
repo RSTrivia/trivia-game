@@ -161,61 +161,65 @@ h1#leaderboard-title {
 /* ============================================================
    CLEAN MOBILE OVERRIDE - Consolidation of all fixes
    ============================================================ */
+/* mobile */
 @media (max-width: 480px) {
-  /* 1. LOCK THE POSITION ON SCREEN */
   #app {
-    /* REDUCE THIS VALUE */
-    /* If 60px was too low, try 20px or 30px */
-    padding-top: 20px !important; 
-    
+    padding-top: 20px !important; /* This was your perfect height */
     align-items: flex-start !important; 
     display: flex !important;
     justify-content: center !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
   }
 
   #app .container {
-    /* Ensure the top padding INSIDE the box also matches the main page */
-    padding-top: 25px !important; 
+    /* FIX WIDTH: Increased to 440px max to match Main Page */
+    width: 95% !important;
+    max-width: 440px !important; 
     
-    width: 90% !important;
-    max-width: 400px !important;
+    /* FIX OVERLAP: Ensure container is tall enough for all 10 rows + button */
     height: auto !important;
-    min-height: 480px !important;
+    min-height: 560px !important; 
+    max-height: none !important;
+    
+    padding: 25px 15px 30px 15px !important; 
     display: flex !important;
     flex-direction: column !important;
+    justify-content: flex-start !important;
+    box-sizing: border-box !important;
   }
 
-  /* 3. TITLE SPACING */
   h1#leaderboard-title {
     font-size: 2.2rem !important; 
     line-height: 1.0 !important; 
-    margin-top: 0 !important;
-    margin-bottom: 25px !important; 
+    margin: 0 0 20px 0 !important; 
   }
 
-  /* 4. LEADERBOARD ROWS */
   #leaderboard {
     width: 100% !important;
     height: auto !important;
-    min-height: 400px !important; /* Reserves space for 10 rows */
-    margin: 0 0 20px 0 !important; /* 20px bottom margin pushes button away */
+    /* This ensures 10 rows have enough room before the button starts */
+    min-height: 420px !important; 
+    margin: 0 !important;
     padding: 0 !important;
+    display: block !important;
   }
 
   #leaderboard li {
-    min-height: 40px !important; 
+    min-height: 38px !important; 
     padding: 8px 12px !important;
-    margin-bottom: 5px !important;
+    margin-bottom: 4px !important;
     font-size: 0.9rem !important;
     display: flex !important;
     align-items: center !important;
     box-sizing: border-box !important;
   }
 
-  /* 5. THE BUTTON */
   .btn-small {
-    margin-top: 0 !important;      /* Let the leaderboard margin handle spacing */
+    /* This forces the button to stay BELOW the list */
+    margin-top: 20px !important; 
     margin-bottom: 0 !important;
+    
     width: 175px !important;                
     height: 45px !important;
     align-self: center !important;
@@ -299,6 +303,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
