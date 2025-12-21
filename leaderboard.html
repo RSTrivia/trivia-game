@@ -46,27 +46,28 @@
     z-index: 1;
   }
 
-/* Update the container to have a consistent starting height */
 .container {
   display: flex;
   flex-direction: column;
   align-items: center;
   background: rgba(0, 0, 0, 0.85);
-  padding: 25px;              /* Standard padding */
+  padding: 25px;
   border-radius: 10px;
   width: 440px;            
   max-width: 95%;     
-  min-height: 620px;          /* This "locks" the height to prevent jumping */
+  /* This height prevents the 'flicker' jump by reserving space for 10 rows */
+  min-height: 640px; 
   text-align: center;
-  margin: 0 auto;     
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
-/* ===== LEADERBOARD TITLE ===== */
 h1#leaderboard-title {
   font-family: 'Cinzel', serif;
-  font-size: 3.2rem;          /* Exact match to Main Menu */
-  margin-top: 0;              /* Remove extra top space */
-  margin-bottom: 25px;        /* Exact match to Main Menu */
+  font-size: 3.2rem;
+  /* Exact position matches */
+  margin-top: 0; 
+  margin-bottom: 25px; 
   text-align: center;
   letter-spacing: 2px;
   background: linear-gradient(145deg,#fff8dc 0%,#ffdd44 25%,#f2b705 50%,#c28f0c 75%,#a77b0a 100%);
@@ -79,18 +80,16 @@ h1#leaderboard-title {
     0 0 8px rgba(255,223,0,0.8);
 }
 
-/* Update the list to reserve space for the 10 rows */
 #leaderboard {
   width: 100%;
   list-style: none;
   padding: 0;
-  margin: 0;      
-  min-height: 410px;          /* Pre-reserves the area for 10 rows */
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
+  /* This margin matches the spacing between the Player Name and Buttons on Main Menu */
+  margin: 0 0 20px 0; 
+  height: auto;
+  /* Pre-calculating height for 10 rows (34px + 3px margin) * 10 = ~370px */
+  min-height: 370px; 
 }
-
 
 /* ===== LEADERBOARD ROWS (THIN VERSION) ===== */
 #leaderboard li {
@@ -220,6 +219,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
