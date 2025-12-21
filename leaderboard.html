@@ -46,19 +46,17 @@
     z-index: 1;
   }
 
-/* ===== CONTAINER ===== */
+/* Update the container to have a consistent starting height */
 .container {
   display: flex;
   flex-direction: column;
   align-items: center;
   background: rgba(0, 0, 0, 0.85);
-  padding: 15px 25px;       
+  padding: 25px;              /* Standard padding */
   border-radius: 10px;
-  box-shadow: 0 0 30px rgba(0,0,0,0.5);
   width: 440px;            
   max-width: 95%;     
-  height: auto;           
-  min-height: auto;      
+  min-height: 620px;          /* This "locks" the height to prevent jumping */
   text-align: center;
   margin: 0 auto;     
 }
@@ -66,21 +64,33 @@
 /* ===== LEADERBOARD TITLE ===== */
 h1#leaderboard-title {
   font-family: 'Cinzel', serif;
-  font-size: 2.2rem;   
-  margin-top: 10px;
-  margin-bottom: 10px; 
+  font-size: 3.2rem;          /* Exact match to Main Menu */
+  margin-top: 0;              /* Remove extra top space */
+  margin-bottom: 25px;        /* Exact match to Main Menu */
+  text-align: center;
   letter-spacing: 2px;
+  background: linear-gradient(145deg,#fff8dc 0%,#ffdd44 25%,#f2b705 50%,#c28f0c 75%,#a77b0a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow:
+    0 0 4px rgba(0,0,0,0.8),
+    1px 1px 0 #000,
+    2px 2px 2px rgba(0,0,0,0.6),
+    0 0 8px rgba(255,223,0,0.8);
 }
 
-/* ===== LEADERBOARD LIST ===== */
+/* Update the list to reserve space for the 10 rows */
 #leaderboard {
   width: 100%;
   list-style: none;
   padding: 0;
-  margin: 5px 0;      
-  height: auto;
-  overflow: visible;
+  margin: 0;      
+  min-height: 410px;          /* Pre-reserves the area for 10 rows */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
+
 
 /* ===== LEADERBOARD ROWS (THIN VERSION) ===== */
 #leaderboard li {
@@ -210,6 +220,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
