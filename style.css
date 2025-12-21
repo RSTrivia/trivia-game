@@ -500,7 +500,7 @@ input.input-field:-webkit-autofill:active {
   text-align: left;
   margin-left: 0.4ch;   /* small space between Player: and username */
   white-space: nowrap;
-  overflow: hidden;
+  /* overflow: hidden;*/
   margin-left: 0.4ch;
 }
 
@@ -748,6 +748,7 @@ input.input-field:-webkit-autofill:active {
   width: 80px;                /* Enough space for 'Log Out' */
   white-space: nowrap;
 }
+
 
 
 
