@@ -62,13 +62,13 @@
   flex-direction: column;
   align-items: center;
   background: rgba(0, 0, 0, 0.85);
-  padding: 25px;          /* Match the new global padding */
+  padding: 15px 25px;       /* Shorter top/bottom padding */
   border-radius: 10px;
   box-shadow: 0 0 30px rgba(0,0,0,0.5);
   width: 440px;           /* Match the new 440px width */
   max-width: 95%;     
-  height: auto;           /* REMOVE fixed height to allow growth */
-  min-height: 600px;      /* Ensure it's at least as big as main menu */
+  height: auto;           /* Vital: let it shrink */
+  min-height: auto;      /* Ensure it's at least as big as main menu */
   text-align: center;
   margin: 0 auto;     
 }
@@ -83,16 +83,19 @@
   overflow: visible;      /* Stop cutting off rows */
 }
 
-/* Add this to ensure rows don't get too squashed */
 #leaderboard li {
   display: flex;
   justify-content: space-between;
-  padding: 12px 15px;     /* Slightly more padding for the wider container */
+  /* Reduced padding from 12px to 6px top/bottom */
+  padding: 6px 15px; 
   border-radius: 5px;
-  margin-bottom: 6px;
+  /* Reduced margin from 6px to 3px */
+  margin-bottom: 3px; 
   font-weight: 500;
-  min-height: 45px;       /* Guaranteed row height */
+  /* Reduced min-height to allow it to be thinner */
+  min-height: 34px; 
   box-sizing: border-box;
+  font-size: 0.95rem; /* Slightly smaller font to save space */
 }
   
   h1 {
@@ -112,6 +115,22 @@
     color: #cccccc; /*#f0f0f0; default light gray text */
   }
 
+/* Update these in leaderboard.html style as well */
+
+  h1#leaderboard-title {
+    font-size: 2.2rem;   /* Smaller title */
+    margin-bottom: 10px; /* Less space under title */
+  }
+  
+  #leaderboard {
+    width: 100%;
+    list-style: none;
+    padding: 0;
+    margin: 5px 0;      /* Minimal margin around the list */
+    height: auto;
+    overflow: visible;
+  }
+    
   /* Alternating row colors for better readability */
   #leaderboard li:nth-child(odd) {
     background: rgba(80, 80, 80, 0.9);
@@ -262,6 +281,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
