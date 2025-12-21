@@ -141,38 +141,47 @@ muteBtn.addEventListener('click', () => {
   // -------------------------
   // Supabase auth listener (updates UI if session changes)
   // -------------------------
-  supabase.auth.onAuthStateChange(async (_event, session) => {
-    if (!session?.user) {
+  supabase.auth.onAuthStateChange(async (event, session) => {
+    // 1. Detect if the session is gone (Logged out elsewhere or token expired)
+    if (event === 'SIGNED_OUT' || !session) {
+      console.log("Session lost on this device. Switching to Guest.");
+      
+      // Update local variables
+      username = ''; 
       localStorage.setItem('cachedLoggedIn', 'false');
       localStorage.setItem('cachedUsername', 'Guest');
-      username = '';
       
+      // Update UI immediately
       if (userDisplay) {
-        userDisplay.querySelector('#usernameSpan').textContent = ' Guest';
+        const span = userDisplay.querySelector('#usernameSpan');
+        if (span) span.textContent = ' Guest';
       }
       
-      if (authLabel) { 
+      if (authLabel) {
         authLabel.textContent = 'Log In';
-        authBtn.classList.remove('tapped'); 
-        authBtn.blur();
-      } 
-      return;
-    }
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('username')
-      .eq('id', session.user.id)
-      .single();
-
-    if (profile?.username) {
-      localStorage.setItem('cachedLoggedIn', 'true');
-      localStorage.setItem('cachedUsername', profile.username);
-      username = profile.username;
-      if (userDisplay) {
-        userDisplay.querySelector('#usernameSpan').textContent = ' ' + profile.username;
       }
-      if (authLabel) authLabel.textContent = 'Log Out';
+      
+      return; // Stop here, no need to fetch a profile
+    }
+  
+    // 2. If a session DOES exist (Login or Token Refresh)
+    if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', session.user.id)
+        .single();
+  
+      if (profile?.username) {
+        username = profile.username;
+        localStorage.setItem('cachedLoggedIn', 'true');
+        localStorage.setItem('cachedUsername', username);
+        
+        if (userDisplay) {
+          userDisplay.querySelector('#usernameSpan').textContent = ' ' + username;
+        }
+        if (authLabel) authLabel.textContent = 'Log Out';
+      }
     }
   });
 
@@ -548,6 +557,7 @@ startBtn.onclick = () => {
 //muteBtn.addEventListener('click', () => {
   //if (isTouch) mobileFlash(muteBtn);
 //});
+
 
 
 
