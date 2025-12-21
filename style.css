@@ -302,14 +302,17 @@ h1 {
   align-items: center;
   background: none;
   border: none;
-  font-size: 1.5rem;
+  font-size: 1.2rem;     /* Slightly smaller so it's less intrusive */
   cursor: pointer;
-  color: #ffd700;
+  color: #d4af37;        /* Changed from #ffd700 to your muted gold */
+  opacity: 0.7;          /* Makes it 30% transparent by default */
   padding: 0;
+  transition: opacity 0.2s, color 0.2s;
 }
 
 #muteBtn:hover {
-  color: #fff;
+  color: #ffea8a;        /* Highlights when you actually want to use it */
+  opacity: 1;            /* Full brightness on hover */
 }
 
 
@@ -700,6 +703,7 @@ input.input-field:-webkit-autofill:active {
     margin-top: auto;    /* Keeps your mobile placement logic */
   }
 }
+
 
 
 
