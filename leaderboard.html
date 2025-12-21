@@ -156,6 +156,7 @@ h1#leaderboard-title {
   border-color: #ffea8a;
 }
 
+
 /* mobile */
 /* mobile */
 @media (max-width: 480px) {
@@ -164,17 +165,20 @@ h1#leaderboard-title {
   }
 
   #app .container {
-    padding-top: 35px !important; 
-    padding-left: 15px !important;
-    padding-right: 15px !important;
-    padding-bottom: 25px !important;
-    
-    /* Let the container grow naturally to fit the button */
+    /* 1. Kill the fixed 720px height from desktop */
     height: auto !important; 
     min-height: auto !important;
+    max-height: none !important;
+    
+    padding-top: 35px !important; 
+    padding-bottom: 30px !important; /* Extra padding at bottom for the button */
+    padding-left: 15px !important;
+    padding-right: 15px !important;
+    
     display: flex !important;
     flex-direction: column !important;
     justify-content: flex-start !important;
+    box-sizing: border-box !important;
   }
 
   h1#leaderboard-title {
@@ -186,15 +190,14 @@ h1#leaderboard-title {
 
   #leaderboard {
     width: 100%;
-    /* Remove fixed heights that cause row overlapping */
-    height: auto !important; 
-    min-height: 420px !important; /* Reserves space for 10 rows */
+    height: auto !important;
+    margin: 0 !important;
     padding: 0 !important;
-    /* This creates a "Force Field" so the button stays below row 10 */
-    margin-bottom: 20px !important; 
   }
 
   #leaderboard li {
+    /* 2. Force each row to be exactly this tall so the button never moves */
+    min-height: 42px !important; 
     padding: 9px 12px !important;
     margin-bottom: 5px !important;
     display: flex !important;
@@ -202,15 +205,16 @@ h1#leaderboard-title {
   }
 
   .btn-small {
-    /* Stop using 'auto' which causes the jump/overlap */
-    margin-top: 0 !important; 
-    margin-bottom: 10px !important;
+    /* 3. Use a margin-top instead of 'auto' to keep it below the 10th row */
+    margin-top: 20px !important; 
+    margin-bottom: 0 !important;
     
     width: 175px !important;                
     height: 45px !important;
     align-self: center !important;
     flex-shrink: 0 !important;
     position: relative !important;
+    display: inline-flex !important;
   }
 }
   
@@ -287,6 +291,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
