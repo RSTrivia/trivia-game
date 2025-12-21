@@ -665,3 +665,20 @@ a.btn-small {
   cursor: default !important;
 }
 
+/* Target Main Menu button ONLY on the Leaderboard page */
+#app .container:has(#leaderboard) a.btn-small {
+  flex: none;            /* Stop it from trying to fill the width */
+  width: 175px;          /* Matches the Log In button width precisely */
+  max-width: 175px;
+  margin: 15px auto;     /* Centers it horizontally */
+  display: inline-flex;  /* Ensures it respects the width and stays centered */
+}
+
+/* Ensure mobile override doesn't force a different width */
+@media (max-width: 480px) {
+  #app .container:has(#leaderboard) a.btn-small {
+    width: 175px !important;
+    max-width: 175px !important;
+    margin-top: auto;    /* Keeps your mobile placement logic */
+  }
+}
