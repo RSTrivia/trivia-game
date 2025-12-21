@@ -180,15 +180,14 @@ muteBtn.addEventListener('click', () => {
   // Auth Button
   // -------------------------
   authBtn.onclick = async () => {
-    // 1. Force the button to lose focus/hover state immediately
-    authBtn.blur();
-    if (authLabel) {
-      if (authLabel.textContent === 'Log Out') {
-        await supabase.auth.signOut();
+      authBtn.blur();
+      // We check the variable 'username' instead of the label text 
+      // because variables are more reliable than reading the UI text.
+      if (username && username !== 'Guest') {
+          await supabase.auth.signOut();
       } else {
-        window.location.href = 'login.html';
+          window.location.href = 'login.html';
       }
-    }
   };
 
   // -------------------------
@@ -546,29 +545,10 @@ startBtn.onclick = () => {
   }
 });
 
-// Function to create that "Nice" flash on mobile
-function mobileFlash(el) {
-  el.classList.add('tapped');
-  setTimeout(() => {
-    el.classList.remove('tapped');
-    el.blur();
-  }, 150); // This duration is the "Leaderboard" feeling you liked
-}
-
-// Apply this to your Auth Button
-authBtn.addEventListener('click', () => {
-  mobileFlash(authBtn);
-  // Your existing logout/login logic...
-});
-
-// Apply this to the Leaderboard Link (and any other menu links)
-document.querySelectorAll('a.btn-small').forEach(link => {
-  link.addEventListener('click', () => mobileFlash(link));
-});
-
 //muteBtn.addEventListener('click', () => {
   //if (isTouch) mobileFlash(muteBtn);
 //});
+
 
 
 
