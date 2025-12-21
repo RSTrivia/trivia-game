@@ -138,40 +138,40 @@ muteBtn.addEventListener('click', () => {
   await preloadAuth();
 
  
-  // -------------------------
-  // Supabase auth listener (updates UI if session changes)
+ // -------------------------
+  // Supabase auth listener (Resilient Multi-Session)
   // -------------------------
   supabase.auth.onAuthStateChange(async (event, session) => {
-    // 1. Detect if the session is gone (Logged out elsewhere or token expired)
-    if (event === 'SIGNED_OUT' || !session) {
-      console.log("Session lost on this device. Switching to Guest.");
-      
-      // Update local variables
+    // Only revert to Guest if the user EXPLICITLY signs out
+    if (event === 'SIGNED_OUT') {
+      console.log("User signed out. Reverting to Guest.");
       username = ''; 
       localStorage.setItem('cachedLoggedIn', 'false');
       localStorage.setItem('cachedUsername', 'Guest');
       
-      // Update UI immediately
       if (userDisplay) {
         const span = userDisplay.querySelector('#usernameSpan');
         if (span) span.textContent = ' Guest';
       }
-      
-      if (authLabel) {
-        authLabel.textContent = 'Log In';
-      }
-      
-      return; // Stop here, no need to fetch a profile
+      if (authLabel) authLabel.textContent = 'Log In';
+      return;
     }
-  
-    // 2. If a session DOES exist (Login or Token Refresh)
-    if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+
+    // If we have a session (Initial login, refresh, or session found on other device)
+    if (session?.user) {
+      // Check if we already have the username to avoid redundant DB calls
+      if (localStorage.getItem('cachedUsername') !== 'Guest' && username !== '') {
+         // UI is likely already correct, just ensure button says Log Out
+         if (authLabel) authLabel.textContent = 'Log Out';
+         return;
+      }
+
       const { data: profile } = await supabase
         .from('profiles')
         .select('username')
         .eq('id', session.user.id)
         .single();
-  
+
       if (profile?.username) {
         username = profile.username;
         localStorage.setItem('cachedLoggedIn', 'true');
@@ -184,28 +184,6 @@ muteBtn.addEventListener('click', () => {
       }
     }
   });
-
-    // 1. Monitor the session heartbeat
-setInterval(async () => {
-  const { data: { session } } = await supabase.auth.getSession();
-  
-  // If we thought we were logged in, but the session is now null
-  if (!session && localStorage.getItem('cachedLoggedIn') === 'true') {
-    console.log("Heartbeat: Session lost. Reverting to Guest.");
-    
-    // Update variables
-    username = '';
-    localStorage.setItem('cachedLoggedIn', 'false');
-    localStorage.setItem('cachedUsername', 'Guest');
-
-    // Update UI instantly
-    if (userDisplay) {
-      const span = userDisplay.querySelector('#usernameSpan');
-      if (span) span.textContent = ' Guest';
-    }
-    if (authLabel) authLabel.textContent = 'Log In';
-  }
-}, 5000); // Checks every 5 seconds
   
   // -------------------------
   // Auth Button
@@ -292,8 +270,16 @@ function playSound(buffer) {
   }
 
 async function startGame() {
-  // Force a fresh session check before loading questions
-  await supabase.auth.getSession();
+  // 1. FRESH HANDSHAKE: Ensure this device has a valid token before fetching questions
+  // This prevents the "Frozen 0 Score" bug when switching between devices.
+  const { data: sessionData } = await supabase.auth.getSession();
+
+  // Update internal username in case it changed while the tab was idle
+  if (!sessionData.session) {
+    username = '';
+    localStorage.setItem('cachedLoggedIn', 'false');
+  }
+  
   document.body.classList.add('game-active'); 
   endGame.running = false;
   resetGame();
@@ -307,12 +293,18 @@ async function startGame() {
   // Load sounds in background
   loadSounds(); 
 
-  // Load questions
-  const { data } = await supabase.from('questions').select('*');
-  if (!data?.length) return alert('Could not load questions!');
-questions = data;
-remainingQuestions = [...questions];
+  // 2. FETCH QUESTIONS
+  const { data, error } = await supabase.from('questions').select('*');
+  
+  if (error || !data?.length) {
+    console.error("Fetch error:", error);
+    alert('Failed to load questions. Please check your connection.');
+    return;
+  }
 
+  questions = data;
+  remainingQuestions = [...questions];
+  
 // ✅ If we have a carried-over preloaded question
 if (preloadQueue.length) {
   currentQuestion = preloadQueue.shift();
@@ -581,6 +573,7 @@ startBtn.onclick = () => {
 //muteBtn.addEventListener('click', () => {
   //if (isTouch) mobileFlash(muteBtn);
 //});
+
 
 
 
