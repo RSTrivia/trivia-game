@@ -155,22 +155,22 @@ h1#leaderboard-title {
   border-color: #ffea8a;
 }
 
+/*  mobile */
 @media (max-width: 480px) {
   #app {
     padding: 10px !important;
   }
 
-  /* Target the container specifically within the leaderboard app */
   #app .container {
-    /* FORCE the 63px top gap to match PC */
+    /* 1. Symmetric Gaps: 63px at top AND 63px under the title */
     padding-top: 63px !important; 
     padding-left: 15px !important;
     padding-right: 15px !important;
-    padding-bottom: 20px !important;
+    padding-bottom: 25px !important;
     
-    /* Reset heights that might be causing shifts */
+    /* 2. Shrink the box to fit the content (removes the "too big" feel) */
     height: auto !important;                
-    min-height: 94vh !important;
+    min-height: 0 !important; 
     max-height: none !important; 
     width: 95% !important;
     display: flex !important;
@@ -180,28 +180,30 @@ h1#leaderboard-title {
   h1#leaderboard-title {
     font-size: 2.1rem !important;   
     margin-top: 0 !important;
-    margin-bottom: 15px !important;
+    /* This creates the 63px gap between Title and Table */
+    margin-bottom: 63px !important; 
     line-height: 1.1 !important;
   }
 
   #leaderboard {
-    min-height: auto !important;            
-    margin-bottom: 5px !important;
-    flex: 1 1 auto !important; /* Allow the table to fill the middle */
+    width: 100%;
+    margin-bottom: 20px !important; /* Space between table and button */
   }
 
   #leaderboard li {
-    padding: 6px 10px !important; /* Slightly tighter to guarantee button fit */
-    margin-bottom: 4px !important;
-    font-size: 0.85rem !important;           
+    /* 3. "Fatter" Rows: Increased vertical padding */
+    padding: 10px 12px !important; 
+    margin-bottom: 6px !important;
+    font-size: 0.9rem !important;           
   }
 
   .btn-small {
-    width: 160px !important;                
-    height: 40px !important;
-    margin-top: auto !important; /* Pushes button to the very bottom */
+    width: 175px !important;                
+    height: 45px !important;
+    /* 4. Natural placement: no longer forced to the very bottom */
+    margin-top: 0 !important; 
     margin-bottom: 5px !important;
-    flex-shrink: 0 !important;
+    align-self: center !important;
   }
 }
   
@@ -278,6 +280,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
