@@ -292,7 +292,8 @@ h1 {
   align-items: center;      /* vertically center mic and text */
   justify-content: center;  /* horizontally center inside container */
   gap: 10px;                 /* space between mic and name */
-  margin-bottom: 15px;      /* optional spacing below */
+  margin-bottom: 30px;
+  padding-top: 10px; /* Optional: adds a little space below the title */
 }
 
 /* ====== MUTE BUTTON EXACT #d4af37 MATCH ====== */
@@ -769,6 +770,7 @@ input.input-field:-webkit-autofill:active {
   width: 100%; /* Let the flex parent handle the centering */
   white-space: nowrap;
 }
+
 
 
 
