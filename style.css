@@ -305,7 +305,7 @@ h1 {
   background: none;
   border: none;
   font-size: 1.5rem;
-  cursor: default;
+  cursor: pointer;
   color: #ffd700;
   padding: 0;
 }
@@ -659,11 +659,6 @@ input.input-field:-webkit-autofill:active {
   margin-bottom: 0;          /* no extra space at bottom */
 }
 
-a.btn,
-a.btn-small,
-button {
-  cursor: default !important;
-}
 
 
 
