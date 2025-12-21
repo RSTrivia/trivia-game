@@ -155,56 +155,63 @@ h1#leaderboard-title {
   border-color: #ffea8a;
 }
 
-/*  mobile */
 /* mobile */
 @media (max-width: 480px) {
   #app {
-    padding: 5px !important; /* Smaller outside padding */
+    padding: 10px !important;
+    align-items: flex-start !important; /* Ensures it starts at the top */
   }
 
   #app .container {
-    /* Reduced to 20px to save space for the button */
-    padding-top: 20px !important; 
-    padding-left: 12px !important;
-    padding-right: 12px !important;
-    padding-bottom: 15px !important;
+    /* 1. Set the exact gap you want at the top */
+    padding-top: 35px !important; 
+    padding-left: 15px !important;
+    padding-right: 15px !important;
+    padding-bottom: 20px !important;
     
-    height: auto !important;                
-    min-height: 0 !important; 
-    width: 98% !important; /* Slightly wider to give rows room */
+    /* 2. FORCE the container to only be as big as the content */
+    height: auto !important;
+    min-height: auto !important; 
+    max-height: none !important;
+    width: 95% !important;
     display: flex !important;
     flex-direction: column !important;
+    justify-content: flex-start !important; /* Stop stretching content */
   }
 
   h1#leaderboard-title {
-    font-size: 1.8rem !important; /* Smaller title for mobile screens */
+    font-family: 'Cinzel', serif !important;
+    font-size: 2.2rem !important; /* Bigger, bolder title */
     margin-top: 0 !important;
-    line-height: 1.0 !important; 
-    /* Match the 20px top gap for symmetry */
-    margin-bottom: 20px !important; 
+    line-height: 1.2 !important; /* Adds that "thickness" back */
+    /* 3. Match the top gap for symmetry */
+    margin-bottom: 30px !important; 
     padding: 0 !important;
+    -webkit-text-fill-color: transparent !important; /* Ensure gradient works */
   }
 
   #leaderboard {
     width: 100%;
     margin-bottom: 10px !important; 
+    height: auto !important;
+    min-height: auto !important;
   }
 
   #leaderboard li {
-    /* Compact rows: 6px padding is the secret to fitting 10 rows on mobile */
-    padding: 6px 10px !important; 
-    margin-bottom: 3px !important;
-    font-size: 0.85rem !important;           
+    padding: 9px 12px !important; /* Taller, "fatter" rows */
+    margin-bottom: 5px !important;
+    font-size: 0.9rem !important;           
   }
 
   .btn-small {
-    width: 160px !important;                
-    height: 38px !important; /* Slightly shorter button */
-    margin-top: 5px !important; 
-    margin-bottom: 0 !important;
+    /* 4. KILL the 'margin-top: auto' that pushes the button to the screen edge */
+    margin-top: 15px !important; 
+    margin-bottom: 5px !important;
+    
+    width: 175px !important;                
+    height: 45px !important;
     align-self: center !important;
-    flex-shrink: 0 !important;
-    font-size: 0.9rem !important;
+    flex: none !important; /* Prevents stretching */
   }
 }
   
@@ -281,6 +288,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
