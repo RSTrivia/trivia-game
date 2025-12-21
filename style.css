@@ -205,8 +205,8 @@ a {
   cursor: pointer;
 }
 
-.correct { background-color: #4caf50 !important; }
-.wrong { background-color: #f44336 !important; }
+.correct { background-color: #3d8c40 !important; } /*#4caf50*/
+.wrong { background-color: #a63232 !important; } /*#f44336*/
 
 /* ====== GAME SCREEN ===== */
 #game {
@@ -681,6 +681,7 @@ input.input-field:-webkit-autofill:active {
     transition: all 0.2s ease 0.1s !important; 
   }
 }
+
 
 
 
