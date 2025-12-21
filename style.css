@@ -664,17 +664,17 @@ input.input-field:-webkit-autofill:active {
 
 
 @media (pointer: coarse) {
-  /* 1. Kill hover entirely so it doesn't get stuck gold */
-  .btn:hover, .btn-small:hover {
-    background: rgba(0, 0, 0, 0.6) !important;
-    border-color: #d4af37 !important;
-  }
-
-  /* 2. Use 'Active' for the flash. This only triggers while the finger is DOWN */
+  /* When you tap (Active), it turns gold instantly */
   .btn:active, .btn-small:active {
     background: rgba(0, 0, 0, 0.9) !important;
     border-color: #ffea8a !important;
-    transition: 0s !important; /* Instant on/off so it can't "freeze" */
+    color: #ffea8a !important;
+    transition: 0s !important; 
+  }
+
+  /* When you LET GO, it stays gold for 0.1s then fades out */
+  .btn, .btn-small {
+    transition: all 0.2s ease 0.1s !important; /* The 0.1s at the end is the delay */
   }
 }
 
