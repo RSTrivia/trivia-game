@@ -206,16 +206,16 @@
   <div class="container">
     <h1 id="leaderboard-title">Leaderboard</h1>
     <ul id="leaderboard">
-        <li><span>&nbsp;</span><span>&nbsp;</span></li>
-        <li><span>&nbsp;</span><span>&nbsp;</span></li>
-        <li><span>&nbsp;</span><span>&nbsp;</span></li>
-        <li><span>&nbsp;</span><span>&nbsp;</span></li>
-        <li><span>&nbsp;</span><span>&nbsp;</span></li>
-        <li><span>&nbsp;</span><span>&nbsp;</span></li>
-        <li><span>&nbsp;</span><span>&nbsp;</span></li>
-        <li><span>&nbsp;</span><span>&nbsp;</span></li>
-        <li><span>&nbsp;</span><span>&nbsp;</span></li>
-        <li><span>&nbsp;</span><span>&nbsp;</span></li>
+        <li class="first"><span>🥇 &nbsp;</span><span>&nbsp;</span></li>
+        <li class="second"><span>🥈 &nbsp;</span><span>&nbsp;</span></li>
+        <li class="third"><span>🥉 &nbsp;</span><span>&nbsp;</span></li>
+        <li><span>4. &nbsp;</span><span>&nbsp;</span></li>
+        <li><span>5. &nbsp;</span><span>&nbsp;</span></li>
+        <li><span>6. &nbsp;</span><span>&nbsp;</span></li>
+        <li><span>7. &nbsp;</span><span>&nbsp;</span></li>
+        <li><span>8. &nbsp;</span><span>&nbsp;</span></li>
+        <li><span>9. &nbsp;</span><span>&nbsp;</span></li>
+        <li><span>10. &nbsp;</span><span>&nbsp;</span></li>
     </ul>
     <a href="index.html" class="btn-small">Main Menu</a>
   </div>
@@ -231,19 +231,21 @@ const leaderboardRows = document.querySelectorAll('#leaderboard li');
 function updateLeaderboard(data) {
   leaderboardRows.forEach((row, i) => {
     const entry = data[i] || { username: '', score: '' };
+    const spans = row.querySelectorAll('span');
+    
+    // We only need the constant rank prefix for our logic
     const pos = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
     
-    // 1. Only update classes if they changed
-    const newClass = i === 0 ? 'first' : i === 1 ? 'second' : i === 2 ? 'third' : '';
-    if (row.className !== newClass) row.className = newClass;
+    // Update Name (First span: keep the Rank, add the Name)
+    const newNameHTML = `${pos} ${entry.username || '&nbsp;'}`;
+    if (spans[0].innerHTML !== newNameHTML) {
+      spans[0].innerHTML = newNameHTML;
+    }
     
-    // 2. Prepare new HTML
-    const newHTML = `<span>${pos} ${entry.username || '&nbsp;'}</span><span>${entry.score ?? '&nbsp;'}</span>`;
-    
-    // 3. ONLY update the innerHTML if the content is actually different
-    // This prevents the browser from re-painting unnecessarily
-    if (row.innerHTML !== newHTML) {
-      row.innerHTML = newHTML;
+    // Update Score (Second span)
+    const newScoreHTML = `${entry.score ?? '&nbsp;'}`;
+    if (spans[1].innerHTML !== newScoreHTML) {
+      spans[1].innerHTML = newScoreHTML;
     }
   });
 }
@@ -277,6 +279,7 @@ function updateLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
