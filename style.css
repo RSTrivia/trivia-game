@@ -712,16 +712,22 @@ input.input-field:-webkit-autofill:active {
   font-size: 1.2rem;
 }
 
-/* ====== HIDE TITLE DURING GAME (MOBILE ONLY) ====== */
+/* ====== HIDE ONLY THE MAIN TITLE DURING GAME (MOBILE ONLY) ====== */
 @media (max-width: 480px) {
-  body.game-active h1, 
-  body.game-active #user-controls {
+  /* Hides the big gold title, but leaves #user-controls visible */
+  body.game-active h1 {
     display: none !important;
   }
   
-  /* Optional: Adjust app padding when title is hidden to center the game box better */
+  /* Reduces the top padding so the name and mic sit closer to the top */
   body.game-active #app {
-    padding-top: 10px !important;
+    padding-top: 5px !important;
+  }
+
+  /* Ensures the name and mic row stays visible and tidy */
+  body.game-active #user-controls {
+    margin-bottom: 15px !important;
+    padding-top: 5px !important;
   }
 }
 
