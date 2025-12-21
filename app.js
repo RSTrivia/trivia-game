@@ -420,32 +420,23 @@ function preloadNextQuestions() {
   // -------------------------
   // Buttons
   // -------------------------
-startBtn.onclick = async () => {
-  // 1. Fetch questions first so they are ready
-  if (questions.length === 0) {
-    const { data } = await supabase.from('questions').select('*');
-    if (!data?.length) return alert('Could not load questions!');
-    questions = data;
-  }
-
-  if (isTouch) {
-    // 2. Apply Gold state
-    startBtn.classList.add('tapped');
-    
-    setTimeout(() => {
-      // 3. SWITCH SCREENS FIRST
-      // This makes the start screen disappear instantly
-      document.getElementById('start-screen').classList.add('hidden');
+startBtn.onclick = () => {
+    if (isTouch) {
+      // 1. Show gold state immediately
+      startBtn.classList.add('tapped');
       
-      // 4. Run game logic & clean up button while it's already hidden
+      // 2. Short delay for the "Gold Hold" feeling
+      setTimeout(() => {
+        // 3. Remove gold and trigger the game
+        // (startGame handles the database fetch internally)
+        startBtn.classList.remove('tapped');
+        startGame();
+      }, 150);
+    } else {
+      // PC: Instant
       startGame();
-      startBtn.classList.remove('tapped');
-    }, 150);
-  } else {
-    // PC: Instant
-    startGame();
-  }
-};
+    }
+  };
   //test for GZ message !!! replace endgame.onclick
   /*startBtn.addEventListener('click', async () => {
     ;
@@ -460,38 +451,38 @@ startBtn.onclick = async () => {
   });*/
 
   playAgainBtn.onclick = () => {
-      if (isTouch) {
-        playAgainBtn.classList.add('tapped');
-        setTimeout(() => {
-          playAgainBtn.classList.remove('tapped');
-          startGame();
-        }, 150);
-      } else {
+    if (isTouch) {
+      playAgainBtn.classList.add('tapped');
+      setTimeout(() => {
+        playAgainBtn.classList.remove('tapped');
         startGame();
-      }
-    };
+      }, 150);
+    } else {
+      startGame();
+    }
+  };
 
   mainMenuBtn.onclick = () => {
-      const goHome = () => {
-        document.body.classList.remove('game-active');
-        preloadQueue = []; 
-        resetGame();
-        game.classList.add('hidden');
-        endScreen.classList.add('hidden');
-        document.getElementById('start-screen').classList.remove('hidden');
-        updateScore();
-      };
-  
-      if (isTouch) {
-        mainMenuBtn.classList.add('tapped');
-        setTimeout(() => {
-          mainMenuBtn.classList.remove('tapped');
-          goHome();
-        }, 150);
-      } else {
-        goHome();
-      }
+    const goHome = () => {
+      document.body.classList.remove('game-active');
+      preloadQueue = []; 
+      resetGame();
+      game.classList.add('hidden');
+      endScreen.classList.add('hidden');
+      document.getElementById('start-screen').classList.remove('hidden');
+      updateScore();
     };
+
+    if (isTouch) {
+      mainMenuBtn.classList.add('tapped');
+      setTimeout(() => {
+        mainMenuBtn.classList.remove('tapped');
+        goHome();
+      }, 150);
+    } else {
+      goHome();
+    }
+  };
 
   // Handle page restore from back/forward cache (mobile back button)
   window.addEventListener('pageshow', (event) => {
@@ -533,6 +524,7 @@ authBtn.addEventListener('click', () => {
 document.querySelectorAll('a.btn-small').forEach(link => {
   link.addEventListener('click', () => mobileFlash(link));
 });
+
 
 
 
