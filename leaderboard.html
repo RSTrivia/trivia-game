@@ -55,21 +55,24 @@
   border-radius: 10px;
   width: 440px;            
   max-width: 95%;     
-  /* This height prevents the 'flicker' jump by reserving space for 10 rows */
-  min-height: 640px; 
+  /* Using height instead of min-height to lock the box size exactly */
+  height: 640px; 
   text-align: center;
   margin: 0 auto;
   box-sizing: border-box;
+  /* This ensures the button stays at the bottom even if rows are missing */
+  justify-content: flex-start; 
 }
 
 h1#leaderboard-title {
   font-family: 'Cinzel', serif;
   font-size: 3.2rem;
-  /* Exact position matches */
-  margin-top: 0; 
+  /* Resetting margins to be absolute */
+  margin-top: 10px !important; /* Adjust this 10px up/down to match main page perfectly */
   margin-bottom: 25px; 
   text-align: center;
   letter-spacing: 2px;
+  /* ... keep your gradient and shadow code the same ... */
   background: linear-gradient(145deg,#fff8dc 0%,#ffdd44 25%,#f2b705 50%,#c28f0c 75%,#a77b0a 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -115,8 +118,8 @@ h1#leaderboard-title {
 #leaderboard li.second { background: linear-gradient(135deg, rgba(220,220,220,0.3) 0%, rgba(192,192,192,0.3) 100%); color: #C0C0C0; font-weight: 700; }
 #leaderboard li.third { background: rgba(205, 127, 50, 0.3); color: #CD7F32; font-weight: 700; }
 
-/* ===== MAIN MENU BUTTON ===== */
 .btn-small {
+  /* ... keep your colors and borders ... */
   background: rgba(0,0,0,0.6);
   color: #d4af37;
   padding: 10px 16px;
@@ -126,18 +129,13 @@ h1#leaderboard-title {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  text-align: center;
   text-decoration: none;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  position: relative;
-  z-index: 2;
-  user-select: none;
 
   width: 175px;           
-  max-width: 175px;
-  height: 45px;           
-  margin: 20px auto 10px; 
+  height: 45px;
+  /* This pushes the button to the very bottom of the 640px container */
+  margin-top: auto; 
+  margin-bottom: 5px;
   flex: none;
 }
 
@@ -219,6 +217,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
