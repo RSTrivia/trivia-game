@@ -17,13 +17,14 @@
       }
     })();
   </script>
+  
 <meta name="darkreader-lock">
 <!-- Font preload to reduce flicker -->
+  
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" as="style">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet" media="all" onload="this.media='all'">
 
 <link rel="stylesheet" href="style.css">
-
 
 <style>
   html, body {
@@ -35,23 +36,12 @@
     color: #fff;
   }
 
-  /* Background handled ONLY by background.js */
-  #background {
-    position: fixed;
-    inset: 0;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    z-index: -1;
-  }
-
-  /* ===== APP WRAPPER ===== */
   #app {
     min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: flex-start; 
-    padding: 20px; /* tweak 40px to match main menu exactly */
+    padding: 20px;
     position: relative;
     z-index: 1;
   }
@@ -62,119 +52,61 @@
   flex-direction: column;
   align-items: center;
   background: rgba(0, 0, 0, 0.85);
-  padding: 15px 25px;       /* Shorter top/bottom padding */
+  padding: 15px 25px;       
   border-radius: 10px;
   box-shadow: 0 0 30px rgba(0,0,0,0.5);
-  width: 440px;           /* Match the new 440px width */
+  width: 440px;            
   max-width: 95%;     
-  height: auto;           /* Vital: let it shrink */
-  min-height: auto;      /* Ensure it's at least as big as main menu */
+  height: auto;           
+  min-height: auto;      
   text-align: center;
   margin: 0 auto;     
 }
 
-/* ===== LEADERBOARD ===== */
+/* ===== LEADERBOARD TITLE ===== */
+h1#leaderboard-title {
+  font-family: 'Cinzel', serif;
+  font-size: 2.2rem;   
+  margin-top: 10px;
+  margin-bottom: 10px; 
+  letter-spacing: 2px;
+}
+
+/* ===== LEADERBOARD LIST ===== */
 #leaderboard {
   width: 100%;
   list-style: none;
   padding: 0;
-  margin: 15px 0;         /* Add some breathing room */
-  height: auto;           /* Let it grow based on the rows */
-  overflow: visible;      /* Stop cutting off rows */
+  margin: 5px 0;      
+  height: auto;
+  overflow: visible;
 }
 
+/* ===== LEADERBOARD ROWS (THIN VERSION) ===== */
 #leaderboard li {
   display: flex;
   justify-content: space-between;
-  /* Reduced padding from 12px to 6px top/bottom */
   padding: 6px 15px; 
   border-radius: 5px;
-  /* Reduced margin from 6px to 3px */
   margin-bottom: 3px; 
   font-weight: 500;
-  /* Reduced min-height to allow it to be thinner */
   min-height: 34px; 
   box-sizing: border-box;
-  font-size: 0.95rem; /* Slightly smaller font to save space */
+  font-size: 0.95rem; 
+  color: #cccccc;
+  align-items: center; /* Keeps text centered vertically in thin row */
 }
-  
-  h1 {
-    font-family: 'Cinzel', serif;
-    font-size: 2.5rem;
-    margin-bottom: 25px; /* same as main menu */
-    letter-spacing: 2px;
-  }
 
-  #leaderboard li {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 12px;
-    border-radius: 5px;
-    margin-bottom: 6px;
-    font-weight: 500;
-    color: #cccccc; /*#f0f0f0; default light gray text */
-  }
+/* Alternating row colors */
+#leaderboard li:nth-child(odd) { background: rgba(80, 80, 80, 0.9); }
+#leaderboard li:nth-child(even) { background: rgba(60, 60, 60, 0.9); }
 
-/* Update these in leaderboard.html style as well */
+/* Top 3 colors */
+#leaderboard li.first { background: rgba(255, 215, 0, 0.3); color: #d4af37; font-weight: 700; }
+#leaderboard li.second { background: linear-gradient(135deg, rgba(220,220,220,0.3) 0%, rgba(192,192,192,0.3) 100%); color: #C0C0C0; font-weight: 700; }
+#leaderboard li.third { background: rgba(205, 127, 50, 0.3); color: #CD7F32; font-weight: 700; }
 
-  h1#leaderboard-title {
-    font-size: 2.2rem;   /* Smaller title */
-    margin-bottom: 10px; /* Less space under title */
-  }
-  
-  #leaderboard {
-    width: 100%;
-    list-style: none;
-    padding: 0;
-    margin: 5px 0;      /* Minimal margin around the list */
-    height: auto;
-    overflow: visible;
-  }
-    
-  /* Alternating row colors for better readability */
-  #leaderboard li:nth-child(odd) {
-    background: rgba(80, 80, 80, 0.9);
-  }
-  #leaderboard li:nth-child(even) {
-    background: rgba(60, 60, 60, 0.9);
-  }
-
-  /* Top 3 colors */
-  #leaderboard li.first {
-    background: rgba(255, 215, 0, 0.3); /* gold background */
-    color: #d4af37; /*#FFD700; gold text */
-    font-weight: 700;
-  }
-  
-  #leaderboard li.second {
-    background: linear-gradient(135deg, rgba(220,220,220,0.3) 0%, rgba(192,192,192,0.3) 100%);
-    color: #C0C0C0; /* silver text, visible but not too bright */
-    font-weight: 700;
-  }
-
-  #leaderboard li.third {
-    background: rgba(205, 127, 50, 0.3); /* bronze background */
-    color: #CD7F32; /* bronze text */
-    font-weight: 700;
-  }
-
-  /*a.btn-small {
-    display: inline-block;
-    margin-top: 10px;
-    padding: 10px 16px;
-    color: #d4af37;
-    border: 2px solid #d4af37;
-    border-radius: 8px;
-    text-decoration: none;
-    transition: all 0.2s ease;
-  }
-
-  a.btn-small:hover {
-    background: rgba(0,0,0,0.85);
-    border-color: #ffea8a;
-  }*/
-
- /* Update this inside leaderboard.html <style> */
+/* ===== MAIN MENU BUTTON ===== */
 .btn-small {
   background: rgba(0,0,0,0.6);
   color: #d4af37;
@@ -189,8 +121,10 @@
   text-decoration: none;
   transition: all 0.2s ease;
   cursor: pointer;
+  position: relative;
+  z-index: 2;
+  user-select: none;
 
-  /* ADD THESE TO FIX THE SIZE */
   width: 175px;           
   max-width: 175px;
   height: 45px;           
@@ -202,14 +136,9 @@
   background: rgba(0,0,0,0.85);
   border-color: #ffea8a;
 }
-
-.btn, .btn-small {
-  position: relative; /* ensures click area is on top */
-  user-select: none;   /* optional: prevent text selection when clicking */
-  z-index: 2;          /* ensure above all background layers */
-}
   
 </style>
+  
 </head>
 
 <body>
@@ -281,6 +210,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
