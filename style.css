@@ -133,7 +133,7 @@ a {
   font-size: 1.1rem;
   width: 100%;
   display: block;
-  margin: 5px 0;
+  margin: 10px 0;
   transition: 0.2s;
   cursor: pointer;
 }
@@ -466,7 +466,7 @@ input.input-field:-webkit-autofill:active {
   display: flex;
   align-items: center;       /* vertically center content */
   justify-content: center;   /* horizontally center content by default */
-  gap: 10px;                 /* space between elements */
+  gap: 20px;                 /* space between elements */
   margin: 5px 0;            /* spacing between rows */
 }
 
@@ -505,7 +505,7 @@ input.input-field:-webkit-autofill:active {
 
 
 /* Buttons inside that row */
-#start-screen .row:nth-child(3) button,
+/*#start-screen .row:nth-child(3) button,
 /*#start-screen .row:nth-child(3) a {
   flex: 1;                   /* take equal space */
   /*display: flex;
@@ -525,9 +525,10 @@ input.input-field:-webkit-autofill:active {
 /* ====== LOGIN / LEADERBOARD BUTTON ROW ===== */
 #start-screen .row:nth-child(3) {
   display: flex;
-  gap: 10px;
+  gap: 20px;
   width: 100%;
   align-items: stretch;
+  margin-top: 10px;
 }
 
 /* This targets BOTH the Log In button and the Leaderboard link */
@@ -756,6 +757,7 @@ input.input-field:-webkit-autofill:active {
   width: 100%; /* Let the flex parent handle the centering */
   white-space: nowrap;
 }
+
 
 
 
