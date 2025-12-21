@@ -68,19 +68,30 @@ document.addEventListener('DOMContentLoaded', async () => {
   let muted = cachedMuted;
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   
-  const updateMuteIcon = () => {
+  // This function should be called whenever you want to toggle or set the state
+  const updateMuteUI = () => {
+    const muteBtn = document.getElementById('muteBtn');
     const muteIcon = document.getElementById('muteIcon');
-    if (muteIcon) {
-      // 1. Change the text first
-      muteIcon.textContent = muted ? '🔇' : '🔊';
-      
-      // 2. Use a tiny delay (0ms) to force the browser to recognize the new emoji 
-      // before applying the grayscale filter. This prevents the "muted-gold" bug.
-      setTimeout(() => {
-        muteBtn.classList.toggle('is-muted', muted);
-      }, 0);
+    
+    if (!muteBtn || !muteIcon) return;
+  
+    // 1. Set the emoji text based on the global 'muted' variable
+    muteIcon.textContent = muted ? '🔇' : '🔊';
+  
+    // 2. Toggle the class on the BUTTON, not the icon
+    if (muted) {
+      muteBtn.classList.add('is-muted');
+    } else {
+      muteBtn.classList.remove('is-muted');
     }
-  };
+};
+
+// Inside your click listener
+muteBtn.addEventListener('click', () => {
+  muted = !muted; // Toggle the global variable
+  localStorage.setItem('gameMuted', muted); // Save it
+  updateMuteUI(); // Run the UI update
+});
 
 // Add click listener to toggle mute
 muteBtn.addEventListener('click', () => {
@@ -566,6 +577,7 @@ document.querySelectorAll('a.btn-small').forEach(link => {
 //muteBtn.addEventListener('click', () => {
   //if (isTouch) mobileFlash(muteBtn);
 //});
+
 
 
 
