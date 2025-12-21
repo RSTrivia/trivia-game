@@ -75,16 +75,16 @@ html, body {
   background: rgba(0, 0, 0, 0.85);
   padding: 20px; 
   border-radius: 10px; 
-  box-shadow: 0 0 30px rgba(0,0,0,0.5);
   width: 400px;
-  height: 440px;      /* <--- ADD THIS: Fixed height for consistency */
+  height: 420px;      /* Fixed height */
   max-width: 90%;
   text-align: center;
   position: relative;
-  display: flex;       /* <--- ADD THIS: Helps align content inside */
+  box-sizing: border-box;
+  display: flex;
   flex-direction: column;
+  align-items: center;
 }
-
 /* Login row spacing */
 .login-row {
   margin-bottom: 15px;
@@ -439,56 +439,52 @@ h1 {
 /* ====== LOGIN PAGE SPECIFIC ====== */
 /* ====== LOGIN PAGE SPECIFIC (CONSISTENT SIZE) ====== */
 
+/* ====== LOGIN PAGE SPECIFIC (IDENTICAL ALIGNMENT) ====== */
+
 #app.login-page .login-container {
-  width: 400px;
-  height: 440px;      /* Must match the main container height */
-  padding: 30px 25px; 
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
+  height: 420px !important; 
+  padding: 20px;
 }
 
-/* SUPER THIN INPUTS */
-#app.login-page .input-field {
-  height: 28px;        
-  font-size: 0.85rem;
-  padding: 0 10px;
-  border-width: 1px;   
+/* 1. Ensure the Title and User-Controls match the Main Menu exactly */
+#app.login-page h1 {
+  margin-bottom: 25px; /* Matches your global h1 margin */
 }
 
-/* TIGHT VERTICAL SPACING */
-#app.login-page .row {
-  margin: 0 0 10px 0 !important; 
+#app.login-page #user-controls {
+  margin-bottom: 30px; /* Matches your global #user-controls margin */
+}
+
+/* 2. Style the Input Area */
+#app.login-page .login-row {
+  margin-bottom: 10px;
   width: 100%;
 }
 
-/* Gap between username and password */
-#app.login-page .row:has(#password) {
-  margin-top: -5px !important; 
+#app.login-page .input-field {
+  height: 30px;
+  font-size: 0.85rem;
+  border-width: 1px;
 }
 
-/* BUTTONS (Sign up / Log in) */
+/* 3. Position the bottom buttons at the EXACT same height as the Main Menu */
+#app.login-page .menu-row {
+  margin-top: 10px; /* Space above Sign up / Log in */
+}
+
 #app.login-page .btn-small {
-  height: 38px;        
+  height: 60px !important; /* Matches your Start Screen Row 3 height */
 }
 
-/* BACK TO GAME BUTTON */
+/* 4. The "Back to Game" button */
 #app.login-page .btn {
-  width: 100%;         
-  padding: 10px 0;     
-  font-size: 0.95rem;
-  text-decoration: none !important;
+  margin-top: 20px !important; /* Matches the 'gap: 20px' in your #start-screen */
+  height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
-  
-  /* This pushes the button down toward the bottom of the fixed 440px box 
-     without making it look "detached" */
-  margin-top: auto !important; 
-  margin-bottom: 10px; 
+  text-decoration: none !important;
 }
-
-
 
 
 
@@ -815,6 +811,7 @@ input.input-field:-webkit-autofill:active {
   margin: 0;
   font-size: 1.2rem;
 }
+
 
 
 
