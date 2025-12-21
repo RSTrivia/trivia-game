@@ -72,15 +72,17 @@ html, body {
 
 /* ====== CONTAINER ====== */
 .container {
-  background: rgba(0, 0, 0, 0.85); /* darkened to match OSRS theme */
+  background: rgba(0, 0, 0, 0.85);
   padding: 20px; 
   border-radius: 10px; 
-  box-shadow: 0 0 30px rgba(0,0,0,0.5); /*0 0 30px rgba(0,0,0,0.6)*/
+  box-shadow: 0 0 30px rgba(0,0,0,0.5);
   width: 400px;
+  height: 440px;      /* <--- ADD THIS: Fixed height for consistency */
   max-width: 90%;
   text-align: center;
   position: relative;
-  /*z-index: 1;*/
+  display: flex;       /* <--- ADD THIS: Helps align content inside */
+  flex-direction: column;
 }
 
 /* Login row spacing */
@@ -435,47 +437,42 @@ h1 {
 }
 
 /* ====== LOGIN PAGE SPECIFIC ====== */
-/* ====== LOGIN PAGE SPECIFIC ====== */
-
-/* 1. Set a reasonable fixed height so it doesn't jump, but isn't empty-feeling */
-/* ====== LOGIN PAGE SPECIFIC (CLEANED UP) ====== */
-
-/* ====== LOGIN PAGE SPECIFIC (FIXED) ====== */
+/* ====== LOGIN PAGE SPECIFIC (CONSISTENT SIZE) ====== */
 
 #app.login-page .login-container {
+  width: 400px;
+  height: 440px;      /* Must match the main container height */
+  padding: 30px 25px; 
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  width: 400px;
-  /* Removed min-height so it doesn't force space */
-  padding: 25px 25px; 
-  box-sizing: border-box;
 }
 
 /* SUPER THIN INPUTS */
 #app.login-page .input-field {
-  height: 28px;        /* Even thinner than before */
+  height: 28px;        
   font-size: 0.85rem;
   padding: 0 10px;
-  border-width: 1px;   /* Thinner border looks better on thin boxes */
+  border-width: 1px;   
 }
 
 /* TIGHT VERTICAL SPACING */
 #app.login-page .row {
-  margin: 0 0 10px 0 !important; /* Reduced from 15px to 10px */
+  margin: 0 0 10px 0 !important; 
   width: 100%;
 }
 
-/* This makes the gap between username and password tiny */
+/* Gap between username and password */
 #app.login-page .row:has(#password) {
   margin-top: -5px !important; 
 }
 
-/* BUTTONS */
+/* BUTTONS (Sign up / Log in) */
 #app.login-page .btn-small {
-  height: 38px;        /* Slightly shorter buttons */
+  height: 38px;        
 }
 
-/* BACK TO GAME BUTTON - TIGHT POSITIONING */
+/* BACK TO GAME BUTTON */
 #app.login-page .btn {
   width: 100%;         
   padding: 10px 0;     
@@ -484,10 +481,12 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Controls exactly how far below the Log In button it sits */
-  margin-top: 5px !important; 
+  
+  /* This pushes the button down toward the bottom of the fixed 440px box 
+     without making it look "detached" */
+  margin-top: auto !important; 
+  margin-bottom: 10px; 
 }
-
 
 
 
@@ -816,6 +815,7 @@ input.input-field:-webkit-autofill:active {
   margin: 0;
   font-size: 1.2rem;
 }
+
 
 
 
