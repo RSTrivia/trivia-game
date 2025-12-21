@@ -663,24 +663,34 @@ input.input-field:-webkit-autofill:active {
 }
 
 
-/* Target mobile/touch devices only */
-@media (pointer: coarse) {
-  
-  .btn, .btn-small {
-    /* 1. This controls the 'EXIT' (How it fades away) */
-    /* We set it to 0.8s so it disappears slowly */
-    transition: background-color 0.8s ease, 
-                border-color 0.8s ease, 
-                color 0.8s ease !important;
+/* 1. Define the 'Glow' Animation */
+@keyframes mobile-flash {
+  0% {
+    /* Instant Gold Glow */
+    background: rgba(0, 0, 0, 0.9);
+    border-color: #ffea8a;
+    color: #ffea8a;
   }
+  40% {
+    /* Stay bright for 40% of the time (approx 0.4s) */
+    background: rgba(0, 0, 0, 0.9);
+    border-color: #ffea8a;
+    color: #ffea8a;
+  }
+  100% {
+    /* Fade back to your Aged Gold */
+    background: rgba(0, 0, 0, 0.6);
+    border-color: #d4af37;
+    color: #d4af37;
+  }
+}
 
+/* 2. Apply it ONLY on mobile touch */
+@media (pointer: coarse) {
   .btn:active, .btn-small:active {
-    /* 2. This controls the 'ENTRY' (How it appears) */
-    /* We set transition to 0s so the gold 'flashes' on instantly */
-    background: rgba(0, 0, 0, 0.85) !important;
-    border-color: #ffea8a !important;
-    color: #ffea8a !important;
-    transition: 0s !important; 
+    /* The animation lasts 1 second total */
+    /* You can change '1s' to '2s' if you want it even slower */
+    animation: mobile-flash 1s forwards;
   }
 }
 
