@@ -158,73 +158,63 @@ h1#leaderboard-title {
 
 
 /* mobile */
-/* mobile */
-/* mobile */
 @media (max-width: 480px) {
   #app {
-    padding: 10px !important;
+    /* 1. INCREASE THIS to push the whole container down the screen */
+    /* Try 40px or 60px until it aligns with your Main Page's top edge */
+    padding-top: 50px !important; 
+    align-items: flex-start !important;
   }
 
   #app .container {
-    /* 1. MATCH MAIN PAGE WIDTH AND INITIAL FEEL */
-    width: 90% !important; /* Standardized width */
+    width: 90% !important; 
     max-width: 400px !important;
     
-    /* 2. UNIFIED PADDING (Matches typical index.html container) */
-    padding: 25px 20px !important; 
+    /* 2. ADJUST THIS to move the Title inside the box */
+    padding-top: 35px !important; 
+    padding-bottom: 25px !important;
     
-    /* 3. THE "GROW" LOGIC */
-    /* We set a min-height to match the main menu, but allow auto-growth for the 10 rows */
+    /* 3. Keep the height natural so it grows down */
     height: auto !important; 
     min-height: 500px !important; 
-    max-height: none !important;
     
     display: flex !important;
     flex-direction: column !important;
     justify-content: flex-start !important;
-    box-sizing: border-box !important;
   }
 
   h1#leaderboard-title {
-    /* Adjusted to match main page title scaling */
     font-size: 2.2rem !important; 
-    line-height: 1.1 !important; 
-    margin-top: 5px !important; /* Small breathing room at top */
+    margin-top: 0 !important;
     margin-bottom: 25px !important; 
   }
 
   #leaderboard {
     width: 100%;
-    height: auto !important;
     margin: 0 !important;
     padding: 0 !important;
-    /* This creates the stable area for rows */
-    flex-grow: 1; 
+    /* This ensures the list doesn't collapse while loading */
+    min-height: 380px !important; 
   }
 
   #leaderboard li {
-    /* Slightly more compact rows to fit the "Main Menu" container vibe */
-    min-height: 40px !important; 
-    padding: 8px 10px !important;
-    margin-bottom: 5px !important;
+    min-height: 38px !important; 
+    padding: 8px 12px !important;
+    margin-bottom: 4px !important;
     font-size: 0.9rem !important;
-    display: flex !important;
-    box-sizing: border-box !important;
   }
 
   .btn-small {
-    /* Fixed margin ensures it's always the same distance from the bottom row */
-    margin-top: 20px !important; 
-    margin-bottom: 5px !important;
+    /* Fixed spacing from the bottom row */
+    margin-top: 15px !important; 
+    margin-bottom: 0 !important;
     
     width: 175px !important;                
     height: 45px !important;
     align-self: center !important;
-    flex: none !important;
-    position: relative !important;
+    flex-shrink: 0 !important;
   }
 }
-  
 </style>
   
 </head>
@@ -298,6 +288,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
