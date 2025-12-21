@@ -255,16 +255,21 @@ function updateLeaderboard(data) {
   });
 }
 
-// 2️⃣ Function to fetch fresh data from Supabase
 async function fetchLeaderboard() {
   console.log('Fetching fresh scores...');
+  // Change 'public_leaderboard' to 'scores' if the view is broken
   const { data, error } = await supabase
-    .from('public_leaderboard')
+    .from('scores') 
     .select('username, score')
     .order('score', { ascending: false })
     .limit(10);
 
-  if (!error && data) {
+  if (error) {
+    console.error('Supabase Error:', error.message);
+    return;
+  }
+
+  if (data) {
     localStorage.setItem('leaderboard', JSON.stringify(data));
     updateLeaderboard(data);
   }
@@ -301,6 +306,7 @@ supabase
 
 </body>
 </html>
+
 
 
 
