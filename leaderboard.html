@@ -247,13 +247,13 @@ const leaderboardEl = document.getElementById('leaderboard');
 const app = document.getElementById('app');
 
 function renderLeaderboard(data) {
-  while (data.length < 10) data.push({ username: '', score: null });
+  while (data.length < 10) data.push({ username: '&nbsp;', score: '&nbsp;' }); // Use non-breaking space
   const html = data.map((entry, i) => {
     const pos = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}.`;
-    const username = entry.username?.trim() || '';
-    const score = entry.score ?? '';
+    const username = entry.username || '&nbsp;';
+    const score = entry.score ?? '&nbsp;';
     const cls = i === 0 ? 'first' : i === 1 ? 'second' : i === 2 ? 'third' : '';
-    return `<li class="${cls}"><span>${pos} ${username}</span><span>${score}</span></li>`;
+    return `<li class="${cls}" style="min-height: 42px;"><span>${pos} ${username}</span><span>${score}</span></li>`;
   }).join('');
   leaderboardEl.innerHTML = html;
 }
@@ -289,6 +289,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
