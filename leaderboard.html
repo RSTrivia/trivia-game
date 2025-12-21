@@ -230,25 +230,24 @@
 <!-- Scripts -->
 <script src="background.js"></script>
 <script type="module">
+<script type="module">
 import { supabase } from './supabase.js';
 
 const leaderboardRows = document.querySelectorAll('#leaderboard li');
 
+// 1️⃣ Function to update the HTML display
 function updateLeaderboard(data) {
   leaderboardRows.forEach((row, i) => {
     const entry = data[i] || { username: '', score: '' };
     const spans = row.querySelectorAll('span');
     
-    // We only need the constant rank prefix for our logic
     const pos = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
     
-    // Update Name (First span: keep the Rank, add the Name)
     const newNameHTML = `${pos} ${entry.username || '&nbsp;'}`;
     if (spans[0].innerHTML !== newNameHTML) {
       spans[0].innerHTML = newNameHTML;
     }
     
-    // Update Score (Second span)
     const newScoreHTML = `${entry.score ?? '&nbsp;'}`;
     if (spans[1].innerHTML !== newScoreHTML) {
       spans[1].innerHTML = newScoreHTML;
@@ -256,9 +255,9 @@ function updateLeaderboard(data) {
   });
 }
 
-(async () => {
-// 1️⃣ Function to fetch data from Supabase
+// 2️⃣ Function to fetch fresh data from Supabase
 async function fetchLeaderboard() {
+  console.log('Fetching fresh scores...');
   const { data, error } = await supabase
     .from('public_leaderboard')
     .select('username, score')
@@ -271,21 +270,20 @@ async function fetchLeaderboard() {
   }
 }
 
-// 2️⃣ Setup Realtime Listener
-// This "listens" for any changes to the public_leaderboard view/table
-const leaderboardSubscription = supabase
+// 3️⃣ LIVE REALTIME LISTENER
+supabase
   .channel('public-leaderboard-changes')
   .on(
     'postgres_changes', 
-    { event: '*', schema: 'public', table: 'scores' }, // Listen to the source table
-    () => {
-      console.log('Leaderboard updated live!');
-      fetchLeaderboard();
+    { event: '*', schema: 'public', table: 'scores' }, 
+    (payload) => {
+      console.log('Realtime Update Received!', payload);
+      fetchLeaderboard(); 
     }
   )
   .subscribe();
 
-// 3️⃣ Initial Load
+// 4️⃣ INITIAL LOAD (Runs once when page opens)
 (async () => {
   // Show cached data immediately for speed
   const cachedString = localStorage.getItem('leaderboard');
@@ -296,11 +294,14 @@ const leaderboardSubscription = supabase
   // Fetch fresh data immediately
   await fetchLeaderboard();
 })();
+  
+</script>
 
 </script>
 
 </body>
 </html>
+
 
 
 
