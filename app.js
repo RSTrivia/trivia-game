@@ -60,13 +60,25 @@ document.addEventListener('DOMContentLoaded', async () => {
   updateMuteIcon();
 
   // Add click listener to toggle mute
-  muteBtn.addEventListener('click', () => {
+  //muteBtn.addEventListener('click', () => {
+  //muted = !muted;
+  //localStorage.setItem('muted', muted);
+  //updateMuteIcon();
+ // if (audioCtx.state === 'suspended') audioCtx.resume();
+//});
+  
+// Add click listener to toggle mute
+muteBtn.addEventListener('click', () => {
   muted = !muted;
   localStorage.setItem('muted', muted);
   updateMuteIcon();
-  if (audioCtx.state === 'suspended') audioCtx.resume();
-});
 
+  // On PC, this is the "Key" that turns the speakers on
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+});
+  
    // -------------------------
   // Preload Auth: Correct Username & Button
   // -------------------------
@@ -172,15 +184,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     return audioCtx.decodeAudioData(arrayBuffer);
   }
 
-  function playSound(buffer) {
-    if (!buffer || muted) return;
-    const source = audioCtx.createBufferSource();
-    source.buffer = buffer;
-    const gainNode = audioCtx.createGain();
-    gainNode.gain.value = 0.5;
-    source.connect(gainNode).connect(audioCtx.destination);
-    source.start();
-  }
+function playSound(buffer) {
+  // If muted is true, stop immediately
+  if (!buffer || muted) return;
+
+  // PC FIX: If the engine is still suspended, try one last resume 
+  // before giving up, or just allow it to attempt playback.
+  const source = audioCtx.createBufferSource();
+  source.buffer = buffer;
+  const gainNode = audioCtx.createGain();
+  gainNode.gain.value = 0.5;
+  source.connect(gainNode).connect(audioCtx.destination);
+  source.start();
+}
 
   function preloadImage(url) {
   const img = new Image();
@@ -422,6 +438,9 @@ function preloadNextQuestions() {
   // -------------------------
 startBtn.onclick = () => {
     if (isTouch) {
+      // If the engine is asleep, wake it up now (PC & Mobile)
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      
       // 1. Show gold state immediately
       startBtn.classList.add('tapped');
       
@@ -524,6 +543,7 @@ authBtn.addEventListener('click', () => {
 document.querySelectorAll('a.btn-small').forEach(link => {
   link.addEventListener('click', () => mobileFlash(link));
 });
+
 
 
 
