@@ -295,6 +295,7 @@ h1 {
   margin-bottom: 15px;      /* optional spacing below */
 }
 
+/* Normal State */
 #muteBtn {
   width: auto; 
   display: flex;
@@ -307,23 +308,21 @@ h1 {
   padding: 0;
   transition: all 0.2s ease;
   outline: none;
-  -webkit-tap-highlight-color: transparent; /* Removes the blue box on mobile tap */
-}
-
-/* Normal State: Force the emoji to look like OSRS Gold */
-#muteIcon {
+  -webkit-tap-highlight-color: transparent;
+  
+  /* Force the emoji to look Gold/Bronze */
   filter: sepia(1) saturate(2) hue-rotate(-10deg) brightness(0.9);
   opacity: 0.8;
-  transition: filter 0.2s, opacity 0.2s;
 }
 
-/* Muted State: Strip color and dim (Works on Mobile Emojis) */
-#muteBtn.is-muted #muteIcon {
-  filter: grayscale(1) brightness(0.5); /* Turns red/yellow into dark grey */
+/* Muted State: This targets the button when JS adds the class */
+#muteBtn.is-muted {
+  /* grayscale(1) is the key for mobile to strip the red/yellow colors */
+  filter: grayscale(1) brightness(0.5) !important; 
   opacity: 0.4;
 }
 
-#muteBtn:hover #muteIcon {
+#muteBtn:hover {
   opacity: 1;
   filter: sepia(1) saturate(3) hue-rotate(-10deg) brightness(1.1);
 }
@@ -715,6 +714,7 @@ input.input-field:-webkit-autofill:active {
     margin-top: auto;    /* Keeps your mobile placement logic */
   }
 }
+
 
 
 
