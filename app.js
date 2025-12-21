@@ -1,4 +1,5 @@
 import { supabase } from './supabase.js';
+const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
 // ====== IMMEDIATE CACHED UI (runs before paint) ======
 const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
@@ -420,19 +421,24 @@ function preloadNextQuestions() {
   // Buttons
   // -------------------------
 startBtn.onclick = async () => {
-  // 1. Show the gold flash immediately
-  startBtn.classList.add('tapped');
-
-  // 2. Prepare the game logic
-  // If questions aren't loaded yet, fetch them
+  // If questions aren't loaded, fetch them (Both PC/Mobile need this)
   if (questions.length === 0) {
     const { data } = await supabase.from('questions').select('*');
-    if (!data?.length) {
-      startBtn.classList.remove('tapped');
-      return alert('Could not load questions!');
-    }
     questions = data;
   }
+
+  if (isTouch) {
+    // MOBILE: Apply the gold hold
+    startBtn.classList.add('tapped');
+    setTimeout(() => {
+      startBtn.classList.remove('tapped');
+      startGame();
+    }, 150);
+  } else {
+    // PC: Instant start
+    startGame();
+  }
+};
   
   // 3. Wait for the flash to finish (150ms), then start the actual game
   setTimeout(() => {
@@ -457,27 +463,32 @@ startBtn.onclick = async () => {
   });*/
 
   playAgainBtn.onclick = () => {
-  playAgainBtn.classList.add('tapped');
-  setTimeout(() => {
-    playAgainBtn.classList.remove('tapped');
+  if (isTouch) {
+    playAgainBtn.classList.add('tapped');
+    setTimeout(startGame, 150);
+  } else {
     startGame();
-  }, 150);
-};
+  }
+};;
 
   mainMenuBtn.onclick = () => {
-    mainMenuBtn.classList.add('tapped');
-    setTimeout(() => {
-      mainMenuBtn.classList.remove('tapped');
-      
-      document.body.classList.remove('game-active');
-      preloadQueue = []; 
-      resetGame();
-      game.classList.add('hidden');
-      endScreen.classList.add('hidden');
-      document.getElementById('start-screen').classList.remove('hidden');
-      updateScore();
-    }, 150);
+  const goHome = () => {
+    document.body.classList.remove('game-active');
+    preloadQueue = []; 
+    resetGame();
+    game.classList.add('hidden');
+    endScreen.classList.add('hidden');
+    document.getElementById('start-screen').classList.remove('hidden');
+    updateScore();
   };
+
+  if (isTouch) {
+    mainMenuBtn.classList.add('tapped');
+    setTimeout(goHome, 150);
+  } else {
+    goHome();
+  }
+};
 
   // Handle page restore from back/forward cache (mobile back button)
   window.addEventListener('pageshow', (event) => {
@@ -519,6 +530,7 @@ authBtn.addEventListener('click', () => {
 document.querySelectorAll('a.btn-small').forEach(link => {
   link.addEventListener('click', () => mobileFlash(link));
 });
+
 
 
 
