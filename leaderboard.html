@@ -108,19 +108,25 @@
     color: #d4af37;
     border: 2px solid #d4af37;
     border-radius: 8px;
-    padding: 10px 16px;
+    padding: 0 16px; /* Reduced vertical padding since height is fixed */
     font-size: 1rem;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     text-decoration: none;
-    width: 175px;           
-    height: 45px;
-    margin-top: auto !important; 
+    
+    /* Strict sizing */
+    width: 175px !important;           
+    height: 45px !important;
+    min-height: 45px !important;
+    max-height: 45px !important;
+    flex-shrink: 0 !important; /* Prevents stretching */
+    box-sizing: border-box !important;
+
+    margin-top: 20px !important; /* Fixed gap instead of 'auto' on desktop */
     margin-bottom: 5px;
     transition: all 0.2s ease;
   }
-
   /* ============================================================
      MOBILE RE-CALIBRATION
      ============================================================ */
@@ -279,6 +285,7 @@ function updateLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
