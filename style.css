@@ -295,14 +295,11 @@ h1 {
   margin-bottom: 15px;      /* optional spacing below */
 }
 
-/* ====== MUTE BUTTON MATCHING (TONED DOWN) ====== */
 /* ====== MUTE BUTTON EXACT #d4af37 MATCH ====== */
 #muteBtn {
-  /* Set fixed dimensions to reserve space and prevent layout flicker */
   width: 32px;
   height: 32px;
-  flex-shrink: 0; /* Prevents the button from shrinking if the username is long */
-  
+  flex-shrink: 0;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -311,34 +308,29 @@ h1 {
   font-size: 1.4rem;
   cursor: pointer;
   padding: 0;
-  transition: all 0.2s ease;
   outline: none;
-  -webkit-tap-highlight-color: transparent;
-  line-height: 1;
+  transition: opacity 0.2s ease; /* Only animate opacity to keep it snappy */
 
-  /* Targets the #d4af37 "Muted Gold" spectrum */
+  /* Default "Gold" state */
   filter: sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85);
-  opacity: 0.9; 
+  opacity: 0.9;
 }
 
-/* Hover State: Matches the "Bright Gold" #ffea8a */
+/* Muted State: REMOVE the gold filters entirely */
+#muteBtn.is-muted {
+  filter: grayscale(1) brightness(0.5) !important; /* Forces it to be simple grey */
+  opacity: 0.6;
+}
+
 #muteBtn:hover {
   opacity: 1;
-  filter: sepia(1) saturate(2.8) hue-rotate(-18deg) brightness(1.1);
 }
 
-/* Muted State: Stays dark and neutral */
-#muteBtn.is-muted {
-  /* Use 'none' to clear the gold hue-rotate, then apply grayscale */
-  filter: grayscale(1) brightness(0.4) sepia(0) hue-rotate(0deg) !important;
-  opacity: 0.5;
-}
-
-/* Ensure the span inside doesn't add extra height/width */
+/* Ensure the icon itself doesn't have weird spacing */
 #muteIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: inline-block;
+  line-height: 1;
+  pointer-events: none; /* Clicks go through to the button */
 }
 
 /* Tapped State: If you use the mobileFlash function, this matches the gold flash */
@@ -736,6 +728,7 @@ input.input-field:-webkit-autofill:active {
     margin-top: auto;    /* Keeps your mobile placement logic */
   }
 }
+
 
 
 
