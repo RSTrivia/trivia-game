@@ -440,48 +440,59 @@ h1 {
 /* 1. Set a reasonable fixed height so it doesn't jump, but isn't empty-feeling */
 /* ====== LOGIN PAGE SPECIFIC (CLEANED UP) ====== */
 
+/* ====== LOGIN PAGE SPECIFIC (FIXED) ====== */
+
 #app.login-page .login-container {
   display: flex;
   flex-direction: column;
   width: 400px;
-  min-height: 420px; 
-  padding: 30px 20px;
+  /* Removed min-height so it doesn't force space */
+  padding: 25px 25px; 
   box-sizing: border-box;
 }
 
-/* THINNER INPUTS */
+/* SUPER THIN INPUTS */
 #app.login-page .input-field {
-  height: 30px;        /* Even thinner for a sleek look */
+  height: 28px;        /* Even thinner than before */
   font-size: 0.85rem;
   padding: 0 10px;
+  border-width: 1px;   /* Thinner border looks better on thin boxes */
 }
 
-/* TIGHT SPACING FOR INPUTS */
+/* TIGHT VERTICAL SPACING */
 #app.login-page .row {
-  margin: 0 0 15px 0 !important; 
+  margin: 0 0 10px 0 !important; /* Reduced from 15px to 10px */
   width: 100%;
 }
 
+/* This makes the gap between username and password tiny */
 #app.login-page .row:has(#password) {
-  margin-top: -10px !important; /* Pulls password closer to username */
+  margin-top: -5px !important; 
 }
 
 /* BUTTONS */
 #app.login-page .btn-small {
-  height: 40px;
+  height: 38px;        /* Slightly shorter buttons */
 }
 
-/* BACK TO GAME BUTTON */
+/* BACK TO GAME BUTTON - TIGHT POSITIONING */
 #app.login-page .btn {
-  width: 100%;         /* Ensures it fills the container width */
-  padding: 10px 0;     /* Thinner height to match the new style */
-  font-size: 1rem;
+  width: 100%;         
+  padding: 10px 0;     
+  font-size: 0.95rem;
   text-decoration: none !important;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 20px !important; /* Fixed distance from the buttons above */
+  /* Controls exactly how far below the Log In button it sits */
+  margin-top: 5px !important; 
 }
+
+
+
+
+
+
 
 
 /* Chrome / Edge autofill fix */
@@ -805,6 +816,7 @@ input.input-field:-webkit-autofill:active {
   margin: 0;
   font-size: 1.2rem;
 }
+
 
 
 
