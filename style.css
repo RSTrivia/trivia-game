@@ -729,6 +729,22 @@ input.input-field:-webkit-autofill:active {
   }
 }
 
+/* Specific stability for the Login/Logout button */
+#authBtn {
+  min-width: 120px; /* Reserves enough space for 'Log Out' */
+  max-width: 120px; /* Locks the size so it never grows or shrinks */
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  white-space: nowrap;
+}
+
+/* Ensure the label inside doesn't cause alignment shifts */
+#authBtn .btn-label {
+  display: inline-block;
+  text-align: center;
+  width: 100%;
+}
 
 
 
