@@ -662,24 +662,31 @@ input.input-field:-webkit-autofill:active {
   margin-bottom: 0;          /* no extra space at bottom */
 }
 
-
-/* --- 2. MOBILE TAP BEHAVIOR --- */
+/* mobile tap */
 @media (pointer: coarse) {
-  /* Disable hover entirely to prevent stickiness */
+  /* 1. Prevent "sticky" hover from ever happening */
   .btn:hover, .btn-small:hover {
     background: rgba(0, 0, 0, 0.6) !important;
     border-color: #d4af37 !important;
   }
 
-  /* Create a 'tapped' class that we will trigger with JS */
+  /* 2. The Flash: Triggered by finger touch (active) or our JS class (tapped) */
+  .btn:active, .btn-small:active,
   .btn.tapped, .btn-small.tapped {
     background: rgba(0, 0, 0, 0.9) !important;
     border-color: #ffea8a !important;
     color: #ffea8a !important;
-    transition: 0s !important;
+    /* transition 0s makes it turn gold INSTANTLY when finger hits screen */
+    transition: 0s !important; 
+  }
+
+  /* 3. The "Leaderboard" Feeling: The Fade Out */
+  .btn, .btn-small {
+    /* 0.2s duration to fade, but 0.1s DELAY before it starts fading.
+       This "holds" the gold border so it doesn't just flicker. */
+    transition: all 0.2s ease 0.1s !important; 
   }
 }
-
 
 
 
