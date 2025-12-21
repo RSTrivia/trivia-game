@@ -36,138 +36,6 @@
     color: #fff;
   }
 
-  #app {
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start; 
-    padding: 20px;
-    position: relative;
-    z-index: 1;
-  }
-
-/* Update these in leaderboard.html */
-
-.container {
-  display: flex;
-  height: 720px; /* Keep this fixed on desktop */
-  flex-direction: column;
-  align-items: center;
-  background: rgba(0, 0, 0, 0.85);
-  padding: 63px 25px 25px 25px; /* Your calibrated 63px top padding */
-  border-radius: 10px;
-  width: 440px;            
-  max-width: 95%;     
-  text-align: center;
-  margin: 0 auto;
-  box-sizing: border-box;
-  justify-content: flex-start;
-}
-  
-h1#leaderboard-title {
-  font-family: 'Cinzel', serif;
-  font-size: 3.2rem;
-  
-  /* CRITICAL ALIGNMENT SETTINGS */
-  margin: 0 !important;             /* Kill all top margin */
-  padding: 0 !important;            /* Kill all padding */
-  line-height: 1.2;                 /* This locks the vertical height of the text box */
-  margin-bottom: 25px !important;    /* Gap between title and the leaderboard table */
-  
-  /* STYLING */
-  text-align: center;
-  letter-spacing: 2px;
-  background: linear-gradient(145deg,#fff8dc 0%,#ffdd44 25%,#f2b705 50%,#c28f0c 75%,#a77b0a 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-shadow:
-    0 0 4px rgba(0,0,0,0.8),
-    1px 1px 0 #000,
-    2px 2px 2px rgba(0,0,0,0.6),
-    0 0 8px rgba(255,223,0,0.8);
-}
-
-#leaderboard {
-  width: 100%;
-  list-style: none;
-  padding: 0;
-  margin: 10px 0; 
-  /* This is the key: Force the list to always take up this much space */
-  min-height: 480px; 
-  height: 480px; 
-}
-
-#leaderboard li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  
-  /* YOUR PREFERRED SIZING */
-  padding: 10px 12px;
-  margin-bottom: 6px;
-  
-  border-radius: 5px;
-  font-weight: 500;
-  box-sizing: border-box;
-}
-
-/* Alternating row colors */
-#leaderboard li:nth-child(odd) { background: rgba(80, 80, 80, 0.9); }
-#leaderboard li:nth-child(even) { background: rgba(60, 60, 60, 0.9); }
-
-/* Top 3 colors */
-#leaderboard li.first { background: rgba(255, 215, 0, 0.3); color: #d4af37; font-weight: 700; }
-#leaderboard li.second { background: linear-gradient(135deg, rgba(220,220,220,0.3) 0%, rgba(192,192,192,0.3) 100%); color: #C0C0C0; font-weight: 700; }
-#leaderboard li.third { background: rgba(205, 127, 50, 0.3); color: #CD7F32; font-weight: 700; }
-
-.btn-small {
-  /* Colors and Borders */
-  background: rgba(0, 0, 0, 0.6);
-  color: #d4af37;
-  border: 2px solid #d4af37;
-  border-radius: 8px;
-  
-  /* Text and Alignment */
-  padding: 10px 16px;
-  font-size: 1rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-  cursor: pointer;
-
-  /* Sizing and Positioning */
-  width: 175px;           
-  height: 45px;
-  flex: none;
-  
-  /* This pushes the button to the bottom of the container.
-     By using 'auto', it stays at the bottom of the 640px box 
-     even before the leaderboard data arrives.
-  */
-  margin-top: auto !important; 
-  margin-bottom: 5px;
-  
-  transition: all 0.2s ease;
-}
-
-.btn-small:hover {
-  background: rgba(0, 0, 0, 0.85);
-  border-color: #ffea8a;
-}
-
-
-/* mobile */
-<style>
-  html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    overflow-x: hidden;
-    font-family: Arial, sans-serif;
-    color: #fff;
-  }
-
   /* DESKTOP BASE */
   #app {
     min-height: 100vh;
@@ -296,11 +164,6 @@ h1#leaderboard-title {
       align-self: center !important;
     }
   }
-
-  
-</style>
-
-  
 </style>
   
 </head>
@@ -374,6 +237,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
