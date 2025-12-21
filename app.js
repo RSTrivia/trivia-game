@@ -456,18 +456,27 @@ startBtn.onclick = async () => {
     await endGame();
   });*/
 
-  playAgainBtn.onclick = startGame;
+  playAgainBtn.onclick = () => {
+  playAgainBtn.classList.add('tapped');
+  setTimeout(() => {
+    playAgainBtn.classList.remove('tapped');
+    startGame();
+  }, 150);
+};
 
   mainMenuBtn.onclick = () => {
-    document.body.classList.remove('game-active');
-    
-    preloadQueue = []; // full reset only here
-    
-    resetGame();
-    game.classList.add('hidden');
-    endScreen.classList.add('hidden');
-    document.getElementById('start-screen').classList.remove('hidden');
-    updateScore();
+    mainMenuBtn.classList.add('tapped');
+    setTimeout(() => {
+      mainMenuBtn.classList.remove('tapped');
+      
+      document.body.classList.remove('game-active');
+      preloadQueue = []; 
+      resetGame();
+      game.classList.add('hidden');
+      endScreen.classList.add('hidden');
+      document.getElementById('start-screen').classList.remove('hidden');
+      updateScore();
+    }, 150);
   };
 
   // Handle page restore from back/forward cache (mobile back button)
@@ -510,6 +519,7 @@ authBtn.addEventListener('click', () => {
 document.querySelectorAll('a.btn-small').forEach(link => {
   link.addEventListener('click', () => mobileFlash(link));
 });
+
 
 
 
