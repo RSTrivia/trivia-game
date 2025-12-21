@@ -297,6 +297,7 @@ h1 {
 #userDisplay {
   display: flex;
   align-items: center;
+  color: #d4af37; /* RuneScape Gold */
   /*gap: 0.5rem; /* space between Player:, username, and mute button */
 }
 
@@ -376,7 +377,7 @@ h1 {
 
 .btn-small {
   background: rgba(0,0,0,0.6);
-  color: #ffd700;
+  color: #d4af37;
 
   padding: 10px 16px;
   font-size: 1rem;
@@ -687,6 +688,7 @@ input.input-field:-webkit-autofill:active {
     transition: all 0.2s ease 0.1s !important; 
   }
 }
+
 
 
 
