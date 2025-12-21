@@ -193,6 +193,7 @@ a {
   border-radius: 6px;
   font-size: 1rem;
   transition: background-color 0.15s ease;
+  cursor: pointer;
 }
 
 .answer-btn:hover {
@@ -201,7 +202,7 @@ a {
 
 .answer-btn:disabled:hover {
   background-color: #181A1B;
-  cursor: default;
+  cursor: pointer;
 }
 
 .correct { background-color: #4caf50 !important; }
@@ -660,6 +661,7 @@ input.input-field:-webkit-autofill:active {
 .login-container .login-row.back-btn {
   margin-bottom: 0;          /* no extra space at bottom */
 }
+
 
 
 
