@@ -141,6 +141,7 @@ a {
 .btn:hover {
   background: rgba(0, 0, 0, 0.85);
   border-color: #ffea8a;
+  color: #ffea8a;
 }
 
 /* ====== SMALL BUTTONS ====== */
@@ -681,6 +682,7 @@ input.input-field:-webkit-autofill:active {
     transition: all 0.2s ease 0.1s !important; 
   }
 }
+
 
 
 
