@@ -309,17 +309,17 @@ h1 {
   cursor: pointer;
   padding: 0;
   outline: none;
-  transition: opacity 0.2s ease; /* Only animate opacity to keep it snappy */
+  transition: filter 0.2s ease, opacity 0.2s ease;
 
-  /* Default "Gold" state */
+  /* Default Gold */
   filter: sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85);
   opacity: 0.9;
 }
 
-/* Muted State: REMOVE the gold filters entirely */
 #muteBtn.is-muted {
-  filter: grayscale(1) brightness(0.5) !important; /* Forces it to be simple grey */
-  opacity: 0.6;
+  /* Completely strip the gold and turn grey */
+  filter: grayscale(1) brightness(0.5) !important; 
+  opacity: 0.5;
 }
 
 #muteBtn:hover {
@@ -728,6 +728,7 @@ input.input-field:-webkit-autofill:active {
     margin-top: auto;    /* Keeps your mobile placement logic */
   }
 }
+
 
 
 
