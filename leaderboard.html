@@ -155,50 +155,53 @@ h1#leaderboard-title {
   border-color: #ffea8a;
 }
 
-/* ===== MOBILE OPTIMIZATIONS ===== */
 @media (max-width: 480px) {
   #app {
-    padding: 10px; 
+    padding: 10px !important;
   }
 
-  .container {
-    /* Restore the 63px top padding to match PC placement */
-    padding: 63px 15px 15px 15px; 
-    height: auto;                
-    /* We use min-height instead of height to allow it to expand if needed */
-    min-height: 92vh;            
-    width: 95%;
-    display: flex;
-    flex-direction: column;
+  /* Target the container specifically within the leaderboard app */
+  #app .container {
+    /* FORCE the 63px top gap to match PC */
+    padding-top: 63px !important; 
+    padding-left: 15px !important;
+    padding-right: 15px !important;
+    padding-bottom: 20px !important;
+    
+    /* Reset heights that might be causing shifts */
+    height: auto !important;                
+    min-height: 94vh !important;
+    max-height: none !important; 
+    width: 95% !important;
+    display: flex !important;
+    flex-direction: column !important;
   }
 
   h1#leaderboard-title {
-    font-size: 2.2rem;   
-    /* Keep margins zeroed out to respect the container's 63px padding */
+    font-size: 2.1rem !important;   
     margin-top: 0 !important;
-    margin-bottom: 20px !important;
+    margin-bottom: 15px !important;
+    line-height: 1.1 !important;
   }
 
   #leaderboard {
-    min-height: auto;            
-    margin-bottom: 10px;
-    flex-grow: 1; /* This helps push the button down even on tall phones */
+    min-height: auto !important;            
+    margin-bottom: 5px !important;
+    flex: 1 1 auto !important; /* Allow the table to fill the middle */
   }
 
   #leaderboard li {
-    /* Slightly tighter rows only on mobile to ensure the button fits */
-    padding: 7px 10px;           
-    margin-bottom: 4px;
-    font-size: 0.85rem;           
+    padding: 6px 10px !important; /* Slightly tighter to guarantee button fit */
+    margin-bottom: 4px !important;
+    font-size: 0.85rem !important;           
   }
 
   .btn-small {
-    width: 160px;                
-    height: 42px;
-    /* Pushes button to the bottom of the mobile container */
-    margin-top: auto !important; 
-    margin-bottom: 10px;
-    flex-shrink: 0;
+    width: 160px !important;                
+    height: 40px !important;
+    margin-top: auto !important; /* Pushes button to the very bottom */
+    margin-bottom: 5px !important;
+    flex-shrink: 0 !important;
   }
 }
   
@@ -275,6 +278,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
