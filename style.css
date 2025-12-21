@@ -133,7 +133,7 @@ a {
   font-size: 1.1rem;
   width: 100%;
   display: block;
-  margin: 8px 0;
+  margin: 5px 0;
   transition: 0.2s;
   cursor: pointer;
 }
@@ -467,7 +467,7 @@ input.input-field:-webkit-autofill:active {
   align-items: center;       /* vertically center content */
   justify-content: center;   /* horizontally center content by default */
   gap: 10px;                 /* space between elements */
-  margin: 10px 0;            /* spacing between rows */
+  margin: 5px 0;            /* spacing between rows */
 }
 
 /* Ensure user + mute icon row aligns left inside container */
@@ -756,6 +756,7 @@ input.input-field:-webkit-autofill:active {
   width: 100%; /* Let the flex parent handle the centering */
   white-space: nowrap;
 }
+
 
 
 
