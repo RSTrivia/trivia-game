@@ -774,6 +774,24 @@ input.input-field:-webkit-autofill:active {
 }
 
 
+/* ====== END SCREEN SPACING ====== */
+#end-screen {
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* Match the Start Screen vertical spacing */
+  align-items: center;
+}
+
+#end-screen .row {
+  width: 100%;
+  margin: 0 !important; /* Let the flex gap handle it */
+}
+
+/* Ensure the GZ or Game Over text doesn't have huge default margins */
+#end-screen p {
+  margin: 0;
+  font-size: 1.2rem;
+}
 
 
 
