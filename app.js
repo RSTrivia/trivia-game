@@ -141,8 +141,8 @@ muteBtn.addEventListener('click', () => {
  // -------------------------
   // Supabase auth listener (Resilient Multi-Session)
   // -------------------------
-  supabase.auth.onAuthStateChange(async (event, session) => {
-    // Only revert to Guest if the user EXPLICITLY signs out
+supabase.auth.onAuthStateChange(async (event, session) => {
+    // CHANGE: Only revert to Guest if the user EXPLICITLY signs out
     if (event === 'SIGNED_OUT') {
       console.log("User signed out. Reverting to Guest.");
       username = ''; 
@@ -157,15 +157,8 @@ muteBtn.addEventListener('click', () => {
       return;
     }
 
-    // If we have a session (Initial login, refresh, or session found on other device)
+    // Keep your existing session logic below
     if (session?.user) {
-      // Check if we already have the username to avoid redundant DB calls
-      if (localStorage.getItem('cachedUsername') !== 'Guest' && username !== '') {
-         // UI is likely already correct, just ensure button says Log Out
-         if (authLabel) authLabel.textContent = 'Log Out';
-         return;
-      }
-
       const { data: profile } = await supabase
         .from('profiles')
         .select('username')
@@ -270,14 +263,15 @@ function playSound(buffer) {
   }
 
 async function startGame() {
-  // 1. FRESH HANDSHAKE: Ensure this device has a valid token before fetching questions
-  // This prevents the "Frozen 0 Score" bug when switching between devices.
+// 1. FRESH HANDSHAKE
   const { data: sessionData } = await supabase.auth.getSession();
 
-  // Update internal username in case it changed while the tab was idle
-  if (!sessionData.session) {
+  // CHANGE: Only clear username if there is DEFINITELY no session anymore
+  if (!sessionData.session && localStorage.getItem('cachedLoggedIn') === 'true') {
+    // If we thought we were logged in but the session is gone, THEN revert
     username = '';
     localStorage.setItem('cachedLoggedIn', 'false');
+    if (userDisplay) userDisplay.querySelector('#usernameSpan').textContent = ' Guest';
   }
   
   document.body.classList.add('game-active'); 
@@ -573,6 +567,7 @@ startBtn.onclick = () => {
 //muteBtn.addEventListener('click', () => {
   //if (isTouch) mobileFlash(muteBtn);
 //});
+
 
 
 
