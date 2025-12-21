@@ -84,9 +84,9 @@ muteBtn.addEventListener('click', () => {
   updateMuteIcon();
 
   // Trigger the gold flash for visual feedback
-  if (isTouch) {
-    mobileFlash(muteBtn);
-  }
+  //if (isTouch) {
+    //mobileFlash(muteBtn);
+  //}
 
   if (audioCtx.state === 'suspended') {
     audioCtx.resume();
@@ -558,9 +558,10 @@ document.querySelectorAll('a.btn-small').forEach(link => {
   link.addEventListener('click', () => mobileFlash(link));
 });
 
-muteBtn.addEventListener('click', () => {
-  if (isTouch) mobileFlash(muteBtn);
-});
+//muteBtn.addEventListener('click', () => {
+  //if (isTouch) mobileFlash(muteBtn);
+//});
+
 
 
 
