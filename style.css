@@ -157,7 +157,7 @@ a {
   flex: 1;
   text-align: center;
   text-decoration: none;
-  transition: background-color 0.2s, border-color 0.2s;
+  transition: all 0.2s ease; /* This ensures color, border, and bg all flash together */
   cursor: pointer;
 }
 
@@ -694,6 +694,13 @@ input.input-field:-webkit-autofill:active {
   }
 }
 
+@media (pointer: coarse) {
+  .btn:active, .btn-small:active {
+    transition: 0s !important; /* Removes the delay so the flash is instant on tap */
+    background: rgba(0, 0, 0, 0.9) !important;
+    border-color: #ffea8a !important;
+  }
+}
 
 
 
