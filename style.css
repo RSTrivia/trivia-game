@@ -524,19 +524,34 @@ input.input-field:-webkit-autofill:active {
 /* ====== LOGIN / LEADERBOARD BUTTON ROW ===== */
 /* This targets BOTH the Log In button and the Leaderboard link */
 /* ====== LOGIN / LEADERBOARD BUTTON ROW ===== */
-#start-screen .row:nth-child(3) {
+/* ====== START SCREEN CONTAINER ====== */
+#start-screen {
   display: flex;
-  gap: 20px;          /* 20px gap between the two buttons */
+  flex-direction: column;
+  gap: 20px;          /* This creates the 20px gap vertically between rows */
   width: 100%;
-  align-items: stretch;
-  margin: 0;          /* Removes extra margins to let the start-screen gap work */
+  margin-top: 10px;
 }
 
-/* Force both elements to be identical halves with fixed height */
+/* Ensure rows don't have their own margins stealing space */
+#start-screen .row {
+  display: flex;
+  margin: 0 !important; 
+  padding: 0;
+  width: 100%;
+}
+
+/* ====== LOGIN / LEADERBOARD BUTTON ROW (Row 3) ===== */
+#start-screen .row:nth-child(3) {
+  gap: 20px;          /* This creates the 20px gap horizontally between buttons */
+  align-items: stretch;
+}
+
+/* The actual buttons inside Row 3 */
 #start-screen .row:nth-child(3) #authBtn,
 #start-screen .row:nth-child(3) a.btn-small {
   flex: 1;
-  height: 60px !important; 
+  height: 60px !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -546,15 +561,12 @@ input.input-field:-webkit-autofill:active {
   font-size: 1rem;
   text-decoration: none;
   min-width: 0;
-  margin: 0;
+  margin: 0 !important;
 }
 
-/* Keeps the "Log In / Log Out" text centered */
-#authBtn .btn-label {
-  display: block;
-  width: 100%;
-  text-align: center;
-  white-space: nowrap;
+/* Big Start Button (Row 2) */
+#startBtn {
+  margin: 0 !important; /* Let the parent 'gap' handle the spacing */
 }
 
  /*@media (min-width: 481px) {
@@ -757,6 +769,7 @@ input.input-field:-webkit-autofill:active {
   width: 100%; /* Let the flex parent handle the centering */
   white-space: nowrap;
 }
+
 
 
 
