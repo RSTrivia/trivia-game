@@ -164,27 +164,25 @@ h1#leaderboard-title {
 @media (max-width: 480px) {
   /* 1. LOCK THE POSITION ON SCREEN */
   #app {
-    padding-top: 60px !important; /* Adjust this number to match the Main Page exactly */
-    padding-left: 10px !important;
-    padding-right: 10px !important;
-    align-items: flex-start !important; /* Keeps container at the top */
+    /* REDUCE THIS VALUE */
+    /* If 60px was too low, try 20px or 30px */
+    padding-top: 20px !important; 
+    
+    align-items: flex-start !important; 
     display: flex !important;
     justify-content: center !important;
   }
 
-  /* 2. MATCH THE BOX SIZING */
   #app .container {
-    width: 90% !important; 
-    max-width: 400px !important;
-    height: auto !important;      /* Allow it to grow down */
-    min-height: 480px !important;  /* Matches initial menu height */
-    max-height: none !important;   /* Prevents the 10th row overlap */
+    /* Ensure the top padding INSIDE the box also matches the main page */
+    padding-top: 25px !important; 
     
-    padding: 30px 15px 25px 15px !important; 
+    width: 90% !important;
+    max-width: 400px !important;
+    height: auto !important;
+    min-height: 480px !important;
     display: flex !important;
     flex-direction: column !important;
-    justify-content: flex-start !important;
-    overflow: visible !important;  /* Ensure button isn't cut off */
   }
 
   /* 3. TITLE SPACING */
@@ -301,6 +299,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
