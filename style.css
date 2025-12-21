@@ -659,9 +659,9 @@ input.input-field:-webkit-autofill:active {
   margin-bottom: 0;          /* no extra space at bottom */
 }
 
-
 a.btn,
-a.btn-small {
+a.btn-small,
+button {
   cursor: default !important;
 }
 
