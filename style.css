@@ -133,7 +133,7 @@ a {
   font-size: 1.1rem;
   width: 100%;
   display: block;
-  margin: 10px 0;
+  margin: 0;
   transition: 0.2s;
   cursor: pointer;
 }
@@ -523,12 +523,27 @@ input.input-field:-webkit-autofill:active {
 
 /* ====== LOGIN / LEADERBOARD BUTTON ROW ===== */
 /* ====== LOGIN / LEADERBOARD BUTTON ROW ===== */
+
+#start-screen {
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* This forces exactly 20px between EVERY row vertically */
+  margin-top: 10px;
+}
+/* Update the rows to match the horizontal gap */
+#start-screen .row {
+  display: flex;
+  gap: 20px; /* This forces exactly 20px between Log In and Leaderboard */
+  margin: 0;  /* Remove margins so they don't interfere with the 20px gap above */
+  width: 100%;
+}
+
+/* ====== LOGIN / LEADERBOARD BUTTON ROW ===== */
 #start-screen .row:nth-child(3) {
   display: flex;
-  gap: 20px;
+  gap: 20px; /* Must match the 20px above */
   width: 100%;
   align-items: stretch;
-  margin-top: 10px;
 }
 
 /* This targets BOTH the Log In button and the Leaderboard link */
@@ -757,6 +772,7 @@ input.input-field:-webkit-autofill:active {
   width: 100%; /* Let the flex parent handle the centering */
   white-space: nowrap;
 }
+
 
 
 
