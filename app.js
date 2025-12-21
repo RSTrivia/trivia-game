@@ -68,14 +68,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   let muted = cachedMuted;
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   
- // Change this function in app.js
-const updateMuteIcon = () => {
-  const muteIcon = document.getElementById('muteIcon');
-  if (muteIcon) {
-    muteIcon.textContent = muted ? '🔇' : '🔊';
-  }
-  muteBtn.classList.toggle('is-muted', muted);
-};
+  const updateMuteIcon = () => {
+    const muteIcon = document.getElementById('muteIcon');
+    if (muteIcon) {
+      // 1. Change the text first
+      muteIcon.textContent = muted ? '🔇' : '🔊';
+      
+      // 2. Use a tiny delay (0ms) to force the browser to recognize the new emoji 
+      // before applying the grayscale filter. This prevents the "muted-gold" bug.
+      setTimeout(() => {
+        muteBtn.classList.toggle('is-muted', muted);
+      }, 0);
+    }
+  };
 
 // Add click listener to toggle mute
 muteBtn.addEventListener('click', () => {
@@ -561,6 +566,7 @@ document.querySelectorAll('a.btn-small').forEach(link => {
 //muteBtn.addEventListener('click', () => {
   //if (isTouch) mobileFlash(muteBtn);
 //});
+
 
 
 
