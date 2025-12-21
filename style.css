@@ -426,20 +426,6 @@ h1 {
   border-color: #ffea8a;
 }
 
-#start-screen .row:nth-child(3) .btn-small {
-  width: 100%;
-  height: 60px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border: 2px solid #d4af37;
-  box-sizing: border-box;
-
-  flex: 1;
-}
-
 /* Text can change freely */
 .btn-label {
   display: inline-block;
@@ -536,6 +522,7 @@ input.input-field:-webkit-autofill:active {
 /*}*/
 
 /* ====== LOGIN / LEADERBOARD BUTTON ROW ===== */
+/* ====== LOGIN / LEADERBOARD BUTTON ROW ===== */
 #start-screen .row:nth-child(3) {
   display: flex;
   gap: 10px;
@@ -543,23 +530,30 @@ input.input-field:-webkit-autofill:active {
   align-items: stretch;
 }
 
-/* Force both elements to be identical halves */
+/* This targets BOTH the Log In button and the Leaderboard link */
 #start-screen .row:nth-child(3) #authBtn,
 #start-screen .row:nth-child(3) a.btn-small {
   flex: 1;
-  height: 60px !important;
+  height: 60px !important;      /* Forces identical height */
+  padding: 0 !important;       /* Removes internal bloating */
+  margin: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 !important; /* This is key - it stops the 'Log Out' button from bloating */
   box-sizing: border-box;
+  border: 2px solid #d4af37;
   font-size: 1rem;
-  line-height: 1;
-  min-width: 0; /* Prevents text from pushing width out */
-  overflow: hidden;
+  text-decoration: none;
+  min-width: 0;                /* Stops long text from growing the button */
 }
 
-
+/* Keeps the text inside centered and stable */
+#authBtn .btn-label {
+  display: block;
+  width: 100%;
+  text-align: center;
+  white-space: nowrap;
+}
 
 
  /*@media (min-width: 481px) {
@@ -755,17 +749,6 @@ input.input-field:-webkit-autofill:active {
   }
 }
 
-/* Force exact matching with Leaderboard button */
-#authBtn {
-  flex: 1;
-  height: 60px !important;    /* Force match to row height */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 0 !important;      /* Remove padding to stop it from being taller */
-  box-sizing: border-box;
-  min-width: 0;               /* Allows flex to work correctly */
-}
 
 #authBtn .btn-label {
   display: inline-block;
@@ -773,6 +756,7 @@ input.input-field:-webkit-autofill:active {
   width: 100%; /* Let the flex parent handle the centering */
   white-space: nowrap;
 }
+
 
 
 
