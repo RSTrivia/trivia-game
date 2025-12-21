@@ -118,14 +118,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       
       if (authLabel) { 
         authLabel.textContent = 'Log In';
-        authBtn.style.pointerEvents = 'none'; // Temporarily ignore the finger touch
-        authBtn.blur(); // Forces the mobile browser to "drop" the focus/hover
-        authBtn.classList.remove('mobile-tap'); // Clears the slow-fade animation
-        // 3. The "Deep Clean" (Optional but highly effective)
-        // This forces the button to re-render its style state
-        setTimeout(() => {
-          authBtn.style.pointerEvents = 'auto'; // Re-enable touch after 100ms
-        }, 100);
+        // Just blur it, don't kill the pointer events. 
+        // This allows the CSS transition to play naturally.
+        authBtn.blur();
       } 
       return;
     }
@@ -477,6 +472,7 @@ startBtn.onclick = async () => {
     updateScore();
   }
 });
+
 
 
 
