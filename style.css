@@ -582,24 +582,6 @@ input.input-field:-webkit-autofill:active {
 }*/
 
 
-@media (min-width: 481px) {
-  #start-screen .row:nth-child(3) button,
-  #start-screen .row:nth-child(3) a {
-    height: 60px;       
-    line-height: 1;
-  }
-}
-
-@media (max-width: 480px) {
-  #start-screen .row:nth-child(3) button,
-  #start-screen .row:nth-child(3) a {
-    height: auto;       
-    min-height: 60px;   
-    line-height: 1.2;   
-    padding: 12px;
-  }
-}
-
 @media (max-width: 480px) {
   #leaderboard li {
     padding: 6px 10px;   /* was ~10–12px */
@@ -791,6 +773,7 @@ input.input-field:-webkit-autofill:active {
   width: 100%; /* Let the flex parent handle the centering */
   white-space: nowrap;
 }
+
 
 
 
