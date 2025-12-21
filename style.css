@@ -15,7 +15,7 @@ html, body {
 #background-root {
   position: fixed;
   inset: 0;
-  z-index: -1; /*0*/
+  z-index: -2; /*0*/
   background-image: var(--bg-image);
   background-size: cover;
   background-position: center;
@@ -796,6 +796,7 @@ input.input-field:-webkit-autofill:active {
   margin: 0;
   font-size: 1.2rem;
 }
+
 
 
 
