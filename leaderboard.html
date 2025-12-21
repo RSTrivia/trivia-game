@@ -46,33 +46,34 @@
     z-index: 1;
   }
 
+/* Update these in leaderboard.html */
+
 .container {
   display: flex;
   flex-direction: column;
   align-items: center;
   background: rgba(0, 0, 0, 0.85);
-  padding: 25px;
+  /* padding-top: 40px; matches the visual air of the main menu */
+  padding: 40px 25px 25px 25px; 
   border-radius: 10px;
   width: 440px;            
   max-width: 95%;     
-  /* Using height instead of min-height to lock the box size exactly */
-  height: 640px; 
+  height: 640px;           /* Fixed height to prevent flicker/jump */
   text-align: center;
   margin: 0 auto;
   box-sizing: border-box;
-  /* This ensures the button stays at the bottom even if rows are missing */
-  justify-content: flex-start; 
+  position: relative;
 }
-
+  
 h1#leaderboard-title {
   font-family: 'Cinzel', serif;
   font-size: 3.2rem;
-  /* Resetting margins to be absolute */
-  margin-top: 10px !important; /* Adjust this 10px up/down to match main page perfectly */
-  margin-bottom: 25px; 
+  /* Resetting everything that could cause a shift */
+  margin: 0 0 25px 0 !important; 
+  padding: 0 !important;
+  line-height: 1.2;
   text-align: center;
   letter-spacing: 2px;
-  /* ... keep your gradient and shadow code the same ... */
   background: linear-gradient(145deg,#fff8dc 0%,#ffdd44 25%,#f2b705 50%,#c28f0c 75%,#a77b0a 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -217,6 +218,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
