@@ -451,6 +451,8 @@ function preloadNextQuestions() {
   }
 
    async function endGame() {
+     // REFRESH SESSION right before saving the big score
+    await supabase.auth.getSession();
     // Prevent multiple calls
     if (endGame.running) return;
     endGame.running = true;
@@ -576,6 +578,7 @@ startBtn.onclick = () => {
 //muteBtn.addEventListener('click', () => {
   //if (isTouch) mobileFlash(muteBtn);
 //});
+
 
 
 
