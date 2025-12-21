@@ -732,20 +732,21 @@ input.input-field:-webkit-autofill:active {
 /* Force exact matching with Leaderboard button */
 #authBtn {
   flex: 1;
-  height: 60px;       /* Forces exact height matching */
-  display: flex;      /* Changed from inline-flex to flex */
+  height: 60px !important;    /* Force match to row height */
+  display: flex;
   justify-content: center;
   align-items: center;
-  padding: 0;         /* Padding 0 prevents height "bloating" */
+  padding: 0 !important;      /* Remove padding to stop it from being taller */
   box-sizing: border-box;
+  min-width: 0;               /* Allows flex to work correctly */
 }
 
+/* This is the secret to stopping the flickering width */
 #authBtn .btn-label {
   display: inline-block;
   text-align: center;
-  width: 7ch;         /* Reserves space for exactly 7 characters */
+  width: 80px;                /* Enough space for 'Log Out' */
   white-space: nowrap;
-  line-height: 60px;  /* Centers text vertically within the 60px height */
 }
 
 
