@@ -126,7 +126,7 @@ a {
 /* ====== BIG GOLD BUTTONS ====== */
 .btn {
   background: rgba(0, 0, 0, 0.6);
-  color: #A6840C; /*#ffd700;*/
+  color: #ffd700; /*#ffd700;*/
   padding: 14px 22px;
   border: 2px solid #d4af37; /*#ffd700;*/
   border-radius: 8px;
@@ -146,7 +146,7 @@ a {
 /* ====== SMALL BUTTONS ====== */
 .btn-small {
   background: rgba(0,0,0,0.6);
-  color: #A6840C;
+  color: #ffd700;
   padding: 10px 16px;
   font-size: 1rem;
   border-color: #d4af37;   /* color only */
@@ -661,6 +661,7 @@ input.input-field:-webkit-autofill:active {
 .login-container .login-row.back-btn {
   margin-bottom: 0;          /* no extra space at bottom */
 }
+
 
 
 
