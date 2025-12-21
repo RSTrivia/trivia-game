@@ -92,19 +92,15 @@ html, body {
 /* Input fields */
 .input-field {
   width: 100%;
-  padding: 6px 15px;
+  height: 45px;         /* Specific height to make them thinner */
+  padding: 0 15px;      /* Reduced vertical padding */
   border-radius: 8px;
-  border: 1px solid #d4af37; /*#ffd700;*/
+  border: 2px solid #d4af37;
   background: rgba(22,22,22,0.9) !important;
   color: #fff !important;
   font-size: 1rem;
+  box-sizing: border-box;
   outline: none;
-  transition: 0.2s;
-
-  /* Reset browser default styling */
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
 }
 
 .input-field::placeholder {
@@ -437,6 +433,30 @@ h1 {
   white-space: nowrap;
 }
 
+/* ====== LOGIN PAGE SPECIFIC ====== */
+/* Force Login Container to match Main Page logic */
+#app.login-page .login-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;            /* Same 20px gap as Main Screen */
+  padding: 20px;
+  width: 400px;         /* Match Main Container width */
+  box-sizing: border-box;
+}
+
+/* Ensure Login rows match Main Screen row behavior */
+#app.login-page .row {
+  margin: 0 !important; /* Let the parent gap handle vertical space */
+  width: 100%;
+}
+
+/* Fix for the Row 3 buttons on login page to match Start Screen height */
+#app.login-page .row button.btn-small {
+  height: 50px !important; /* Slightly shorter than the main page for balance */
+  margin: 0 !important;
+}
+
+
 
 /* Make Back to Game button match container width */
 .login-row > .btn {
@@ -694,32 +714,6 @@ input.input-field:-webkit-autofill:active {
   }
 }
 
-/* Stable login container: grows naturally, no forced gaps */
-#app.login-page .login-container {
-  width: 400px;
-  max-width: 90%;
-  min-height: 300px;         /* reserve space to prevent flicker */
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start; /* stack rows from top */
-  align-items: center;
-  padding: 20px;
-  background: rgba(0,0,0,0.85);
-  border-radius: 10px;
-  box-shadow: 0 0 30px rgba(0,0,0,0.5);
-  overflow: visible;          /* allow container to grow if needed */
-}
-
-/* Each login row has a bottom margin for spacing */
-.login-container .login-row {
-  width: 100%;
-  margin-bottom: 10px;       /* same as main menu button gap */
-}
-
-/* Remove margin-top / auto from Back to Game button */
-.login-container .login-row.back-btn {
-  margin-bottom: 0;          /* no extra space at bottom */
-}
 
 /* mobile tap */
 @media (pointer: coarse) {
@@ -792,6 +786,7 @@ input.input-field:-webkit-autofill:active {
   margin: 0;
   font-size: 1.2rem;
 }
+
 
 
 
