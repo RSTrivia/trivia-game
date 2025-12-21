@@ -309,22 +309,28 @@ h1 {
   transition: all 0.2s ease;
   outline: none;
   -webkit-tap-highlight-color: transparent;
-  
-  /* Force the emoji to look Gold/Bronze */
-  filter: sepia(1) saturate(2) hue-rotate(-10deg) brightness(0.9);
+
+  /* This filter creates the #d4af37 (Muted Gold) look for emojis */
+  filter: sepia(1) saturate(2.5) hue-rotate(-15deg) brightness(0.9);
   opacity: 0.8;
 }
 
-/* Muted State: This targets the button when JS adds the class */
+/* Hover State: Matches #ffea8a (Bright Gold) */
+#muteBtn:hover {
+  opacity: 1;
+  filter: sepia(1) saturate(3) hue-rotate(-15deg) brightness(1.2);
+}
+
+/* Muted State: Matches the "disabled" or dark look */
 #muteBtn.is-muted {
-  /* grayscale(1) is the key for mobile to strip the red/yellow colors */
-  filter: grayscale(1) brightness(0.5) !important; 
+  filter: grayscale(1) brightness(0.5) !important;
   opacity: 0.4;
 }
 
-#muteBtn:hover {
+/* Tapped State: If you use the mobileFlash function, this matches the gold flash */
+#muteBtn.tapped {
+  filter: sepia(1) saturate(4) hue-rotate(-15deg) brightness(1.3) !important;
   opacity: 1;
-  filter: sepia(1) saturate(3) hue-rotate(-10deg) brightness(1.1);
 }
 
 /* ====== GAME SCREEN TEXT ===== */
@@ -714,6 +720,7 @@ input.input-field:-webkit-autofill:active {
     margin-top: auto;    /* Keeps your mobile placement logic */
   }
 }
+
 
 
 
