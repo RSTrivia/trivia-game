@@ -510,7 +510,7 @@ input.input-field:-webkit-autofill:active {
    =========================== */
 
 /* ====== LOGIN / LEADERBOARD BUTTON ROW ===== */
-#start-screen .row:nth-child(3) {
+/*#start-screen .row:nth-child(3) {
   display: flex;
   gap: 10px;
   width: 100%;
@@ -520,27 +520,53 @@ input.input-field:-webkit-autofill:active {
 
 /* Buttons inside that row */
 #start-screen .row:nth-child(3) button,
-#start-screen .row:nth-child(3) a {
+/*#start-screen .row:nth-child(3) a {
   flex: 1;                   /* take equal space */
-  display: flex;
+  /*display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
   box-sizing: border-box;    /* include padding & border in width/height */
-  padding: 12px;
+  /*padding: 12px;
   font-size: 1rem;
   line-height: 1;
   height: 60px;          /* equal height */
-  overflow: hidden;
+  /*overflow: hidden;
   min-width: 120px;          /* stable width for Log In / Log Out */
+/*}*/
+
+/* ====== LOGIN / LEADERBOARD BUTTON ROW ===== */
+#start-screen .row:nth-child(3) {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  align-items: stretch;
+}
+
+/* Force both elements to be identical halves */
+#start-screen .row:nth-child(3) #authBtn,
+#start-screen .row:nth-child(3) a.btn-small {
+  flex: 1;
+  height: 60px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 !important; /* This is key - it stops the 'Log Out' button from bloating */
+  box-sizing: border-box;
+  font-size: 1rem;
+  line-height: 1;
+  min-width: 0; /* Prevents text from pushing width out */
+  overflow: hidden;
 }
 
 
-@media (min-width: 481px) {
+
+
+ /*@media (min-width: 481px) {
   #start-screen .row:nth-child(3) button,
   #start-screen .row:nth-child(3) a {
     height: 60px;       /* fixed = no reflow */
-    line-height: 1;
+     /*line-height: 1;
   }
 }
 
@@ -549,12 +575,30 @@ input.input-field:-webkit-autofill:active {
   #start-screen .row:nth-child(3) button,
   #start-screen .row:nth-child(3) a {
     height: auto;       /* allow growth */
-    min-height: 60px;   /* visual consistency */
-    line-height: 1.2;   /* better multi-line spacing */
-    padding: 12px;
+     /*min-height: 60px;   /* visual consistency */
+     /*line-height: 1.2;   /* better multi-line spacing */
+     /*padding: 12px;
+  }
+}*/
+
+
+@media (min-width: 481px) {
+  #start-screen .row:nth-child(3) button,
+  #start-screen .row:nth-child(3) a {
+    height: 60px;       
+    line-height: 1;
   }
 }
 
+@media (max-width: 480px) {
+  #start-screen .row:nth-child(3) button,
+  #start-screen .row:nth-child(3) a {
+    height: auto;       
+    min-height: 60px;   
+    line-height: 1.2;   
+    padding: 12px;
+  }
+}
 
 @media (max-width: 480px) {
   #leaderboard li {
@@ -741,11 +785,10 @@ input.input-field:-webkit-autofill:active {
   min-width: 0;               /* Allows flex to work correctly */
 }
 
-/* This is the secret to stopping the flickering width */
 #authBtn .btn-label {
   display: inline-block;
   text-align: center;
-  width: 80px;                /* Enough space for 'Log Out' */
+  width: 100%; /* Let the flex parent handle the centering */
   white-space: nowrap;
 }
 
