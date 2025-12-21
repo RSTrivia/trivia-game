@@ -731,6 +731,16 @@ input.input-field:-webkit-autofill:active {
   }
 }
 
+/* Snug up the spacing ONLY for the input rows on the login page */
+#app.login-page .login-container .row:has(.input-field) {
+  margin: 0 !important;   /* Remove the row's outer margin */
+  gap: 0 !important;      /* Remove any internal gaps */
+}
+
+/* Control the exact distance between the two inputs here */
+#app.login-page .input-field {
+  margin-bottom: 6px !important; /* This is now the ONLY thing controlling the gap */
+}
 
 
 
