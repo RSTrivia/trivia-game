@@ -203,7 +203,18 @@
 <div id="app">
   <div class="container">
     <h1 id="leaderboard-title">Leaderboard</h1>
-    <ul id="leaderboard"></ul>
+    <ul id="leaderboard">
+        <li><span>&nbsp;</span><span>&nbsp;</span></li>
+        <li><span>&nbsp;</span><span>&nbsp;</span></li>
+        <li><span>&nbsp;</span><span>&nbsp;</span></li>
+        <li><span>&nbsp;</span><span>&nbsp;</span></li>
+        <li><span>&nbsp;</span><span>&nbsp;</span></li>
+        <li><span>&nbsp;</span><span>&nbsp;</span></li>
+        <li><span>&nbsp;</span><span>&nbsp;</span></li>
+        <li><span>&nbsp;</span><span>&nbsp;</span></li>
+        <li><span>&nbsp;</span><span>&nbsp;</span></li>
+        <li><span>&nbsp;</span><span>&nbsp;</span></li>
+    </ul>
     <a href="index.html" class="btn-small">Main Menu</a>
   </div>
 </div>
@@ -213,52 +224,46 @@
 <script type="module">
 import { supabase } from './supabase.js';
 
-const leaderboardEl = document.getElementById('leaderboard');
-const app = document.getElementById('app');
+const leaderboardRows = document.querySelectorAll('#leaderboard li');
 
-function renderLeaderboard(data) {
-  while (data.length < 10) data.push({ username: '&nbsp;', score: '&nbsp;' }); // Use non-breaking space
-  const html = data.map((entry, i) => {
-    const pos = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}.`;
-    const username = entry.username || '&nbsp;';
-    const score = entry.score ?? '&nbsp;';
-    const cls = i === 0 ? 'first' : i === 1 ? 'second' : i === 2 ? 'third' : '';
-    return `<li class="${cls}" style="min-height: inherit;"><span>${pos} ${username}</span><span>${score}</span></li>`;
-  }).join('');
-  leaderboardEl.innerHTML = html;
+function updateLeaderboard(data) {
+  leaderboardRows.forEach((row, i) => {
+    const entry = data[i] || { username: '', score: '' };
+    const pos = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
+    
+    // Apply styling classes based on rank
+    row.className = i === 0 ? 'first' : i === 1 ? 'second' : i === 2 ? 'third' : '';
+    
+    // Update the content (Rank + Name in first span, Score in second span)
+    row.innerHTML = `<span>${pos} ${entry.username || '&nbsp;'}</span><span>${entry.score ?? '&nbsp;'}</span>`;
+  });
 }
 
 (async () => {
-  // 0️⃣ Pre-fill leaderboard with empty rows immediately
-  const empty = Array.from({ length: 10 }, (_, i) => ({ username: '', score: null }));
-  renderLeaderboard(empty);
-
-  // 1️⃣ Show cached leaderboard if available
+  // 1️⃣ Immediately show cached data if we have it
   const cached = localStorage.getItem('leaderboard');
-  if (cached) renderLeaderboard(JSON.parse(cached));
+  if (cached) {
+    updateLeaderboard(JSON.parse(cached));
+  }
 
-  // 2️⃣ Fetch latest leaderboard from Supabase
-  supabase
+  // 2️⃣ Fetch fresh data from Supabase
+  const { data, error } = await supabase
     .from('public_leaderboard')
     .select('username, score')
     .order('score', { ascending: false })
-    .limit(10)
-    .then(({ data, error }) => {
-      if (!error && data) {
-        // Save fresh data in cache
-        localStorage.setItem('leaderboard', JSON.stringify(data));
-        // Render fresh leaderboard
-        renderLeaderboard(data);
-      }
-    });
+    .limit(10);
 
+  if (!error && data) {
+    localStorage.setItem('leaderboard', JSON.stringify(data));
+    updateLeaderboard(data);
+  }
 })();
-
 
 </script>
 
 </body>
 </html>
+
 
 
 
