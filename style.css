@@ -296,6 +296,7 @@ h1 {
 }
 
 /* ====== MUTE BUTTON MATCHING (TONED DOWN) ====== */
+/* ====== MUTE BUTTON EXACT #d4af37 MATCH ====== */
 #muteBtn {
   width: auto; 
   display: flex;
@@ -310,27 +311,27 @@ h1 {
   outline: none;
   -webkit-tap-highlight-color: transparent;
 
-  /* Lower brightness (0.7) and saturation (1.8) to match the Start Game text */
-  filter: sepia(1) saturate(1.8) hue-rotate(-15deg) brightness(0.7);
-  opacity: 0.75; /* Slightly more transparent to blend with background */
+  /* Targets the #d4af37 "Muted Gold" spectrum */
+  filter: sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85);
+  opacity: 0.9; 
 }
 
-/* Hover State: Still lights up, but stays within a bronze range */
+/* Hover State: Matches the "Bright Gold" #ffea8a */
 #muteBtn:hover {
   opacity: 1;
-  filter: sepia(1) saturate(2.2) hue-rotate(-15deg) brightness(0.9);
+  filter: sepia(1) saturate(2.8) hue-rotate(-18deg) brightness(1.1);
 }
 
-/* Muted State: Stays dark and grey */
+/* Muted State: Stays dark and neutral */
 #muteBtn.is-muted {
   filter: grayscale(1) brightness(0.4) !important;
-  opacity: 0.4;
+  opacity: 0.5;
 }
 
 /* Tapped State: If you use the mobileFlash function, this matches the gold flash */
 /*#muteBtn.tapped {
   /* Reduced brightness from 1.3 to 1.0 and saturation from 4 to 2.5 */
-  /*filter: sepia(1) saturate(2.5) hue-rotate(-15deg) brightness(1.0) !important;
+  /*filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.1) !important;
   opacity: 1;
   transition: none; /* Makes the tap feel instant/responsive */
 /*}*/
@@ -722,6 +723,7 @@ input.input-field:-webkit-autofill:active {
     margin-top: auto;    /* Keeps your mobile placement logic */
   }
 }
+
 
 
 
