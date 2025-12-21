@@ -422,25 +422,25 @@ function preloadNextQuestions() {
   // -------------------------
 
 startBtn.onclick = async () => {
-  // 1. Fetch questions if needed
+  // 1. Fetch questions first
   if (questions.length === 0) {
     const { data } = await supabase.from('questions').select('*');
     if (data) questions = data;
   }
 
   if (isTouch) {
-    // 2. Add the gold hold
     startBtn.classList.add('tapped');
-
-    // 3. Wait 150ms before transitioning
+    
     setTimeout(() => {
-      // 4. REMOVE the class here so it doesn't "flash" back to black 
-      // before the screen hides
+      // IMPORTANT: Remove the class BEFORE switching screens
       startBtn.classList.remove('tapped');
-      startGame();
+      
+      // Delay the start by a tiny margin to let the DOM settle
+      requestAnimationFrame(() => {
+        startGame();
+      });
     }, 150);
   } else {
-    // PC: Instant start
     startGame();
   }
 };
@@ -526,6 +526,7 @@ authBtn.addEventListener('click', () => {
 document.querySelectorAll('a.btn-small').forEach(link => {
   link.addEventListener('click', () => mobileFlash(link));
 });
+
 
 
 
