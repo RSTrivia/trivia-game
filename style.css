@@ -686,13 +686,24 @@ input.input-field:-webkit-autofill:active {
   }
 }
 
-/* Ensure the End Screen button stays full width (or its default) */
+/* Target Main Menu button ONLY on the Leaderboard page */
+#app .container:has(#leaderboard) a.btn-small {
+  width: 185px;
+  max-width: 185px;
+  height: 60px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 15px auto;
+  flex: none;
+}
+
+/* Ensure the End Screen button stays full width everywhere */
 #end-screen #mainMenuBtn {
   width: 100%;
   height: auto; 
   display: block;
 }
-
 
 
 
