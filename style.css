@@ -663,19 +663,24 @@ input.input-field:-webkit-autofill:active {
 }
 
 
-/* This targets ONLY mobile/touch devices */
+/* Target mobile/touch devices only */
 @media (pointer: coarse) {
-  .btn, .btn-small {
-    /* When the touch ends, force the button to transition back to normal 
-       in 0.2 seconds, overriding the "sticky" hover state */
-    transition: all 0.8s ease-in-out !important;
-  }
   
-  /* This ensures the button looks "pressed" only while the finger is down */
+  .btn, .btn-small {
+    /* 1. This controls the 'EXIT' (How it fades away) */
+    /* We set it to 0.8s so it disappears slowly */
+    transition: background-color 0.8s ease, 
+                border-color 0.8s ease, 
+                color 0.8s ease !important;
+  }
+
   .btn:active, .btn-small:active {
+    /* 2. This controls the 'ENTRY' (How it appears) */
+    /* We set transition to 0s so the gold 'flashes' on instantly */
     background: rgba(0, 0, 0, 0.85) !important;
     border-color: #ffea8a !important;
     color: #ffea8a !important;
+    transition: 0s !important; 
   }
 }
 
