@@ -271,7 +271,9 @@ h1 {
 }
 
 /* ====== UTIL ===== */
-.hidden { display: none; }
+.hidden { 
+  display: none !important; 
+}
 
 /* ====== DARK READER WARNING ===== */
 #darkreader-warning {
@@ -770,6 +772,7 @@ input.input-field:-webkit-autofill:active {
   width: 100%; /* Let the flex parent handle the centering */
   white-space: nowrap;
 }
+
 
 
 
