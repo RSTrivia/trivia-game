@@ -31,18 +31,28 @@ signupBtn.addEventListener('click', async () => {
   window.location.href = 'index.html';
 });
 
-// Log In
+// Log in
 loginBtn.addEventListener('click', async () => {
-  const username = usernameInput.value.trim();
+  const usernameInputVal = usernameInput.value.trim();
   const password = passwordInput.value;
-  if (!username || !password) return; // silently do nothing
+  if (!usernameInputVal || !password) return;
 
-  const email = username.toLowerCase() + '@example.com';
+  const email = usernameInputVal.toLowerCase() + '@example.com';
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error || !data.user) return; // silently fail
+  
+  if (error || !data.user) return;
 
-  // Save username & redirect
-  localStorage.setItem('cachedUsername', username);
+  // FETCH the actual profile to get the correct username casing from the DB
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('username')
+    .eq('id', data.user.id)
+    .single();
+
+  const finalUsername = profile?.username || usernameInputVal;
+
+  // Save the OFFICIAL username from the database
+  localStorage.setItem('cachedUsername', finalUsername);
   localStorage.setItem('cachedLoggedIn', 'true');
   window.location.href = 'index.html';
 });
