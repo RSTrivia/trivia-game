@@ -53,25 +53,29 @@
   flex-direction: column;
   align-items: center;
   background: rgba(0, 0, 0, 0.85);
-  /* padding-top: 40px; matches the visual air of the main menu */
-  padding: 40px 25px 25px 25px; 
+  /* Adjust the first number (25px) to move the title down */
+  padding: 25px 25px 25px 25px; 
   border-radius: 10px;
   width: 440px;            
   max-width: 95%;     
-  height: 640px;           /* Fixed height to prevent flicker/jump */
+  height: 640px;           
   text-align: center;
   margin: 0 auto;
   box-sizing: border-box;
-  position: relative;
+  justify-content: flex-start; 
 }
   
 h1#leaderboard-title {
   font-family: 'Cinzel', serif;
   font-size: 3.2rem;
-  /* Resetting everything that could cause a shift */
-  margin: 0 0 25px 0 !important; 
-  padding: 0 !important;
-  line-height: 1.2;
+  
+  /* CRITICAL ALIGNMENT SETTINGS */
+  margin: 0 !important;             /* Kill all top margin */
+  padding: 0 !important;            /* Kill all padding */
+  line-height: 1.2;                 /* This locks the vertical height of the text box */
+  margin-bottom: 25px !important;    /* Gap between title and the leaderboard table */
+  
+  /* STYLING */
   text-align: center;
   letter-spacing: 2px;
   background: linear-gradient(145deg,#fff8dc 0%,#ffdd44 25%,#f2b705 50%,#c28f0c 75%,#a77b0a 100%);
@@ -228,6 +232,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
