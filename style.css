@@ -140,7 +140,7 @@ a {
 
 .btn:hover {
   background: rgba(0, 0, 0, 0.85);
-  border-color: #ffea8a;
+  border-color: #d4af37; /*#ffea8a;*/
 }
 
 /* ====== SMALL BUTTONS ====== */
@@ -661,6 +661,7 @@ input.input-field:-webkit-autofill:active {
 .login-container .login-row.back-btn {
   margin-bottom: 0;          /* no extra space at bottom */
 }
+
 
 
 
