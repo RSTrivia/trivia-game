@@ -163,69 +163,50 @@ h1#leaderboard-title {
    ============================================================ */
 /* mobile */
 @media (max-width: 480px) {
+  /* 1. THE SPOT */
   #app {
-    padding-top: 20px !important; /* This was your perfect height */
-    align-items: flex-start !important; 
-    display: flex !important;
-    justify-content: center !important;
-    padding-left: 10px !important;
-    padding-right: 10px !important;
+    padding-top: 20px !important; 
+    align-items: flex-start !important;
   }
 
+  /* 2. THE WIDTH & FLICKER FIX */
   #app .container {
-    /* FIX WIDTH: Increased to 440px max to match Main Page */
-    width: 95% !important;
-    max-width: 440px !important; 
+    /* Reduced width to 88% to match your 'perfect' look */
+    width: 88% !important; 
+    max-width: 360px !important; 
     
-    /* FIX OVERLAP: Ensure container is tall enough for all 10 rows + button */
-    height: auto !important;
+    /* STABILIZE HEIGHT: This stops the flicker */
+    /* Set this to the height of your box when fully loaded */
     min-height: 560px !important; 
-    max-height: none !important;
+    height: auto !important;
     
-    padding: 25px 15px 30px 15px !important; 
+    padding: 20px 15px 25px 15px !important;
     display: flex !important;
     flex-direction: column !important;
     justify-content: flex-start !important;
-    box-sizing: border-box !important;
   }
 
-  h1#leaderboard-title {
-    font-size: 2.2rem !important; 
-    line-height: 1.0 !important; 
-    margin: 0 0 20px 0 !important; 
-  }
-
+  /* 3. LIST STABILIZATION */
   #leaderboard {
-    width: 100% !important;
-    height: auto !important;
-    /* This ensures 10 rows have enough room before the button starts */
-    min-height: 420px !important; 
-    margin: 0 !important;
-    padding: 0 !important;
-    display: block !important;
+    /* Ensures 10 rows of space are reserved before data arrives */
+    min-height: 400px !important; 
+    margin: 10px 0 !important;
   }
 
   #leaderboard li {
-    min-height: 38px !important; 
-    padding: 8px 12px !important;
+    min-height: 38px !important;
     margin-bottom: 4px !important;
     font-size: 0.9rem !important;
-    display: flex !important;
-    align-items: center !important;
-    box-sizing: border-box !important;
   }
 
+  /* 4. BUTTON ANCHOR */
   .btn-small {
-    /* This forces the button to stay BELOW the list */
-    margin-top: 20px !important; 
-    margin-bottom: 0 !important;
-    
-    width: 175px !important;                
+    /* 'auto' pushes it to the bottom of the min-height, stopping the jump */
+    margin-top: auto !important; 
+    width: 175px !important;
     height: 45px !important;
     align-self: center !important;
     flex-shrink: 0 !important;
-    position: relative !important;
-    display: inline-flex !important;
   }
 }
 
@@ -303,6 +284,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
