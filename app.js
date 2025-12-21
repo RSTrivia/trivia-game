@@ -9,6 +9,9 @@ const appDiv = document.getElementById('app');
 const userDisplay = document.getElementById('userDisplay');
 const authBtn = document.getElementById('authBtn');
 let authLabel;
+const cachedMuted = localStorage.getItem('muted') === 'true';
+const muteBtn = document.getElementById('muteBtn');
+
 if (authBtn) {
   authLabel = authBtn.querySelector('.btn-label');
 }
@@ -24,6 +27,16 @@ if (authBtn) {
 
 if (appDiv) {
   appDiv.style.opacity = '1';
+}
+
+if (muteBtn) {
+  // Set the emoji immediately
+  muteBtn.textContent = cachedMuted ? '🔇' : '🔊';
+  
+  // Set the class immediately so the CSS filter is already there
+  if (cachedMuted) {
+    muteBtn.classList.add('is-muted');
+  }
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -553,6 +566,7 @@ document.querySelectorAll('a.btn-small').forEach(link => {
 //muteBtn.addEventListener('click', () => {
   //if (isTouch) mobileFlash(muteBtn);
 //});
+
 
 
 
