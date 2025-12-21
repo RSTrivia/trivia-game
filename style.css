@@ -329,7 +329,8 @@ h1 {
 
 /* Muted State: Stays dark and neutral */
 #muteBtn.is-muted {
-  filter: grayscale(1) brightness(0.4) !important;
+  /* Use 'none' to clear the gold hue-rotate, then apply grayscale */
+  filter: grayscale(1) brightness(0.4) sepia(0) hue-rotate(0deg) !important;
   opacity: 0.5;
 }
 
@@ -735,6 +736,7 @@ input.input-field:-webkit-autofill:active {
     margin-top: auto;    /* Keeps your mobile placement logic */
   }
 }
+
 
 
 
