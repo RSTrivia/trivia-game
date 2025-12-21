@@ -125,33 +125,27 @@
      ============================================================ */
 /* mobile */
 @media (max-width: 480px) {
-  /* 1. KEEPS THE TOP POSITIONING */
   #app {
     padding-top: 20px !important; 
     align-items: flex-start !important;
   }
 
-  /* 2. LOCKS THE BOX SIZE (No Flicker) */
   #app .container {
     width: 440px !important; 
     max-width: 95% !important; 
-    height: 580px !important; 
-    min-height: 580px !important;
+    height: 600px !important; /* Increased slightly to give you that gap back */
+    min-height: 600px !important;
     padding: 20px 15px !important; 
     display: flex !important;
     flex-direction: column !important;
-    box-sizing: border-box !important;
-    justify-content: flex-start !important;
   }
 
-  /* 3. SHRINKS TITLE SLIGHTLY FOR ROOM */
   h1#leaderboard-title {
     font-size: 2.1rem !important; 
-    margin-bottom: 12px !important;
+    margin-bottom: 25px !important; /* RE-ADDED THE GAP HERE */
     flex-shrink: 0;
   }
 
-  /* 4. RESERVES TABLE SPACE (No Flicker) */
   #leaderboard {
     height: 400px !important; 
     min-height: 400px !important; 
@@ -160,34 +154,28 @@
     flex-shrink: 0 !important;
   }
 
-  /* 5. THINNER ROWS TO PREVENT OVERLAP */
   #leaderboard li {
-    height: 35px !important;
+    /* FORCING THINNER ROWS */
+    height: 34px !important;      /* Strictly thinner */
+    min-height: 34px !important;  /* Overrides the JS 42px */
     margin-bottom: 4px !important; 
-    padding: 6px 10px !important;
+    padding: 0 10px !important;   /* Tightened vertical padding */
     font-size: 0.9rem !important;
-    box-sizing: border-box !important;
     display: flex !important;
     align-items: center !important;
+    box-sizing: border-box !important;
   }
 
-  /* 6. CENTERS BUTTON IN THE GAP */
   .btn-small {
-    /* auto margins in a fixed-height flexbox perfectly center the item */
     margin-top: auto !important;
     margin-bottom: auto !important; 
-    
     flex: none !important;
     width: 175px !important;
     height: 45px !important;
-    min-height: 45px !important;
-    max-height: 45px !important;
     align-self: center !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    padding: 0 !important;
-    text-decoration: none !important;
   }
 }
   
@@ -228,7 +216,7 @@ function renderLeaderboard(data) {
     const username = entry.username || '&nbsp;';
     const score = entry.score ?? '&nbsp;';
     const cls = i === 0 ? 'first' : i === 1 ? 'second' : i === 2 ? 'third' : '';
-    return `<li class="${cls}" style="min-height: 42px;"><span>${pos} ${username}</span><span>${score}</span></li>`;
+    return `<li class="${cls}" style="min-height: inherit;"><span>${pos} ${username}</span><span>${score}</span></li>`;
   }).join('');
   leaderboardEl.innerHTML = html;
 }
@@ -264,6 +252,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
