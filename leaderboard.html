@@ -166,19 +166,28 @@
   }
 
 .btn-small {
-    /* 2. INCREASE TOP MARGIN */
-    /* This pushes the button away from the table and into the space we freed up */
-    margin-top: 25px !important; 
-    
-    /* 3. ENSURE NO EXTRA BOTTOM MARGIN */
-    margin-bottom: 15px !important; 
-    
+    /* 1. FORCE THE SIZE */
     width: 175px !important;
     height: 45px !important;
+    min-height: 45px !important; /* Prevents stretching */
+    max-height: 45px !important; /* Prevents stretching */
+    
+    /* 2. POSITIONING */
+    margin-top: 25px !important; 
+    margin-bottom: 15px !important;
     align-self: center !important;
+    
+    /* 3. TEXT ALIGNMENT */
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: none !important; /* CRITICAL: Stops the button from stretching vertically */
+    
+    /* Reset any inherited padding that might be bloating it */
+    padding: 0 !important; 
+    font-size: 1rem !important;
   }
-}
-  
+} 
 </style>
   
 </head>
@@ -252,6 +261,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
