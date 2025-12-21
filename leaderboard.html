@@ -56,20 +56,19 @@
     z-index: 1;
   }
 
-  
 /* ===== CONTAINER ===== */
 .container {
   display: flex;
   flex-direction: column;
-  justify-content: space-between; /* spread: title on top, leaderboard middle, button bottom */
   align-items: center;
   background: rgba(0, 0, 0, 0.85);
-  padding: 20px;
+  padding: 25px;          /* Match the new global padding */
   border-radius: 10px;
   box-shadow: 0 0 30px rgba(0,0,0,0.5);
-  width: 400px;       
-  max-width: 90%;     
-  height: 650px; /* fixed container height for 10 rows + title + button */
+  width: 440px;           /* Match the new 440px width */
+  max-width: 95%;     
+  height: auto;           /* REMOVE fixed height to allow growth */
+  min-height: 600px;      /* Ensure it's at least as big as main menu */
   text-align: center;
   margin: 0 auto;     
 }
@@ -79,12 +78,22 @@
   width: 100%;
   list-style: none;
   padding: 0;
-  margin: 0;            /* remove extra margin, spacing handled by container */
-  height: 580px;        /* fixed height for exactly 10 rows */
-  overflow-y: hidden;   /* all rows visible, no scrolling */
+  margin: 15px 0;         /* Add some breathing room */
+  height: auto;           /* Let it grow based on the rows */
+  overflow: visible;      /* Stop cutting off rows */
 }
 
-
+/* Add this to ensure rows don't get too squashed */
+#leaderboard li {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 15px;     /* Slightly more padding for the wider container */
+  border-radius: 5px;
+  margin-bottom: 6px;
+  font-weight: 500;
+  min-height: 45px;       /* Guaranteed row height */
+  box-sizing: border-box;
+}
   
   h1 {
     font-family: 'Cinzel', serif;
@@ -247,6 +256,7 @@ function renderLeaderboard(data) {
 
 </body>
 </html>
+
 
 
 
