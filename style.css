@@ -294,13 +294,6 @@ h1 {
   margin-bottom: 15px;      /* optional spacing below */
 }
 
-#userDisplay {
-  display: flex;
-  align-items: center;
-  color: #d4af37; /* RuneScape Gold */
-  /*gap: 0.5rem; /* space between Player:, username, and mute button */
-}
-
 #muteBtn {
   width: auto; 
   display: flex;
@@ -446,7 +439,7 @@ input.input-field:-webkit-autofill:active {
 
 #userDisplay {
   font-size: 1.2rem;
-  color: #ffd700;
+  color: #d4af37;
   min-height: 24px;
   display: flex;            /* make it inline-flex to center text vertically */
   align-items: center;
@@ -688,6 +681,7 @@ input.input-field:-webkit-autofill:active {
     transition: all 0.2s ease 0.1s !important; 
   }
 }
+
 
 
 
