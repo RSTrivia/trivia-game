@@ -305,7 +305,7 @@ h1 {
   background: none;
   border: none;
   font-size: 1.5rem;
-  cursor: pointer;
+  cursor: default;
   color: #ffd700;
   padding: 0;
 }
@@ -664,6 +664,7 @@ a.btn,
 a.btn-small {
   cursor: default !important;
 }
+
 
 
 
