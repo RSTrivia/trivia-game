@@ -419,16 +419,27 @@ function preloadNextQuestions() {
   // -------------------------
   // Buttons
   // -------------------------
-startBtn.onclick = () => {
-  // Add the 'tapped' class manually to ensure the glow shows
+startBtn.onclick = async () => {
+  // 1. Show the gold flash immediately
   startBtn.classList.add('tapped');
 
-  // Wait 150ms (the gold border duration) before switching screens
+  // 2. Prepare the game logic
+  // If questions aren't loaded yet, fetch them
+  if (questions.length === 0) {
+    const { data } = await supabase.from('questions').select('*');
+    if (!data?.length) {
+      startBtn.classList.remove('tapped');
+      return alert('Could not load questions!');
+    }
+    questions = data;
+  }
+  
+  // 3. Wait for the flash to finish (150ms), then start the actual game
   setTimeout(() => {
     startBtn.classList.remove('tapped');
-    document.getElementById('start-screen').classList.add('hidden');
-    game.classList.remove('hidden');
-    // ... rest of your startGame() logic
+    
+    // This calls your existing function that sets up the game UI
+    startGame(); 
   }, 150);
 };
 
@@ -499,6 +510,7 @@ authBtn.addEventListener('click', () => {
 document.querySelectorAll('a.btn-small').forEach(link => {
   link.addEventListener('click', () => mobileFlash(link));
 });
+
 
 
 
