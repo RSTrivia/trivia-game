@@ -63,7 +63,7 @@ html, body {
   align-items: flex-start;
   padding: 20px; /*40px;*/
   position: relative;
-  z-index: 1; /* above the background */
+  z-index: 10; /* above the background */
 }
 
 /* App visibility control */
@@ -796,6 +796,7 @@ input.input-field:-webkit-autofill:active {
   margin: 0;
   font-size: 1.2rem;
 }
+
 
 
 
