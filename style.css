@@ -440,10 +440,12 @@ h1 {
 #app.login-page .login-container {
   display: flex;
   flex-direction: column;
-  gap: 20px;            /* Standard 20px gap for Title and Buttons */
+  gap: 20px; 
   padding: 20px;
-  width: 400px;         /* Match Main Page exactly */
+  width: 400px;
+  min-height: 380px; /* Set this to match the average height of your main menu */
   box-sizing: border-box;
+  justify-content: flex-start; /* Keeps title at the top */
 }
 
 /* 2. THINNER INPUTS & TIGHTER SPACING */
@@ -454,17 +456,25 @@ h1 {
 }
 
 /* Target the rows specifically containing inputs to make them tighter */
+/* Tighten the 5px gap for inputs */
 #app.login-page .row:has(.input-field) {
-  margin-top: -15px !important; /* Counteracts the 20px container gap to create a 5px gap */
+  margin-top: -15px !important; 
 }
 
-/* Ensure the Login/Signup buttons and Back button match main page height */
-#app.login-page .row button.btn-small {
-  height: 45px !important; 
+/* Ensure buttons in the Login/Signup row look consistent */
+#app.login-page .row .btn-small {
+  height: 45px;
+  flex: 1; /* Makes Sign Up and Log In exactly 50/50 width */
 }
 
 #app.login-page .btn {
   padding: 12px 22px;   /* Adjusted to keep container height stable */
+}
+
+/* Pushes the bottom row (Back to Game) to the very bottom of the container */
+#app.login-page .row:last-child {
+  margin-top: auto !important; 
+  padding-top: 20px;
 }
 
 /* Make Back to Game button match container width */
@@ -795,6 +805,7 @@ input.input-field:-webkit-autofill:active {
   margin: 0;
   font-size: 1.2rem;
 }
+
 
 
 
