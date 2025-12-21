@@ -68,12 +68,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   let muted = cachedMuted;
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   
- const updateMuteIcon = () => {
-  muteBtn.textContent = muted ? '🔇' : '🔊';
+ // Change this function in app.js
+const updateMuteIcon = () => {
+  const muteIcon = document.getElementById('muteIcon');
+  if (muteIcon) {
+    muteIcon.textContent = muted ? '🔇' : '🔊';
+  }
   muteBtn.classList.toggle('is-muted', muted);
 };
-  updateMuteIcon();
-  
+
 // Add click listener to toggle mute
 muteBtn.addEventListener('click', () => {
   muted = !muted;
@@ -558,6 +561,7 @@ document.querySelectorAll('a.btn-small').forEach(link => {
 //muteBtn.addEventListener('click', () => {
   //if (isTouch) mobileFlash(muteBtn);
 //});
+
 
 
 
