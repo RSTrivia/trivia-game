@@ -110,7 +110,7 @@ async function checkDailyStatus() {
     if (existing) {
         dailyBtn.classList.add('disabled');
         dailyBtn.onclick = null;
-        dailyBtn.textContent = "Daily Done";
+        //dailyBtn.textContent = "Daily Done";
     }
 }
 checkDailyStatus();
@@ -769,6 +769,7 @@ function seededRandom(seed) {
   let x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
 }
+
 
 
 
