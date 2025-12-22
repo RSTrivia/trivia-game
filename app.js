@@ -9,7 +9,7 @@ const todayStr = new Date().toISOString().split('T')[0]; // Define today here
 const appDiv = document.getElementById('app');
 const userDisplay = document.getElementById('userDisplay');
 const authBtn = document.getElementById('authBtn');
-const dailyBtn = document.getElementById('dailyBtn'); // Get the button early!
+const dailyBtn = document.getElementById('dailyBtn');
 let authLabel;
 const cachedMuted = localStorage.getItem('muted') === 'true';
 const muteBtn = document.getElementById('muteBtn');
@@ -41,18 +41,17 @@ if (muteBtn) {
   }
 }
 
-// --- FLASH FIX FOR DAILY BUTTON ---
 if (dailyBtn) {
-  // If not logged in OR already played today, grey it out immediately
+  // 1. If not logged in, show "Log In" text and stay disabled
   if (!cachedLoggedIn) {
     dailyBtn.classList.add('disabled');
-    dailyBtn.textContent = "Log In for Daily";
-  } else if (localStorage.getItem('dailyPlayedDate') === todayStr) {
+  } 
+  // 2. If already played, keep original text but stay disabled
+  else if (localStorage.getItem('dailyPlayedDate') === todayStr) {
     dailyBtn.classList.add('disabled');
   }
+  // 3. Otherwise, the button stays in its HTML default state (enabled)
 }
-// ----------------------------------
-
 const dailyMessages = {
   0: ["Ouch. Zero XP gained today.", "Lumbridge is calling your name."],
   1: ["At least it's not a zero!", "One is better than none... barely."],
@@ -787,6 +786,7 @@ function seededRandom(seed) {
   let x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
 }
+
 
 
 
