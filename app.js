@@ -99,9 +99,16 @@ let isDailyMode = false; // Track if current game is the daily challenge
 
 
 async function checkDailyStatus() {
+  const currentToday = new Date().toISOString().split('T')[0];
     // 1. Get Session
     const { data: { session } } = await supabase.auth.getSession();
-    
+  
+    // 2. Clear old cache! 
+    // If the stored date isn't today, it's garbage. Remove it.
+    if (localStorage.getItem('dailyPlayedDate') !== currentToday) {
+        localStorage.removeItem('dailyPlayedDate');
+    }
+  
     // 2. Handle Guest / Logged Out
     if (!session) {
         dailyBtn.classList.remove('is-active');
@@ -863,6 +870,7 @@ async function submitDailyScore(dailyScore) {
 
   if (error) console.error("Error updating daily score:", error.message);
 }
+
 
 
 
