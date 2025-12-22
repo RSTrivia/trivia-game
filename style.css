@@ -811,6 +811,7 @@ input.input-field:-webkit-autofill:active {
     border-color: #444 !important;
     color: #666 !important;
     box-shadow: none !important;
+    transition: none !important;
 }
 
 /* Force the button to be disabled/greyed out by default in the HTML */
@@ -825,7 +826,9 @@ input.input-field:-webkit-autofill:active {
     pointer-events: auto;
     opacity: 1;
     filter: none;
+    transition: none !important;
 }
+
 
 
 
