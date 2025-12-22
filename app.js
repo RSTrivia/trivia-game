@@ -44,13 +44,14 @@ if (muteBtn) {
 if (dailyBtn) {
     const hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
 
+    // Only show gold if we are confident they are logged in AND haven't played
     if (cachedLoggedIn && !hasPlayed) {
-        // TURN GOLD IMMEDIATELY
         dailyBtn.classList.add('is-active');
         dailyBtn.classList.remove('disabled');
     } else {
-        dailyBtn.classList.add('disabled');
+        // Ensure it starts gray if there's any doubt
         dailyBtn.classList.remove('is-active');
+        dailyBtn.classList.add('disabled');
     }
 }
 
@@ -192,6 +193,18 @@ muteBtn.addEventListener('click', () => {
   // -------------------------
   async function preloadAuth() {
     const { data: { session } } = await supabase.auth.getSession();
+
+    if (!session) {
+        // The cache lied! The session is dead. Fix the button.
+        localStorage.setItem('cachedLoggedIn', 'false');
+        if (dailyBtn) {
+            dailyBtn.classList.remove('is-active');
+            dailyBtn.classList.add('disabled');
+            dailyBtn.textContent = "Log In for Daily";
+        }
+        return; 
+    }
+    
     if (!session?.user) return; // nothing to do
   
     const { data: profile } = await supabase
@@ -201,7 +214,16 @@ muteBtn.addEventListener('click', () => {
       .single();
   
     if (!profile?.username) return;
-  
+
+    // --- NEW GOLD BUTTON SYNC ---
+    // If we have a profile, we are officially logged in.
+    const hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
+    if (dailyBtn && !hasPlayed) {
+        dailyBtn.classList.add('is-active');
+        dailyBtn.classList.remove('disabled');
+        dailyBtn.textContent = "Daily Challenge";
+    }
+    
     if (profile.username !== username) {
       localStorage.setItem('cachedUsername', profile.username);
       localStorage.setItem('cachedLoggedIn', 'true');
@@ -805,6 +827,7 @@ function seededRandom(seed) {
   let x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
 }
+
 
 
 
