@@ -72,17 +72,28 @@
     text-align: center;
     letter-spacing: 2px;
   
-    /* NEW GRADIENT */
-    background: linear-gradient(145deg, #fff8dc 0%, #ffea8a 25%, #d4af37 50%, #8a6d1d 75%, #5c4a14 100%);
+ /* 1. THE GOLD GRADIENT (Sharp & High Contrast) */
+  background: linear-gradient(145deg, 
+    #ffffff 0%,    /* Pure white sparkle at the tip */
+    #ffea8a 20%,   /* Your button-hover gold */
+    #d4af37 45%,   /* YOUR BUTTON GOLD (The core) */
+    #d4af37 55%,   /* Holding the core color longer */
+    #8a6d1d 85%,   /* The shade you liked */
+    #4a3b0a 100%   /* Deep bottom edge */
+  );
   
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    /* Adding back the strong black shadow to help the gold pop */
-    text-shadow:
-    0 0 4px rgba(0,0,0,0.8),
-    1px 1px 0 #000,
-    2px 2px 2px rgba(0,0,0,0.6),
-    0 0 8px rgba(212, 175, 55, 0.3); /* Subtle glow using button gold */
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  /* 2. THE GLOW (The missing piece) */
+  /* We use 4 layers: 
+     - Black outlines for sharpness
+     - Gold 'Bloom' for the glow effect */
+  text-shadow:
+    1px 1px 0px #000,                          /* Sharp edge */
+    0px 0px 4px rgba(0,0,0,0.8),               /* Contrast */
+    0px 0px 10px rgba(212, 175, 55, 0.7),      /* Inner Glow (Button Gold) */
+    0px 0px 20px rgba(255, 234, 138, 0.4);     /* Outer Bloom (Hover Gold) */
   }
 
   #leaderboard {
@@ -314,6 +325,7 @@ supabase
 
 </body>
 </html>
+
 
 
 
