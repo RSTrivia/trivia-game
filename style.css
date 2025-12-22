@@ -260,24 +260,23 @@ h1 {
   text-align: center;
   letter-spacing: 2px;
   
- /* 1. YOUR ORIGINAL GRADIENT */
+/* 1. YOUR ORIGINAL GRADIENT (Untouched) */
   background: linear-gradient(145deg, #fff8dc 0%, #ffdd44 25%, #f2b705 50%, #c28f0c 75%, #a77b0a 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 
-  /* 2. THE REFINED "SWEET SPOT" GLOW */
-  /* We removed the 80px "fog" and focused on a strong 35px Bloom.
-     It's exactly between the original 8px and the crazy 80px. */
+  /* 2. THE CUSTOM BALANCED GLOW */
+  /* This is stronger than the 35px "Sweet Spot" but cleaner than the 80px "Fog" */
   text-shadow: 
     0 0 4px rgba(0,0,0,0.8),             /* Original depth */
-    1px 1px 0 #000,                      /* Original sharpness */
-    2px 2px 2px rgba(0,0,0,0.6),         /* Original shadow */
-    0 0 10px rgba(212, 175, 55, 0.8),    /* Strong Button-Gold core */
-    0 0 35px rgba(212, 175, 55, 0.5);    /* Soft "Awesome" Bloom */
+    1px 1px 0 #000,                      /* Original sharp edge */
+    2px 2px 2px rgba(0,0,0,0.6),         /* Original shadow shadow */
+    0 0 12px rgba(212, 175, 55, 0.95),   /* Layer 1: Strong Core (Button Gold) */
+    0 0 30px rgba(212, 175, 55, 0.75),   /* Layer 2: Deep Bloom (Thicker than before) */
+    0 0 55px rgba(212, 175, 55, 0.45);   /* Layer 3: Wide Radiance (Increased presence) */
 
-  /* 3. VIBRANCE */
-  /* Keeps the gold looking rich without being overly "neon" */
-  filter: saturate(1.1);
+  /* 3. FINAL VIBRANCE */
+  filter: saturate(1.15);
 }
 
 /* ====== UTIL ===== */
@@ -770,6 +769,7 @@ input.input-field:-webkit-autofill:active {
 #app.login-page .input-field {
   margin-bottom: 4px !important; /* This is the tiny gap between user and pass */
 }
+
 
 
 
