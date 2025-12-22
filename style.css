@@ -260,25 +260,27 @@ h1 {
   text-align: center;
   letter-spacing: 2px;
   
-  /* 1. YOUR ORIGINAL GRADIENT */
+ /* 1. YOUR ORIGINAL GRADIENT */
   background: linear-gradient(145deg, #fff8dc 0%, #ffdd44 25%, #f2b705 50%, #c28f0c 75%, #a77b0a 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 
-  /* 2. THE MAX GLOW SETUP */
-  /* We keep your 3 black contrast layers at the start, 
-     then stack 3 growing layers of button-gold glow. */
+  /* 2. THE QUAD-BLOOM GLOW */
+  /* Stacked from sharpest to widest using button gold (#d4af37) */
   text-shadow: 
-    0 0 4px rgba(0,0,0,0.8),             /* Original depth */
-    1px 1px 0 #000,                      /* Original sharp edge */
-    2px 2px 2px rgba(0,0,0,0.6),         /* Original shadow */
-    0 0 10px rgba(212, 175, 55, 0.9),    /* Layer 1: Intense Core Glow */
-    0 0 25px rgba(212, 175, 55, 0.6),    /* Layer 2: Medium Spread Bloom */
-    0 0 50px rgba(212, 175, 55, 0.3);    /* Layer 3: THE MASSIVE RADIANCE */
-    
-  /* 3. FINAL POLISH */
-  /* This ensures the glow feels "active" and matches the button vibrance */
-  filter: saturate(1.1);
+    0 0 4px rgba(0,0,0,0.9),             /* Deepest black contrast */
+    1px 1px 0 #000,                      /* Sharpest black edge */
+    0 0 12px rgba(212, 175, 55, 1.0),    /* Layer 1: Solid Core (100% opacity) */
+    0 0 25px rgba(212, 175, 55, 0.8),    /* Layer 2: Heavy Bloom */
+    0 0 50px rgba(212, 175, 55, 0.5),    /* Layer 3: Wide Atmosphere */
+    0 0 80px rgba(212, 175, 55, 0.3);    /* Layer 4: SUPER MASSIVE RADIANCE */
+
+  /* 3. EXTERNAL ENHANCEMENT */
+  /* This forces the glow to interact with the background even more */
+  filter: saturate(1.2) drop-shadow(0 0 20px rgba(212, 175, 55, 0.4));
+  
+  /* Prevent the massive glow from being hidden by the container overflow */
+  z-index: 100;
 }
 
 /* ====== UTIL ===== */
@@ -771,6 +773,7 @@ input.input-field:-webkit-autofill:active {
 #app.login-page .input-field {
   margin-bottom: 4px !important; /* This is the tiny gap between user and pass */
 }
+
 
 
 
