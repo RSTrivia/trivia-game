@@ -572,7 +572,7 @@ async function startDailyChallenge() {
     // Visually update the main menu button
     dailyBtn.classList.add('disabled');
     dailyBtn.onclick = null;
-    dailyBtn.textContent = "Daily Started...";
+    //dailyBtn.textContent = "Daily Mode";
 
     // Show Game Screen
     document.body.classList.add('game-active'); 
@@ -763,6 +763,7 @@ function seededRandom(seed) {
   let x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
 }
+
 
 
 
