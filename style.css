@@ -802,41 +802,33 @@ input.input-field:-webkit-autofill:active {
   }
 }
 
-/* Disabled Daily Button Style */
-.daily-btn.disabled {
-    filter: grayscale(1) !important;
-    opacity: 0.4 !important;
-    cursor: not-allowed;
-    pointer-events: none; 
-    border-color: #444 !important;
-    color: #666 !important;
-    box-shadow: none !important;
-}
-
-/* Force the button to be disabled by default */
+/* 1. Set the stable "Off" state for the ID */
 #dailyBtn {
     pointer-events: none;
+    filter: grayscale(1) brightness(0.7);
     opacity: 0.5;
-    filter: grayscale(1);
-    transition: none !important;
+    border-color: #444 !important;
+    color: #666 !important;
+    transition: none !important; /* Prevents the bright grey flicker on load */
 }
-  
-/* FIX: Use the ID + the Class together to make it strong enough to turn gold */
+
+/* 2. Set the "Gold" state using ID + Class for max priority */
 #dailyBtn.is-active {
     pointer-events: auto !important;
+    filter: grayscale(0) brightness(1) !important;
     opacity: 1 !important;
-    filter: none !important;
-    border-color: #ffd700 !important; /* Gold border */
-    color: #ffd700 !important;        /* Gold text */
-    transition: none !important;
+    border-color: #ffd700 !important;
+    color: #ffd700 !important;
+    transition: filter 0.2s ease, opacity 0.2s ease !important; /* Smooth fade-in ONLY when it turns gold */
     cursor: pointer;
 }
 
-/* Add this for the mobile tap feel */
+/* 3. Handle the tapped state for mobile feedback */
 #dailyBtn.tapped {
-    background-color: rgba(255, 215, 0, 0.2) !important;
-    transform: scale(0.95);
+    background-color: rgba(212, 175, 55, 0.2) !important;
+    transform: scale(0.96);
 }
+
 
 
 
