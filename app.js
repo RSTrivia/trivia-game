@@ -101,16 +101,16 @@ async function checkDailyStatus() {
         .single();
 
     if (existing) {
-        // Update cache so we don't have to query the DB next refresh
-        localStorage.setItem('dailyPlayedDate', todayStr);
+        // ... existing logic for already played ...
         dailyBtn.classList.remove('is-active');
         dailyBtn.classList.add('disabled');
-        dailyBtn.onclick = null;
+        dailyBtn.onclick = null; // Disable clicking
     } else {
         // --- FINAL GOLD STATE ---
         dailyBtn.classList.add('is-active');
         dailyBtn.classList.remove('disabled');
         
+        // 🔥 Re-attach the click listener here!
         dailyBtn.onclick = () => {
             if (isTouch) {
                 dailyBtn.classList.add('tapped');
@@ -125,6 +125,90 @@ async function checkDailyStatus() {
     }
 }
 
+// 2. The Daily Logic function
+async function startDailyChallenge() {
+  
+    // 1. Check Auth First
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return alert("You must be logged in to play the Daily Challenge!");
+
+    // 2. "Burn" the attempt immediately
+    const { error: burnError } = await supabase
+        .from('daily_attempts')
+        .insert({ 
+            user_id: session.user.id, 
+            score: 0, 
+            attempt_date: todayStr 
+        });
+
+    if (burnError) return alert("You've already played today!");
+    localStorage.setItem('dailyPlayedDate', todayStr);
+
+    // 3. Prepare the Questions
+    const { data: allQuestions } = await supabase.from('questions').select('*').order('id', { ascending: true });
+    if (!allQuestions || allQuestions.length < 10) return alert("Error loading questions.");
+
+    // Calculate rotation
+    const startDate = new Date('2025-12-22'); 
+    const diffTime = Math.abs(new Date() - startDate);
+    const dayCounter = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    const questionsPerDay = 10;
+    const daysPerCycle = Math.floor(allQuestions.length / questionsPerDay);
+
+    // --- ADD THE CHECK HERE ---
+    let dailySet;
+    if (daysPerCycle === 0) {
+        // Fallback: If for some reason you have < 10 questions total
+        dailySet = allQuestions.slice(0, questionsPerDay);
+    } else {
+        const cycleNumber = Math.floor(dayCounter / daysPerCycle);
+        const dayInCycle = dayCounter % daysPerCycle;
+    
+        const shuffledList = shuffleWithSeed(allQuestions, cycleNumber);
+        dailySet = shuffledList.slice(
+            dayInCycle * questionsPerDay, 
+            (dayInCycle * questionsPerDay) + questionsPerDay
+        );
+    }
+
+    // Visually update the main menu button immediately
+    dailyBtn.classList.remove('is-active'); // Ensure gold is gone
+    dailyBtn.classList.add('disabled');
+    dailyBtn.onclick = null;
+  
+    // 4. NOW Launch the Game (All data is ready)
+    isDailyMode = true;
+    resetGame();
+    remainingQuestions = dailySet; // This now works because dailySet exists!
+
+    // Visually update the main menu button
+    dailyBtn.classList.add('disabled');
+    dailyBtn.onclick = null;
+    //dailyBtn.textContent = "Daily Mode";
+
+    // Show Game Screen
+    document.body.classList.add('game-active'); 
+    document.getElementById('start-screen').classList.add('hidden');
+    game.classList.remove('hidden');
+    
+    updateScore();
+    loadQuestion();
+}
+
+async function submitDailyScore(dailyScore) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+
+  // We use .update() here because the row already exists from when they clicked "Start"
+  const { error } = await supabase
+    .from('daily_attempts')
+    .update({ score: dailyScore })
+    .eq('user_id', user.id)
+    .eq('attempt_date', todayStr);
+
+  if (error) console.error("Error updating daily score:", error.message);
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
   // DOM Elements
@@ -364,20 +448,7 @@ function playSound(buffer) {
     }
   }
 
-async function submitDailyScore(dailyScore) {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
 
-  // We use .update() here because the row already exists from when they clicked "Start"
-  const { error } = await supabase
-    .from('daily_attempts')
-    .update({ score: dailyScore })
-    .eq('user_id', user.id)
-    .eq('attempt_date', todayStr);
-
-  if (error) console.error("Error updating daily score:", error.message);
-}
-  
   // -------------------------
   // Game Logic (UNCHANGED)
   // -------------------------
@@ -596,76 +667,7 @@ function preloadNextQuestions() {
     scoreDisplay.textContent = `Score: ${score}`;
   }
 
-// 2. The Daily Logic function
-async function startDailyChallenge() {
-  
-    // 1. Check Auth First
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return alert("You must be logged in to play the Daily Challenge!");
 
-    // 2. "Burn" the attempt immediately
-    const { error: burnError } = await supabase
-        .from('daily_attempts')
-        .insert({ 
-            user_id: session.user.id, 
-            score: 0, 
-            attempt_date: todayStr 
-        });
-
-    if (burnError) return alert("You've already played today!");
-    localStorage.setItem('dailyPlayedDate', todayStr);
-
-    // 3. Prepare the Questions
-    const { data: allQuestions } = await supabase.from('questions').select('*').order('id', { ascending: true });
-    if (!allQuestions || allQuestions.length < 10) return alert("Error loading questions.");
-
-    // Calculate rotation
-    const startDate = new Date('2025-12-22'); 
-    const diffTime = Math.abs(new Date() - startDate);
-    const dayCounter = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    
-    const questionsPerDay = 10;
-    const daysPerCycle = Math.floor(allQuestions.length / questionsPerDay);
-
-    // --- ADD THE CHECK HERE ---
-    let dailySet;
-    if (daysPerCycle === 0) {
-        // Fallback: If for some reason you have < 10 questions total
-        dailySet = allQuestions.slice(0, questionsPerDay);
-    } else {
-        const cycleNumber = Math.floor(dayCounter / daysPerCycle);
-        const dayInCycle = dayCounter % daysPerCycle;
-    
-        const shuffledList = shuffleWithSeed(allQuestions, cycleNumber);
-        dailySet = shuffledList.slice(
-            dayInCycle * questionsPerDay, 
-            (dayInCycle * questionsPerDay) + questionsPerDay
-        );
-    }
-
-    // Visually update the main menu button immediately
-    dailyBtn.classList.remove('is-active'); // Ensure gold is gone
-    dailyBtn.classList.add('disabled');
-    dailyBtn.onclick = null;
-  
-    // 4. NOW Launch the Game (All data is ready)
-    isDailyMode = true;
-    resetGame();
-    remainingQuestions = dailySet; // This now works because dailySet exists!
-
-    // Visually update the main menu button
-    dailyBtn.classList.add('disabled');
-    dailyBtn.onclick = null;
-    //dailyBtn.textContent = "Daily Mode";
-
-    // Show Game Screen
-    document.body.classList.add('game-active'); 
-    document.getElementById('start-screen').classList.add('hidden');
-    game.classList.remove('hidden');
-    
-    updateScore();
-    loadQuestion();
-}
 
    async function endGame() {
   await supabase.auth.getSession();
@@ -846,6 +848,7 @@ function seededRandom(seed) {
   let x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
 }
+
 
 
 
