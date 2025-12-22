@@ -632,6 +632,14 @@ input.input-field:-webkit-autofill:active {
   margin: 0 !important;
 }
 
+/* Specific hover for the Row 3 buttons to make them glow */
+#start-screen .row:nth-child(3) #authBtn:hover,
+#start-screen .row:nth-child(3) a.btn-small:hover {
+  background: rgba(0, 0, 0, 0.85) !important;
+  border-color: #ffea8a !important;
+  color: #ffea8a !important;
+}
+
 /* Big Start Button (Row 2) */
 #startBtn {
   margin: 0 !important; /* Let the parent 'gap' handle the spacing */
@@ -852,6 +860,7 @@ input.input-field:-webkit-autofill:active {
     border: 2px solid #444 !important;
     color: #666 !important;
 }
+
 
 
 
