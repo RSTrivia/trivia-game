@@ -44,14 +44,16 @@ if (muteBtn) {
 if (dailyBtn) {
     const hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
 
-    // ONLY unlock if they are logged in AND haven't played
     if (cachedLoggedIn && !hasPlayed) {
+        // TURN GOLD IMMEDIATELY
         dailyBtn.classList.add('is-active');
+        dailyBtn.classList.remove('disabled');
     } else if (!cachedLoggedIn) {
-        dailyBtn.textContent = "Log In for Daily";
+        dailyBtn.classList.add('disabled');
+    } else if (hasPlayed) {
+        dailyBtn.classList.add('disabled');
     }
 }
-
 const dailyMessages = {
   0: ["Ouch. Zero XP gained today.", "Lumbridge is calling your name."],
   1: ["At least it's not a zero!", "One is better than none... barely."],
@@ -805,6 +807,7 @@ function seededRandom(seed) {
   let x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
 }
+
 
 
 
