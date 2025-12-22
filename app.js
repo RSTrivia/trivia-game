@@ -1,6 +1,10 @@
 import { supabase } from './supabase.js';
 const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
+// ====== IMMEDIATE CACHED UI (runs before paint) ======
+const cachedMuted = localStorage.getItem('muted') === 'true';
+const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
+const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
 
   const startBtn = document.getElementById('startBtn');
   const playAgainBtn = document.getElementById('playAgainBtn');
@@ -19,18 +23,13 @@ const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
   let muted = cachedMuted;
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-// ====== IMMEDIATE CACHED UI (runs before paint) ======
-const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
-const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
 const todayStr = new Date().toISOString().split('T')[0]; // Define today here
-
 const appDiv = document.getElementById('app');
 const userDisplay = document.getElementById('userDisplay');
 const authBtn = document.getElementById('authBtn');
+const muteBtn = document.getElementById('muteBtn');
 const dailyBtn = document.getElementById('dailyBtn');
 let authLabel;
-const cachedMuted = localStorage.getItem('muted') === 'true';
-const muteBtn = document.getElementById('muteBtn');
 
 let username = cachedLoggedIn ? cachedUsername : '';
 let score = 0;
@@ -40,7 +39,6 @@ let currentQuestion = null;
 let preloadQueue = []; // holds up to 2 questions 
 let timer;
 let timeLeft = 15;
-
 
 if (authBtn) {
   authLabel = authBtn.querySelector('.btn-label');
@@ -873,6 +871,7 @@ const syncMuteUI = () => {
     muteBtn.classList.remove('is-muted');
   }
 };
+
 
 
 
