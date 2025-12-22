@@ -531,6 +531,17 @@ function preloadNextQuestions() {
 
 // 2. The Daily Logic function
 async function startDailyChallenge() {
+  // Launch Game
+  isDailyMode = true;
+  resetGame();
+  remainingQuestions = dailySet;
+  document.body.classList.add('game-active'); 
+  document.getElementById('start-screen').classList.add('hidden');
+  game.classList.remove('hidden');
+  
+  updateScore();
+  loadQuestion();
+  
   const { data: { session } } = await supabase.auth.getSession();
   // 1. BLOCK GUESTS IMMEDIATELY
   if (!session) return alert("You must be logged in to do that!");
@@ -570,17 +581,6 @@ async function startDailyChallenge() {
   // Shuffle based on cycle seed so every 51 days the order is different
   const shuffledList = shuffleWithSeed(allQuestions, cycleNumber);
   const dailySet = shuffledList.slice(dayInCycle * questionsPerDay, (dayInCycle * questionsPerDay) + questionsPerDay);
-
-  // Launch Game
-  isDailyMode = true;
-  remainingQuestions = dailySet;
-  
-  document.body.classList.add('game-active'); 
-  document.getElementById('start-screen').classList.add('hidden');
-  game.classList.remove('hidden');
-  resetGame();
-  updateScore();
-  loadQuestion();
 }
 
 // 3. Click Listener with Mobile Support
@@ -763,6 +763,7 @@ function seededRandom(seed) {
   let x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
 }
+
 
 
 
