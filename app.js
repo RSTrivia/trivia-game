@@ -105,7 +105,6 @@ async function checkDailyStatus() {
     if (!session) {
         dailyBtn.classList.remove('is-active');
         dailyBtn.classList.add('disabled');
-        dailyBtn.textContent = "Log In for Daily";
         dailyBtn.onclick = () => alert("Daily Challenge is for members only. Please Log In to play!");
         return;
     }
@@ -115,7 +114,6 @@ async function checkDailyStatus() {
     if (cachedDailyDate === todayStr) {
         dailyBtn.classList.remove('is-active');
         dailyBtn.classList.add('disabled');
-        dailyBtn.textContent = "Played Today";
         dailyBtn.onclick = null;
         return;
     }
@@ -132,13 +130,11 @@ async function checkDailyStatus() {
         localStorage.setItem('dailyPlayedDate', todayStr);
         dailyBtn.classList.remove('is-active');
         dailyBtn.classList.add('disabled');
-        dailyBtn.textContent = "Played Today";
         dailyBtn.onclick = null;
     } else {
         // --- THIS IS THE GOLD STATE (Success) ---
         dailyBtn.classList.add('is-active');
         dailyBtn.classList.remove('disabled');
-        dailyBtn.textContent = "Daily Challenge";
         
         // MOBILE SUPPORT IS ADDED HERE:
         dailyBtn.onclick = () => {
@@ -809,6 +805,7 @@ function seededRandom(seed) {
   let x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
 }
+
 
 
 
