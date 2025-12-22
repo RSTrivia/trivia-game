@@ -73,11 +73,16 @@
     letter-spacing: 2px;
   
     /* NEW GRADIENT */
-    background: linear-gradient(180deg, #fff8dc 0%, #ffea8a 30%, #d4af37 60%, #b8860b 100%);
+    background: linear-gradient(145deg, #fff8dc 0%, #ffea8a 25%, #d4af37 50%, #8a6d1d 75%, #5c4a14 100%);
   
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    text-shadow: 0 0 4px rgba(0,0,0,0.8), 1px 1px 0 #000, 2px 2px 2px rgba(0,0,0,0.6);
+    /* Adding back the strong black shadow to help the gold pop */
+    text-shadow:
+    0 0 4px rgba(0,0,0,0.8),
+    1px 1px 0 #000,
+    2px 2px 2px rgba(0,0,0,0.6),
+    0 0 8px rgba(212, 175, 55, 0.3); /* Subtle glow using button gold */
   }
 
   #leaderboard {
@@ -309,6 +314,7 @@ supabase
 
 </body>
 </html>
+
 
 
 
