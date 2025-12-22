@@ -284,7 +284,7 @@ muteBtn.addEventListener('click', () => {
       .from('profiles')
       .select('username')
       .eq('id', session.user.id)
-      .single();
+      .maybeSingle();
   
     if (!profile?.username) return;
 
@@ -870,6 +870,7 @@ async function submitDailyScore(dailyScore) {
 
   if (error) console.error("Error updating daily score:", error.message);
 }
+
 
 
 
