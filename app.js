@@ -595,6 +595,7 @@ function preloadNextQuestions() {
 
 // 2. The Daily Logic function
 async function startDailyChallenge() {
+  
     // 1. Check Auth First
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return alert("You must be logged in to play the Daily Challenge!");
@@ -638,6 +639,11 @@ async function startDailyChallenge() {
             (dayInCycle * questionsPerDay) + questionsPerDay
         );
     }
+
+    // Visually update the main menu button immediately
+    dailyBtn.classList.remove('is-active'); // Ensure gold is gone
+    dailyBtn.classList.add('disabled');
+    dailyBtn.onclick = null;
   
     // 4. NOW Launch the Game (All data is ready)
     isDailyMode = true;
@@ -774,6 +780,18 @@ startBtn.onclick = () => {
       updateScore();
     };
 
+    //  TO SYNC THE BUTTON ---
+      if (dailyBtn) {
+        const hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
+        if (hasPlayed) {
+          dailyBtn.classList.remove('is-active');
+          dailyBtn.classList.add('disabled');
+          dailyBtn.onclick = null; // Kill the click event
+          // If you want to change the text:
+          // dailyBtn.textContent = "Played Today"; 
+        }
+      }
+    
     if (isTouch) {
       mainMenuBtn.classList.add('tapped');
       setTimeout(() => {
@@ -825,6 +843,7 @@ function seededRandom(seed) {
   let x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
 }
+
 
 
 
