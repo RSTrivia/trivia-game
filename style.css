@@ -819,8 +819,9 @@ input.input-field:-webkit-autofill:active {
     pointer-events: none;
     opacity: 0.5;
     filter: grayscale(1);
+    transition: none !important;
 }
-
+  
 /* We will use this class to "turn it on" via JS */
 #dailyBtn.is-active {
     pointer-events: auto;
@@ -828,6 +829,7 @@ input.input-field:-webkit-autofill:active {
     filter: none;
     transition: none !important;
 }
+
 
 
 
