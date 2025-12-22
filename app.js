@@ -42,16 +42,16 @@ if (muteBtn) {
 }
 
 if (dailyBtn) {
-  // 1. If not logged in, show "Log In" text and stay disabled
-  if (!cachedLoggedIn) {
-    dailyBtn.classList.add('disabled');
-  } 
-  // 2. If already played, keep original text but stay disabled
-  else if (localStorage.getItem('dailyPlayedDate') === todayStr) {
-    dailyBtn.classList.add('disabled');
-  }
-  // 3. Otherwise, the button stays in its HTML default state (enabled)
+    const hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
+
+    // ONLY unlock if they are logged in AND haven't played
+    if (cachedLoggedIn && !hasPlayed) {
+        dailyBtn.classList.add('is-active');
+    } else if (!cachedLoggedIn) {
+        dailyBtn.textContent = "Log In for Daily";
+    }
 }
+
 const dailyMessages = {
   0: ["Ouch. Zero XP gained today.", "Lumbridge is calling your name."],
   1: ["At least it's not a zero!", "One is better than none... barely."],
@@ -101,22 +101,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function checkDailyStatus() {
     const { data: { session } } = await supabase.auth.getSession();
     
-    // If NOT logged in (Guest), treat it like it's disabled
+    // 1. Handle Guest / Logged Out
     if (!session) {
+        dailyBtn.classList.remove('is-active'); 
         dailyBtn.classList.add('disabled');
-        // We keep the onclick alert so they know WHY it's disabled
         dailyBtn.onclick = () => alert("Daily Challenge is for members only. Please Log In to play!");
         return;
     }
   
-    // Check our cache first to see if we already know they played today
+    // 2. Short-circuit if Cache says they played
     const cachedDailyDate = localStorage.getItem('dailyPlayedDate');
     if (cachedDailyDate === todayStr) {
+        dailyBtn.classList.remove('is-active');
         dailyBtn.classList.add('disabled');
         dailyBtn.onclick = null;
         return;
     }
       
+    // 3. Database Truth Check
     const { data: existing } = await supabase
         .from('daily_attempts')
         .select('score')
@@ -125,10 +127,15 @@ async function checkDailyStatus() {
         .single();
 
     if (existing) {
-        // Save to cache so it doesn't flash next time
+        // Update cache so the immediate logic catches it on next refresh
         localStorage.setItem('dailyPlayedDate', todayStr);
+        dailyBtn.classList.remove('is-active');
         dailyBtn.classList.add('disabled');
         dailyBtn.onclick = null;
+    } else {
+        // If they are logged in and haven't played, make sure it's active
+        dailyBtn.classList.add('is-active');
+        dailyBtn.classList.remove('disabled');
     }
 }
 checkDailyStatus();
@@ -786,6 +793,7 @@ function seededRandom(seed) {
   let x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
 }
+
 
 
 
