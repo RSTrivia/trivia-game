@@ -133,10 +133,11 @@ async function checkDailyStatus() {
         dailyBtn.onclick = null;
     } else {
         // SUCCESS: User is logged in and hasn't played.
+        // THIS IS THE GOLD STATE
         dailyBtn.classList.add('is-active');
         dailyBtn.classList.remove('disabled');
         
-        // Re-attach the click logic here to ensure it's active
+        // Define the click behavior right here
         dailyBtn.onclick = () => {
             if (isTouch) {
                 dailyBtn.classList.add('tapped');
@@ -816,6 +817,7 @@ function seededRandom(seed) {
   let x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
 }
+
 
 
 
