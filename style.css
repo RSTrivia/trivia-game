@@ -834,8 +834,8 @@ input.input-field:-webkit-autofill:active {
 
 #dailyBtn.is-active:hover {
   background: rgba(0, 0, 0, 0.85);
-  border-color: #ffea8a;
-  color: #ffea8a;
+  border-color: #ffea8a !important;
+  color: #ffea8a !important;
 }
 
 /* 3. Handle the tapped state for mobile feedback */
@@ -843,6 +843,7 @@ input.input-field:-webkit-autofill:active {
     background-color: rgba(212, 175, 55, 0.2) !important;
     transform: scale(0.96);
 }
+
 
 
 
