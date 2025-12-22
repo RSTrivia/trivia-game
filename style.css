@@ -260,31 +260,32 @@ h1 {
   text-align: center;
   letter-spacing: 2px;
   
-  /* 1. BRIGHT BUT DEEP GRADIENT */
-  /* We use the button gold (#d4af37) but keep the dark OSRS bottom */
+  /* 1. DARKISH GOLD MIX */
+  /* This mixes the button gold (#d4af37) with dark metallic "dirt" colors */
   background: linear-gradient(180deg, 
-    #fff8dc 0%,    /* Creamy Top */
-    #ffea8a 25%,   /* Bright Glow */
-    #d4af37 50%,   /* EXACT BUTTON GOLD */
-    #8a6d1d 75%,   /* Deep Bronze Shade */
-    #2a2107 100%   /* Heavy Dark Base (The "Old" look you liked) */
+    #ffea8a 0%,    /* Highlight (Hover Gold) */
+    #d4af37 30%,   /* BUTTON GOLD */
+    #5c4a14 55%,   /* Darker Gold transition */
+    #2a2107 85%,   /* Almost Black-Gold */
+    #000000 100%   /* Deep shadow at the base */
   );
   
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 
-  /* 2. THE BLACK DEPTH (Restored & Improved) */
-  /* Instead of a thick outline, we use stacked shadows to create 
-     that "Heavy Metal" feel without making the font look chunky. */
+  /* 2. THE GLOW (Balanced for Dark Gold) */
+  /* A mix of a sharp black outline and a heavy golden "Bloom" */
   text-shadow:
-    0 1px 0 #000,
-    0 2px 0 #000,
-    0 3px 0 #000,                           /* Stacked black for a 3D effect */
-    0px 0px 5px rgba(0,0,0,0.8),            /* Contrast */
-    0px 0px 15px rgba(212, 175, 55, 0.6);   /* The "Glow" (Balanced now) */
-    
-  /* 3. VIBRANCE BOOST */
-  filter: saturate(1.2);
+    -1px -1px 0 #000,  
+     1px -1px 0 #000,
+    -1px  1px 0 #000,
+     1px  1px 0 #000,                     /* Thin black "edge" for sharpness */
+     0 0 10px rgba(212, 175, 55, 0.5),    /* Button gold glow */
+     0 0 20px rgba(0, 0, 0, 0.8);         /* Deep black background glow */
+
+  /* 3. HD SATURATION */
+  /* This keeps the gold from looking "grey" */
+  filter: saturate(1.4) brightness(0.95);
 }
 
 /* ====== UTIL ===== */
@@ -777,6 +778,7 @@ input.input-field:-webkit-autofill:active {
 #app.login-page .input-field {
   margin-bottom: 4px !important; /* This is the tiny gap between user and pass */
 }
+
 
 
 
