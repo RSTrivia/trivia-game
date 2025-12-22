@@ -165,6 +165,7 @@ a {
 .btn-small:hover {
   background: rgba(0,0,0,0.85);
   border-color: #ffea8a;
+  color: #ffea8a;
 }
 
 .btn, .btn-small {
@@ -800,6 +801,7 @@ input.input-field:-webkit-autofill:active {
     -webkit-tap-highlight-color: transparent;
   }
 }
+
 
 
 
