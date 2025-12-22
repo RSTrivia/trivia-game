@@ -86,11 +86,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   let muted = cachedMuted;
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-// Check if user already played today and grey out button if they did
 async function checkDailyStatus() {
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
+    
+    // If NOT logged in (Guest), treat it like it's disabled
+    if (!session) {
+        dailyBtn.classList.add('disabled');
+        // We keep the onclick alert so they know WHY it's disabled
+        dailyBtn.onclick = () => alert("Daily Challenge is for members only. Please Log In to play!");
+        dailyBtn.textContent = "Log In for Daily";
+        return;
+    }
 
+    // If logged in, check if they already played today
     const todayStr = new Date().toISOString().split('T')[0];
     const { data: existing } = await supabase
         .from('daily_attempts')
@@ -524,20 +532,21 @@ function preloadNextQuestions() {
 // 2. The Daily Logic function
 async function startDailyChallenge() {
   const { data: { session } } = await supabase.auth.getSession();
-  if (!session) return alert("Please log in to play the Daily Challenge!");
+  // 1. BLOCK GUESTS IMMEDIATELY
+  if (!session) return alert("You must be logged in to do that!");
 
-  // 1. "BURN" the attempt immediately so they can't refresh and restart
-  const todayStr = new Date().toISOString().split('T')[0];
-  const { error: burnError } = await supabase
-    .from('daily_attempts')
-    .insert({ 
-        user_id: session.user.id, 
-        score: 0, 
-        attempt_date: todayStr 
-    });
-
+// 2. BURN the attempt (only works for logged in users)
+    const todayStr = new Date().toISOString().split('T')[0];
+    const { error: burnError } = await supabase
+        .from('daily_attempts')
+        .insert({ 
+            user_id: session.user.id, 
+            score: 0, 
+            attempt_date: todayStr 
+        });
+  
   // If there's an error (like a duplicate key), they've already started/finished
-  if (burnError) return alert("You've already started or finished today's challenge!");
+  if (burnError) return alert("You've already played today!");
 
   // 2. Visually disable the button immediately
   dailyBtn.classList.add('disabled');
@@ -754,6 +763,7 @@ function seededRandom(seed) {
   let x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
 }
+
 
 
 
