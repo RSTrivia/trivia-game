@@ -805,15 +805,14 @@ input.input-field:-webkit-autofill:active {
 
 /* Disabled Daily Button Style */
 .daily-btn.disabled {
-    border-color: #555 !important;
-    color: #555 !important;
+    filter: grayscale(1);
+    opacity: 0.4;
     cursor: not-allowed;
-    pointer-events: none; /* This stops all clicks/taps entirely */
-    text-shadow: none !important;
+    pointer-events: none; /* This stops the hover glow/scaling */
+    border-color: #444 !important;
+    color: #666 !important;
     box-shadow: none !important;
-    opacity: 0.6;
 }
-
 
 
 
