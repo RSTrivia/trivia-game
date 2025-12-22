@@ -96,9 +96,17 @@ async function checkDailyStatus() {
         dailyBtn.onclick = () => alert("Daily Challenge is for members only. Please Log In to play!");
         return;
     }
-
+  
     // If logged in, check if they already played today
     const todayStr = new Date().toISOString().split('T')[0];
+
+    // Check our cache first to see if we already know they played today
+    const cachedDailyDate = localStorage.getItem('dailyPlayedDate');
+    if (cachedDailyDate === todayStr) {
+        setDailyDoneUI(); // Use a helper function to avoid repeating code
+        return;
+    }
+  
     const { data: existing } = await supabase
         .from('daily_attempts')
         .select('score')
@@ -107,6 +115,8 @@ async function checkDailyStatus() {
         .single();
 
     if (existing) {
+        // Save to cache so it doesn't flash next time
+        localStorage.setItem('dailyPlayedDate', todayStr);
         dailyBtn.classList.add('disabled');
         dailyBtn.onclick = null;
         //dailyBtn.textContent = "Daily Done";
@@ -768,6 +778,7 @@ function seededRandom(seed) {
   let x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
 }
+
 
 
 
