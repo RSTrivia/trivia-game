@@ -803,6 +803,16 @@ input.input-field:-webkit-autofill:active {
 }
 
 
+/* Disabled Daily Button Style */
+.daily-btn.disabled {
+    border-color: #555 !important;
+    color: #555 !important;
+    cursor: not-allowed;
+    pointer-events: none; /* This stops all clicks/taps entirely */
+    text-shadow: none !important;
+    box-shadow: none !important;
+    opacity: 0.6;
+}
 
 
 
