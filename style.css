@@ -260,28 +260,31 @@ h1 {
   text-align: center;
   letter-spacing: 2px;
   
-/* 1. THE GOLD GRADIENT (Sharp & High Contrast) */
-  background: linear-gradient(145deg, 
-    #ffffff 0%,    /* Pure white sparkle at the tip */
-    #ffea8a 20%,   /* Your button-hover gold */
-    #d4af37 45%,   /* YOUR BUTTON GOLD (The core) */
-    #d4af37 55%,   /* Holding the core color longer */
-    #8a6d1d 85%,   /* The shade you liked */
-    #4a3b0a 100%   /* Deep bottom edge */
+  /* 1. THE SHARP GRADIENT */
+  /* We use "hard stops" to make the gold look like polished metal */
+  background: linear-gradient(180deg, 
+    #ffea8a 0%,    /* Lightest gold at top */
+    #d4af37 40%,   /* EXACT BUTTON GOLD starts here */
+    #ffffff 45%,   /* THE "SHARP" REFLECTION LINE (Pure White) */
+    #d4af37 50%,   /* EXACT BUTTON GOLD resumes */
+    #d4af37 75%,   /* Holding the button color long for brightness */
+    #8a6d1d 100%   /* Deep shadow only at the very bottom */
   );
-  
+
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 
-  /* 2. THE GLOW (The missing piece) */
-  /* We use 4 layers: 
-     - Black outlines for sharpness
-     - Gold 'Bloom' for the glow effect */
+  /* 2. THE SHARP OUTLINE & GLOW */
+  /* This creates a hard "carved" look plus a bright glow */
   text-shadow:
-    1px 1px 0px #000,                          /* Sharp edge */
-    0px 0px 4px rgba(0,0,0,0.8),               /* Contrast */
-    0px 0px 10px rgba(212, 175, 55, 0.7),      /* Inner Glow (Button Gold) */
-    0px 0px 20px rgba(255, 234, 138, 0.4);     /* Outer Bloom (Hover Gold) */
+    -1px -1px 0 #000,
+     1px -1px 0 #000,
+    -1px  1px 0 #000,
+     1px  1px 0 #000,                     /* Hard Black Outline for "Sharpness" */
+     0 0 10px rgba(212, 175, 55, 0.8),    /* Strong Inner Glow (Button Gold) */
+     0 0 20px rgba(255, 234, 138, 0.5);   /* Bright Bloom */
+  
+  filter: drop-shadow(0px 4px 2px rgba(0,0,0,0.5)); /* Adds weight */
 }
 
 /* ====== UTIL ===== */
@@ -774,6 +777,7 @@ input.input-field:-webkit-autofill:active {
 #app.login-page .input-field {
   margin-bottom: 4px !important; /* This is the tiny gap between user and pass */
 }
+
 
 
 
