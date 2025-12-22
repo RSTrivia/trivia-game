@@ -335,43 +335,43 @@ muteBtn.addEventListener('click', () => {
   // Supabase auth listener (Resilient Multi-Session)
   // -------------------------
 supabase.auth.onAuthStateChange(async (event, session) => {
-  // If the Phone logs out, the PC might hear 'SIGNED_OUT'.
-  // We tell the PC: "Only revert to Guest if I specifically clicked Log Out on THIS PC."
   if (event === 'SIGNED_OUT') {
-    // If the session is gone but we still have a username in memory,
-    // we IGNORE the logout signal to stay logged in.
-  if (username && username !== 'Guest') return;
+    if (username && username !== 'Guest') return;
     
-    // Otherwise, do the normal guest revert
+    // Normal logout logic
     username = '';
     localStorage.setItem('cachedLoggedIn', 'false');
     if (userDisplay) userDisplay.querySelector('#usernameSpan').textContent = ' Guest';
     if (authLabel) authLabel.textContent = 'Log In';
+
+    // 🔥 FIX: Make the button grey/disabled immediately on logout
+    checkDailyStatus(); 
     return;
   }
-    // Keep your existing session logic below
-    if (session?.user) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('id', session.user.id)
-        .single();
 
-      if (profile?.username) {
-        username = profile.username;
-        localStorage.setItem('cachedLoggedIn', 'true');
-        localStorage.setItem('cachedUsername', username);
-        
-        if (userDisplay) {
-          userDisplay.querySelector('#usernameSpan').textContent = ' ' + username;
-        }
-        if (authLabel) authLabel.textContent = 'Log Out';
+  if (session?.user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('id', session.user.id)
+      .single();
 
-      // 🔥 RE-CHECK DAILY STATUS NOW THAT WE ARE LOGGED IN
-      checkDailyStatus();
+    if (profile?.username) {
+      username = profile.username;
+      localStorage.setItem('cachedLoggedIn', 'true');
+      localStorage.setItem('cachedUsername', username);
+      
+      if (userDisplay) {
+        userDisplay.querySelector('#usernameSpan').textContent = ' ' + username;
       }
+      if (authLabel) authLabel.textContent = 'Log Out';
+
+      // 🔥 FIX: This is the magic line. 
+      // It runs the check the moment the login is confirmed.
+      checkDailyStatus(); 
     }
-  });
+  }
+});
   
   // -------------------------
   // Auth Button
@@ -848,6 +848,7 @@ function seededRandom(seed) {
   let x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
 }
+
 
 
 
