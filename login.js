@@ -85,6 +85,7 @@ signupBtn.addEventListener('click', async () => {
 loginBtn.addEventListener('click', async () => {
   const usernameInputVal = usernameInput.value.trim();
   const password = passwordInput.value;
+  const todayStr = new Date().toISOString().split('T')[0]; // Need this here
 
   if (!usernameInputVal || !password) {
     alert("Please enter both a username and password.");
@@ -106,10 +107,27 @@ loginBtn.addEventListener('click', async () => {
     .eq('id', data.user.id)
     .single();
 
-  const finalUsername = profile?.username || usernameInputVal;
+  // 2. CHECK DAILY STATUS IMMEDIATELY (To prevent flicker)
+  const { data: dailyEntry } = await supabase
+    .from('daily_attempts')
+    .select('attempt_date')
+    .eq('user_id', data.user.id)
+    .eq('attempt_date', todayStr)
+    .single();
 
+  const finalUsername = profile?.username || usernameInputVal;
+  
+  // 3. Save EVERYTHING before redirecting
   localStorage.setItem('cachedUsername', finalUsername);
   localStorage.setItem('cachedLoggedIn', 'true');
+
+if (dailyEntry) {
+    localStorage.setItem('dailyPlayedDate', todayStr);
+  } else {
+    // If they haven't played, make sure old data from a previous user is cleared
+    localStorage.removeItem('dailyPlayedDate');
+  }
+  
   window.location.href = 'index.html';
 });
 
