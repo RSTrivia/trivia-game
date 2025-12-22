@@ -72,28 +72,27 @@
     text-align: center;
     letter-spacing: 2px;
   
- /* 1. THE GOLD GRADIENT (Sharp & High Contrast) */
-  background: linear-gradient(145deg, 
-    #ffffff 0%,    /* Pure white sparkle at the tip */
-    #ffea8a 20%,   /* Your button-hover gold */
-    #d4af37 45%,   /* YOUR BUTTON GOLD (The core) */
-    #d4af37 55%,   /* Holding the core color longer */
-    #8a6d1d 85%,   /* The shade you liked */
-    #4a3b0a 100%   /* Deep bottom edge */
-  );
+  /* 1. YOUR ORIGINAL GRADIENT */
+    background: linear-gradient(145deg, #fff8dc 0%, #ffdd44 25%, #f2b705 50%, #c28f0c 75%, #a77b0a 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
   
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-
-  /* 2. THE GLOW (The missing piece) */
-  /* We use 4 layers: 
-     - Black outlines for sharpness
-     - Gold 'Bloom' for the glow effect */
-  text-shadow:
-    1px 1px 0px #000,                          /* Sharp edge */
-    0px 0px 4px rgba(0,0,0,0.8),               /* Contrast */
-    0px 0px 10px rgba(212, 175, 55, 0.7),      /* Inner Glow (Button Gold) */
-    0px 0px 20px rgba(255, 234, 138, 0.4);     /* Outer Bloom (Hover Gold) */
+    /* 2. THE QUAD-BLOOM GLOW */
+    /* Stacked from sharpest to widest using button gold (#d4af37) */
+    text-shadow: 
+      0 0 4px rgba(0,0,0,0.9),             /* Deepest black contrast */
+      1px 1px 0 #000,                      /* Sharpest black edge */
+      0 0 12px rgba(212, 175, 55, 1.0),    /* Layer 1: Solid Core (100% opacity) */
+      0 0 25px rgba(212, 175, 55, 0.8),    /* Layer 2: Heavy Bloom */
+      0 0 50px rgba(212, 175, 55, 0.5),    /* Layer 3: Wide Atmosphere */
+      0 0 80px rgba(212, 175, 55, 0.3);    /* Layer 4: SUPER MASSIVE RADIANCE */
+  
+    /* 3. EXTERNAL ENHANCEMENT */
+    /* This forces the glow to interact with the background even more */
+    filter: saturate(1.2) drop-shadow(0 0 20px rgba(212, 175, 55, 0.4));
+    
+    /* Prevent the massive glow from being hidden by the container overflow */
+    z-index: 100;
   }
 
   #leaderboard {
@@ -325,6 +324,7 @@ supabase
 
 </body>
 </html>
+
 
 
 
