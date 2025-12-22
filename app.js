@@ -103,16 +103,16 @@ async function checkDailyStatus() {
     
     // 1. Handle Guest / Logged Out
     if (!session) {
-        if (dailyBtn.classList.contains('is-active')) dailyBtn.classList.remove('is-active');
+        dailyBtn.classList.remove('is-active');
         dailyBtn.classList.add('disabled');
         dailyBtn.onclick = () => alert("Daily Challenge is for members only. Please Log In to play!");
         return;
     }
   
-   // 2. Short-circuit if Cache says they played
+    // 2. Short-circuit if Cache says they played
     const cachedDailyDate = localStorage.getItem('dailyPlayedDate');
     if (cachedDailyDate === todayStr) {
-        if (dailyBtn.classList.contains('is-active')) dailyBtn.classList.remove('is-active');
+        dailyBtn.classList.remove('is-active');
         dailyBtn.classList.add('disabled');
         dailyBtn.onclick = null;
         return;
@@ -128,15 +128,26 @@ async function checkDailyStatus() {
 
     if (existing) {
         localStorage.setItem('dailyPlayedDate', todayStr);
-        if (dailyBtn.classList.contains('is-active')) dailyBtn.classList.remove('is-active');
+        dailyBtn.classList.remove('is-active');
         dailyBtn.classList.add('disabled');
         dailyBtn.onclick = null;
     } else {
-        // If they are logged in and haven't played, only add class if it's missing
-        if (!dailyBtn.classList.contains('is-active')) {
-            dailyBtn.classList.add('is-active');
-        }
+        // SUCCESS: User is logged in and hasn't played.
+        dailyBtn.classList.add('is-active');
         dailyBtn.classList.remove('disabled');
+        
+        // Re-attach the click logic here to ensure it's active
+        dailyBtn.onclick = () => {
+            if (isTouch) {
+                dailyBtn.classList.add('tapped');
+                setTimeout(() => {
+                    dailyBtn.classList.remove('tapped');
+                    startDailyChallenge();
+                }, 150);
+            } else {
+                startDailyChallenge();
+            }
+        };
     }
 }
 setTimeout(checkDailyStatus, 50);
@@ -805,6 +816,7 @@ function seededRandom(seed) {
   let x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
 }
+
 
 
 
