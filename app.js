@@ -48,12 +48,12 @@ if (dailyBtn) {
         // TURN GOLD IMMEDIATELY
         dailyBtn.classList.add('is-active');
         dailyBtn.classList.remove('disabled');
-    } else if (!cachedLoggedIn) {
+    } else {
         dailyBtn.classList.add('disabled');
-    } else if (hasPlayed) {
-        dailyBtn.classList.add('disabled');
+        dailyBtn.classList.remove('is-active');
     }
 }
+
 const dailyMessages = {
   0: ["Ouch. Zero XP gained today.", "Lumbridge is calling your name."],
   1: ["At least it's not a zero!", "One is better than none... barely."],
@@ -101,22 +101,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 async function checkDailyStatus() {
+    // 1. Get Session
     const { data: { session } } = await supabase.auth.getSession();
     
-    // 1. Handle Guest / Logged Out
+    // 2. Handle Guest / Logged Out
     if (!session) {
         dailyBtn.classList.remove('is-active');
         dailyBtn.classList.add('disabled');
         dailyBtn.onclick = () => alert("Daily Challenge is for members only. Please Log In to play!");
         return;
     }
-  
-    // 2. Short-circuit if Cache says they played
+
+    // 2.5. If cache already says we played, stop here to prevent "Gold Flickering"
     const cachedDailyDate = localStorage.getItem('dailyPlayedDate');
     if (cachedDailyDate === todayStr) {
         dailyBtn.classList.remove('is-active');
         dailyBtn.classList.add('disabled');
-        dailyBtn.onclick = null;
         return;
     }
       
@@ -129,26 +129,24 @@ async function checkDailyStatus() {
         .single();
 
     if (existing) {
+        // Update cache so we don't have to query the DB next refresh
         localStorage.setItem('dailyPlayedDate', todayStr);
         dailyBtn.classList.remove('is-active');
         dailyBtn.classList.add('disabled');
         dailyBtn.onclick = null;
     } else {
-        // --- THIS IS THE GOLD STATE (Success) ---
+        // --- FINAL GOLD STATE ---
         dailyBtn.classList.add('is-active');
         dailyBtn.classList.remove('disabled');
         
-        // MOBILE SUPPORT IS ADDED HERE:
         dailyBtn.onclick = () => {
             if (isTouch) {
-                // The "Gold Flash" feedback for mobile
                 dailyBtn.classList.add('tapped');
                 setTimeout(() => {
                     dailyBtn.classList.remove('tapped');
                     startDailyChallenge();
                 }, 150);
             } else {
-                // Standard PC click
                 startDailyChallenge();
             }
         };
@@ -807,6 +805,7 @@ function seededRandom(seed) {
   let x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
 }
+
 
 
 
