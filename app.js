@@ -251,19 +251,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 setTimeout(checkDailyStatus, 50);
   
   
-// Function to sync UI with the 'muted' variable
-const syncMuteUI = () => {
-  const muteIcon = document.getElementById('muteIcon');
-  if (!muteBtn || !muteIcon) return;
-
-  muteIcon.textContent = muted ? '🔇' : '🔊';
-
-  if (muted) {
-    muteBtn.classList.add('is-muted');
-  } else {
-    muteBtn.classList.remove('is-muted');
-  }
-};
 
   // Single, clean Click Listener
 muteBtn.addEventListener('click', () => {
@@ -873,7 +860,19 @@ function playSound(buffer) {
   source.start();
 }
 
+// Function to sync UI with the 'muted' variable
+const syncMuteUI = () => {
+  const muteIcon = document.getElementById('muteIcon');
+  if (!muteBtn || !muteIcon) return;
 
+  muteIcon.textContent = muted ? '🔇' : '🔊';
+
+  if (muted) {
+    muteBtn.classList.add('is-muted');
+  } else {
+    muteBtn.classList.remove('is-muted');
+  }
+};
 
 
 
