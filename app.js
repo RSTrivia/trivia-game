@@ -71,35 +71,6 @@ const dailyMessages = {
 
 let isDailyMode = false; // Track if current game is the daily challenge
 
-document.addEventListener('DOMContentLoaded', async () => {
-  // DOM Elements
-  const startBtn = document.getElementById('startBtn');
-  const playAgainBtn = document.getElementById('playAgainBtn');
-  const mainMenuBtn = document.getElementById('mainMenuBtn');
-  const game = document.getElementById('game');
-  const endScreen = document.getElementById('end-screen');
-  const finalScore = document.getElementById('finalScore');
-  const scoreDisplay = document.getElementById('score');
-  const questionText = document.getElementById('questionText');
-  const questionImage = document.getElementById('questionImage');
-  const answersBox = document.getElementById('answers');
-  const timeDisplay = document.getElementById('time');
-  //const muteBtn = document.getElementById('muteBtn');
-  const timeWrap = document.getElementById('time-wrap');
-
-  
-  // Main state
-  let username = cachedLoggedIn ? cachedUsername : '';
-  let score = 0;
-  let questions = [];
-  let remainingQuestions = [];
-  let currentQuestion = null;
-  let preloadQueue = []; // holds up to 2 questions 
-  let timer;
-  let timeLeft = 15;
-  let correctBuffer, wrongBuffer;
-  let muted = cachedMuted;
-  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 async function checkDailyStatus() {
     // 1. Get Session
@@ -153,6 +124,38 @@ async function checkDailyStatus() {
         };
     }
 }
+
+
+document.addEventListener('DOMContentLoaded', async () => {
+  // DOM Elements
+  const startBtn = document.getElementById('startBtn');
+  const playAgainBtn = document.getElementById('playAgainBtn');
+  const mainMenuBtn = document.getElementById('mainMenuBtn');
+  const game = document.getElementById('game');
+  const endScreen = document.getElementById('end-screen');
+  const finalScore = document.getElementById('finalScore');
+  const scoreDisplay = document.getElementById('score');
+  const questionText = document.getElementById('questionText');
+  const questionImage = document.getElementById('questionImage');
+  const answersBox = document.getElementById('answers');
+  const timeDisplay = document.getElementById('time');
+  //const muteBtn = document.getElementById('muteBtn');
+  const timeWrap = document.getElementById('time-wrap');
+
+  
+  // Main state
+  let username = cachedLoggedIn ? cachedUsername : '';
+  let score = 0;
+  let questions = [];
+  let remainingQuestions = [];
+  let currentQuestion = null;
+  let preloadQueue = []; // holds up to 2 questions 
+  let timer;
+  let timeLeft = 15;
+  let correctBuffer, wrongBuffer;
+  let muted = cachedMuted;
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
 setTimeout(checkDailyStatus, 50);
   
   
@@ -253,10 +256,7 @@ supabase.auth.onAuthStateChange(async (event, session) => {
   if (event === 'SIGNED_OUT') {
     // If the session is gone but we still have a username in memory,
     // we IGNORE the logout signal to stay logged in.
-    if (username && username !== 'Guest') {
-        console.log("Ignored global sign-out to maintain local session.");
-        return; 
-    }
+  if (username && username !== 'Guest') return;
     
     // Otherwise, do the normal guest revert
     username = '';
@@ -282,6 +282,9 @@ supabase.auth.onAuthStateChange(async (event, session) => {
           userDisplay.querySelector('#usernameSpan').textContent = ' ' + username;
         }
         if (authLabel) authLabel.textContent = 'Log Out';
+
+      // 🔥 RE-CHECK DAILY STATUS NOW THAT WE ARE LOGGED IN
+      checkDailyStatus();
       }
     }
   });
