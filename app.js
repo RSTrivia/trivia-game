@@ -1,6 +1,22 @@
 import { supabase } from './supabase.js';
 const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
+
+  const startBtn = document.getElementById('startBtn');
+  const playAgainBtn = document.getElementById('playAgainBtn');
+  const mainMenuBtn = document.getElementById('mainMenuBtn');
+  const game = document.getElementById('game');
+  const endScreen = document.getElementById('end-screen');
+  const finalScore = document.getElementById('finalScore');
+  const scoreDisplay = document.getElementById('score');
+  const questionText = document.getElementById('questionText');
+  const questionImage = document.getElementById('questionImage');
+  const answersBox = document.getElementById('answers');
+  const timeDisplay = document.getElementById('time');
+  //const muteBtn = document.getElementById('muteBtn');
+  const timeWrap = document.getElementById('time-wrap');
+
+
 // ====== IMMEDIATE CACHED UI (runs before paint) ======
 const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
 const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
@@ -228,22 +244,7 @@ async function submitDailyScore(dailyScore) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // DOM Elements
-  const startBtn = document.getElementById('startBtn');
-  const playAgainBtn = document.getElementById('playAgainBtn');
-  const mainMenuBtn = document.getElementById('mainMenuBtn');
-  const game = document.getElementById('game');
-  const endScreen = document.getElementById('end-screen');
-  const finalScore = document.getElementById('finalScore');
-  const scoreDisplay = document.getElementById('score');
-  const questionText = document.getElementById('questionText');
-  const questionImage = document.getElementById('questionImage');
-  const answersBox = document.getElementById('answers');
-  const timeDisplay = document.getElementById('time');
-  //const muteBtn = document.getElementById('muteBtn');
-  const timeWrap = document.getElementById('time-wrap');
 
-  
   // Main state
   let correctBuffer, wrongBuffer;
   let muted = cachedMuted;
@@ -866,6 +867,7 @@ if (preloadQueue.length) {
 loadQuestion();
 
 }
+
 
 
 
