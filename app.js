@@ -15,7 +15,9 @@ const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
   const timeDisplay = document.getElementById('time');
   //const muteBtn = document.getElementById('muteBtn');
   const timeWrap = document.getElementById('time-wrap');
-
+  let correctBuffer, wrongBuffer;
+  let muted = cachedMuted;
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 // ====== IMMEDIATE CACHED UI (runs before paint) ======
 const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
@@ -245,10 +247,6 @@ async function submitDailyScore(dailyScore) {
 
 document.addEventListener('DOMContentLoaded', async () => {
 
-  // Main state
-  let correctBuffer, wrongBuffer;
-  let muted = cachedMuted;
-  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 setTimeout(checkDailyStatus, 50);
   
@@ -409,30 +407,7 @@ authBtn.onclick = async () => {
   // Audio
   // -------------------------
 
-  async function loadSounds() {
-    correctBuffer = await loadAudio('./sounds/correct.mp3');
-    wrongBuffer = await loadAudio('./sounds/wrong.mp3');
-  }
-
-  async function loadAudio(url) {
-    const response = await fetch(url);
-    const arrayBuffer = await response.arrayBuffer();
-    return audioCtx.decodeAudioData(arrayBuffer);
-  }
-
-function playSound(buffer) {
-  // If muted is true, stop immediately
-  if (!buffer || muted) return;
-
-  // PC FIX: If the engine is still suspended, try one last resume 
-  // before giving up, or just allow it to attempt playback.
-  const source = audioCtx.createBufferSource();
-  source.buffer = buffer;
-  const gainNode = audioCtx.createGain();
-  gainNode.gain.value = 0.5;
-  source.connect(gainNode).connect(audioCtx.destination);
-  source.start();
-}
+ 
 
   function preloadImage(url) {
   const img = new Image();
@@ -633,7 +608,11 @@ function seededRandom(seed) {
 
 async function loadQuestion() {
     answersBox.innerHTML = '';
-    if (!remainingQuestions.length) return endGame();
+    // If no questions left, trigger endGame and stop this function
+    if (!remainingQuestions.length) {
+        await endGame(); 
+        return;
+    }
 
     if (preloadQueue.length) {
       currentQuestion = preloadQueue.shift();
@@ -869,6 +848,30 @@ loadQuestion();
 }
 
 
+ async function loadSounds() {
+    correctBuffer = await loadAudio('./sounds/correct.mp3');
+    wrongBuffer = await loadAudio('./sounds/wrong.mp3');
+  }
+
+  async function loadAudio(url) {
+    const response = await fetch(url);
+    const arrayBuffer = await response.arrayBuffer();
+    return audioCtx.decodeAudioData(arrayBuffer);
+  }
+
+function playSound(buffer) {
+  // If muted is true, stop immediately
+  if (!buffer || muted) return;
+
+  // PC FIX: If the engine is still suspended, try one last resume 
+  // before giving up, or just allow it to attempt playback.
+  const source = audioCtx.createBufferSource();
+  source.buffer = buffer;
+  const gainNode = audioCtx.createGain();
+  gainNode.gain.value = 0.5;
+  source.connect(gainNode).connect(audioCtx.destination);
+  source.start();
+}
 
 
 
