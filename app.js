@@ -486,20 +486,18 @@ function preloadNextQuestions() {
       if (timeLeft <= 0) {
         clearInterval(timer);
         
-        // --- ADD THESE LINES ---
         // 1. Immediately disable all buttons so they can't be clicked
         document.querySelectorAll('.answer-btn').forEach(btn => {
           btn.disabled = true;
           btn.blur();
         });
-        // -----------------------
 
         playSound(wrongBuffer);
         highlightCorrectAnswer();
         setTimeout(endGame, 1000);
       }
-
-  }
+    }, 1000); // <--- This was missing!
+  } // <--- This closing brace for loadQuestion was also missing!
 
   function checkAnswer(selected, btn) {
     clearInterval(timer);
@@ -771,6 +769,7 @@ function seededRandom(seed) {
   let x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
 }
+
 
 
 
