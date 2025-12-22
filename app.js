@@ -84,66 +84,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let correctBuffer, wrongBuffer;
   let muted = cachedMuted;
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  
 
-// 2. The Daily Logic function
-async function startDailyChallenge() {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) return alert("Please log in to play the Daily Challenge!");
-
-  // Check for existing attempt today
-  const todayStr = new Date().toISOString().split('T')[0];
-  const { data: existing } = await supabase
-    .from('daily_attempts')
-    .select('*')
-    .eq('user_id', session.user.id)
-    .eq('attempt_date', todayStr)
-    .single();
-
-  if (existing) return alert("You've already played today! Come back tomorrow.");
-
-  // Fetch all questions to create the rotation
-  const { data: allQuestions } = await supabase.from('questions').select('*').order('id', { ascending: true });
-  if (!allQuestions || allQuestions.length < 10) return;
-
-  // Calculate rotation (Cycle through all 510 questions every 51 days)
-  const startDate = new Date('2023-12-22'); 
-  const diffTime = Math.abs(new Date() - startDate);
-  const dayCounter = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-  
-  const questionsPerDay = 10;
-  const daysPerCycle = Math.floor(allQuestions.length / questionsPerDay);
-  const cycleNumber = Math.floor(dayCounter / daysPerCycle);
-  const dayInCycle = dayCounter % daysPerCycle;
-
-  // Shuffle based on cycle seed so every 51 days the order is different
-  const shuffledList = shuffleWithSeed(allQuestions, cycleNumber);
-  const dailySet = shuffledList.slice(dayInCycle * questionsPerDay, (dayInCycle * questionsPerDay) + questionsPerDay);
-
-  // Launch Game
-  isDailyMode = true;
-  remainingQuestions = dailySet;
-  
-  document.body.classList.add('game-active'); 
-  document.getElementById('start-screen').classList.add('hidden');
-  game.classList.remove('hidden');
-  resetGame();
-  updateScore();
-  loadQuestion();
-}
-
-// 3. Click Listener with Mobile Support
-dailyBtn.onclick = () => {
-  if (isTouch) {
-    dailyBtn.classList.add('tapped');
-    setTimeout(() => {
-      dailyBtn.classList.remove('tapped');
-      startDailyChallenge();
-    }, 150);
-  } else {
-    startDailyChallenge();
-  }
-};
   
 // Function to sync UI with the 'muted' variable
 const syncMuteUI = () => {
@@ -559,6 +500,65 @@ function preloadNextQuestions() {
     scoreDisplay.textContent = `Score: ${score}`;
   }
 
+// 2. The Daily Logic function
+async function startDailyChallenge() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return alert("Please log in to play the Daily Challenge!");
+
+  // Check for existing attempt today
+  const todayStr = new Date().toISOString().split('T')[0];
+  const { data: existing } = await supabase
+    .from('daily_attempts')
+    .select('*')
+    .eq('user_id', session.user.id)
+    .eq('attempt_date', todayStr)
+    .single();
+
+  if (existing) return alert("You've already played today! Come back tomorrow.");
+
+  // Fetch all questions to create the rotation
+  const { data: allQuestions } = await supabase.from('questions').select('*').order('id', { ascending: true });
+  if (!allQuestions || allQuestions.length < 10) return;
+
+  // Calculate rotation (Cycle through all 510 questions every 51 days)
+  const startDate = new Date('2025-12-22'); 
+  const diffTime = Math.abs(new Date() - startDate);
+  const dayCounter = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  
+  const questionsPerDay = 10;
+  const daysPerCycle = Math.floor(allQuestions.length / questionsPerDay);
+  const cycleNumber = Math.floor(dayCounter / daysPerCycle);
+  const dayInCycle = dayCounter % daysPerCycle;
+
+  // Shuffle based on cycle seed so every 51 days the order is different
+  const shuffledList = shuffleWithSeed(allQuestions, cycleNumber);
+  const dailySet = shuffledList.slice(dayInCycle * questionsPerDay, (dayInCycle * questionsPerDay) + questionsPerDay);
+
+  // Launch Game
+  isDailyMode = true;
+  remainingQuestions = dailySet;
+  
+  document.body.classList.add('game-active'); 
+  document.getElementById('start-screen').classList.add('hidden');
+  game.classList.remove('hidden');
+  resetGame();
+  updateScore();
+  loadQuestion();
+}
+
+// 3. Click Listener with Mobile Support
+dailyBtn.onclick = () => {
+  if (isTouch) {
+    dailyBtn.classList.add('tapped');
+    setTimeout(() => {
+      dailyBtn.classList.remove('tapped');
+      startDailyChallenge();
+    }, 150);
+  } else {
+    startDailyChallenge();
+  }
+};
+
    async function endGame() {
   await supabase.auth.getSession();
   if (endGame.running) return;
@@ -726,6 +726,7 @@ function seededRandom(seed) {
   let x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
 }
+
 
 
 
