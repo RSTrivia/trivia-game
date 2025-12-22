@@ -812,27 +812,42 @@ input.input-field:-webkit-autofill:active {
   }
 }
 
-/* 2. Set the "Gold" state using ID + Class for max priority */
-#dailyBtn.is-active {
-    /* These 4 lines match your Log In/Leaderboard buttons exactly */
+
+
+
+/* 1. The "Off" state - Forced to match Row 3 height */
+#dailyBtn {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 60px !important; 
+    padding: 14px 0 !important; /* Matches Row 3 exactly */
+    width: 100%;
+    box-sizing: border-box;
+    pointer-events: none;
+    filter: grayscale(1) brightness(0.7);
+    opacity: 0.5;
+    border: 2px solid #444 !important;
+    color: #666 !important;
+    text-align: center;
+}
+
+/* 2. The "Gold" state - Inherits the same dimensions */
+#dailyBtn.is-active {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 14px 0 !important;
     
     background: rgba(0, 0, 0, 0.6);
+    border: 2px solid #d4af37 !important;
+    color: #d4af37 !important;
     border-radius: 8px;
     font-size: 1.1rem;
-    width: 100%;
-    margin: 0 !important;
     cursor: pointer;
     pointer-events: auto !important;
     filter: none !important;
     opacity: 1 !important;
-    border: 2px solid #d4af37 !important;
-    color: #d4af37 !important;
     transition: 0.2s;
-    box-sizing: border-box; /* Crucial: includes the border in the 60px */
 }
 
 #dailyBtn.is-active:hover {
@@ -847,19 +862,6 @@ input.input-field:-webkit-autofill:active {
     transform: scale(0.96);
 }
 
-#dailyBtn {
-    /* Ensure the disabled state has the same padding as the active state */
-    padding: 14px 22px; 
-    display: block;
-    width: 100%;
-    box-sizing: border-box;
-    
-    pointer-events: none;
-    filter: grayscale(1) brightness(0.7);
-    opacity: 0.5;
-    border: 2px solid #444 !important;
-    color: #666 !important;
-}
 
 
 
