@@ -23,8 +23,7 @@ const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
   let muted = cachedMuted;
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-// This gives YYYY-MM-DD based on the user's actual clock
-const todayStr = new Date().toLocaleDateString('en-CA');
+const todayStr = new Date().toISOString().split('T')[0];
 const appDiv = document.getElementById('app');
 const userDisplay = document.getElementById('userDisplay');
 const authBtn = document.getElementById('authBtn');
@@ -909,6 +908,7 @@ async function submitDailyScore(dailyScore) {
 
   if (error) console.error("Error updating daily score:", error.message);
 }
+
 
 
 
