@@ -261,6 +261,37 @@ muteBtn.addEventListener('click', () => {
 
   syncMuteUI();
 });
+
+
+const subscribeToDailyChanges = (userId) => {
+  supabase
+    .channel('daily-updates')
+    .on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'daily_attempts',
+        filter: `user_id=eq.${userId}`
+      },
+      (payload) => {
+        console.log('Daily challenge started on another device!');
+        // Update LocalStorage so a refresh also stays gray
+        localStorage.setItem('dailyPlayedDate', todayStr);
+        
+        // Instantly update the UI
+        dailyBtn.classList.remove('is-active');
+        dailyBtn.classList.add('disabled');
+        dailyBtn.onclick = () => alert("You've already started today's challenge on another device!");
+      }
+    )
+    .subscribe();
+};
+
+// Trigger the subscription when the session is confirmed
+supabase.auth.getSession().then(({ data: { session } }) => {
+  if (session) subscribeToDailyChanges(session.user.id);
+});
   
    // -------------------------
   // Preload Auth: Correct Username & Button
@@ -358,7 +389,14 @@ supabase.auth.onAuthStateChange(async (event, session) => {
       checkDailyStatus(); 
     }
   }
-});
+
+  // Every 2 minutes, verify the state with the database just in case
+setInterval(() => {
+    if (localStorage.getItem('cachedLoggedIn') === 'true') {
+        checkDailyStatus();
+    }
+}, 120000);
+}); //end of DOM block
   
   // -------------------------
   // Auth Button
@@ -870,6 +908,7 @@ async function submitDailyScore(dailyScore) {
 
   if (error) console.error("Error updating daily score:", error.message);
 }
+
 
 
 
