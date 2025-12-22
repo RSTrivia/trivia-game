@@ -804,17 +804,16 @@ input.input-field:-webkit-autofill:active {
 
 /* Disabled Daily Button Style */
 .daily-btn.disabled {
-    filter: grayscale(1);
-    opacity: 0.4;
+    filter: grayscale(1) !important;
+    opacity: 0.4 !important;
     cursor: not-allowed;
-    pointer-events: none; /* This stops the hover glow/scaling */
+    pointer-events: none; 
     border-color: #444 !important;
     color: #666 !important;
     box-shadow: none !important;
-    transition: none !important;
 }
 
-/* Force the button to be disabled/greyed out by default in the HTML */
+/* Force the button to be disabled by default */
 #dailyBtn {
     pointer-events: none;
     opacity: 0.5;
@@ -822,12 +821,21 @@ input.input-field:-webkit-autofill:active {
     transition: none !important;
 }
   
-/* We will use this class to "turn it on" via JS */
+/* FIX: Use the ID + the Class together to make it strong enough to turn gold */
 #dailyBtn.is-active {
-    pointer-events: auto;
-    opacity: 1;
-    filter: none;
+    pointer-events: auto !important;
+    opacity: 1 !important;
+    filter: none !important;
+    border-color: #ffd700 !important; /* Gold border */
+    color: #ffd700 !important;        /* Gold text */
     transition: none !important;
+    cursor: pointer;
+}
+
+/* Add this for the mobile tap feel */
+#dailyBtn.tapped {
+    background-color: rgba(255, 215, 0, 0.2) !important;
+    transform: scale(0.95);
 }
 
 
