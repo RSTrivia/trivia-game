@@ -417,39 +417,7 @@ authBtn.onclick = async () => {
         .upsert({ user_id: user.id, username, score }, { onConflict: 'user_id' });
     }
   }
-
-
  
-
-
-
-function preloadNextQuestions() {
-  let attempts = 0;
-
-  while (
-    preloadQueue.length < 2 &&
-    remainingQuestions.length &&
-    attempts < 10
-  ) {
-    attempts++;
-
-    const index = Math.floor(Math.random() * remainingQuestions.length);
-    const q = remainingQuestions[index];
-
-    if (
-      q === currentQuestion ||
-      preloadQueue.some(p => p.id === q.id)
-    ) continue;
-
-    preloadQueue.push(q);
-    if (q.question_image) preloadImage(q.question_image);
-  }
-}
-
-
-
-  
-  
   // -------------------------
   // Buttons
   // -------------------------
@@ -589,6 +557,29 @@ function seededRandom(seed) {
     timeDisplay.textContent = timeLeft;
     timeWrap.classList.remove('red-timer');
   }
+
+function preloadNextQuestions() {
+  let attempts = 0;
+
+  while (
+    preloadQueue.length < 2 &&
+    remainingQuestions.length &&
+    attempts < 10
+  ) {
+    attempts++;
+
+    const index = Math.floor(Math.random() * remainingQuestions.length);
+    const q = remainingQuestions[index];
+
+    if (
+      q === currentQuestion ||
+      preloadQueue.some(p => p.id === q.id)
+    ) continue;
+
+    preloadQueue.push(q);
+    if (q.question_image) preloadImage(q.question_image);
+  }
+}
 
 
 async function loadQuestion() {
@@ -871,6 +862,7 @@ const syncMuteUI = () => {
     muteBtn.classList.remove('is-muted');
   }
 };
+
 
 
 
