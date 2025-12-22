@@ -802,7 +802,6 @@ input.input-field:-webkit-autofill:active {
   }
 }
 
-
 /* Disabled Daily Button Style */
 .daily-btn.disabled {
     filter: grayscale(1);
@@ -814,7 +813,19 @@ input.input-field:-webkit-autofill:active {
     box-shadow: none !important;
 }
 
+/* Force the button to be disabled/greyed out by default in the HTML */
+#dailyBtn {
+    pointer-events: none;
+    opacity: 0.5;
+    filter: grayscale(1);
+}
 
+/* We will use this class to "turn it on" via JS */
+#dailyBtn.is-active {
+    pointer-events: auto;
+    opacity: 1;
+    filter: none;
+}
 
 
 
