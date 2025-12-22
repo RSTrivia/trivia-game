@@ -139,7 +139,7 @@ async function checkDailyStatus() {
         dailyBtn.classList.remove('disabled');
     }
 }
-checkDailyStatus();
+setTimeout(checkDailyStatus, 50);
   
   
 // Function to sync UI with the 'muted' variable
@@ -805,6 +805,7 @@ function seededRandom(seed) {
   let x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
 }
+
 
 
 
