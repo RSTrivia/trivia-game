@@ -105,6 +105,7 @@ async function checkDailyStatus() {
     if (!session) {
         dailyBtn.classList.remove('is-active');
         dailyBtn.classList.add('disabled');
+        dailyBtn.textContent = "Log In for Daily";
         dailyBtn.onclick = () => alert("Daily Challenge is for members only. Please Log In to play!");
         return;
     }
@@ -114,6 +115,7 @@ async function checkDailyStatus() {
     if (cachedDailyDate === todayStr) {
         dailyBtn.classList.remove('is-active');
         dailyBtn.classList.add('disabled');
+        dailyBtn.textContent = "Played Today";
         dailyBtn.onclick = null;
         return;
     }
@@ -130,22 +132,25 @@ async function checkDailyStatus() {
         localStorage.setItem('dailyPlayedDate', todayStr);
         dailyBtn.classList.remove('is-active');
         dailyBtn.classList.add('disabled');
+        dailyBtn.textContent = "Played Today";
         dailyBtn.onclick = null;
     } else {
-        // SUCCESS: User is logged in and hasn't played.
-        // THIS IS THE GOLD STATE
+        // --- THIS IS THE GOLD STATE (Success) ---
         dailyBtn.classList.add('is-active');
         dailyBtn.classList.remove('disabled');
+        dailyBtn.textContent = "Daily Challenge";
         
-        // Define the click behavior right here
+        // MOBILE SUPPORT IS ADDED HERE:
         dailyBtn.onclick = () => {
             if (isTouch) {
+                // The "Gold Flash" feedback for mobile
                 dailyBtn.classList.add('tapped');
                 setTimeout(() => {
                     dailyBtn.classList.remove('tapped');
                     startDailyChallenge();
                 }, 150);
             } else {
+                // Standard PC click
                 startDailyChallenge();
             }
         };
@@ -637,19 +642,6 @@ async function startDailyChallenge() {
     loadQuestion();
 }
 
-// 3. Click Listener with Mobile Support
-dailyBtn.onclick = () => {
-  if (isTouch) {
-    dailyBtn.classList.add('tapped');
-    setTimeout(() => {
-      dailyBtn.classList.remove('tapped');
-      startDailyChallenge();
-    }, 150);
-  } else {
-    startDailyChallenge();
-  }
-};
-
    async function endGame() {
   await supabase.auth.getSession();
   if (endGame.running) return;
@@ -817,6 +809,7 @@ function seededRandom(seed) {
   let x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
 }
+
 
 
 
