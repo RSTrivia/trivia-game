@@ -1,4 +1,5 @@
 import { supabase } from './supabase.js';
+window.supabase = supabase; // This makes it visible to the F12 console
 const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
 // ====== IMMEDIATE CACHED UI (runs before paint) ======
@@ -908,6 +909,7 @@ async function submitDailyScore(dailyScore) {
 
   if (error) console.error("Error updating daily score:", error.message);
 }
+
 
 
 
