@@ -260,32 +260,18 @@ h1 {
   text-align: center;
   letter-spacing: 2px;
   
-  /* 1. DARKISH GOLD MIX */
-  /* This mixes the button gold (#d4af37) with dark metallic "dirt" colors */
-  background: linear-gradient(180deg, 
-    #ffea8a 0%,    /* Highlight (Hover Gold) */
-    #d4af37 30%,   /* BUTTON GOLD */
-    #5c4a14 55%,   /* Darker Gold transition */
-    #2a2107 85%,   /* Almost Black-Gold */
-    #000000 100%   /* Deep shadow at the base */
-  );
-  
+  /* 1. YOUR ORIGINAL GRADIENT (Kept exactly as requested) */
+  background: linear-gradient(145deg, #fff8dc 0%, #ffdd44 25%, #f2b705 50%, #c28f0c 75%, #a77b0a 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 
-  /* 2. THE GLOW (Balanced for Dark Gold) */
-  /* A mix of a sharp black outline and a heavy golden "Bloom" */
-  text-shadow:
-    -1px -1px 0 #000,  
-     1px -1px 0 #000,
-    -1px  1px 0 #000,
-     1px  1px 0 #000,                     /* Thin black "edge" for sharpness */
-     0 0 10px rgba(212, 175, 55, 0.5),    /* Button gold glow */
-     0 0 20px rgba(0, 0, 0, 0.8);         /* Deep black background glow */
-
-  /* 3. HD SATURATION */
-  /* This keeps the gold from looking "grey" */
-  filter: saturate(1.4) brightness(0.95);
+  /* 2. UPDATED GLOW (Matches Button Gold #d4af37) */
+  text-shadow: 
+    0 0 4px rgba(0,0,0,0.8),             /* Original depth */
+    1px 1px 0 #000,                      /* Original sharpness */
+    2px 2px 2px rgba(0,0,0,0.6),         /* Original shadow */
+    0 0 12px rgba(212, 175, 55, 0.7),    /* NEW: Button Gold Glow (Core) */
+    0 0 25px rgba(212, 175, 55, 0.4);    /* NEW: Button Gold Glow (Bloom) */
 }
 
 /* ====== UTIL ===== */
@@ -778,6 +764,7 @@ input.input-field:-webkit-autofill:active {
 #app.login-page .input-field {
   margin-bottom: 4px !important; /* This is the tiny gap between user and pass */
 }
+
 
 
 
