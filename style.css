@@ -774,39 +774,31 @@ input.input-field:-webkit-autofill:active {
 
 
 
-
-
-
-
-/* ====== MOBILE TAP FIX (NO STICKY FLICKER) ====== */
+/* ====== MOBILE NO-FLASH & FIXED BORDERS ====== */
 @media (pointer: coarse) {
-  /* 1. COMPLETELY DISABLE HOVER COLORS ON MOBILE */
-  /* This stops the browser from "remembering" the highlight for the next question */
-  .btn:hover, .btn-small:hover, .answer-btn:hover {
-    background: rgba(0, 0, 0, 0.6) !important;
-    border-color: #d4af37 !important;
-    color: #d4af37 !important;
-  }
-
-  /* Specifically for answer buttons base state */
-  .answer-btn:hover {
+  /* 1. Remove all hover/active highlights (The "Flash") */
+  .answer-btn:hover, 
+  .answer-btn:active {
     background-color: #181A1B !important;
-    border-color: #8C8273 !important;
-    color: #f5f5f5 !important;
+    border-color: #8C8273 !important; /* Keep original border */
+    transition: none !important;
   }
 
-  /* 2. ONLY SHOW COLOR CHANGE WHILE ACTIVELY TOUCHING */
-  /* This is the "Flash" you see only while your finger is DOWN */
-  .btn:active, .btn-small:active, .answer-btn:active {
-    background-color: #2a2d2f !important;
-    border-color: #ffea8a !important;
-    color: #ffea8a !important;
-    transition: 0s !important; 
+  /* 2. Success/Failure colors - NO border change */
+  .answer-btn.correct { 
+    background-color: #3d8c40 !important; 
+    border-color: #8C8273 !important; /* Force original border even when correct */
+  }
+  
+  .answer-btn.wrong { 
+    background-color: #a63232 !important; 
+    border-color: #8C8273 !important; /* Force original border even when wrong */
   }
 
-  /* 3. ENSURE CORRECT/WRONG COLORS STAY LOCKED */
-  .answer-btn.correct { background-color: #3d8c40 !important; border-color: #3d8c40 !important; }
-  .answer-btn.wrong { background-color: #a63232 !important; border-color: #a63232 !important; }
+  /* 3. Disable the browser's default grey tap highlight */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
 }
 
 
