@@ -4,10 +4,12 @@ const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 // ====== IMMEDIATE CACHED UI (runs before paint) ======
 const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
 const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
+const todayStr = new Date().toISOString().split('T')[0]; // Define today here
 
 const appDiv = document.getElementById('app');
 const userDisplay = document.getElementById('userDisplay');
 const authBtn = document.getElementById('authBtn');
+const dailyBtn = document.getElementById('dailyBtn'); // Get the button early!
 let authLabel;
 const cachedMuted = localStorage.getItem('muted') === 'true';
 const muteBtn = document.getElementById('muteBtn');
@@ -39,6 +41,19 @@ if (muteBtn) {
   }
 }
 
+// --- FLASH FIX FOR DAILY BUTTON ---
+if (dailyBtn) {
+  // If not logged in OR already played today, grey it out immediately
+  if (!cachedLoggedIn) {
+    dailyBtn.classList.add('disabled');
+    dailyBtn.textContent = "Log In for Daily";
+  } else if (localStorage.getItem('dailyPlayedDate') === todayStr) {
+    dailyBtn.classList.add('disabled');
+    dailyBtn.textContent = "Daily Done";
+  }
+}
+// ----------------------------------
+
 const dailyMessages = {
   0: ["Ouch. Zero XP gained today.", "Lumbridge is calling your name."],
   1: ["At least it's not a zero!", "One is better than none... barely."],
@@ -68,9 +83,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const questionImage = document.getElementById('questionImage');
   const answersBox = document.getElementById('answers');
   const timeDisplay = document.getElementById('time');
-  const muteBtn = document.getElementById('muteBtn');
+  //const muteBtn = document.getElementById('muteBtn');
   const timeWrap = document.getElementById('time-wrap');
-  const dailyBtn = document.getElementById('dailyBtn');
 
   
   // Main state
@@ -97,16 +111,15 @@ async function checkDailyStatus() {
         return;
     }
   
-    // If logged in, check if they already played today
-    const todayStr = new Date().toISOString().split('T')[0];
-
     // Check our cache first to see if we already know they played today
     const cachedDailyDate = localStorage.getItem('dailyPlayedDate');
     if (cachedDailyDate === todayStr) {
-        setDailyDoneUI(); // Use a helper function to avoid repeating code
+        dailyBtn.classList.add('disabled');
+        dailyBtn.onclick = null;
+        dailyBtn.textContent = "Daily Done";
         return;
     }
-  
+      
     const { data: existing } = await supabase
         .from('daily_attempts')
         .select('score')
@@ -244,9 +257,10 @@ authBtn.onclick = async () => {
     authBtn.blur();
     
     if (username && username !== 'Guest') {
-        // This is the magic line that makes devices independent
+        // Log out of Supabase locally
         await supabase.auth.signOut({ scope: 'local' });
-        
+        localStorage.removeItem('dailyPlayedDate'); 
+
         // Manually trigger the UI change for THIS device immediately
         username = '';
         localStorage.setItem('cachedLoggedIn', 'false');
@@ -313,8 +327,6 @@ function playSound(buffer) {
 async function submitDailyScore(dailyScore) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
-
-  const todayStr = new Date().toISOString().split('T')[0];
 
   // We use .update() here because the row already exists from when they clicked "Start"
   const { error } = await supabase
@@ -551,7 +563,6 @@ async function startDailyChallenge() {
     if (!session) return alert("You must be logged in to play the Daily Challenge!");
 
     // 2. "Burn" the attempt immediately
-    const todayStr = new Date().toISOString().split('T')[0];
     const { error: burnError } = await supabase
         .from('daily_attempts')
         .insert({ 
@@ -561,6 +572,7 @@ async function startDailyChallenge() {
         });
 
     if (burnError) return alert("You've already played today!");
+    localStorage.setItem('dailyPlayedDate', todayStr);
 
     // 3. Prepare the Questions
     const { data: allQuestions } = await supabase.from('questions').select('*').order('id', { ascending: true });
@@ -778,6 +790,7 @@ function seededRandom(seed) {
   let x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
 }
+
 
 
 
