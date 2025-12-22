@@ -773,8 +773,6 @@ input.input-field:-webkit-autofill:active {
 
 
 
-
-
 /* ====== MOBILE NO-FLASH & FIXED BORDERS ====== */
 @media (pointer: coarse) {
   /* 1. Remove all hover/active highlights (The "Flash") */
@@ -802,46 +800,53 @@ input.input-field:-webkit-autofill:active {
   }
 }
 
-/* 1. Set the stable "Off" state for the ID */
-#dailyBtn {
-    pointer-events: none;
-    filter: grayscale(1) brightness(0.7);
-    opacity: 0.5;
-    border-color: #444 !important;
-    color: #666 !important;
-    transition: none !important; /* Prevents the bright grey flicker on load */
-}
-
 /* 2. Set the "Gold" state using ID + Class for max priority */
 #dailyBtn.is-active {
-      background: rgba(0, 0, 0, 0.6);
-      padding: 14px 22px;
-      border-radius: 8px;
-      font-size: 1.1rem;
-      width: 100%;
-      display: block;
-      margin: 0;
-      cursor: pointer;
-      pointer-events: auto !important;
-      filter: none !important;
-      opacity: 1 !important;
-      border: 2px solid #d4af37 !important;
-      color: #d4af37 !important;
-      cursor: pointer;
-      /* This makes the hover glow "fade" in smoothly */
-      transition: 0.2s;
+    /* These 4 lines match your Log In/Leaderboard buttons exactly */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 60px !important; 
+    
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 8px;
+    font-size: 1.1rem;
+    width: 100%;
+    margin: 0 !important;
+    cursor: pointer;
+    pointer-events: auto !important;
+    filter: none !important;
+    opacity: 1 !important;
+    border: 2px solid #d4af37 !important;
+    color: #d4af37 !important;
+    transition: 0.2s;
+    box-sizing: border-box; /* Crucial: includes the border in the 60px */
 }
 
 #dailyBtn.is-active:hover {
-  background: rgba(0, 0, 0, 0.85);
-  border-color: #ffea8a !important;
-  color: #ffea8a !important;
+    background: rgba(0, 0, 0, 0.85);
+    border-color: #ffea8a !important;
+    color: #ffea8a !important;
 }
 
 /* 3. Handle the tapped state for mobile feedback */
 #dailyBtn.tapped {
     background-color: rgba(212, 175, 55, 0.2) !important;
     transform: scale(0.96);
+}
+
+/* 4. Update the "Off" state to match the height too */
+#dailyBtn {
+    height: 60px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    filter: grayscale(1) brightness(0.7);
+    opacity: 0.5;
+    border: 2px solid #444 !important;
+    color: #666 !important;
+    box-sizing: border-box;
 }
 
 
