@@ -258,33 +258,32 @@ h1 {
   font-size: 3.2rem;
   margin-bottom: 25px;
   text-align: center;
-  letter-spacing: 2px;
+  letter-spacing: 3px;
   
-  /* 1. THE SHARP GRADIENT */
-  /* We use "hard stops" to make the gold look like polished metal */
+  /* 1. VIBRANT GOLD GRADIENT */
+  /* Focuses heavily on your button gold (#d4af37) */
   background: linear-gradient(180deg, 
-    #ffea8a 0%,    /* Lightest gold at top */
-    #d4af37 40%,   /* EXACT BUTTON GOLD starts here */
-    #ffffff 45%,   /* THE "SHARP" REFLECTION LINE (Pure White) */
-    #d4af37 50%,   /* EXACT BUTTON GOLD resumes */
-    #d4af37 75%,   /* Holding the button color long for brightness */
-    #8a6d1d 100%   /* Deep shadow only at the very bottom */
+    #fff8dc 0%,    /* Silk Highlight */
+    #ffea8a 30%,   /* Bright Transition */
+    #d4af37 50%,   /* CORE BUTTON GOLD */
+    #d4af37 70%,   /* Keep it bright longer */
+    #8a6d1d 100%   /* Deep Gold (no muddy brown) */
   );
 
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 
-  /* 2. THE SHARP OUTLINE & GLOW */
-  /* This creates a hard "carved" look plus a bright glow */
+  /* 2. THE "AWESOME" GLOW */
+  /* We use a soft black shadow for depth, and HUGE gold bloom layers */
   text-shadow:
-    -1px -1px 0 #000,
-     1px -1px 0 #000,
-    -1px  1px 0 #000,
-     1px  1px 0 #000,                     /* Hard Black Outline for "Sharpness" */
-     0 0 10px rgba(212, 175, 55, 0.8),    /* Strong Inner Glow (Button Gold) */
-     0 0 20px rgba(255, 234, 138, 0.5);   /* Bright Bloom */
-  
-  filter: drop-shadow(0px 4px 2px rgba(0,0,0,0.5)); /* Adds weight */
+    2px 2px 4px rgba(0, 0, 0, 0.7),           /* Depth Shadow */
+    0 0 12px rgba(212, 175, 55, 0.8),         /* Sharp Core Glow (Button Gold) */
+    0 0 25px rgba(212, 175, 55, 0.5),         /* Medium Bloom */
+    0 0 45px rgba(255, 234, 138, 0.3);        /* Massive Soft Atmosphere */
+
+  /* 3. SHARPNESS FIX */
+  /* This makes the colors look more "High Definition" */
+  filter: saturate(1.3) brightness(1.1);
 }
 
 /* ====== UTIL ===== */
@@ -777,6 +776,7 @@ input.input-field:-webkit-autofill:active {
 #app.login-page .input-field {
   margin-bottom: 4px !important; /* This is the tiny gap between user and pass */
 }
+
 
 
 
