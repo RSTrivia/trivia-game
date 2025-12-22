@@ -9,12 +9,18 @@
   const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
   const cachedMuted = localStorage.getItem('muted') === 'true'; // Add this
 
+  // Get today's date string (e.g., "2025-12-22")
+  const todayStr = new Date().toISOString().split('T')[0];
+  // Check if they played today according to our pre-fetched cache
+  const hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
+    
   document.addEventListener('DOMContentLoaded', () => {
     const span = document.getElementById('usernameSpan');
     const authLabel = document.querySelector('#authBtn .btn-label');
     const muteIcon = document.getElementById('muteIcon'); // Get the span
     const muteBtn = document.getElementById('muteBtn');   // Get the button
-
+    const dailyBtn = document.getElementById('dailyBtn'); // Get the Daily Button
+    
     // Immediate UI updates
     if (span) span.textContent = ' ' + cachedUsername;
     if (authLabel) authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
@@ -26,6 +32,20 @@
         muteBtn.classList.add('is-muted');
       }
     }
+    
+    // 🔥 IMMEDIATE DAILY BUTTON UPDATE (Stops flicker)
+    if (dailyBtn) {
+      if (cachedLoggedIn && !hasPlayed) {
+        // Logged in and hasn't played: Show Gold
+        dailyBtn.classList.add('is-active');
+        dailyBtn.classList.remove('disabled');
+      } else {
+        // Not logged in OR already played: Show Grey
+        dailyBtn.classList.remove('is-active');
+        dailyBtn.classList.add('disabled');
+      }
+    }
+  
   });
 </script>
 
@@ -120,6 +140,7 @@
   <script src="background.js" defer></script>
 </body>
 </html>
+
 
 
 
