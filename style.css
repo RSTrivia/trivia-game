@@ -611,15 +611,19 @@ input.input-field:-webkit-autofill:active {
   align-items: stretch;
 }
 
-/* The actual buttons inside Row 3 */
+/* ====== LOGIN / LEADERBOARD BUTTON ROW (Row 3) ===== */
 #start-screen .row:nth-child(3) #authBtn,
 #start-screen .row:nth-child(3) a.btn-small {
   flex: 1;
-  height: 60px !important;
+  /* CHANGE THIS: height: 60px !important; -> to auto */
+  height: auto !important; 
+  
+  /* ADD THIS: Match the padding of your big .btn class */
+  padding: 14px 0 !important; 
+  
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 !important;
   box-sizing: border-box;
   border: 2px solid #d4af37;
   font-size: 1rem;
@@ -835,20 +839,19 @@ input.input-field:-webkit-autofill:active {
     transform: scale(0.96);
 }
 
-/* 4. Update the "Off" state to match the height too */
 #dailyBtn {
-    height: 60px !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    /* Ensure the disabled state has the same padding as the active state */
+    padding: 14px 22px; 
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    
     pointer-events: none;
     filter: grayscale(1) brightness(0.7);
     opacity: 0.5;
     border: 2px solid #444 !important;
     color: #666 !important;
-    box-sizing: border-box;
 }
-
 
 
 
