@@ -392,6 +392,15 @@ function preloadNextQuestions() {
       const btn = document.createElement('button');
       btn.textContent = ans.text;
       btn.classList.add('answer-btn');
+
+    // Fix for Mobile Flicker/Ghost Highlight
+    if (isTouch) {
+      btn.addEventListener('touchend', (e) => {
+        e.preventDefault(); // Prevents the browser from firing a "fake" hover/mouse event
+        btn.click();        // Manually trigger the click logic below
+      }, { passive: false });
+    }
+
       btn.onclick = () => checkAnswer(i + 1, btn);
       answersBox.appendChild(btn);
     });
@@ -423,7 +432,14 @@ function preloadNextQuestions() {
 
   function checkAnswer(selected, btn) {
     clearInterval(timer);
-    document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
+
+    // Force the button to lose focus so the mobile highlight disappears immediately
+    if (btn) btn.blur();
+    
+    document.querySelectorAll('.answer-btn').forEach(b => {
+    b.disabled = true;
+    b.blur(); // Blur all of them for safety
+  });
 
     if (selected === currentQuestion.correct_answer_shuffled) {
       playSound(correctBuffer);
@@ -578,6 +594,7 @@ startBtn.onclick = () => {
 //muteBtn.addEventListener('click', () => {
   //if (isTouch) mobileFlash(muteBtn);
 //});
+
 
 
 
