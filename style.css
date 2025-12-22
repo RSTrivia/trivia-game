@@ -778,37 +778,36 @@ input.input-field:-webkit-autofill:active {
 
 
 
-
-/* ====== KILL STICKY HOVER & MOVING HIGHLIGHTS ====== */
+/* ====== MOBILE TAP FIX (NO STICKY FLICKER) ====== */
 @media (pointer: coarse) {
-  /* 1. Force buttons back to their base state, even if the browser thinks they are 'hovered' */
-  .btn, .btn-small, .answer-btn {
-    background-color: #181A1B !important; /* Base answer button color */
-    border-color: #8C8273 !important;      /* Base answer border */
-    color: #f5f5f5 !important;
-  }
-
-  /* 2. Re-apply the Gold for the Main Buttons specifically */
-  .btn, .btn-small {
+  /* 1. COMPLETELY DISABLE HOVER COLORS ON MOBILE */
+  /* This stops the browser from "remembering" the highlight for the next question */
+  .btn:hover, .btn-small:hover, .answer-btn:hover {
     background: rgba(0, 0, 0, 0.6) !important;
     border-color: #d4af37 !important;
     color: #d4af37 !important;
   }
 
-  /* 3. ONLY allow a highlight when the finger is actually touching the screen */
+  /* Specifically for answer buttons base state */
+  .answer-btn:hover {
+    background-color: #181A1B !important;
+    border-color: #8C8273 !important;
+    color: #f5f5f5 !important;
+  }
+
+  /* 2. ONLY SHOW COLOR CHANGE WHILE ACTIVELY TOUCHING */
+  /* This is the "Flash" you see only while your finger is DOWN */
   .btn:active, .btn-small:active, .answer-btn:active {
     background-color: #2a2d2f !important;
     border-color: #ffea8a !important;
     color: #ffea8a !important;
-    transition: 0s !important; /* Instant on, instant off */
+    transition: 0s !important; 
   }
 
-  /* 4. Keep your Correct/Wrong colors working */
+  /* 3. ENSURE CORRECT/WRONG COLORS STAY LOCKED */
   .answer-btn.correct { background-color: #3d8c40 !important; border-color: #3d8c40 !important; }
   .answer-btn.wrong { background-color: #a63232 !important; border-color: #a63232 !important; }
 }
-
-
 
 
 
