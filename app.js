@@ -229,19 +229,6 @@ async function startDailyChallenge() {
     loadQuestion();
 }
 
-async function submitDailyScore(dailyScore) {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
-
-  // We use .update() here because the row already exists from when they clicked "Start"
-  const { error } = await supabase
-    .from('daily_attempts')
-    .update({ score: dailyScore })
-    .eq('user_id', user.id)
-    .eq('attempt_date', todayStr);
-
-  if (error) console.error("Error updating daily score:", error.message);
-}
 
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -390,25 +377,7 @@ authBtn.onclick = async () => {
 };
  
 
-  // -------------------------
-  // Leaderboard
-  // -------------------------
-  async function submitLeaderboardScore(username, score) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { data: existingScore } = await supabase
-      .from('scores')
-      .select('score')
-      .eq('user_id', user.id)
-      .single();
-
-    if (!existingScore || score > existingScore.score) {
-      await supabase
-        .from('scores')
-        .upsert({ user_id: user.id, username, score }, { onConflict: 'user_id' });
-    }
-  }
+  
  
   // -------------------------
   // Buttons
@@ -860,8 +829,40 @@ function preloadImage(url) {
   img.src = url;
 }
 
+// -------------------------
+  // Leaderboard
+  // -------------------------
+  async function submitLeaderboardScore(username, score) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: existingScore } = await supabase
+      .from('scores')
+      .select('score')
+      .eq('user_id', user.id)
+      .single();
+
+    if (!existingScore || score > existingScore.score) {
+      await supabase
+        .from('scores')
+        .upsert({ user_id: user.id, username, score }, { onConflict: 'user_id' });
+    }
+  }
 
 
+async function submitDailyScore(dailyScore) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+
+  // We use .update() here because the row already exists from when they clicked "Start"
+  const { error } = await supabase
+    .from('daily_attempts')
+    .update({ score: dailyScore })
+    .eq('user_id', user.id)
+    .eq('attempt_date', todayStr);
+
+  if (error) console.error("Error updating daily score:", error.message);
+}
 
 
 
