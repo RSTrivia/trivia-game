@@ -388,16 +388,8 @@ authBtn.onclick = async () => {
         window.location.href = 'login.html';
     }
 };
-  // -------------------------
-  // Audio
-  // -------------------------
-
  
 
-  function preloadImage(url) {
-  const img = new Image();
-  img.src = url;
-}
   // -------------------------
   // Leaderboard
   // -------------------------
@@ -863,7 +855,10 @@ const syncMuteUI = () => {
   }
 };
 
-
+function preloadImage(url) {
+  const img = new Image();
+  img.src = url;
+}
 
 
 
