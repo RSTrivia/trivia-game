@@ -588,12 +588,23 @@ async function startDailyChallenge() {
     
     const questionsPerDay = 10;
     const daysPerCycle = Math.floor(allQuestions.length / questionsPerDay);
-    const cycleNumber = Math.floor(dayCounter / daysPerCycle);
-    const dayInCycle = dayCounter % daysPerCycle;
 
-    const shuffledList = shuffleWithSeed(allQuestions, cycleNumber);
-    const dailySet = shuffledList.slice(dayInCycle * questionsPerDay, (dayInCycle * questionsPerDay) + questionsPerDay);
-
+    // --- ADD THE CHECK HERE ---
+    let dailySet;
+    if (daysPerCycle === 0) {
+        // Fallback: If for some reason you have < 10 questions total
+        dailySet = allQuestions.slice(0, questionsPerDay);
+    } else {
+        const cycleNumber = Math.floor(dayCounter / daysPerCycle);
+        const dayInCycle = dayCounter % daysPerCycle;
+    
+        const shuffledList = shuffleWithSeed(allQuestions, cycleNumber);
+        dailySet = shuffledList.slice(
+            dayInCycle * questionsPerDay, 
+            (dayInCycle * questionsPerDay) + questionsPerDay
+        );
+    }
+  
     // 4. NOW Launch the Game (All data is ready)
     isDailyMode = true;
     resetGame();
@@ -793,6 +804,7 @@ function seededRandom(seed) {
   let x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
 }
+
 
 
 
