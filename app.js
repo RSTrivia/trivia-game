@@ -131,7 +131,7 @@ async function checkDailyStatus() {
         .select('score')
         .eq('user_id', session.user.id)
         .eq('attempt_date', todayStr)
-        .single();
+        .maybeSingle();
 
     if (existing) {
         // 1. Sync the cache so we don't have to keep asking the DB today
@@ -870,6 +870,7 @@ async function submitDailyScore(dailyScore) {
 
   if (error) console.error("Error updating daily score:", error.message);
 }
+
 
 
 
