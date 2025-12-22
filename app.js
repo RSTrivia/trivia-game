@@ -103,16 +103,16 @@ async function checkDailyStatus() {
     
     // 1. Handle Guest / Logged Out
     if (!session) {
-        dailyBtn.classList.remove('is-active'); 
+        if (dailyBtn.classList.contains('is-active')) dailyBtn.classList.remove('is-active');
         dailyBtn.classList.add('disabled');
         dailyBtn.onclick = () => alert("Daily Challenge is for members only. Please Log In to play!");
         return;
     }
   
-    // 2. Short-circuit if Cache says they played
+   // 2. Short-circuit if Cache says they played
     const cachedDailyDate = localStorage.getItem('dailyPlayedDate');
     if (cachedDailyDate === todayStr) {
-        dailyBtn.classList.remove('is-active');
+        if (dailyBtn.classList.contains('is-active')) dailyBtn.classList.remove('is-active');
         dailyBtn.classList.add('disabled');
         dailyBtn.onclick = null;
         return;
@@ -127,14 +127,15 @@ async function checkDailyStatus() {
         .single();
 
     if (existing) {
-        // Update cache so the immediate logic catches it on next refresh
         localStorage.setItem('dailyPlayedDate', todayStr);
-        dailyBtn.classList.remove('is-active');
+        if (dailyBtn.classList.contains('is-active')) dailyBtn.classList.remove('is-active');
         dailyBtn.classList.add('disabled');
         dailyBtn.onclick = null;
     } else {
-        // If they are logged in and haven't played, make sure it's active
-        dailyBtn.classList.add('is-active');
+        // If they are logged in and haven't played, only add class if it's missing
+        if (!dailyBtn.classList.contains('is-active')) {
+            dailyBtn.classList.add('is-active');
+        }
         dailyBtn.classList.remove('disabled');
     }
 }
@@ -804,6 +805,7 @@ function seededRandom(seed) {
   let x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
 }
+
 
 
 
