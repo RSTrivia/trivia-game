@@ -71,6 +71,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const muteBtn = document.getElementById('muteBtn');
   const timeWrap = document.getElementById('time-wrap');
   const dailyBtn = document.getElementById('dailyBtn');
+
   
   // Main state
   let username = cachedLoggedIn ? cachedUsername : '';
@@ -85,6 +86,27 @@ document.addEventListener('DOMContentLoaded', async () => {
   let muted = cachedMuted;
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
+// Check if user already played today and grey out button if they did
+async function checkDailyStatus() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    const { data: existing } = await supabase
+        .from('daily_attempts')
+        .select('score')
+        .eq('user_id', session.user.id)
+        .eq('attempt_date', todayStr)
+        .single();
+
+    if (existing) {
+        dailyBtn.classList.add('disabled');
+        dailyBtn.onclick = null;
+        dailyBtn.textContent = "Daily Done";
+    }
+}
+checkDailyStatus();
+  
   
 // Function to sync UI with the 'muted' variable
 const syncMuteUI = () => {
@@ -271,21 +293,20 @@ function playSound(buffer) {
     }
   }
 
-  async function submitDailyScore(dailyScore) {
+async function submitDailyScore(dailyScore) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
   const todayStr = new Date().toISOString().split('T')[0];
 
+  // We use .update() here because the row already exists from when they clicked "Start"
   const { error } = await supabase
     .from('daily_attempts')
-    .insert({ 
-      user_id: user.id, 
-      score: dailyScore,
-      attempt_date: todayStr 
-    });
+    .update({ score: dailyScore })
+    .eq('user_id', user.id)
+    .eq('attempt_date', todayStr);
 
-  if (error) console.error("Daily score already recorded or error:", error.message);
+  if (error) console.error("Error updating daily score:", error.message);
 }
   
   // -------------------------
@@ -505,16 +526,23 @@ async function startDailyChallenge() {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) return alert("Please log in to play the Daily Challenge!");
 
-  // Check for existing attempt today
+  // 1. "BURN" the attempt immediately so they can't refresh and restart
   const todayStr = new Date().toISOString().split('T')[0];
-  const { data: existing } = await supabase
+  const { error: burnError } = await supabase
     .from('daily_attempts')
-    .select('*')
-    .eq('user_id', session.user.id)
-    .eq('attempt_date', todayStr)
-    .single();
+    .insert({ 
+        user_id: session.user.id, 
+        score: 0, 
+        attempt_date: todayStr 
+    });
 
-  if (existing) return alert("You've already played today! Come back tomorrow.");
+  // If there's an error (like a duplicate key), they've already started/finished
+  if (burnError) return alert("You've already started or finished today's challenge!");
+
+  // 2. Visually disable the button immediately
+  dailyBtn.classList.add('disabled');
+  dailyBtn.onclick = null;
+  dailyBtn.textContent = "Daily Started...";
 
   // Fetch all questions to create the rotation
   const { data: allQuestions } = await supabase.from('questions').select('*').order('id', { ascending: true });
@@ -726,6 +754,7 @@ function seededRandom(seed) {
   let x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
 }
+
 
 
 
