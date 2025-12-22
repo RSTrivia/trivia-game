@@ -531,22 +531,11 @@ function preloadNextQuestions() {
 
 // 2. The Daily Logic function
 async function startDailyChallenge() {
-  // Launch Game
-  isDailyMode = true;
-  resetGame();
-  remainingQuestions = dailySet;
-  document.body.classList.add('game-active'); 
-  document.getElementById('start-screen').classList.add('hidden');
-  game.classList.remove('hidden');
-  
-  updateScore();
-  loadQuestion();
-  
-  const { data: { session } } = await supabase.auth.getSession();
-  // 1. BLOCK GUESTS IMMEDIATELY
-  if (!session) return alert("You must be logged in to do that!");
+    // 1. Check Auth First
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return alert("You must be logged in to play the Daily Challenge!");
 
-// 2. BURN the attempt (only works for logged in users)
+    // 2. "Burn" the attempt immediately
     const todayStr = new Date().toISOString().split('T')[0];
     const { error: burnError } = await supabase
         .from('daily_attempts')
@@ -555,32 +544,43 @@ async function startDailyChallenge() {
             score: 0, 
             attempt_date: todayStr 
         });
-  
-  // If there's an error (like a duplicate key), they've already started/finished
-  if (burnError) return alert("You've already played today!");
 
-  // 2. Visually disable the button immediately
-  dailyBtn.classList.add('disabled');
-  dailyBtn.onclick = null;
-  dailyBtn.textContent = "Daily Started...";
+    if (burnError) return alert("You've already played today!");
 
-  // Fetch all questions to create the rotation
-  const { data: allQuestions } = await supabase.from('questions').select('*').order('id', { ascending: true });
-  if (!allQuestions || allQuestions.length < 10) return;
+    // 3. Prepare the Questions
+    const { data: allQuestions } = await supabase.from('questions').select('*').order('id', { ascending: true });
+    if (!allQuestions || allQuestions.length < 10) return alert("Error loading questions.");
 
-  // Calculate rotation (Cycle through all 510 questions every 51 days)
-  const startDate = new Date('2025-12-22'); 
-  const diffTime = Math.abs(new Date() - startDate);
-  const dayCounter = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-  
-  const questionsPerDay = 10;
-  const daysPerCycle = Math.floor(allQuestions.length / questionsPerDay);
-  const cycleNumber = Math.floor(dayCounter / daysPerCycle);
-  const dayInCycle = dayCounter % daysPerCycle;
+    // Calculate rotation
+    const startDate = new Date('2025-12-22'); 
+    const diffTime = Math.abs(new Date() - startDate);
+    const dayCounter = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    const questionsPerDay = 10;
+    const daysPerCycle = Math.floor(allQuestions.length / questionsPerDay);
+    const cycleNumber = Math.floor(dayCounter / daysPerCycle);
+    const dayInCycle = dayCounter % daysPerCycle;
 
-  // Shuffle based on cycle seed so every 51 days the order is different
-  const shuffledList = shuffleWithSeed(allQuestions, cycleNumber);
-  const dailySet = shuffledList.slice(dayInCycle * questionsPerDay, (dayInCycle * questionsPerDay) + questionsPerDay);
+    const shuffledList = shuffleWithSeed(allQuestions, cycleNumber);
+    const dailySet = shuffledList.slice(dayInCycle * questionsPerDay, (dayInCycle * questionsPerDay) + questionsPerDay);
+
+    // 4. NOW Launch the Game (All data is ready)
+    isDailyMode = true;
+    resetGame();
+    remainingQuestions = dailySet; // This now works because dailySet exists!
+
+    // Visually update the main menu button
+    dailyBtn.classList.add('disabled');
+    dailyBtn.onclick = null;
+    dailyBtn.textContent = "Daily Started...";
+
+    // Show Game Screen
+    document.body.classList.add('game-active'); 
+    document.getElementById('start-screen').classList.add('hidden');
+    game.classList.remove('hidden');
+    
+    updateScore();
+    loadQuestion();
 }
 
 // 3. Click Listener with Mobile Support
@@ -763,6 +763,7 @@ function seededRandom(seed) {
   let x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
 }
+
 
 
 
