@@ -39,6 +39,22 @@ if (muteBtn) {
   }
 }
 
+const dailyMessages = {
+  0: ["Ouch. Zero XP gained today.", "Lumbridge is calling your name."],
+  1: ["At least it's not a zero!", "One is better than none... barely."],
+  2: ["Tomorrow will be better!", "The RNG was not in your favor."],
+  3: ["A bronze-tier effort.", "You're still warming up, right?"],
+  4: ["Getting there! Halfway to decent.", "Not bad, but not quite 'pro'."],
+  5: ["A solid 50%. Perfectly balanced.", "Mid-level performance!"],
+  6: ["You did great!", "Above average! Keep it up."],
+  7: ["Nice! You really know your OSRS.", "Solid score! High-scores material."],
+  8: ["Legendary! You're a walking wiki.", "Almost a perfect run!"],
+  9: ["Incredible! So close to perfection!", "An elite achievement."],
+  10: ["Perfect! A True Completionist!", "Absolute Master of Trivia!"]
+};
+
+let isDailyMode = false; // Track if current game is the daily challenge
+
 document.addEventListener('DOMContentLoaded', async () => {
   // DOM Elements
   const startBtn = document.getElementById('startBtn');
@@ -54,7 +70,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const timeDisplay = document.getElementById('time');
   const muteBtn = document.getElementById('muteBtn');
   const timeWrap = document.getElementById('time-wrap');
-
+  
   // Main state
   let username = cachedLoggedIn ? cachedUsername : '';
   let score = 0;
@@ -253,6 +269,23 @@ function playSound(buffer) {
         .upsert({ user_id: user.id, username, score }, { onConflict: 'user_id' });
     }
   }
+
+  async function submitDailyScore(dailyScore) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const todayStr = new Date().toISOString().split('T')[0];
+
+  const { error } = await supabase
+    .from('daily_attempts')
+    .insert({ 
+      user_id: user.id, 
+      score: dailyScore,
+      attempt_date: todayStr 
+    });
+
+  if (error) console.error("Daily score already recorded or error:", error.message);
+}
   
   // -------------------------
   // Game Logic (UNCHANGED)
@@ -467,36 +500,59 @@ function preloadNextQuestions() {
   }
 
    async function endGame() {
-     // REFRESH SESSION right before saving the big score
-    await supabase.auth.getSession();
-    // Prevent multiple calls
-    if (endGame.running) return;
-    endGame.running = true;
-     
-    document.body.classList.remove('game-active'); 
-     
-    clearInterval(timer);
-    game.classList.add('hidden');
-    endScreen.classList.remove('hidden');
-    finalScore.textContent = score;
+  await supabase.auth.getSession();
+  if (endGame.running) return;
+  endGame.running = true;
+  
+  document.body.classList.remove('game-active'); 
+  clearInterval(timer);
+  game.classList.add('hidden');
+  endScreen.classList.remove('hidden');
+  finalScore.textContent = score;
 
-    const gameOverTitle = document.getElementById('game-over-title');
-    const gzTitle = document.getElementById('gz-title');
+  const gameOverTitle = document.getElementById('game-over-title');
+  const gzTitle = document.getElementById('gz-title');
 
+  if (isDailyMode) {
+    // 1. Hide the Play Again button for Daily Mode
+    playAgainBtn.classList.add('hidden');
+    
+    // 2. Pick a random message based on the score
+    const options = dailyMessages[score] || ["Game Over!"];
+    const randomMsg = options[Math.floor(Math.random() * options.length)];
+    
+    // 3. Update the UI
+    gameOverTitle.textContent = randomMsg;
+    gameOverTitle.classList.remove('hidden');
+    gzTitle.classList.add('hidden');
+
+    // 4. Save Daily Score to the new table
+    if (username && username !== 'Guest') {
+      await submitDailyScore(score);
+    }
+    
+    // Reset mode for next session
+    isDailyMode = false; 
+  } else {
+    // --- STANDARD MODE LOGIC ---
+    playAgainBtn.classList.remove('hidden');
+    
     if (score === questions.length && remainingQuestions.length === 0) {
       const gzMessages = ['Gz!', 'Go touch grass', 'See you in Lumbridge'];
-      const randomMessage = gzMessages[Math.floor(Math.random() * gzMessages.length)];
-      gzTitle.textContent = randomMessage;
+      gzTitle.textContent = gzMessages[Math.floor(Math.random() * gzMessages.length)];
       gzTitle.classList.remove('hidden');
       gameOverTitle.classList.add('hidden');
     } else {
+      gameOverTitle.textContent = "Game Over!";
       gzTitle.classList.add('hidden');
       gameOverTitle.classList.remove('hidden');
     }
-  
-    if (username) await submitLeaderboardScore(username, score);
+
+    if (username && username !== 'Guest') {
+      await submitLeaderboardScore(username, score);
+    }
   }
-  
+}
   // Initialize the running flag **after the function exists**
   endGame.running = false;
 
@@ -594,6 +650,7 @@ startBtn.onclick = () => {
 //muteBtn.addEventListener('click', () => {
   //if (isTouch) mobileFlash(muteBtn);
 //});
+
 
 
 
