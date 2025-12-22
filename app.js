@@ -94,7 +94,6 @@ async function checkDailyStatus() {
         dailyBtn.classList.add('disabled');
         // We keep the onclick alert so they know WHY it's disabled
         dailyBtn.onclick = () => alert("Daily Challenge is for members only. Please Log In to play!");
-        dailyBtn.textContent = "Log In for Daily";
         return;
     }
 
@@ -769,6 +768,7 @@ function seededRandom(seed) {
   let x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
 }
+
 
 
 
