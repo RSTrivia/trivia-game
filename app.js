@@ -67,19 +67,27 @@ async function preloadNextQuestions() {
     while (preloadQueue.length < 2 && remainingQuestions.length > 0 && attempts < 10) {
         attempts++;
         const index = Math.floor(Math.random() * remainingQuestions.length);
-        const qId = remainingQuestions[index];
+        const qId = remainingQuestions[index]; // Define qId here
 
-        if ((currentQuestion && qId === currentQuestion.id) || preloadQueue.some(p => p.id === qId)) continue;
+        // Check if question is already showing or in queue
+        if ((currentQuestion && qId === currentQuestion.id) || preloadQueue.some(p => p.id === qId)) {
+            continue;
+        }
 
         remainingQuestions.splice(index, 1);
-        const { data, error } = await supabase.rpc('get_question_by_id', { q_id: qId });
+        
+        // Call RPC with 'input_id'
+        const { data, error } = await supabase.rpc('get_question_by_id', { input_id: qId });
 
         if (!error && data && data[0]) {
             preloadQueue.push(data[0]);
+            // Pre-cache image if it exists
             if (data[0].question_image) {
                 const img = new Image();
                 img.src = data[0].question_image;
             }
+        } else if (error) {
+            console.error("Preload RPC Error:", error.message);
         }
     }
 }
@@ -175,8 +183,8 @@ async function checkAnswer(selected, btn) {
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
 
     const { data: isCorrect } = await supabase.rpc('check_my_answer', {
-        q_id: currentQuestion.id, 
-        choice: selected
+    input_id: currentQuestion.id, // Changed from q_id to input_id
+    choice: selected
     });
 
     if (isCorrect) {
@@ -194,7 +202,7 @@ async function checkAnswer(selected, btn) {
 }
 
 async function highlightCorrectAnswer() {
-    const { data: correctText } = await supabase.rpc('reveal_correct_answer', { q_id: currentQuestion.id });
+    const { data: correctText } = await supabase.rpc('reveal_correct_answer', {input_id: currentQuestion.id });
     document.querySelectorAll('.answer-btn').forEach(btn => {
         if (btn.innerText.trim() === correctText) btn.classList.add('correct');
     });
@@ -257,4 +265,5 @@ muteBtn.onclick = () => {
     muteBtn.querySelector('#muteIcon').textContent = muted ? '🔇' : '🔊';
     muteBtn.classList.toggle('is-muted', muted);
 };
+
 
