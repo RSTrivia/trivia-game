@@ -12,17 +12,19 @@
   const todayStr = new Date().toISOString().split('T')[0];
   const hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
 
-  // This function handles the button click
   function handleAuthAction() {
-    if (localStorage.getItem('cachedLoggedIn') === 'true') {
-      // Logout logic
-      if (window.supabase) window.supabase.auth.signOut();
+    console.log("Auth button was physically clicked!"); // If you don't see this in F12, the button is blocked by CSS
+    
+    const isLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
+
+    if (isLoggedIn) {
+      console.log("Logging out...");
       localStorage.removeItem('cachedLoggedIn');
       localStorage.removeItem('cachedUsername');
       localStorage.removeItem('dailyPlayedDate');
       window.location.reload();
     } else {
-      // Login logic - Use absolute path if necessary
+      console.log("Attempting redirect to auth.html");
       window.location.href = 'auth.html';
     }
   }
@@ -124,9 +126,9 @@
         </div>
         <!-- Third row: Login + Leaderboard -->
         <div class="row">
-          <button id="authBtn" class="btn-small">
+         <button id="authBtn" class="btn-small" onclick="handleAuthAction()">
             <span class="btn-label">Log In</span>
-          </button>
+        </button>
           <a href="leaderboard.html" class="btn-small">Leaderboard</a>
         </div>
       </div>
@@ -151,6 +153,7 @@
   <script src="background.js" defer></script>
 </body>
 </html>
+
 
 
 
