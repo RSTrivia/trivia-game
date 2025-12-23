@@ -42,7 +42,13 @@ let authLabel = authBtn?.querySelector('.btn-label');
 
 // ====== INITIAL UI SYNC ======
 if (userDisplay) userDisplay.querySelector('#usernameSpan').textContent = ' ' + (username || 'Guest');
-if (authLabel) authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
+// This targets the <span> inside your button to change the text
+if (authBtn) {
+    const label = authBtn.querySelector('.btn-label');
+    if (label) {
+        label.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
+    }
+}
 if (muteBtn) {
     muteBtn.querySelector('#muteIcon').textContent = cachedMuted ? '🔇' : '🔊';
     if (cachedMuted) muteBtn.classList.add('is-muted');
@@ -333,28 +339,25 @@ muteBtn.onclick = () => {
 
 
 authBtn.onclick = async () => {
-    // Re-check the actual status from localStorage on click
-    const userIsLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
+    const isLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
 
-    if (userIsLoggedIn) {
+    if (isLoggedIn) {
         // --- LOGOUT FLOW ---
         const { error } = await supabase.auth.signOut();
         if (error) console.error("Logout error:", error.message);
 
-        // Clear all session data
+        // Clear local storage
         localStorage.removeItem('cachedLoggedIn');
         localStorage.removeItem('cachedUsername');
         localStorage.removeItem('dailyPlayedDate');
 
-        // Force a refresh to reset the game state and UI
+        // Refresh to show "Log In" state
         window.location.reload();
     } else {
         // --- LOGIN FLOW ---
-        // Take them to your auth/login page
-        window.location.href = 'auth.html'; 
+        window.location.href = 'auth.html';
     }
 };
-
 
 
 
