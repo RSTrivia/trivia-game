@@ -22,7 +22,7 @@ signupBtn.addEventListener('click', async () => {
 
     setBusy(true);
 
-    try {
+   try {
         const response = await fetch(`${BRIDGE_URL}/signup`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -30,16 +30,18 @@ signupBtn.addEventListener('click', async () => {
         });
 
         const result = await response.json();
-
         if (!response.ok) throw new Error(result.error || "Signup failed");
 
-        // Success - Save the ID as user_id
-        if (result.user && result.user.id) {
-            localStorage.setItem('user_id', result.user.id);
+        // --- THE FIX FOR PC + MOBILE ---
+        // Save the unique ID and Username immediately after signup
+        if (result.userId) {
+            localStorage.setItem('user_id', result.userId);
         }
         
-        localStorage.setItem('cachedUsername', username);
+        localStorage.setItem('cachedUsername', result.username); 
         localStorage.setItem('cachedLoggedIn', 'true');
+        
+        // Go straight to the game
         window.location.href = 'index.html';
 
     } catch (err) {
