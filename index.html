@@ -48,24 +48,27 @@
     }
 
     // 4. 🔥 THE FIX: ATTACH CLICK DIRECTLY HERE
-    if (authBtn) {
-      authBtn.onclick = async () => {
-        if (localStorage.getItem('cachedLoggedIn') === 'true') {
-            // If they are logging out, we need Supabase from the window
-            // If window.supabase isn't ready, we at least clear local storage and refresh
-            if (window.supabase) await window.supabase.auth.signOut();
-            
-            localStorage.removeItem('cachedLoggedIn');
-            localStorage.removeItem('cachedUsername');
-            localStorage.removeItem('dailyPlayedDate');
-            window.location.reload();
-        } else {
-            // This will work even if app.js crashes!
-            window.location.href = 'auth.html';
-        }
-      };
+if (authBtn) {
+  authBtn.addEventListener('click', (e) => {
+    e.preventDefault(); // Stop any default behavior
+    console.log("Login button clicked!"); // Check F12 console for this
+
+    const isLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
+    
+    if (isLoggedIn) {
+        // Log out flow
+        if (window.supabase) window.supabase.auth.signOut();
+        localStorage.removeItem('cachedLoggedIn');
+        localStorage.removeItem('cachedUsername');
+        localStorage.removeItem('dailyPlayedDate');
+        window.location.reload();
+    } else {
+        // Direct redirect - use window.location.assign for better compatibility
+        console.log("Directing to login...");
+        window.location.assign('auth.html');
     }
   });
+}
 </script>
 
   <!-- 🔥 Load last background BEFORE first paint (NO flicker) -->
@@ -159,6 +162,7 @@
   <script src="background.js" defer></script>
 </body>
 </html>
+
 
 
 
