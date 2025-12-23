@@ -250,8 +250,12 @@ async function endGame() {
     endScreen.classList.remove('hidden');
     finalScore.textContent = score;
 
-    if (username && username !== 'Guest') {
+    // 🛡️ ONLY submit to leaderboard if it's a normal game (NOT Daily Mode)
+    if (username && username !== 'Guest' && !isDailyMode) {
         await submitLeaderboardScore(username, score);
+    } else if (isDailyMode) {
+        console.log("Daily mode finished. Score not eligible for Personal Best leaderboard.");
+        // Optional: Call a different function here if you have a Daily Leaderboard
     }
 }
 endGame.running = false;
@@ -285,27 +289,21 @@ async function submitLeaderboardScore(user, val) {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
 
-    // 1. Check if the user already has a score
-    const { data: existingRecord } = await supabase
+    // 1. Fetch current best
+    const { data: record } = await supabase
         .from('scores')
         .select('score')
         .eq('user_id', session.user.id)
         .single();
 
-    // 2. Only update if there's no previous score OR the new score is higher
-    if (!existingRecord || val > existingRecord.score) {
-        const { error } = await supabase
-            .from('scores')
-            .upsert({ 
-                user_id: session.user.id, 
-                username: user, 
-                score: val 
-            }, { onConflict: 'user_id' });
-
-        if (error) console.error("Error updating high score:", error.message);
-        else console.log("New high score saved!");
-    } else {
-        console.log("Score was not higher than personal best. No update made.");
+    // 2. Only Update if NEW score is better than OLD score
+    if (!record || val > record.score) {
+        await supabase.from('scores').upsert({ 
+            user_id: session.user.id, 
+            username: user, 
+            score: val 
+        }, { onConflict: 'user_id' });
+        console.log("New Personal Best saved!");
     }
 }
 
@@ -320,6 +318,7 @@ muteBtn.onclick = () => {
     muteBtn.querySelector('#muteIcon').textContent = muted ? '🔇' : '🔊';
     muteBtn.classList.toggle('is-muted', muted);
 };
+
 
 
 
