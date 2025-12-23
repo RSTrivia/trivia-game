@@ -157,14 +157,10 @@ async function startGame() {
     updateScore();
     loadSounds(); 
 
-    if (preloadQueue.length > 0 && !isDailyMode) {
-        loadQuestion(); 
-    }
-
-    // Refresh question pool
+    // 1. If we are in Normal Mode, fetch the IDs first
     if (!isDailyMode) {
         const { data: idList, error } = await supabase.rpc('get_all_question_ids');
-        if (!error) {
+        if (!error && idList) {
             const preloadedIds = preloadQueue.map(q => q.id);
             remainingQuestions = idList
                 .map(item => item.id)
@@ -173,10 +169,13 @@ async function startGame() {
         }
     }
 
-    if (!currentQuestion && preloadQueue.length === 0) {
+    // 2. CRITICAL FIX: Wait for the first questions to actually download
+    if (preloadQueue.length === 0) {
         await preloadNextQuestions(); 
-        loadQuestion();
     }
+
+    // 3. Now that we definitely have a question, load it
+    loadQuestion();
 }
 
 async function loadQuestion() {
@@ -500,3 +499,5 @@ function subscribeToDailyChanges(userId) {
         lockDailyButton();
     }).subscribe();
 }
+
+function updateScore() { scoreDisplay.textContent = `Score: ${score}`; }
