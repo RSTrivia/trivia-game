@@ -37,10 +37,11 @@ signupBtn.addEventListener('click', async () => {
         if (result.userId) {
             localStorage.setItem('user_id', result.userId);
         }
-        
+
         localStorage.setItem('cachedUsername', result.username); 
         localStorage.setItem('cachedLoggedIn', 'true');
-        
+        localStorage.removeItem('dailyPlayedDate'); // Ensure a new user isn't accidentally blocked
+       
         // Go straight to the game
         window.location.href = 'index.html';
 
@@ -74,6 +75,7 @@ loginBtn.addEventListener('click', async () => {
         // --- THE FIX FOR PC + MOBILE ---
         if (result.userId) {
             localStorage.setItem('user_id', result.userId);
+
         }
 
         // --- STICKY CASING FIX ---
