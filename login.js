@@ -49,10 +49,11 @@ signupBtn.addEventListener('click', async () => {
 });
 
 loginBtn.addEventListener('click', async () => {
-    const username = usernameInput.value.trim().toLowerCase();
+    // 1. We take what they typed (e.g., "shir" or "Shir")
+    const typedUsername = usernameInput.value.trim();
     const password = passwordInput.value;
 
-    if (!username || !password) return alert("Enter credentials.");
+    if (!typedUsername || !password) return alert("Enter credentials.");
 
     setBusy(true);
 
@@ -60,7 +61,8 @@ loginBtn.addEventListener('click', async () => {
         const response = await fetch(`${BRIDGE_URL}/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
+            // 2. Send the typed name to the bridge
+            body: JSON.stringify({ username: typedUsername, password })
         });
 
         const result = await response.json();
@@ -68,11 +70,13 @@ loginBtn.addEventListener('click', async () => {
         if (!response.ok) throw new Error(result.error || "Login failed");
 
         // --- THE FIX FOR PC + MOBILE ---
-        // Save the unique ID as user_id
         if (result.userId) {
             localStorage.setItem('user_id', result.userId);
         }
 
+        // --- STICKY CASING FIX ---
+        // Instead of saving 'typedUsername', we save 'result.username'.
+        // The server will look up the profile and send back the original casing (e.g., "Shir").
         localStorage.setItem('cachedUsername', result.username);
         localStorage.setItem('cachedLoggedIn', 'true');
         
