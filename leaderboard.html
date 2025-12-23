@@ -176,14 +176,15 @@
     const isMedal = i < 3;
     const rankIndicator = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
 
-    // Determine if we should add the extra nudge class
-    const rankClass = isMedal ? "rank-slot" : "rank-slot number-rank";
+    // Apply the nudge class ONLY to numbers
+    const innerClass = isMedal ? "" : "class='number-nudge'";
 
     if (entry.username) {
-        spans[0].innerHTML = `<span class="${rankClass}">${rankIndicator}</span>${entry.username}`;
+        // The rank-slot width (35px) remains constant, so the name won't move
+        spans[0].innerHTML = `<span class="rank-slot"><span ${innerClass}>${rankIndicator}</span></span>${entry.username}`;
         spans[1].innerHTML = `${entry.score}`;
     } else {
-        spans[0].innerHTML = `<span class="${rankClass}">${rankIndicator}</span>`;
+        spans[0].innerHTML = `<span class="rank-slot"><span ${innerClass}>${rankIndicator}</span></span>`;
         spans[1].innerHTML = ``;
     }
   });
@@ -215,6 +216,7 @@
   </script>
 </body>
 </html>
+
 
 
 
