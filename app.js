@@ -360,7 +360,35 @@ authBtn.onclick = async () => {
 };
 
 
+// ====== DAILY BUTTON LOGIC ======
+if (dailyBtn) {
+    const hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
 
+    // 1. YOUR VISUAL LOGIC (Keep this!)
+    if (cachedLoggedIn && !hasPlayed) {
+        dailyBtn.classList.add('is-active');
+        dailyBtn.classList.remove('disabled');
+    } else {
+        dailyBtn.classList.remove('is-active');
+        dailyBtn.classList.add('disabled');
+    }
+
+    // 2. THE CLICK LOGIC (Add this to prevent "hanging")
+    dailyBtn.onclick = () => {
+        if (!cachedLoggedIn) {
+            alert("Please log in to play the Daily Challenge!");
+            return;
+        }
+        if (hasPlayed) {
+            alert("You've already played today's challenge. See you tomorrow!");
+            return;
+        }
+        
+        // If they pass both, start daily mode
+        isDailyMode = true;
+        startGame();
+    };
+}
 
 
 
