@@ -146,18 +146,18 @@
   <div id="app">
     <div class="container">
       <h1 id="leaderboard-title">Leaderboard</h1>
-      <ul id="leaderboard">
-          <li class="first"><span>🥇</span><span></span></li>
-          <li class="second"><span>🥈</span><span></span></li>
-          <li class="third"><span>🥉</span><span></span></li>
-          <li><span>4.</span><span></span></li>
-          <li><span>5.</span><span></span></li>
-          <li><span>6.</span><span></span></li>
-          <li><span>7.</span><span></span></li>
-          <li><span>8.</span><span></span></li>
-          <li><span>9.</span><span></span></li>
-          <li><span>10.</span><span></span></li>
-      </ul>
+     <ul id="leaderboard">
+        <li class="first"><span><span class="rank-slot">🥇</span></span><span></span></li>
+        <li class="second"><span><span class="rank-slot">🥈</span></span><span></span></li>
+        <li class="third"><span><span class="rank-slot">🥉</span></span><span></span></li>
+        <li><span><span class="rank-slot"><span class="number-nudge">4.</span></span></span><span></span></li>
+        <li><span><span class="rank-slot"><span class="number-nudge">5.</span></span></span><span></span></li>
+        <li><span><span class="rank-slot"><span class="number-nudge">6.</span></span></span><span></span></li>
+        <li><span><span class="rank-slot"><span class="number-nudge">7.</span></span></span><span></span></li>
+        <li><span><span class="rank-slot"><span class="number-nudge">8.</span></span></span><span></span></li>
+        <li><span><span class="rank-slot"><span class="number-nudge">9.</span></span></span><span></span></li>
+        <li><span><span class="rank-slot"><span class="number-nudge">10.</span></span></span><span></span></li>
+    </ul>
       <a href="index.html" class="btn-small">Main Menu</a>
     </div>
   </div>
@@ -168,24 +168,25 @@
   <script type="module">
     const leaderboardRows = document.querySelectorAll('#leaderboard li');
 
-   function updateLeaderboard(data) {
+function updateLeaderboard(data) {
   leaderboardRows.forEach((row, i) => {
     const entry = data[i] || { username: '', score: '' };
     const spans = row.querySelectorAll('span');
     
     const isMedal = i < 3;
     const rankIndicator = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
-
-    // Apply the nudge class ONLY to numbers
     const innerClass = isMedal ? "" : "class='number-nudge'";
 
-    if (entry.username) {
-        // The rank-slot width (35px) remains constant, so the name won't move
-        spans[0].innerHTML = `<span class="rank-slot"><span ${innerClass}>${rankIndicator}</span></span>${entry.username}`;
-        spans[1].innerHTML = `${entry.score}`;
-    } else {
-        spans[0].innerHTML = `<span class="rank-slot"><span ${innerClass}>${rankIndicator}</span></span>`;
-        spans[1].innerHTML = ``;
+    // We build exactly what we want the HTML to look like
+    const newRankHTML = `<span class="rank-slot"><span ${innerClass}>${rankIndicator}</span></span>${entry.username}`;
+    const newScoreHTML = `${entry.score}`;
+
+    // 🔥 ONLY update if the content is different (This stops the flicker)
+    if (spans[0].innerHTML !== newRankHTML) {
+        spans[0].innerHTML = newRankHTML;
+    }
+    if (spans[1].innerHTML !== newScoreHTML) {
+        spans[1].innerHTML = newScoreHTML;
     }
   });
 }
@@ -216,6 +217,7 @@
   </script>
 </body>
 </html>
+
 
 
 
