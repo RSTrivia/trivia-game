@@ -31,27 +31,61 @@ const todayStr = new Date().toISOString().split('T')[0];
 
 let username = cachedLoggedIn ? cachedUsername : '';
 let score = 0;
-let questionsCount = 0; 
 let remainingQuestions = [];
 let currentQuestion = null;
 let preloadQueue = []; 
 let timer;
 let timeLeft = 15;
 let isDailyMode = false;
-//let authLabel = authBtn?.querySelector('.btn-label');
 
 // ====== INITIAL UI SYNC ======
 if (userDisplay) userDisplay.querySelector('#usernameSpan').textContent = ' ' + (username || 'Guest');
-// This targets the <span> inside your button to change the text
 if (authBtn) {
     const label = authBtn.querySelector('.btn-label');
-    if (label) {
-        label.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
-    }
+    if (label) label.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
 }
 if (muteBtn) {
     muteBtn.querySelector('#muteIcon').textContent = cachedMuted ? '🔇' : '🔊';
     if (cachedMuted) muteBtn.classList.add('is-muted');
+}
+
+// ====== AUTH & REALTIME SYNC ======
+async function initializeAuth() {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (session) {
+        // Start listening for changes on other devices immediately
+        subscribeToDailyChanges(session.user.id);
+        
+        // Double check database truth (in case localStorage is cleared)
+        const { data: existing } = await supabase
+            .from('daily_attempts')
+            .select('id')
+            .eq('user_id', session.user.id)
+            .eq('attempt_date', todayStr)
+            .maybeSingle();
+            
+        if (existing) {
+            localStorage.setItem('dailyPlayedDate', todayStr);
+            lockDailyButton();
+        }
+    }
+
+    // Listen for login/logout events
+    supabase.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+            subscribeToDailyChanges(session.user.id);
+        }
+    });
+}
+initializeAuth();
+
+function lockDailyButton() {
+    if (dailyBtn) {
+        dailyBtn.classList.remove('is-active');
+        dailyBtn.classList.add('disabled');
+        dailyBtn.onclick = () => alert("You've already played today's challenge!");
+    }
 }
 
 // ====== GAME ENGINE ======
@@ -73,33 +107,26 @@ async function preloadNextQuestions() {
     while (preloadQueue.length < 2 && remainingQuestions.length > 0 && attempts < 10) {
         attempts++;
         const index = Math.floor(Math.random() * remainingQuestions.length);
-        const qId = remainingQuestions[index]; // Define qId here
+        const qId = remainingQuestions[index]; 
 
-        // Check if question is already showing or in queue
         if ((currentQuestion && qId === currentQuestion.id) || preloadQueue.some(p => p.id === qId)) {
             continue;
         }
 
         remainingQuestions.splice(index, 1);
-        
-        // Call RPC with 'input_id'
         const { data, error } = await supabase.rpc('get_question_by_id', { input_id: qId });
 
         if (!error && data && data[0]) {
             preloadQueue.push(data[0]);
-            // Pre-cache image if it exists
             if (data[0].question_image) {
                 const img = new Image();
                 img.src = data[0].question_image;
             }
-        } else if (error) {
-            console.error("Preload RPC Error:", error.message);
         }
     }
 }
 
 async function startGame() {
-    const { data: sessionData } = await supabase.auth.getSession();
     document.body.classList.add('game-active'); 
     endGame.running = false;
     resetGame();
@@ -111,30 +138,24 @@ async function startGame() {
     await loadSounds(); 
 
     const { data: idList, error } = await supabase.rpc('get_all_question_ids');
-    if (error) {
-    console.error("RPC Error:", error.message); // This will tell us EXACTLY why it's 400
-    return;
-}
+    if (error) return console.error("RPC Error:", error.message);
 
     remainingQuestions = idList.map(item => item.id).sort(() => Math.random() - 0.5);
-    questionsCount = remainingQuestions.length;
     
-    await preloadNextQuestions(); // Wait for first question
+    await preloadNextQuestions(); 
     loadQuestion();
 }
 
 async function loadQuestion() {
     answersBox.innerHTML = '';
-    
     if (preloadQueue.length === 0 && remainingQuestions.length === 0) {
         await endGame();
         return;
     }
-
     if (preloadQueue.length === 0) await preloadNextQuestions();
 
     currentQuestion = preloadQueue.shift();
-    preloadNextQuestions(); // Background refill
+    preloadNextQuestions(); 
 
     questionText.textContent = currentQuestion.question;
     if (currentQuestion.question_image) {
@@ -145,7 +166,6 @@ async function loadQuestion() {
         questionImage.style.display = 'none';
     }
 
-    // Map letters to the 1, 2, 3, 4 structure of your DB
     let answers = [
         { text: currentQuestion.answer_a, id: 1 },
         { text: currentQuestion.answer_b, id: 2 },
@@ -157,11 +177,7 @@ async function loadQuestion() {
         const btn = document.createElement('button');
         btn.textContent = ans.text;
         btn.classList.add('answer-btn');
-        
-        // Store the number (1, 2, 3, or 4) on the button element
         btn.dataset.answerId = ans.id; 
-
-        // Pass the NUMBER to checkAnswer, not the text
         btn.onclick = () => checkAnswer(ans.id, btn);
         answersBox.appendChild(btn);
     });
@@ -174,7 +190,6 @@ function startTimer() {
     timeLeft = 15;
     timeDisplay.textContent = timeLeft;
     timeWrap.classList.remove('red-timer');
-
     timer = setInterval(() => {
         timeLeft--;
         timeDisplay.textContent = timeLeft;
@@ -187,43 +202,28 @@ function startTimer() {
 }
 
 async function handleTimeout() {
-    // 1. IMMEDIATELY disable buttons so user can't click to cheat
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
-    
     playSound(wrongBuffer);
-    
-    // 2. Show the correct answer so they know what they missed
     await highlightCorrectAnswer();
     
-    // 3. Move to end screen after a short delay, only if not daily mode.
     if (isDailyMode) {
-        // Move to next question instead of ending
         setTimeout(loadQuestion, 1500);
     } else {
         setTimeout(endGame, 1000);
     }
 }
 
-async function checkAnswer(choiceId, btn) { // choiceId is a number (1-4)
-    // Safety check: if time is already 0, ignore this click
+async function checkAnswer(choiceId, btn) {
     if (timeLeft <= 0) return;
-    
     clearInterval(timer);
-    
-    // Immediately disable buttons to prevent double-clicks
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
-
-    console.log("Checking answer for ID:", currentQuestion.id, "Choice index:", choiceId);
 
     const { data: isCorrect, error } = await supabase.rpc('check_my_answer', {
         input_id: currentQuestion.id,
-        choice: choiceId // No .trim() and no .toString()!
+        choice: choiceId
     });
 
-    if (error) {
-        console.error("RPC Error Details:", error);
-        return;
-    }
+    if (error) return console.error("RPC Error:", error);
 
     if (isCorrect) {
         playSound(correctBuffer);
@@ -235,12 +235,9 @@ async function checkAnswer(choiceId, btn) { // choiceId is a number (1-4)
         playSound(wrongBuffer);
         btn.classList.add('wrong');
         await highlightCorrectAnswer();
-
-        // 🛡️ DAILY MODE LOGIC: Don't end game, just move to next question
         if (isDailyMode) {
-            setTimeout(loadQuestion, 1500); // Give them a moment to see the correct answer
+            setTimeout(loadQuestion, 1500);
         } else {
-            // Normal mode still ends on first mistake
             setTimeout(endGame, 1000);
         }
     }
@@ -250,9 +247,7 @@ async function highlightCorrectAnswer() {
     const { data: correctId } = await supabase.rpc('reveal_correct_answer', { 
         input_id: currentQuestion.id 
     });
-
     document.querySelectorAll('.answer-btn').forEach(btn => {
-        // Compare the button's stored ID to the correct ID from DB
         if (parseInt(btn.dataset.answerId) === correctId) {
             btn.classList.add('correct');
         }
@@ -267,18 +262,16 @@ async function endGame() {
     document.body.classList.remove('game-active'); 
     game.classList.add('hidden');
     endScreen.classList.remove('hidden');
-    finalScore.textContent = score; // Just show it on screen
+    finalScore.textContent = score;
 
     if (isDailyMode) {
-        console.log("Daily Challenge complete. Score not saved per request.");
-        isDailyMode = false; // Reset for the next session
+        console.log("Daily complete. Score displayed locally.");
+        isDailyMode = false; 
     } else {
-        // Normal Mode: Save to Leaderboard
         if (username && username !== 'Guest') {
             await submitLeaderboardScore(username, score);
         }
     }
-    
     endGame.running = false;
 }
 endGame.running = false;
@@ -311,22 +304,9 @@ function updateScore() { scoreDisplay.textContent = `Score: ${score}`; }
 async function submitLeaderboardScore(user, val) {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
-
-    // 1. Fetch current best
-    const { data: record } = await supabase
-        .from('scores')
-        .select('score')
-        .eq('user_id', session.user.id)
-        .single();
-
-    // 2. Only Update if NEW score is better than OLD score
+    const { data: record } = await supabase.from('scores').select('score').eq('user_id', session.user.id).single();
     if (!record || val > record.score) {
-        await supabase.from('scores').upsert({ 
-            user_id: session.user.id, 
-            username: user, 
-            score: val 
-        }, { onConflict: 'user_id' });
-        console.log("New Personal Best saved!");
+        await supabase.from('scores').upsert({ user_id: session.user.id, username: user, score: val }, { onConflict: 'user_id' });
     }
 }
 
@@ -334,22 +314,18 @@ async function startDailyChallenge() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return alert("Log in to play Daily Mode!");
 
-    // 1. "Burn" the attempt immediately so they can't restart
-    // We just need to record THAT they played today.
     const { error: burnError } = await supabase
         .from('daily_attempts')
         .insert({ user_id: session.user.id, attempt_date: todayStr });
 
     if (burnError) return alert("You've already played today!");
     
-    // Set local storage so the button turns gray immediately
     localStorage.setItem('dailyPlayedDate', todayStr);
+    lockDailyButton(); // Gray out immediately on this device
 
-    // 2. Fetch all IDs for rotation
     const { data: allQuestions } = await supabase.from('questions').select('id').order('id', { ascending: true });
     if (!allQuestions || allQuestions.length < 10) return alert("Error loading questions.");
 
-    // 3. Rotation Math (Same as before)
     const startDate = new Date('2025-12-22'); 
     const diffTime = Math.abs(new Date() - startDate);
     const dayCounter = Math.floor(diffTime / (1000 * 60 * 60 * 24));
@@ -359,17 +335,12 @@ async function startDailyChallenge() {
     const cycleNumber = Math.floor(dayCounter / daysPerCycle); 
     const dayInCycle = dayCounter % daysPerCycle;
 
-    // 4. Seeded Shuffle
     const shuffledList = shuffleWithSeed(allQuestions, cycleNumber);
-    const dailyIds = shuffledList.slice(
-        dayInCycle * questionsPerDay, 
-        (dayInCycle * questionsPerDay) + questionsPerDay
-    ).map(q => q.id);
+    const dailyIds = shuffledList.slice(dayInCycle * questionsPerDay, (dayInCycle * questionsPerDay) + questionsPerDay).map(q => q.id);
 
-    // 5. Setup Game
     isDailyMode = true;
     resetGame();
-    remainingQuestions = dailyIds; // This limits the game to exactly 10 questions
+    remainingQuestions = dailyIds; 
     
     document.body.classList.add('game-active'); 
     document.getElementById('start-screen').classList.add('hidden');
@@ -381,7 +352,7 @@ async function startDailyChallenge() {
 
 // ====== EVENT LISTENERS ======
 startBtn.onclick = () => {
-    isDailyMode = false; // Ensure we aren't in daily mode
+    isDailyMode = false;
     startGame();
 };
 playAgainBtn.onclick = () => startGame();
@@ -394,13 +365,8 @@ muteBtn.onclick = () => {
     muteBtn.classList.toggle('is-muted', muted);
 };
 
-
-
-// ====== DAILY BUTTON LOGIC ======
 if (dailyBtn) {
     const hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
-
-    // 1. YOUR VISUAL LOGIC (Keep this!)
     if (cachedLoggedIn && !hasPlayed) {
         dailyBtn.classList.add('is-active');
         dailyBtn.classList.remove('disabled');
@@ -409,20 +375,11 @@ if (dailyBtn) {
         dailyBtn.classList.add('disabled');
     }
 
-    // 2. THE CLICK LOGIC (Add this to prevent "hanging")
     dailyBtn.onclick = () => {
-        if (!cachedLoggedIn) {
-            alert("Please log in to play the Daily Challenge!");
-            return;
-        }
-        if (hasPlayed) {
-            alert("You've already played today's challenge. See you tomorrow!");
-            return;
-        }
-        
-        // If they pass both, start daily mode
+        if (!cachedLoggedIn) return alert("Please log in to play!");
+        if (localStorage.getItem('dailyPlayedDate') === todayStr) return alert("Already played today!");
         isDailyMode = true;
-        startDailyChallenge()
+        startDailyChallenge();
     };
 }
 
@@ -430,7 +387,6 @@ function shuffleWithSeed(array, seed) {
     let arr = [...array];
     let m = arr.length, t, i;
     while (m) {
-        // The seed determines the random sequence
         i = Math.floor(seededRandom(seed++) * m--);
         t = arr[m]; arr[m] = arr[i]; arr[i] = t;
     }
@@ -438,7 +394,22 @@ function shuffleWithSeed(array, seed) {
 }
 
 function seededRandom(seed) {
-    // Standard deterministic pseudo-random generator
     let x = Math.sin(seed) * 10000;
     return x - Math.floor(x);
+}
+
+function subscribeToDailyChanges(userId) {
+    supabase
+        .channel('daily-updates')
+        .on('postgres_changes', {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'daily_attempts',
+            filter: `user_id=eq.${userId}`
+        }, (payload) => {
+            console.log('Daily challenge sync: locking button.');
+            localStorage.setItem('dailyPlayedDate', todayStr);
+            lockDailyButton();
+        })
+        .subscribe();
 }
