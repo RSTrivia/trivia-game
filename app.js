@@ -23,6 +23,7 @@ const userDisplay = document.getElementById('userDisplay');
 const authBtn = document.getElementById('authBtn');
 const muteBtn = document.getElementById('muteBtn');
 const dailyBtn = document.getElementById('dailyBtn');
+
 const dailyMessages = {
   0: ["Ouch. Zero XP gained today.", "Lumbridge is calling your name."],
   1: ["At least it's not a zero!", "One is better than none... barely."],
@@ -67,10 +68,7 @@ async function initializeAuth() {
     const { data: { session } } = await supabase.auth.getSession();
     
     if (session) {
-        // Start listening for changes on other devices immediately
         subscribeToDailyChanges(session.user.id);
-        
-        // Double check database truth (in case localStorage is cleared)
         const { data: existing } = await supabase
             .from('daily_attempts')
             .select('id')
@@ -84,7 +82,6 @@ async function initializeAuth() {
         }
     }
 
-    // Listen for login/logout events
     supabase.auth.onAuthStateChange((event, session) => {
         if (event === 'SIGNED_IN' && session) {
             subscribeToDailyChanges(session.user.id);
@@ -97,6 +94,9 @@ function lockDailyButton() {
     if (dailyBtn) {
         dailyBtn.classList.remove('is-active');
         dailyBtn.classList.add('disabled');
+        // Update label to indicate it's finished
+        const label = dailyBtn.querySelector('.btn-label');
+        if (label) label.textContent = "Played Today";
         dailyBtn.onclick = () => alert("You've already played today's challenge!");
     }
 }
@@ -104,29 +104,17 @@ function lockDailyButton() {
 // ====== GAME ENGINE ======
 
 function resetGame() {
-    // 1. Stop any active logic
     clearInterval(timer);
-    
-    // 2. Reset numerical state
     score = 0;
     currentQuestion = null;
-    // NOTE: We do NOT reset preloadQueue here. 
-    // This allows "Play Again" to use the 2 questions already buffered.
-
-    // 3. WIPE UI IMMEDIATELY (Prevents the flicker)
+    // We do NOT reset preloadQueue here to allow "Play Again" to be instant
     questionText.textContent = '';
     answersBox.innerHTML = '';
-    
-    // 4. Handle Images
     questionImage.style.display = 'none';
     questionImage.src = ''; 
-
-    // 5. Reset Timer Visuals
     timeLeft = 15;
     timeDisplay.textContent = timeLeft;
     timeWrap.classList.remove('red-timer');
-    
-    // 6. Reset Score Visual
     if (scoreDisplay) {
         scoreDisplay.textContent = `Score: 0`;
     }
@@ -136,6 +124,8 @@ async function preloadNextQuestions() {
     let attempts = 0;
     while (preloadQueue.length < 2 && remainingQuestions.length > 0 && attempts < 10) {
         attempts++;
+        // If Daily, we pick randomly from the remaining pool of 10. 
+        // If Standard, we pick randomly from the whole database.
         const index = Math.floor(Math.random() * remainingQuestions.length);
         const qId = remainingQuestions[index]; 
 
@@ -157,49 +147,41 @@ async function preloadNextQuestions() {
 }
 
 async function startGame() {
-    // A. Immediate UI setup
     document.body.classList.add('game-active'); 
     endGame.running = false;
     game.classList.remove('hidden');
     document.getElementById('start-screen').classList.add('hidden');
     endScreen.classList.add('hidden');
     
-    // B. Clear score and timers, but NOT the preloaded questions
     resetGame();
     updateScore();
-
-    // C. LOAD SOUNDS (Start this, but don't let it block the UI if possible)
     loadSounds(); 
 
-    // D. INSTANT START: If we have preloaded questions from the last game, start NOW
-    if (preloadQueue.length > 0) {
-        console.log("Instant start using preloaded questions...");
+    if (preloadQueue.length > 0 && !isDailyMode) {
         loadQuestion(); 
     }
 
-    // E. BACKGROUND SYNC: Refresh the deck of IDs from Supabase
-    const { data: idList, error } = await supabase.rpc('get_all_question_ids');
-    if (error) {
-        console.error("RPC Error:", error.message);
-    } else {
-        // Filter out IDs that are currently sitting in the preloadQueue 
-        // so we don't ask the same question twice.
-        const preloadedIds = preloadQueue.map(q => q.id);
-        remainingQuestions = idList
-            .map(item => item.id)
-            .filter(id => !preloadedIds.includes(id)) 
-            .sort(() => Math.random() - 0.5);
+    // Refresh question pool
+    if (!isDailyMode) {
+        const { data: idList, error } = await supabase.rpc('get_all_question_ids');
+        if (!error) {
+            const preloadedIds = preloadQueue.map(q => q.id);
+            remainingQuestions = idList
+                .map(item => item.id)
+                .filter(id => !preloadedIds.includes(id)) 
+                .sort(() => Math.random() - 0.5);
+        }
     }
 
-    // F. FALLBACK: If preload was empty (first game ever), load now
     if (!currentQuestion && preloadQueue.length === 0) {
         await preloadNextQuestions(); 
         loadQuestion();
     }
 }
+
 async function loadQuestion() {
     answersBox.innerHTML = '';
-    questionText.textContent = ''; // Add this line
+    questionText.textContent = ''; 
     if (preloadQueue.length === 0 && remainingQuestions.length === 0) {
         await endGame();
         return;
@@ -306,61 +288,75 @@ async function highlightCorrectAnswer() {
     });
 }
 
+async function submitLeaderboardScore(user, val) {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    // 1. Fetch current high score from the 'scores' table
+    const { data: record } = await supabase
+        .from('scores')
+        .select('score')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
+
+    // 2. Only submit if no record exists OR the new score is higher
+    if (!record || val > record.score) {
+        await supabase.from('scores').upsert({ 
+            user_id: session.user.id, 
+            username: user, 
+            score: val 
+        }, { onConflict: 'user_id' });
+        console.log("New Personal Best submitted to leaderboard!");
+    }
+}
+
 async function endGame() {
     if (endGame.running) return;
     endGame.running = true;
     clearInterval(timer);
     
-    // UI Transitions
     document.body.classList.remove('game-active'); 
     game.classList.add('hidden');
     endScreen.classList.remove('hidden');
     
-    // Set final score number
     if (finalScore) finalScore.textContent = score;
 
     const gameOverTitle = document.getElementById('game-over-title');
     const gzTitle = document.getElementById('gz-title');
 
-    // Reset titles to be safe
     if (gameOverTitle) gameOverTitle.classList.add('hidden');
     if (gzTitle) gzTitle.classList.add('hidden');
 
     if (isDailyMode) {
-        // 1. Daily Mode UI
+        // --- DAILY MODE BRANCH ---
         if (playAgainBtn) playAgainBtn.classList.add('hidden');
         
-        // 2. Select Message (Cap score at 10)
         const scoreKey = Math.min(Math.max(score, 0), 10);
         const options = dailyMessages[scoreKey] || ["Game Over!"];
-        const randomMsg = options[Math.floor(Math.random() * options.length)];
-        
-        // 3. Update GameOver Title with flavor text
         if (gameOverTitle) {
-            gameOverTitle.textContent = randomMsg;
+            gameOverTitle.textContent = options[Math.floor(Math.random() * options.length)];
             gameOverTitle.classList.remove('hidden');
         }
 
-        // 4. Save Score to Database
-        if (username && username !== 'Guest') {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                await supabase.from('daily_attempts')
-                    .update({ score: score })
-                    .eq('user_id', session.user.id)
-                    .eq('attempt_date', todayStr);
-            }
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+            // Update the score for today's entry
+            await supabase.from('daily_attempts')
+                .update({ score: score })
+                .eq('user_id', session.user.id)
+                .eq('attempt_date', todayStr);
         }
-        isDailyMode = false; // Reset for next non-daily game
+        
+        isDailyMode = false; // Turn off daily mode flag
+        // WE DO NOT CALL submitLeaderboardScore HERE.
+        
     } else {
-        // Standard Mode UI
+        // --- NORMAL MODE BRANCH ---
         if (playAgainBtn) playAgainBtn.classList.remove('hidden');
         
-        // Show "Gz" if they finished all questions, otherwise "Game Over"
         if (score > 0 && remainingQuestions.length === 0 && preloadQueue.length === 0) {
-            const gzMessages = ['Gz!', 'Go touch grass', 'See you in Lumbridge'];
             if (gzTitle) {
-                gzTitle.textContent = gzMessages[Math.floor(Math.random() * gzMessages.length)];
+                gzTitle.textContent = "Gz! You've cleared the wiki!";
                 gzTitle.classList.remove('hidden');
             }
         } else {
@@ -370,6 +366,7 @@ async function endGame() {
             }
         }
 
+        // Only Normal Mode scores reach the leaderboard function
         if (username && username !== 'Guest') {
             await submitLeaderboardScore(username, score);
         }
@@ -392,29 +389,13 @@ async function loadAudio(url) {
 
 function playSound(buffer) {
     if (!buffer || muted) return;
-    
-    // 🔥 On mobile, we must resume inside the play call too 
-    // just in case the context auto-suspended
-    if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-    }
-
+    if (audioCtx.state === 'suspended') audioCtx.resume();
     const source = audioCtx.createBufferSource();
     source.buffer = buffer;
     const gain = audioCtx.createGain();
     gain.gain.value = 0.5;
     source.connect(gain).connect(audioCtx.destination);
-    source.start(0); // Add the 0 for older mobile browser compatibility
-}
-function updateScore() { scoreDisplay.textContent = `Score: ${score}`; }
-
-async function submitLeaderboardScore(user, val) {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
-    const { data: record } = await supabase.from('scores').select('score').eq('user_id', session.user.id).single();
-    if (!record || val > record.score) {
-        await supabase.from('scores').upsert({ user_id: session.user.id, username: user, score: val }, { onConflict: 'user_id' });
-    }
+    source.start(0);
 }
 
 async function startDailyChallenge() {
@@ -428,7 +409,7 @@ async function startDailyChallenge() {
     if (burnError) return alert("You've already played today!");
     
     localStorage.setItem('dailyPlayedDate', todayStr);
-    lockDailyButton(); // Gray out immediately on this device
+    lockDailyButton(); 
 
     const { data: allQuestions } = await supabase.from('questions').select('id').order('id', { ascending: true });
     if (!allQuestions || allQuestions.length < 10) return alert("Error loading questions.");
@@ -438,12 +419,13 @@ async function startDailyChallenge() {
     const dayCounter = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     
     const questionsPerDay = 10;
-    const daysPerCycle = Math.floor(allQuestions.length / questionsPerDay); 
-    const cycleNumber = Math.floor(dayCounter / daysPerCycle); 
-    const dayInCycle = dayCounter % daysPerCycle;
+    const totalQ = allQuestions.length;
+    
+    const cycleNumber = Math.floor((dayCounter * questionsPerDay) / totalQ);
+    const chunkIndex = (dayCounter * questionsPerDay) % totalQ;
 
     const shuffledList = shuffleWithSeed(allQuestions, cycleNumber);
-    const dailyIds = shuffledList.slice(dayInCycle * questionsPerDay, (dayInCycle * questionsPerDay) + questionsPerDay).map(q => q.id);
+    const dailyIds = shuffledList.slice(chunkIndex, chunkIndex + 10).map(q => q.id);
 
     isDailyMode = true;
     resetGame();
@@ -464,7 +446,7 @@ startBtn.onclick = () => {
 };
 playAgainBtn.onclick = () => startGame();
 mainMenuBtn.onclick = () => {
-    preloadQueue = []; // Clear the buffer only when going back to menu
+    preloadQueue = []; 
     window.location.reload(); 
 };
 
@@ -481,23 +463,16 @@ if (dailyBtn) {
         dailyBtn.classList.add('is-active');
         dailyBtn.classList.remove('disabled');
     } else {
-        dailyBtn.classList.remove('is-active');
-        dailyBtn.classList.add('disabled');
+        lockDailyButton();
     }
 
     dailyBtn.onclick = async () => {
-        // 🔥 1. IMMEDIATE AUDIO UNLOCK
-        if (audioCtx.state === 'suspended') {
-            audioCtx.resume();
-        }
-        // Start loading sounds immediately so the buffers are ready
+        if (audioCtx.state === 'suspended') audioCtx.resume();
         loadSounds(); 
 
         if (!cachedLoggedIn) return alert("Please log in to play!");
         if (localStorage.getItem('dailyPlayedDate') === todayStr) return alert("Already played today!");
         
-        isDailyMode = true;
-        // Start the actual challenge logic
         startDailyChallenge();
     };
 }
@@ -518,24 +493,10 @@ function seededRandom(seed) {
 }
 
 function subscribeToDailyChanges(userId) {
-    supabase
-        .channel('daily-updates')
-        .on('postgres_changes', {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'daily_attempts',
-            filter: `user_id=eq.${userId}`
-        }, (payload) => {
-            console.log('Daily challenge sync: locking button.');
-            localStorage.setItem('dailyPlayedDate', todayStr);
-            lockDailyButton();
-        })
-        .subscribe();
+    supabase.channel('daily-updates').on('postgres_changes', {
+        event: 'INSERT', schema: 'public', table: 'daily_attempts', filter: `user_id=eq.${userId}`
+    }, (payload) => {
+        localStorage.setItem('dailyPlayedDate', todayStr);
+        lockDailyButton();
+    }).subscribe();
 }
-
-
-
-
-
-
-
