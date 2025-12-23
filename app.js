@@ -339,13 +339,13 @@ muteBtn.onclick = () => {
 
 
 authBtn.onclick = async () => {
+    // We check the storage directly here to be 100% sure of current status
     const isLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
 
     if (isLoggedIn) {
         // --- LOGOUT FLOW ---
-        const { error } = await supabase.auth.signOut();
-        if (error) console.error("Logout error:", error.message);
-
+        await supabase.auth.signOut();
+    
         // Clear local storage
         localStorage.removeItem('cachedLoggedIn');
         localStorage.removeItem('cachedUsername');
@@ -358,6 +358,7 @@ authBtn.onclick = async () => {
         window.location.href = 'auth.html';
     }
 };
+
 
 
 
