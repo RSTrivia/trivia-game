@@ -338,27 +338,6 @@ muteBtn.onclick = () => {
 };
 
 
-authBtn.onclick = async () => {
-    // We check the storage directly here to be 100% sure of current status
-    const isLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
-
-    if (isLoggedIn) {
-        // --- LOGOUT FLOW ---
-        await supabase.auth.signOut();
-    
-        // Clear local storage
-        localStorage.removeItem('cachedLoggedIn');
-        localStorage.removeItem('cachedUsername');
-        localStorage.removeItem('dailyPlayedDate');
-
-        // Refresh to show "Log In" state
-        window.location.reload();
-    } else {
-        // --- LOGIN FLOW ---
-        window.location.href = 'auth.html';
-    }
-};
-
 
 // ====== DAILY BUTTON LOGIC ======
 if (dailyBtn) {
@@ -389,6 +368,7 @@ if (dailyBtn) {
         startGame();
     };
 }
+
 
 
 
