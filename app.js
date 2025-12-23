@@ -189,8 +189,13 @@ async function handleTimeout() {
     // 2. Show the correct answer so they know what they missed
     await highlightCorrectAnswer();
     
-    // 3. Move to end screen after a short delay
-    setTimeout(endGame, 1000);
+    // 3. Move to end screen after a short delay, only if not daily mode.
+    if (isDailyMode) {
+        // Move to next question instead of ending
+        setTimeout(loadQuestion, 1500);
+    } else {
+        setTimeout(endGame, 1000);
+    }
 }
 
 async function checkAnswer(choiceId, btn) { // choiceId is a number (1-4)
@@ -224,7 +229,14 @@ async function checkAnswer(choiceId, btn) { // choiceId is a number (1-4)
         playSound(wrongBuffer);
         btn.classList.add('wrong');
         await highlightCorrectAnswer();
-        setTimeout(endGame, 1000);
+
+        // 🛡️ DAILY MODE LOGIC: Don't end game, just move to next question
+        if (isDailyMode) {
+            setTimeout(loadQuestion, 1500); // Give them a moment to see the correct answer
+        } else {
+            // Normal mode still ends on first mistake
+            setTimeout(endGame, 1000);
+        }
     }
 }
 
@@ -318,6 +330,7 @@ muteBtn.onclick = () => {
     muteBtn.querySelector('#muteIcon').textContent = muted ? '🔇' : '🔊';
     muteBtn.classList.toggle('is-muted', muted);
 };
+
 
 
 
