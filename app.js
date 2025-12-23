@@ -108,8 +108,11 @@ function resetGame() {
     score = 0;
     preloadQueue = [];
     currentQuestion = null;
+    // Clear text and UI immediately to prevent flicker
+    questionText.textContent = '';
     answersBox.innerHTML = '';
     questionImage.style.display = 'none';
+    questionImage.src = ''; // Clear the previous image source
     timeLeft = 15;
     timeDisplay.textContent = timeLeft;
     timeWrap.classList.remove('red-timer');
@@ -161,6 +164,7 @@ async function startGame() {
 
 async function loadQuestion() {
     answersBox.innerHTML = '';
+    questionText.textContent = ''; // Add this line
     if (preloadQueue.length === 0 && remainingQuestions.length === 0) {
         await endGame();
         return;
@@ -490,6 +494,7 @@ function subscribeToDailyChanges(userId) {
         })
         .subscribe();
 }
+
 
 
 
