@@ -180,12 +180,22 @@ async function handleTimeout() {
 
 async function checkAnswer(selected, btn) {
     clearInterval(timer);
+    // Disable all buttons to prevent double-clicking
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
 
-    const { data: isCorrect } = await supabase.rpc('check_my_answer', {
-    input_id: currentQuestion.id, // Changed from q_id to input_id
-    choice: selected
+    console.log("Checking answer for ID:", currentQuestion.id, "Choice:", selected);
+
+    // CALL THE RPC
+    const { data: isCorrect, error } = await supabase.rpc('check_my_answer', {
+        input_id: currentQuestion.id, // This MUST match the SQL argument name exactly
+        choice: selected.trim()       // .trim() removes any accidental spaces
     });
+
+    if (error) {
+        console.error("RPC Error Details:", error);
+        // If it's a 404, this log will show us if the URL/name is wrong
+        return;
+    }
 
     if (isCorrect) {
         playSound(correctBuffer);
@@ -265,5 +275,6 @@ muteBtn.onclick = () => {
     muteBtn.querySelector('#muteIcon').textContent = muted ? '🔇' : '🔊';
     muteBtn.classList.toggle('is-muted', muted);
 };
+
 
 
