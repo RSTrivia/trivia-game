@@ -5,70 +5,59 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>OSRS Trivia</title>
   <script>
+  // Define these globally for this script
   const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
   const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
-  const cachedMuted = localStorage.getItem('muted') === 'true'; // Add this
-
-  // Get today's date string (e.g., "2025-12-22")
+  const cachedMuted = localStorage.getItem('muted') === 'true';
   const todayStr = new Date().toISOString().split('T')[0];
-  // Check if they played today according to our pre-fetched cache
   const hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
-    
+
+  // This function handles the button click
+  function handleAuthAction() {
+    if (localStorage.getItem('cachedLoggedIn') === 'true') {
+      // Logout logic
+      if (window.supabase) window.supabase.auth.signOut();
+      localStorage.removeItem('cachedLoggedIn');
+      localStorage.removeItem('cachedUsername');
+      localStorage.removeItem('dailyPlayedDate');
+      window.location.reload();
+    } else {
+      // Login logic - Use absolute path if necessary
+      window.location.href = 'auth.html';
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     const span = document.getElementById('usernameSpan');
-    const authBtn = document.getElementById('authBtn'); // Get the button
+    const authBtn = document.getElementById('authBtn');
     const authLabel = authBtn?.querySelector('.btn-label');
-    const muteIcon = document.getElementById('muteIcon'); // Get the span
-    const muteBtn = document.getElementById('muteBtn');   // Get the button
-    const dailyBtn = document.getElementById('dailyBtn'); // Get the Daily Button
-    
-    // Immediate UI updates
+    const muteIcon = document.getElementById('muteIcon');
+    const muteBtn = document.getElementById('muteBtn');
+    const dailyBtn = document.getElementById('dailyBtn');
+
     if (span) span.textContent = ' ' + cachedUsername;
     if (authLabel) authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
-    
-    // 🔥 IMMEDIATE MUTE UPDATE (Stops flicker)
+
     if (muteIcon && muteBtn) {
       muteIcon.textContent = cachedMuted ? '🔇' : '🔊';
-      if (cachedMuted) {
-        muteBtn.classList.add('is-muted');
-      }
+      if (cachedMuted) muteBtn.classList.add('is-muted');
     }
-    
-    // 🔥 IMMEDIATE DAILY BUTTON UPDATE (Stops flicker)
+
     if (dailyBtn) {
       if (cachedLoggedIn && !hasPlayed) {
-        // Logged in and hasn't played: Show Gold
         dailyBtn.classList.add('is-active');
         dailyBtn.classList.remove('disabled');
       } else {
-        // Not logged in OR already played: Show Grey
         dailyBtn.classList.remove('is-active');
         dailyBtn.classList.add('disabled');
       }
     }
 
-    // 4. 🔥 THE FIX: ATTACH CLICK DIRECTLY HERE
-if (authBtn) {
-  authBtn.addEventListener('click', (e) => {
-    e.preventDefault(); // Stop any default behavior
-    console.log("Login button clicked!"); // Check F12 console for this
-
-    const isLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
-    
-    if (isLoggedIn) {
-        // Log out flow
-        if (window.supabase) window.supabase.auth.signOut();
-        localStorage.removeItem('cachedLoggedIn');
-        localStorage.removeItem('cachedUsername');
-        localStorage.removeItem('dailyPlayedDate');
-        window.location.reload();
-    } else {
-        // Direct redirect - use window.location.assign for better compatibility
-        console.log("Directing to login...");
-        window.location.assign('auth.html');
+    // Attach the function to the button
+    if (authBtn) {
+      authBtn.onclick = handleAuthAction;
     }
   });
-}
 </script>
 
   <!-- 🔥 Load last background BEFORE first paint (NO flicker) -->
@@ -162,6 +151,7 @@ if (authBtn) {
   <script src="background.js" defer></script>
 </body>
 </html>
+
 
 
 
