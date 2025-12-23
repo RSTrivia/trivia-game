@@ -15,7 +15,13 @@ function setBusy(isBusy) {
 signupBtn.addEventListener('click', async () => {
     const username = usernameInput.value.trim();
     const password = passwordInput.value;
+    // --- NEW VALIDATION CODE ---
+    // This regex checks if the string contains ONLY letters (a-z) and numbers (0-9)
+    const alphanumericRegex = /^[a-zA-Z0-9]+$/;
 
+    if (!alphanumericRegex.test(username)) {
+        return alert("Username can only contain letters and numbers (no spaces or symbols).");
+    }
     // ... (Your existing validation checks: length, regex, etc. are perfect) ...
     if (!username || password.length < 6) return alert("Check username/password requirements.");
 
