@@ -146,18 +146,18 @@
   <div id="app">
     <div class="container">
       <h1 id="leaderboard-title">Leaderboard</h1>
-     <ul id="leaderboard">
-        <li class="first"><span><span class="rank-slot">🥇</span></span><span></span></li>
-        <li class="second"><span><span class="rank-slot">🥈</span></span><span></span></li>
-        <li class="third"><span><span class="rank-slot">🥉</span></span><span></span></li>
-        <li><span><span class="rank-slot"><span class="number-nudge">4.</span></span></span><span></span></li>
-        <li><span><span class="rank-slot"><span class="number-nudge">5.</span></span></span><span></span></li>
-        <li><span><span class="rank-slot"><span class="number-nudge">6.</span></span></span><span></span></li>
-        <li><span><span class="rank-slot"><span class="number-nudge">7.</span></span></span><span></span></li>
-        <li><span><span class="rank-slot"><span class="number-nudge">8.</span></span></span><span></span></li>
-        <li><span><span class="rank-slot"><span class="number-nudge">9.</span></span></span><span></span></li>
-        <li><span><span class="rank-slot"><span class="number-nudge">10.</span></span></span><span></span></li>
-    </ul>
+    <ul id="leaderboard">
+          <li class="first"><span class="name-part"></span><span class="score-part"></span></li>
+          <li class="second"><span class="name-part"></span><span class="score-part"></span></li>
+          <li class="third"><span class="name-part"></span><span class="score-part"></span></li>
+          <li><span class="name-part"></span><span class="score-part"></span></li>
+          <li><span class="name-part"></span><span class="score-part"></span></li>
+          <li><span class="name-part"></span><span class="score-part"></span></li>
+          <li><span class="name-part"></span><span class="score-part"></span></li>
+          <li><span class="name-part"></span><span class="score-part"></span></li>
+          <li><span class="name-part"></span><span class="score-part"></span></li>
+          <li><span class="name-part"></span><span class="score-part"></span></li>
+      </ul>
       <a href="index.html" class="btn-small">Main Menu</a>
     </div>
   </div>
@@ -169,27 +169,24 @@
     const leaderboardRows = document.querySelectorAll('#leaderboard li');
 
 function updateLeaderboard(data) {
-  leaderboardRows.forEach((row, i) => {
-    const entry = data[i] || { username: '', score: '' };
-    const spans = row.querySelectorAll('span');
-    
-    const isMedal = i < 3;
-    const rankIndicator = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
-    const innerClass = isMedal ? "" : "class='number-nudge'";
+      leaderboardRows.forEach((row, i) => {
+        const entry = data[i] || { username: '', score: '' };
+        const nameSpan = row.querySelector('.name-part');
+        const scoreSpan = row.querySelector('.score-part');
+        
+        const isMedal = i < 3;
+        const rankIndicator = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
+        const innerClass = isMedal ? "" : "class='number-nudge'";
 
-    // We build exactly what we want the HTML to look like
-    const newRankHTML = `<span class="rank-slot"><span ${innerClass}>${rankIndicator}</span></span>${entry.username}`;
-    const newScoreHTML = `${entry.score}`;
+        // Build the HTML
+        const newNameHTML = `<span class="rank-slot"><span ${innerClass}>${rankIndicator}</span></span>${entry.username}`;
+        const newScoreHTML = entry.username ? `${entry.score}` : '';
 
-    // 🔥 ONLY update if the content is different (This stops the flicker)
-    if (spans[0].innerHTML !== newRankHTML) {
-        spans[0].innerHTML = newRankHTML;
+        // Update ONLY if changed to prevent flicker
+        if (nameSpan.innerHTML !== newNameHTML) nameSpan.innerHTML = newNameHTML;
+        if (scoreSpan.innerHTML !== newScoreHTML) scoreSpan.innerHTML = newScoreHTML;
+      });
     }
-    if (spans[1].innerHTML !== newScoreHTML) {
-        spans[1].innerHTML = newScoreHTML;
-    }
-  });
-}
 
     async function fetchLeaderboard() {
       try {
@@ -217,6 +214,7 @@ function updateLeaderboard(data) {
   </script>
 </body>
 </html>
+
 
 
 
