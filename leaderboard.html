@@ -161,19 +161,34 @@
   <script type="module">
     const leaderboardRows = document.querySelectorAll('#leaderboard li');
 
-    function updateLeaderboard(data) {
+   function updateLeaderboard(data) {
       leaderboardRows.forEach((row, i) => {
         const entry = data[i] || { username: '', score: '' };
         const spans = row.querySelectorAll('span');
         
-        const pos = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
-        
+        const isMedal = i < 3;
+        const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉';
+        const rankNum = `${i + 1}.`;
+
         if (entry.username) {
-            // This structure works with the CSS min-width: 45px above
-            spans[0].innerHTML = `<div style="min-width:45px">${pos}</div> ${entry.username}`;
+            if (isMedal) {
+                // MEDAL ROWS: Medal at the start, name follows normally
+                spans[0].innerHTML = `${medal} &nbsp; ${entry.username}`;
+            } else {
+                // NUMBER ROWS: We add spaces BEFORE the number 
+                // This pushes the number "4." to sit under the "S" in "Shir"
+                const indent = i + 1 < 10 ? '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' : '&nbsp;&nbsp;';
+                spans[0].innerHTML = `${indent}${rankNum} &nbsp; ${entry.username}`;
+            }
             spans[1].innerHTML = `${entry.score}`;
         } else {
-            spans[0].innerHTML = `<div style="min-width:45px">${pos}</div>`;
+            // Empty rows: Show the indicator in its aligned position
+            if (isMedal) {
+                spans[0].innerHTML = medal;
+            } else {
+                const indent = i + 1 < 10 ? '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' : '&nbsp;&nbsp;';
+                spans[0].innerHTML = `${indent}${rankNum}`;
+            }
             spans[1].innerHTML = ``;
         }
       });
@@ -205,3 +220,4 @@
   </script>
 </body>
 </html>
+
