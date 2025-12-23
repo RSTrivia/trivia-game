@@ -274,7 +274,7 @@ function updateLeaderboard(data) {
 }
 
 async function fetchLeaderboard() {
-  console.log('Fetching fresh scores...');
+  //console.log('Fetching fresh scores...');
   // Change 'public_leaderboard' to 'scores' if the view is broken
   const { data, error } = await supabase
     .from('scores') 
@@ -324,6 +324,7 @@ supabase
 
 </body>
 </html>
+
 
 
 
