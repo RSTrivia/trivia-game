@@ -129,6 +129,11 @@
     width: 35px; /* Adjust this to move the names closer/further from the medals */
     text-align: left;
 }
+/* This targets ONLY numbers (like 4.) inside the rank slot */
+/* and pushes them to the right to sit under the medals */
+.number-rank {
+    margin-left: 6px;  /* Adjust this number to move 4-10 left or right */
+}
     
   </style>
 </head>
@@ -168,17 +173,17 @@
     const entry = data[i] || { username: '', score: '' };
     const spans = row.querySelectorAll('span');
     
-    // Determine the Rank indicator
+    const isMedal = i < 3;
     const rankIndicator = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
 
+    // Determine if we should add the extra nudge class
+    const rankClass = isMedal ? "rank-slot" : "rank-slot number-rank";
+
     if (entry.username) {
-        // We wrap the rank in a 'rank-slot' to force alignment
-        // No more &nbsp;&nbsp;&nbsp; needed!
-        spans[0].innerHTML = `<span class="rank-slot">${rankIndicator}</span>${entry.username}`;
+        spans[0].innerHTML = `<span class="${rankClass}">${rankIndicator}</span>${entry.username}`;
         spans[1].innerHTML = `${entry.score}`;
     } else {
-        // If empty, just show the rank in its slot
-        spans[0].innerHTML = `<span class="rank-slot">${rankIndicator}</span>`;
+        spans[0].innerHTML = `<span class="${rankClass}">${rankIndicator}</span>`;
         spans[1].innerHTML = ``;
     }
   });
@@ -210,6 +215,7 @@
   </script>
 </body>
 </html>
+
 
 
 
