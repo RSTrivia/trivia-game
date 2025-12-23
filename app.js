@@ -106,7 +106,7 @@ function lockDailyButton() {
 function resetGame() {
     clearInterval(timer);
     score = 0;
-    preloadQueue = [];
+    // REMOVED: preloadQueue = [];  <-- We keep these for the next round!
     currentQuestion = null;
     // Clear text and UI immediately to prevent flicker
     questionText.textContent = '';
@@ -145,20 +145,33 @@ async function preloadNextQuestions() {
 async function startGame() {
     document.body.classList.add('game-active'); 
     endGame.running = false;
-    resetGame();
-
+    
+    // 1. Show game UI immediately
     game.classList.remove('hidden');
     document.getElementById('start-screen').classList.add('hidden');
     endScreen.classList.add('hidden');
+    
+    // 2. Prepare the state without wiping preloaded questions
+    resetGame();
     updateScore();
     await loadSounds(); 
 
+    // 3. Get the full list of IDs from DB
     const { data: idList, error } = await supabase.rpc('get_all_question_ids');
     if (error) return console.error("RPC Error:", error.message);
 
-    remainingQuestions = idList.map(item => item.id).sort(() => Math.random() - 0.5);
+    // 4. Create the new deck, but REMOVE the IDs that are already in the preloadQueue
+    const preloadedIds = preloadQueue.map(q => q.id);
+    remainingQuestions = idList
+        .map(item => item.id)
+        .filter(id => !preloadedIds.includes(id)) // Don't duplicate what we already have
+        .sort(() => Math.random() - 0.5);
     
-    await preloadNextQuestions(); 
+    // 5. If for some reason preload was empty, fill it. Otherwise, this is instant.
+    if (preloadQueue.length === 0) {
+        await preloadNextQuestions(); 
+    }
+    
     loadQuestion();
 }
 
@@ -494,6 +507,7 @@ function subscribeToDailyChanges(userId) {
         })
         .subscribe();
 }
+
 
 
 
