@@ -49,7 +49,7 @@ signupBtn.addEventListener('click', async () => {
 });
 
 loginBtn.addEventListener('click', async () => {
-    const username = usernameInput.value.trim();
+    const username = usernameInput.value.trim().toLowerCase();
     const password = passwordInput.value;
 
     if (!username || !password) return alert("Enter credentials.");
