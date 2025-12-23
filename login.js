@@ -76,25 +76,29 @@ loginBtn.addEventListener('click', async () => {
         return;
     }
 
-    // Parallel Fetch: Get Profile AND Daily Status at once (Faster!)
-    const [profileRes, dailyRes] = await Promise.all([
-        supabase.from('profiles').select('username').eq('id', data.user.id).single(),
-        supabase.from('daily_attempts').select('attempt_date').eq('user_id', data.user.id).eq('attempt_date', todayStr).single()
-    ]);
+    // 🛡️ Wrap in try/catch to ensure we ALWAYS redirect, even if DB fetch fails
+    try {
+        const [profileRes, dailyRes] = await Promise.all([
+            supabase.from('profiles').select('username').eq('id', data.user.id).single(),
+            supabase.from('daily_attempts').select('attempt_date').eq('user_id', data.user.id).eq('attempt_date', todayStr).single()
+        ]);
 
-    const finalUsername = profileRes.data?.username || usernameInputVal;
-    
-    localStorage.setItem('cachedUsername', finalUsername);
-    localStorage.setItem('cachedLoggedIn', 'true');
+        const finalUsername = profileRes.data?.username || usernameInputVal;
+        localStorage.setItem('cachedUsername', finalUsername);
 
-    if (dailyRes.data) {
-        localStorage.setItem('dailyPlayedDate', todayStr);
-    } else {
-        localStorage.removeItem('dailyPlayedDate');
+        if (dailyRes.data) {
+            localStorage.setItem('dailyPlayedDate', todayStr);
+        } else {
+            localStorage.removeItem('dailyPlayedDate');
+        }
+    } catch (err) {
+        console.warn("Post-login data fetch failed, proceeding with defaults:", err);
+        localStorage.setItem('cachedUsername', usernameInputVal);
     }
     
+    // Save state and go home
+    localStorage.setItem('cachedLoggedIn', 'true');
     window.location.href = 'index.html';
 });
-
 app.classList.remove('app-hidden');
 app.classList.add('app-ready');
