@@ -186,22 +186,19 @@ async function handleTimeout() {
     setTimeout(endGame, 1000);
 }
 
-async function checkAnswer(selected, btn) {
+async function checkAnswer(choiceId, btn) { // choiceId is a number (1-4)
     clearInterval(timer);
-    // Disable all buttons to prevent double-clicking
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
 
-    console.log("Checking answer for ID:", currentQuestion.id, "Choice:", selected);
+    console.log("Checking answer for ID:", currentQuestion.id, "Choice index:", choiceId);
 
-    // CALL THE RPC
     const { data: isCorrect, error } = await supabase.rpc('check_my_answer', {
-        input_id: currentQuestion.id, // This MUST match the SQL argument name exactly
-        choice: selected.trim()       // .trim() removes any accidental spaces
+        input_id: currentQuestion.id,
+        choice: choiceId // No .trim() and no .toString()!
     });
 
     if (error) {
         console.error("RPC Error Details:", error);
-        // If it's a 404, this log will show us if the URL/name is wrong
         return;
     }
 
@@ -289,6 +286,7 @@ muteBtn.onclick = () => {
     muteBtn.querySelector('#muteIcon').textContent = muted ? '🔇' : '🔊';
     muteBtn.classList.toggle('is-muted', muted);
 };
+
 
 
 
