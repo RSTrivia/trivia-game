@@ -96,7 +96,6 @@ function lockDailyButton() {
         dailyBtn.classList.add('disabled');
         // Update label to indicate it's finished
         const label = dailyBtn.querySelector('.btn-label');
-        if (label) label.textContent = "Played Today";
         dailyBtn.onclick = () => alert("You've already played today's challenge!");
     }
 }
@@ -354,8 +353,9 @@ async function endGame() {
         if (playAgainBtn) playAgainBtn.classList.remove('hidden');
         
         if (score > 0 && remainingQuestions.length === 0 && preloadQueue.length === 0) {
+           const gzMessages = ['Gz!', 'Go touch grass', 'See you in Lumbridge'];
             if (gzTitle) {
-                gzTitle.textContent = "Gz! You've cleared the wiki!";
+               gzTitle.textContent = gzMessages[Math.floor(Math.random() * gzMessages.length)];
                 gzTitle.classList.remove('hidden');
             }
         } else {
@@ -501,3 +501,4 @@ function subscribeToDailyChanges(userId) {
 }
 
 function updateScore() { scoreDisplay.textContent = `Score: ${score}`; }
+
