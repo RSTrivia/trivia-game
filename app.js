@@ -270,32 +270,39 @@ async function highlightCorrectAnswer() {
 async function endGame() {
     if (endGame.running) return;
     endGame.running = true;
-    console.log("EndGame triggered. Score:", score, "Daily Mode:", isDailyMode); // Debugging line
-
     clearInterval(timer);
+    
+    // UI Transitions
     document.body.classList.remove('game-active'); 
     game.classList.add('hidden');
     endScreen.classList.remove('hidden');
-    finalScore.textContent = score;
+    
+    // Set final score number
+    if (finalScore) finalScore.textContent = score;
 
     const gameOverTitle = document.getElementById('game-over-title');
     const gzTitle = document.getElementById('gz-title');
 
+    // Reset titles to be safe
+    if (gameOverTitle) gameOverTitle.classList.add('hidden');
+    if (gzTitle) gzTitle.classList.add('hidden');
+
     if (isDailyMode) {
-        playAgainBtn.classList.add('hidden');
+        // 1. Daily Mode UI
+        if (playAgainBtn) playAgainBtn.classList.add('hidden');
         
-        // Cap the score at 10 to match your dailyMessages keys
-        const scoreKey = Math.min(score, 10);
-        const options = dailyMessages[scoreKey] || ["Challenge Complete!"];
+        // 2. Select Message (Cap score at 10)
+        const scoreKey = Math.min(Math.max(score, 0), 10);
+        const options = dailyMessages[scoreKey] || ["Game Over!"];
         const randomMsg = options[Math.floor(Math.random() * options.length)];
         
+        // 3. Update GameOver Title with flavor text
         if (gameOverTitle) {
             gameOverTitle.textContent = randomMsg;
             gameOverTitle.classList.remove('hidden');
         }
-        if (gzTitle) gzTitle.classList.add('hidden');
 
-        // Supabase Sync
+        // 4. Save Score to Database
         if (username && username !== 'Guest') {
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
@@ -305,12 +312,28 @@ async function endGame() {
                     .eq('attempt_date', todayStr);
             }
         }
-        isDailyMode = false; 
+        isDailyMode = false; // Reset for next non-daily game
     } else {
-        // Standard Mode logic...
-        playAgainBtn.classList.remove('hidden');
-        if (gameOverTitle) gameOverTitle.textContent = "Game Over!";
-        if (gameOverTitle) gameOverTitle.classList.remove('hidden');
+        // Standard Mode UI
+        if (playAgainBtn) playAgainBtn.classList.remove('hidden');
+        
+        // Show "Gz" if they finished all questions, otherwise "Game Over"
+        if (score > 0 && remainingQuestions.length === 0 && preloadQueue.length === 0) {
+            const gzMessages = ['Gz!', 'Go touch grass', 'See you in Lumbridge'];
+            if (gzTitle) {
+                gzTitle.textContent = gzMessages[Math.floor(Math.random() * gzMessages.length)];
+                gzTitle.classList.remove('hidden');
+            }
+        } else {
+            if (gameOverTitle) {
+                gameOverTitle.textContent = "Game Over!";
+                gameOverTitle.classList.remove('hidden');
+            }
+        }
+
+        if (username && username !== 'Guest') {
+            await submitLeaderboardScore(username, score);
+        }
     }
     endGame.running = false;
 }
@@ -467,6 +490,7 @@ function subscribeToDailyChanges(userId) {
         })
         .subscribe();
 }
+
 
 
 
