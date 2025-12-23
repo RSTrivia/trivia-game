@@ -37,7 +37,7 @@
       <h1>OSRS Trivia</h1>
       
           <div class="row">
-            <input id="username" placeholder="Username" autocomplete="username" class="input-field" />
+            <input id="username" placeholder="Username" autocomplete="username" class="input-field" oninput="this.value = this.value.replace(/[^a-zA-Z0-9]/g, '')" />
           </div>
       
           <div class="row">
@@ -61,6 +61,7 @@
 
 </body>
 </html>
+
 
 
 
