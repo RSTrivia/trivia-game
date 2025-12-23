@@ -1,701 +1,180 @@
 import { supabase } from './supabase.js';
-window.supabase = supabase; // This makes it visible to the F12 console
+window.supabase = supabase; 
 const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
-// ====== IMMEDIATE CACHED UI (runs before paint) ======
+// ====== UI & STATE ======
 const cachedMuted = localStorage.getItem('muted') === 'true';
 const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
 const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
 
-  const startBtn = document.getElementById('startBtn');
-  const playAgainBtn = document.getElementById('playAgainBtn');
-  const mainMenuBtn = document.getElementById('mainMenuBtn');
-  const game = document.getElementById('game');
-  const endScreen = document.getElementById('end-screen');
-  const finalScore = document.getElementById('finalScore');
-  const scoreDisplay = document.getElementById('score');
-  const questionText = document.getElementById('questionText');
-  const questionImage = document.getElementById('questionImage');
-  const answersBox = document.getElementById('answers');
-  const timeDisplay = document.getElementById('time');
-  //const muteBtn = document.getElementById('muteBtn');
-  const timeWrap = document.getElementById('time-wrap');
-  let correctBuffer, wrongBuffer;
-  let muted = cachedMuted;
-  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-const todayStr = new Date().toISOString().split('T')[0];
-const appDiv = document.getElementById('app');
+const startBtn = document.getElementById('startBtn');
+const playAgainBtn = document.getElementById('playAgainBtn');
+const mainMenuBtn = document.getElementById('mainMenuBtn');
+const game = document.getElementById('game');
+const endScreen = document.getElementById('end-screen');
+const finalScore = document.getElementById('finalScore');
+const scoreDisplay = document.getElementById('score');
+const questionText = document.getElementById('questionText');
+const questionImage = document.getElementById('questionImage');
+const answersBox = document.getElementById('answers');
+const timeDisplay = document.getElementById('time');
+const timeWrap = document.getElementById('time-wrap');
 const userDisplay = document.getElementById('userDisplay');
 const authBtn = document.getElementById('authBtn');
 const muteBtn = document.getElementById('muteBtn');
 const dailyBtn = document.getElementById('dailyBtn');
-let authLabel;
+
+let correctBuffer, wrongBuffer;
+let muted = cachedMuted;
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+const todayStr = new Date().toISOString().split('T')[0];
 
 let username = cachedLoggedIn ? cachedUsername : '';
 let score = 0;
-let questions = [];
+let questionsCount = 0; 
 let remainingQuestions = [];
 let currentQuestion = null;
-let preloadQueue = []; // holds up to 2 questions 
+let preloadQueue = []; 
 let timer;
 let timeLeft = 15;
+let isDailyMode = false;
+let authLabel = authBtn?.querySelector('.btn-label');
 
-if (authBtn) {
-  authLabel = authBtn.querySelector('.btn-label');
-}
-
-if (userDisplay) {
-  const span = userDisplay.querySelector('#usernameSpan');
-  if (span) span.textContent = ' ' + cachedUsername;
-}
-
-if (authBtn) {
-  authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
-}
-
-if (appDiv) {
-  appDiv.style.opacity = '1';
-}
-
+// ====== INITIAL UI SYNC ======
+if (userDisplay) userDisplay.querySelector('#usernameSpan').textContent = ' ' + (username || 'Guest');
+if (authLabel) authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
 if (muteBtn) {
-  const muteIcon = muteBtn.querySelector('#muteIcon');
-  if (muteIcon) {
-    muteIcon.textContent = cachedMuted ? '🔇' : '🔊';
-  }
-  if (cachedMuted) {
-    muteBtn.classList.add('is-muted');
-  }
+    muteBtn.querySelector('#muteIcon').textContent = cachedMuted ? '🔇' : '🔊';
+    if (cachedMuted) muteBtn.classList.add('is-muted');
 }
 
-if (dailyBtn) {
-    const hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
+// ====== GAME ENGINE ======
 
-    // Only show gold if we are confident they are logged in AND haven't played
-    if (cachedLoggedIn && !hasPlayed) {
-        dailyBtn.classList.add('is-active');
-        dailyBtn.classList.remove('disabled');
-    } else {
-        // Ensure it starts gray if there's any doubt
-        dailyBtn.classList.remove('is-active');
-        dailyBtn.classList.add('disabled');
-    }
-}
-
-const dailyMessages = {
-  0: ["Ouch. Zero XP gained today.", "Lumbridge is calling your name."],
-  1: ["At least it's not a zero!", "One is better than none... barely."],
-  2: ["Tomorrow will be better!", "The RNG was not in your favor."],
-  3: ["A bronze-tier effort.", "You're still warming up, right?"],
-  4: ["Getting there! Halfway to decent.", "Not bad, but not quite 'pro'."],
-  5: ["A solid 50%. Perfectly balanced.", "Mid-level performance!"],
-  6: ["You did great!", "Above average! Keep it up."],
-  7: ["Nice! You really know your OSRS.", "Solid score! High-scores material."],
-  8: ["Legendary! You're a walking wiki.", "Almost a perfect run!"],
-  9: ["Incredible! So close to perfection!", "An elite achievement."],
-  10: ["Perfect! A True Completionist!", "Absolute Master of Trivia!"]
-};
-
-let isDailyMode = false; // Track if current game is the daily challenge
-
-
-async function checkDailyStatus() {
-  const currentToday = new Date().toISOString().split('T')[0];
-    // 1. Get Session
-    const { data: { session } } = await supabase.auth.getSession();
-  
-    // 2. Clear old cache! 
-    // If the stored date isn't today, it's garbage. Remove it.
-    if (localStorage.getItem('dailyPlayedDate') !== currentToday) {
-        localStorage.removeItem('dailyPlayedDate');
-    }
-  
-    // 2. Handle Guest / Logged Out
-    if (!session) {
-        dailyBtn.classList.remove('is-active');
-        dailyBtn.classList.add('disabled');
-        dailyBtn.onclick = () => alert("Daily Challenge is for members only. Please Log In to play!");
-        return;
-    }
-
-    // 2.5. If cache already says we played, stop here to prevent "Gold Flickering"
-    const cachedDailyDate = localStorage.getItem('dailyPlayedDate');
-    if (cachedDailyDate === todayStr) {
-        dailyBtn.classList.remove('is-active');
-        dailyBtn.classList.add('disabled');
-        return;
-    }
-      
-    // 3. Database Truth Check
-    const { data: existing } = await supabase
-        .from('daily_attempts')
-        .select('score')
-        .eq('user_id', session.user.id)
-        .eq('attempt_date', todayStr)
-        .maybeSingle();
-
-    if (existing) {
-        // 1. Sync the cache so we don't have to keep asking the DB today
-        localStorage.setItem('dailyPlayedDate', todayStr);
-
-        // 2. Visuals: Turn off the gold
-        dailyBtn.classList.remove('is-active');
-        dailyBtn.classList.add('disabled');
-
-        // 3. Feedback: Tell them why it's disabled if they manage to click it
-        dailyBtn.onclick = () => {
-            alert(`You've already completed today's challenge! Your score was: ${existing.score}/10`);
-      };
-    } else {
-        // --- FINAL GOLD STATE ---
-        dailyBtn.classList.add('is-active');
-        dailyBtn.classList.remove('disabled');
-        
-        // 🔥 Re-attach the click listener here!
-        dailyBtn.onclick = () => {
-            if (isTouch) {
-                dailyBtn.classList.add('tapped');
-                setTimeout(() => {
-                    dailyBtn.classList.remove('tapped');
-                    startDailyChallenge();
-                }, 150);
-            } else {
-                startDailyChallenge();
-            }
-        };
-    }
-}
-
-// 2. The Daily Logic function
-async function startDailyChallenge() {
-  
-    // 1. Check Auth First
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return alert("You must be logged in to play the Daily Challenge!");
-
-    // 2. "Burn" the attempt immediately
-    const { error: burnError } = await supabase
-        .from('daily_attempts')
-        .insert({ 
-            user_id: session.user.id, 
-            score: 0, 
-            attempt_date: todayStr 
-        });
-
-    if (burnError) return alert("You've already played today!");
-    localStorage.setItem('dailyPlayedDate', todayStr);
-
-    // 3. Prepare the Questions
-    const { data: allQuestions } = await supabase.from('questions').select('*').order('id', { ascending: true });
-    if (!allQuestions || allQuestions.length < 10) return alert("Error loading questions.");
-
-    // Calculate rotation
-    const startDate = new Date('2025-12-22'); 
-    const diffTime = Math.abs(new Date() - startDate);
-    const dayCounter = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    
-    const questionsPerDay = 10;
-    const daysPerCycle = Math.floor(allQuestions.length / questionsPerDay);
-
-    // --- ADD THE CHECK HERE ---
-    let dailySet;
-    if (daysPerCycle === 0) {
-        // Fallback: If for some reason you have < 10 questions total
-        dailySet = allQuestions.slice(0, questionsPerDay);
-    } else {
-        const cycleNumber = Math.floor(dayCounter / daysPerCycle);
-        const dayInCycle = dayCounter % daysPerCycle;
-    
-        const shuffledList = shuffleWithSeed(allQuestions, cycleNumber);
-        dailySet = shuffledList.slice(
-            dayInCycle * questionsPerDay, 
-            (dayInCycle * questionsPerDay) + questionsPerDay
-        );
-    }
-
-    // Visually update the main menu button immediately
-    dailyBtn.classList.remove('is-active'); // Ensure gold is gone
-    dailyBtn.classList.add('disabled');
-    dailyBtn.onclick = null;
-  
-    // 4. NOW Launch the Game (All data is ready)
-    isDailyMode = true;
-    resetGame();
-    remainingQuestions = dailySet; // This now works because dailySet exists!
-
-    // Visually update the main menu button
-    dailyBtn.classList.add('disabled');
-    dailyBtn.onclick = null;
-    //dailyBtn.textContent = "Daily Mode";
-
-    // Show Game Screen
-    document.body.classList.add('game-active'); 
-    document.getElementById('start-screen').classList.add('hidden');
-    game.classList.remove('hidden');
-    
-    updateScore();
-    loadQuestion();
-}
-
-
-document.addEventListener('DOMContentLoaded', async () => {
-
-
-setTimeout(checkDailyStatus, 50);
-  
-  
-
-  // Single, clean Click Listener
-muteBtn.addEventListener('click', () => {
-  muted = !muted; 
-  localStorage.setItem('muted', muted);
-  
-  // Trigger the gold flash for visual feedback
-  //if (isTouch) {
-    //mobileFlash(muteBtn);
-  //}
-  
-  // Resume AudioContext if it's the first interaction
-  if (audioCtx.state === 'suspended') {
-    audioCtx.resume();
-  }
-
-  syncMuteUI();
-});
-
-
-const subscribeToDailyChanges = (userId) => {
-  supabase
-    .channel('daily-updates')
-    .on(
-      'postgres_changes',
-      {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'daily_attempts',
-        filter: `user_id=eq.${userId}`
-      },
-      (payload) => {
-        console.log('Daily challenge started on another device!');
-        // Update LocalStorage so a refresh also stays gray
-        localStorage.setItem('dailyPlayedDate', todayStr);
-        
-        // Instantly update the UI
-        dailyBtn.classList.remove('is-active');
-        dailyBtn.classList.add('disabled');
-        dailyBtn.onclick = () => alert("You've already started today's challenge on another device!");
-      }
-    )
-    .subscribe();
-};
-
-// Trigger the subscription when the session is confirmed
-supabase.auth.getSession().then(({ data: { session } }) => {
-  if (session) subscribeToDailyChanges(session.user.id);
-});
-  
-   // -------------------------
-  // Preload Auth: Correct Username & Button
-  // -------------------------
-  async function preloadAuth() {
-    const { data: { session } } = await supabase.auth.getSession();
-
-    if (!session) {
-        // The cache lied! The session is dead. Fix the button.
-        localStorage.setItem('cachedLoggedIn', 'false');
-        if (dailyBtn) {
-            dailyBtn.classList.remove('is-active');
-            dailyBtn.classList.add('disabled');
-        }
-        return; 
-    }
-    
-    if (!session?.user) return; // nothing to do
-  
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('username')
-      .eq('id', session.user.id)
-      .maybeSingle();
-  
-    if (!profile?.username) return;
-
-    // --- NEW GOLD BUTTON SYNC ---
-    // If we have a profile, we are officially logged in.
-    const hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
-    if (dailyBtn && !hasPlayed) {
-        dailyBtn.classList.add('is-active');
-        dailyBtn.classList.remove('disabled');
-    }
-    
-    if (profile.username !== username) {
-      localStorage.setItem('cachedUsername', profile.username);
-      localStorage.setItem('cachedLoggedIn', 'true');
-      username = profile.username;
-      let span;
-      if (userDisplay) {
-        span = userDisplay.querySelector('#usernameSpan');
-      }
-      if (span && span.textContent !== ' ' + profile.username) {
-        span.textContent = ' ' + profile.username;
-      }
-
-      
-     if (authLabel) authLabel.textContent = 'Log Out';
-
-    }
-  }
-
-    // Call this immediately to prevent flicker
-  await preloadAuth();
-
- 
- // -------------------------
-  // Supabase auth listener (Resilient Multi-Session)
-  // -------------------------
-supabase.auth.onAuthStateChange(async (event, session) => {
-  if (event === 'SIGNED_OUT') {
-    if (username && username !== 'Guest') return;
-    
-    // Normal logout logic
-    username = '';
-    localStorage.setItem('cachedLoggedIn', 'false');
-    if (userDisplay) userDisplay.querySelector('#usernameSpan').textContent = ' Guest';
-    if (authLabel) authLabel.textContent = 'Log In';
-
-    // 🔥 FIX: Make the button grey/disabled immediately on logout
-    checkDailyStatus(); 
-    return;
-  }
-
-  if (session?.user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('username')
-      .eq('id', session.user.id)
-      .single();
-
-    if (profile?.username) {
-      username = profile.username;
-      localStorage.setItem('cachedLoggedIn', 'true');
-      localStorage.setItem('cachedUsername', username);
-      
-      if (userDisplay) {
-        userDisplay.querySelector('#usernameSpan').textContent = ' ' + username;
-      }
-      if (authLabel) authLabel.textContent = 'Log Out';
-
-      // 🔥 FIX: This is the magic line. 
-      // It runs the check the moment the login is confirmed.
-      checkDailyStatus(); 
-    }
-  }
-
-  // Every 2 minutes, verify the state with the database just in case
-setInterval(() => {
-    if (localStorage.getItem('cachedLoggedIn') === 'true') {
-        checkDailyStatus();
-    }
-}, 120000);
-}); //end of DOM block
-  
-  // -------------------------
-  // Auth Button
-  // -------------------------
-    // --- Update your Auth Button Logic ---
-authBtn.onclick = async () => {
-    authBtn.blur();
-    
-    if (username && username !== 'Guest') {
-        // Log out of Supabase locally
-        await supabase.auth.signOut({ scope: 'local' });
-        localStorage.removeItem('dailyPlayedDate'); 
-
-        // Manually trigger the UI change for THIS device immediately
-        username = '';
-        localStorage.setItem('cachedLoggedIn', 'false');
-        localStorage.setItem('cachedUsername', 'Guest');
-        if (userDisplay) userDisplay.querySelector('#usernameSpan').textContent = ' Guest';
-        if (authLabel) authLabel.textContent = 'Log In';
-    } else {
-        window.location.href = 'login.html';
-    }
-};
- 
-
-  
- 
-  // -------------------------
-  // Buttons
-  // -------------------------
-startBtn.onclick = () => {
-    if (isTouch) {
-      // If the engine is asleep, wake it up now (PC & Mobile)
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-      
-      // 1. Show gold state immediately
-      startBtn.classList.add('tapped');
-      
-      // 2. Short delay for the "Gold Hold" feeling
-      setTimeout(() => {
-        // 3. Remove gold and trigger the game
-        // (startGame handles the database fetch internally)
-        startBtn.classList.remove('tapped');
-        startGame();
-      }, 150);
-    } else {
-      // PC: Instant
-      startGame();
-    }
-  };
-  //test for GZ message !!! replace endgame.onclick
-  /*startBtn.addEventListener('click', async () => {
-    ;
-    await loadSounds();
-
-    questions = new Array(510);
-    score = 510; // pretend max score
-    remainingQuestions = [];
-
-    document.getElementById('start-screen').classList.add('hidden');
-    await endGame();
-  });*/
-
-  playAgainBtn.onclick = () => {
-    if (isTouch) {
-      playAgainBtn.classList.add('tapped');
-      setTimeout(() => {
-        playAgainBtn.classList.remove('tapped');
-        startGame();
-      }, 150);
-    } else {
-      startGame();
-    }
-  };
-
-  mainMenuBtn.onclick = () => {
-    const goHome = () => {
-      document.body.classList.remove('game-active');
-      preloadQueue = []; 
-      resetGame();
-      game.classList.add('hidden');
-      endScreen.classList.add('hidden');
-      document.getElementById('start-screen').classList.remove('hidden');
-      updateScore();
-    };
-
-    //  TO SYNC THE BUTTON ---
-      if (dailyBtn) {
-        const hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
-        if (hasPlayed) {
-          dailyBtn.classList.remove('is-active');
-          dailyBtn.classList.add('disabled');
-          dailyBtn.onclick = null; // Kill the click event
-          // If you want to change the text:
-          // dailyBtn.textContent = "Played Today"; 
-        }
-      }
-    
-    if (isTouch) {
-      mainMenuBtn.classList.add('tapped');
-      setTimeout(() => {
-        mainMenuBtn.classList.remove('tapped');
-        goHome();
-      }, 150);
-    } else {
-      goHome();
-    }
-  };
-
-  // Handle page restore from back/forward cache (mobile back button)
-  window.addEventListener('pageshow', (event) => {
-    if (event.persisted) {
-      resetGame();
-      document.getElementById('start-screen').classList.remove('hidden');
-      game.classList.add('hidden');
-      endScreen.classList.add('hidden');
-      updateScore();
-    }
-  });
-  
-  // Optional safeguard if game is visible but questions empty
-  if (!questions.length && !game.classList.contains('hidden')) {
-    resetGame();
-    document.getElementById('start-screen').classList.remove('hidden');
-    game.classList.add('hidden');
-    endScreen.classList.add('hidden');
-    updateScore();
-  }
-});
-
-//muteBtn.addEventListener('click', () => {
-  //if (isTouch) mobileFlash(muteBtn);
-//});
-
-// Helper Functions (Place outside or at bottom of file)
-function shuffleWithSeed(array, seed) {
-  let arr = [...array];
-  let m = arr.length, t, i;
-  while (m) {
-    i = Math.floor(seededRandom(seed++) * m--);
-    t = arr[m]; arr[m] = arr[i]; arr[i] = t;
-  }
-  return arr;
-}
-
-function seededRandom(seed) {
-  let x = Math.sin(seed) * 10000;
-  return x - Math.floor(x);
-}
-
- // -------------------------
-  // Game Logic (UNCHANGED)
-  // -------------------------
-  function resetGame() {
+function resetGame() {
     clearInterval(timer);
     score = 0;
-    questions = [];
-    remainingQuestions = [];
+    preloadQueue = [];
     currentQuestion = null;
-    questionText.textContent = '';
     answersBox.innerHTML = '';
     questionImage.style.display = 'none';
     timeLeft = 15;
     timeDisplay.textContent = timeLeft;
     timeWrap.classList.remove('red-timer');
-  }
+}
 
 async function preloadNextQuestions() {
-  let attempts = 0;
+    let attempts = 0;
+    while (preloadQueue.length < 2 && remainingQuestions.length > 0 && attempts < 10) {
+        attempts++;
+        const index = Math.floor(Math.random() * remainingQuestions.length);
+        const qId = remainingQuestions[index];
 
-  // We loop until we have 2 questions ready or we run out of IDs
-  while (
-    preloadQueue.length < 2 &&
-    remainingQuestions.length > 0 &&
-    attempts < 10
-  ) {
-    attempts++;
+        if ((currentQuestion && qId === currentQuestion.id) || preloadQueue.some(p => p.id === qId)) continue;
 
-    // 1. Pick a random ID from our list of numbers
-    const index = Math.floor(Math.random() * remainingQuestions.length);
-    const qId = remainingQuestions[index];
+        remainingQuestions.splice(index, 1);
+        const { data, error } = await supabase.rpc('get_question_by_id', { q_id: qId });
 
-    // 2. Prevent duplicates (Don't preload what's already in the queue or being shown)
-    if (
-      (currentQuestion && qId === currentQuestion.id) ||
-      preloadQueue.some(p => p.id === qId)
-    ) {
-      continue;
+        if (!error && data && data[0]) {
+            preloadQueue.push(data[0]);
+            if (data[0].question_image) {
+                const img = new Image();
+                img.src = data[0].question_image;
+            }
+        }
     }
+}
 
-    // 3. Remove the ID from the "remaining" list immediately 
-    // This ensures no other loop tries to grab it
-    remainingQuestions.splice(index, 1);
+async function startGame() {
+    const { data: sessionData } = await supabase.auth.getSession();
+    document.body.classList.add('game-active'); 
+    endGame.running = false;
+    resetGame();
 
-    // 4. Fetch the full data (text/image) for this specific ID
-    const { data, error } = await supabase.rpc('get_question_by_id', { q_id: qId });
+    game.classList.remove('hidden');
+    document.getElementById('start-screen').classList.add('hidden');
+    endScreen.classList.add('hidden');
+    updateScore();
+    await loadSounds(); 
 
-    if (!error && data && data[0]) {
-      const fullQuestion = data[0];
-      preloadQueue.push(fullQuestion);
+    const { data: idList, error } = await supabase.rpc('get_all_question_ids');
+    if (error || !idList?.length) return;
 
-      // 5. Pre-download the image if it exists
-      if (fullQuestion.question_image) {
-        preloadImage(fullQuestion.question_image);
-      }
-    }
-  }
+    remainingQuestions = idList.map(item => item.id).sort(() => Math.random() - 0.5);
+    questionsCount = remainingQuestions.length;
+    
+    await preloadNextQuestions(); // Wait for first question
+    loadQuestion();
 }
 
 async function loadQuestion() {
-  answersBox.innerHTML = '';
-  
-  // 1. Check if the game is truly over
-  if (preloadQueue.length === 0 && remainingQuestions.length === 0) {
-    await endGame();
-    return;
-  }
-
-  // 2. Emergency Fetch: If the queue is empty but we have IDs left, 
-  // fill the queue before continuing.
-  if (preloadQueue.length === 0 && remainingQuestions.length > 0) {
-    await preloadNextQuestions();
-  }
-
-  // 3. GET THE QUESTION FROM THE QUEUE
-  // We don't need to call supabase.rpc here because preloadNextQuestions already did!
-  currentQuestion = preloadQueue.shift();
-
-  // 4. REFILL THE QUEUE IN THE BACKGROUND
-  // This happens while the player is reading the current question.
-  preloadNextQuestions();
-
-  // 5. Display Content (This part was correct)
-  questionText.textContent = currentQuestion.question;
-  
-  if (currentQuestion.question_image) {
-    questionImage.style.display = 'none';
-    questionImage.onload = () => { questionImage.style.display = 'block'; };
-    questionImage.src = currentQuestion.question_image;
-  } else {
-    questionImage.style.display = 'none';
-  }
-
-  // 6. Create Buttons
-  let answers = [
-    currentQuestion.answer_a, 
-    currentQuestion.answer_b, 
-    currentQuestion.answer_c, 
-    currentQuestion.answer_d
-  ].filter(Boolean).sort(() => Math.random() - 0.5);
-
-  answers.forEach((ansText) => {
-    const btn = document.createElement('button');
-    btn.textContent = ansText;
-    btn.classList.add('answer-btn');
-
-    if (isTouch) {
-      btn.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        btn.click();
-      }, { passive: false });
+    answersBox.innerHTML = '';
+    
+    if (preloadQueue.length === 0 && remainingQuestions.length === 0) {
+        await endGame();
+        return;
     }
 
-    btn.onclick = () => checkAnswer(ansText, btn);
-    answersBox.appendChild(btn);
-  });
-  
-  // Don't forget to restart your timer here!
-  resetTimer(); 
+    if (preloadQueue.length === 0) await preloadNextQuestions();
+
+    currentQuestion = preloadQueue.shift();
+    preloadNextQuestions(); // Background refill
+
+    questionText.textContent = currentQuestion.question;
+    if (currentQuestion.question_image) {
+        questionImage.style.display = 'none';
+        questionImage.onload = () => { questionImage.style.display = 'block'; };
+        questionImage.src = currentQuestion.question_image;
+    } else {
+        questionImage.style.display = 'none';
+    }
+
+    let answers = [
+        currentQuestion.answer_a, currentQuestion.answer_b, 
+        currentQuestion.answer_c, currentQuestion.answer_d
+    ].filter(Boolean).sort(() => Math.random() - 0.5);
+
+    answers.forEach((ansText) => {
+        const btn = document.createElement('button');
+        btn.textContent = ansText;
+        btn.classList.add('answer-btn');
+        btn.onclick = () => checkAnswer(ansText, btn);
+        answersBox.appendChild(btn);
+    });
+
+    startTimer();
 }
 
-  // 5. Timer Logic
-  clearInterval(timer);
-  startTimer(); // Call your timer function
+function startTimer() {
+    clearInterval(timer);
+    timeLeft = 15;
+    timeDisplay.textContent = timeLeft;
+    timeWrap.classList.remove('red-timer');
+
+    timer = setInterval(() => {
+        timeLeft--;
+        timeDisplay.textContent = timeLeft;
+        if (timeLeft <= 5) timeWrap.classList.add('red-timer');
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            handleTimeout();
+        }
+    }, 1000);
+}
+
+async function handleTimeout() {
+    playSound(wrongBuffer);
+    await highlightCorrectAnswer();
+    setTimeout(endGame, 1000);
 }
 
 async function checkAnswer(selected, btn) {
     clearInterval(timer);
+    document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
 
-    // Force the button to lose focus
-    if (btn) btn.blur();
-    
-    document.querySelectorAll('.answer-btn').forEach(b => {
-        b.disabled = true;
-        b.blur(); 
-    });
-
-    // --- NEW SECURE CHECK ---
-    // We ask the database: "Is this choice correct for this question ID?"
-    const { data: isCorrect, error } = await supabase.rpc('check_my_answer', {
+    const { data: isCorrect } = await supabase.rpc('check_my_answer', {
         q_id: currentQuestion.id, 
         choice: selected
     });
-
-    if (error) {
-        console.error("Security check failed:", error);
-        return;
-    }
 
     if (isCorrect) {
         playSound(correctBuffer);
@@ -706,298 +185,72 @@ async function checkAnswer(selected, btn) {
     } else {
         playSound(wrongBuffer);
         btn.classList.add('wrong');
-        
-        // Note: highlightCorrectAnswer() might need a small tweak 
-        // if the client no longer knows the correct answer!
-        await highlightCorrectAnswer(); 
-        
+        await highlightCorrectAnswer();
         setTimeout(endGame, 1000);
     }
 }
 
 async function highlightCorrectAnswer() {
-    // 1. Fetch the correct text from the server since the client doesn't have it
-    const { data: correctAnswerText, error } = await supabase.rpc('reveal_correct_answer', {
-        q_id: currentQuestion.id
-    });
-
-    if (error) {
-        console.error("Could not reveal answer:", error);
-        return;
-    }
-
-    // 2. Find the button that contains that specific text
-    document.querySelectorAll('.answer-btn').forEach((btn) => {
-        if (btn.innerText.trim() === correctAnswerText) {
-            btn.classList.add('correct');
-        }
+    const { data: correctText } = await supabase.rpc('reveal_correct_answer', { q_id: currentQuestion.id });
+    document.querySelectorAll('.answer-btn').forEach(btn => {
+        if (btn.innerText.trim() === correctText) btn.classList.add('correct');
     });
 }
 
-  function updateScore() {
-    scoreDisplay.textContent = `Score: ${score}`;
-  }
-
-
-
-   async function endGame() {
-  await supabase.auth.getSession();
-  if (endGame.running) return;
-  endGame.running = true;
-  
-  document.body.classList.remove('game-active'); 
-  clearInterval(timer);
-  game.classList.add('hidden');
-  endScreen.classList.remove('hidden');
-  finalScore.textContent = score;
-
-  const gameOverTitle = document.getElementById('game-over-title');
-  const gzTitle = document.getElementById('gz-title');
-
-  if (isDailyMode) {
-    // 1. Hide the Play Again button for Daily Mode
-    playAgainBtn.classList.add('hidden');
-    
-    // 2. Pick a random message based on the score
-    const options = dailyMessages[score] || ["Game Over!"];
-    const randomMsg = options[Math.floor(Math.random() * options.length)];
-    
-    // 3. Update the UI
-    gameOverTitle.textContent = randomMsg;
-    gameOverTitle.classList.remove('hidden');
-    gzTitle.classList.add('hidden');
-
-    // 4. Save Daily Score to the new table
-    if (username && username !== 'Guest') {
-      await submitDailyScore(score);
-    }
-    
-    // Reset mode for next session
-    isDailyMode = false; 
-  } else {
-    // --- STANDARD MODE LOGIC ---
-    playAgainBtn.classList.remove('hidden');
-    
-    if (score === questions.length && remainingQuestions.length === 0) {
-      const gzMessages = ['Gz!', 'Go touch grass', 'See you in Lumbridge'];
-      gzTitle.textContent = gzMessages[Math.floor(Math.random() * gzMessages.length)];
-      gzTitle.classList.remove('hidden');
-      gameOverTitle.classList.add('hidden');
-    } else {
-      gameOverTitle.textContent = "Game Over!";
-      gzTitle.classList.add('hidden');
-      gameOverTitle.classList.remove('hidden');
-    }
+async function endGame() {
+    if (endGame.running) return;
+    endGame.running = true;
+    clearInterval(timer);
+    document.body.classList.remove('game-active'); 
+    game.classList.add('hidden');
+    endScreen.classList.remove('hidden');
+    finalScore.textContent = score;
 
     if (username && username !== 'Guest') {
-      await submitLeaderboardScore(username, score);
+        await submitLeaderboardScore(username, score);
     }
-  }
 }
-  // Initialize the running flag **after the function exists**
-  endGame.running = false;
+endGame.running = false;
 
-
-
-async function startGame() {
-  // 1. FRESH HANDSHAKE
-  const { data: sessionData } = await supabase.auth.getSession();
-
-  if (!sessionData.session && localStorage.getItem('cachedLoggedIn') === 'true') {
-    username = '';
-    localStorage.setItem('cachedLoggedIn', 'false');
-    if (userDisplay) userDisplay.querySelector('#usernameSpan').textContent = ' Guest';
-  }
-  
-  document.body.classList.add('game-active'); 
-  endGame.running = false;
-  resetGame();
-
-  game.classList.remove('hidden');
-  document.getElementById('start-screen').classList.add('hidden');
-  endScreen.classList.add('hidden');
-  updateScore();
-  loadSounds(); 
-  
- // 1. Get ONLY the list of IDs
-  const { data: idList, error } = await supabase.rpc('get_all_question_ids');
-  
-  if (error || !idList?.length) return;
-  
- // 2. Store and shuffle the IDs
-  remainingQuestions = idList.map(item => item.id).sort(() => Math.random() - 0.5);
-  
-  // 3. Preload the first couple of questions immediately
-  await preloadNextQuestions();
-
-  // 4. Start the game
-  loadQuestion();
+// ====== HELPERS & AUDIO ======
+async function loadSounds() {
+    if (!correctBuffer) correctBuffer = await loadAudio('./sounds/correct.mp3');
+    if (!wrongBuffer) wrongBuffer = await loadAudio('./sounds/wrong.mp3');
 }
 
- async function loadSounds() {
-    correctBuffer = await loadAudio('./sounds/correct.mp3');
-    wrongBuffer = await loadAudio('./sounds/wrong.mp3');
-  }
-
-  async function loadAudio(url) {
-    const response = await fetch(url);
-    const arrayBuffer = await response.arrayBuffer();
-    return audioCtx.decodeAudioData(arrayBuffer);
-  }
+async function loadAudio(url) {
+    const resp = await fetch(url);
+    const buf = await resp.arrayBuffer();
+    return audioCtx.decodeAudioData(buf);
+}
 
 function playSound(buffer) {
-  // If muted is true, stop immediately
-  if (!buffer || muted) return;
-
-  // PC FIX: If the engine is still suspended, try one last resume 
-  // before giving up, or just allow it to attempt playback.
-  const source = audioCtx.createBufferSource();
-  source.buffer = buffer;
-  const gainNode = audioCtx.createGain();
-  gainNode.gain.value = 0.5;
-  source.connect(gainNode).connect(audioCtx.destination);
-  source.start();
+    if (!buffer || muted) return;
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const source = audioCtx.createBufferSource();
+    source.buffer = buffer;
+    const gain = audioCtx.createGain();
+    gain.gain.value = 0.5;
+    source.connect(gain).connect(audioCtx.destination);
+    source.start();
 }
 
-// Function to sync UI with the 'muted' variable
-const syncMuteUI = () => {
-  const muteIcon = document.getElementById('muteIcon');
-  if (!muteBtn || !muteIcon) return;
+function updateScore() { scoreDisplay.textContent = `Score: ${score}`; }
 
-  muteIcon.textContent = muted ? '🔇' : '🔊';
+async function submitLeaderboardScore(user, val) {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+    await supabase.from('scores').upsert({ user_id: session.user.id, username: user, score: val }, { onConflict: 'user_id' });
+}
 
-  if (muted) {
-    muteBtn.classList.add('is-muted');
-  } else {
-    muteBtn.classList.remove('is-muted');
-  }
+// ====== EVENT LISTENERS ======
+startBtn.onclick = () => startGame();
+playAgainBtn.onclick = () => startGame();
+mainMenuBtn.onclick = () => window.location.reload();
+
+muteBtn.onclick = () => {
+    muted = !muted;
+    localStorage.setItem('muted', muted);
+    muteBtn.querySelector('#muteIcon').textContent = muted ? '🔇' : '🔊';
+    muteBtn.classList.toggle('is-muted', muted);
 };
-
-function preloadImage(url) {
-  const img = new Image();
-  img.src = url;
-}
-
-// -------------------------
-  // Leaderboard
-  // -------------------------
-  async function submitLeaderboardScore(username, score) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { data: existingScore } = await supabase
-      .from('scores')
-      .select('score')
-      .eq('user_id', user.id)
-      .single();
-
-    if (!existingScore || score > existingScore.score) {
-      await supabase
-        .from('scores')
-        .upsert({ user_id: user.id, username, score }, { onConflict: 'user_id' });
-    }
-  }
-
-
-async function submitDailyScore(dailyScore) {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
-
-  // We use .update() here because the row already exists from when they clicked "Start"
-  const { error } = await supabase
-    .from('daily_attempts')
-    .update({ score: dailyScore })
-    .eq('user_id', user.id)
-    .eq('attempt_date', todayStr);
-
-  if (error) console.error("Error updating daily score:", error.message);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
