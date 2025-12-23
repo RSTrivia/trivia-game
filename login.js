@@ -33,7 +33,11 @@ signupBtn.addEventListener('click', async () => {
 
         if (!response.ok) throw new Error(result.error || "Signup failed");
 
-        // Success - Auto Login after signup
+        // Success - Save the ID returned from the server
+        if (result.user && result.user.id) {
+            localStorage.setItem('supabase_user_id', result.user.id);
+        }
+        
         localStorage.setItem('cachedUsername', username);
         localStorage.setItem('cachedLoggedIn', 'true');
         window.location.href = 'index.html';
@@ -63,7 +67,12 @@ loginBtn.addEventListener('click', async () => {
 
         if (!response.ok) throw new Error(result.error || "Login failed");
 
-        // Save session info
+        // --- THE FIX FOR PC + MOBILE ---
+        // Save the unique User ID so this device stays authenticated independently
+        if (result.userId) {
+            localStorage.setItem('supabase_user_id', result.userId);
+        }
+
         localStorage.setItem('cachedUsername', result.username);
         localStorage.setItem('cachedLoggedIn', 'true');
         
