@@ -263,18 +263,23 @@ async function endGame() {
     if (endGame.running) return;
     endGame.running = true;
     clearInterval(timer);
+    
     document.body.classList.remove('game-active'); 
     game.classList.add('hidden');
     endScreen.classList.remove('hidden');
-    finalScore.textContent = score;
+    finalScore.textContent = score; // Just show it on screen
 
-    // 🛡️ ONLY submit to leaderboard if it's a normal game (NOT Daily Mode)
-    if (username && username !== 'Guest' && !isDailyMode) {
-        await submitLeaderboardScore(username, score);
-    } else if (isDailyMode) {
-        console.log("Daily mode finished. Score not eligible for Personal Best leaderboard.");
-        // Optional: Call a different function here if you have a Daily Leaderboard
+    if (isDailyMode) {
+        console.log("Daily Challenge complete. Score not saved per request.");
+        isDailyMode = false; // Reset for the next session
+    } else {
+        // Normal Mode: Save to Leaderboard
+        if (username && username !== 'Guest') {
+            await submitLeaderboardScore(username, score);
+        }
     }
+    
+    endGame.running = false;
 }
 endGame.running = false;
 
@@ -325,8 +330,60 @@ async function submitLeaderboardScore(user, val) {
     }
 }
 
+async function startDailyChallenge() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return alert("Log in to play Daily Mode!");
+
+    // 1. "Burn" the attempt immediately so they can't restart
+    // We just need to record THAT they played today.
+    const { error: burnError } = await supabase
+        .from('daily_attempts')
+        .insert({ user_id: session.user.id, attempt_date: todayStr });
+
+    if (burnError) return alert("You've already played today!");
+    
+    // Set local storage so the button turns gray immediately
+    localStorage.setItem('dailyPlayedDate', todayStr);
+
+    // 2. Fetch all IDs for rotation
+    const { data: allQuestions } = await supabase.from('questions').select('id').order('id', { ascending: true });
+    if (!allQuestions || allQuestions.length < 10) return alert("Error loading questions.");
+
+    // 3. Rotation Math (Same as before)
+    const startDate = new Date('2025-12-22'); 
+    const diffTime = Math.abs(new Date() - startDate);
+    const dayCounter = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    const questionsPerDay = 10;
+    const daysPerCycle = Math.floor(allQuestions.length / questionsPerDay); 
+    const cycleNumber = Math.floor(dayCounter / daysPerCycle); 
+    const dayInCycle = dayCounter % daysPerCycle;
+
+    // 4. Seeded Shuffle
+    const shuffledList = shuffleWithSeed(allQuestions, cycleNumber);
+    const dailyIds = shuffledList.slice(
+        dayInCycle * questionsPerDay, 
+        (dayInCycle * questionsPerDay) + questionsPerDay
+    ).map(q => q.id);
+
+    // 5. Setup Game
+    isDailyMode = true;
+    resetGame();
+    remainingQuestions = dailyIds; // This limits the game to exactly 10 questions
+    
+    document.body.classList.add('game-active'); 
+    document.getElementById('start-screen').classList.add('hidden');
+    game.classList.remove('hidden');
+    
+    await preloadNextQuestions();
+    loadQuestion();
+}
+
 // ====== EVENT LISTENERS ======
-startBtn.onclick = () => startGame();
+startBtn.onclick = () => {
+    isDailyMode = false; // Ensure we aren't in daily mode
+    startGame();
+};
 playAgainBtn.onclick = () => startGame();
 mainMenuBtn.onclick = () => window.location.reload();
 
@@ -365,11 +422,23 @@ if (dailyBtn) {
         
         // If they pass both, start daily mode
         isDailyMode = true;
-        startGame();
+        startDailyChallenge()
     };
 }
 
+function shuffleWithSeed(array, seed) {
+    let arr = [...array];
+    let m = arr.length, t, i;
+    while (m) {
+        // The seed determines the random sequence
+        i = Math.floor(seededRandom(seed++) * m--);
+        t = arr[m]; arr[m] = arr[i]; arr[i] = t;
+    }
+    return arr;
+}
 
-
-
-
+function seededRandom(seed) {
+    // Standard deterministic pseudo-random generator
+    let x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
+}
