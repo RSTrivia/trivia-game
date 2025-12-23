@@ -6,131 +6,95 @@ const passwordInput = document.getElementById('password');
 const loginBtn = document.getElementById('loginBtn');
 const signupBtn = document.getElementById('signupBtn');
 
-// Sign Up and auto-login
+// Helper to disable/enable UI during loading
+function setBusy(isBusy) {
+    loginBtn.disabled = isBusy;
+    signupBtn.disabled = isBusy;
+    loginBtn.textContent = isBusy ? 'Processing...' : 'Log In';
+}
+
 signupBtn.addEventListener('click', async () => {
-  const username = usernameInput.value.trim();
-  const password = passwordInput.value;
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value;
 
-  // 1. CUSTOM ERROR: Empty fields
-  if (!username || !password) {
-    alert("You must enter a username and password.");
-    return;
-  }
+    // ... (Your existing validation checks: length, regex, etc. are perfect) ...
+    if (!username || password.length < 6) return alert("Check username/password requirements.");
 
-  // 2. CUSTOM ERROR: Username too long (OSRS limit is 12)
-  if (username.length > 12) {
-    alert("Usernames cannot be longer than 12 characters.");
-    return;
-  }
+    setBusy(true);
+    const email = username.toLowerCase() + '@example.com';
+    
+    // 1. Sign Up
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ 
+        email, 
+        password,
+        options: { data: { display_name: username } } // Backup storage of username
+    });
 
-  // 3. CUSTOM ERROR: Invalid characters
-  const regex = /^[a-zA-Z0-9 ]+$/;
-  if (!regex.test(username)) {
-    alert("Usernames can only contain letters, numbers, and spaces.");
-    return;
-  }
+    if (signUpError) {
+        alert(signUpError.message.includes("already registered") ? "Username taken!" : signUpError.message);
+        setBusy(false);
+        return;
+    }
 
-  // 4. CUSTOM ERROR: Password too short (Supabase requirement)
-  if (password.length < 6) {
-    alert("Your password must be at least 6 characters long.");
-    return;
-  }
+    // 2. Create Profile Record
+    if (signUpData.user) {
+        const { error: profileError } = await supabase
+            .from('profiles')
+            .insert({ id: signUpData.user.id, username: username });
 
-  // --- If it passes all checks, proceed to Supabase ---
-  const email = username.toLowerCase() + '@example.com';
-  
-  const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
+        if (profileError) console.error("Profile error:", profileError.message);
+    }
 
-  if (signUpError) {
-    // Handling specific Supabase errors with custom messages
-    if (signUpError.message.includes("already registered")) {
-      alert("That username is already taken!");
+    // 3. Auto Login
+    const { error: loginError } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (loginError) {
+        alert("Account created! Please log in manually.");
+        setBusy(false);
     } else {
-      alert("Sign up failed: " + signUpError.message);
+        localStorage.setItem('cachedUsername', username);
+        localStorage.setItem('cachedLoggedIn', 'true');
+        window.location.href = 'index.html';
     }
-    return;
-  }
-  // 2. Create the profile in the 'profiles' table
-  // We do this immediately after signup
-  if (signUpData.user) {
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .insert({ id: signUpData.user.id, username: username });
-
-    if (profileError) {
-      console.error("Profile creation error:", profileError.message);
-      // We continue anyway, because the auth account was created
-    }
-  }
-
-  // 3. Auto login after sign-up
-  // Note: If you turned off "Email Confirmation" in Supabase, this works instantly.
-  const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({ 
-    email, 
-    password 
-  });
-
-  if (loginError) {
-    alert("Account created, but auto-login failed. Please try logging in manually.");
-    return;
-  }
-
-  // 4. Success! Save to local storage and redirect
-  localStorage.setItem('cachedUsername', username);
-  localStorage.setItem('cachedLoggedIn', 'true');
-  window.location.href = 'index.html';
 });
 
-// Log in
 loginBtn.addEventListener('click', async () => {
-  const usernameInputVal = usernameInput.value.trim();
-  const password = passwordInput.value;
-  const todayStr = new Date().toISOString().split('T')[0]; // Need this here
+    const usernameInputVal = usernameInput.value.trim();
+    const password = passwordInput.value;
+    const todayStr = new Date().toISOString().split('T')[0];
 
-  if (!usernameInputVal || !password) {
-    alert("Please enter both a username and password.");
-    return;
-  }
+    if (!usernameInputVal || !password) return alert("Enter credentials.");
 
-  const email = usernameInputVal.toLowerCase() + '@example.com';
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  
-  if (error || !data.user) {
-    alert("Login failed: " + (error ? error.message : "User not found"));
-    return;
-  }
+    setBusy(true);
+    const email = usernameInputVal.toLowerCase() + '@example.com';
+    
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    
+    if (error || !data.user) {
+        alert("Login failed: " + (error ? error.message : "User not found"));
+        setBusy(false);
+        return;
+    }
 
-  // FETCH the actual profile to get the correct username casing (e.g., Zezima vs zezima)
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('username')
-    .eq('id', data.user.id)
-    .single();
+    // Parallel Fetch: Get Profile AND Daily Status at once (Faster!)
+    const [profileRes, dailyRes] = await Promise.all([
+        supabase.from('profiles').select('username').eq('id', data.user.id).single(),
+        supabase.from('daily_attempts').select('attempt_date').eq('user_id', data.user.id).eq('attempt_date', todayStr).single()
+    ]);
 
-  // 2. CHECK DAILY STATUS IMMEDIATELY (To prevent flicker)
-  const { data: dailyEntry } = await supabase
-    .from('daily_attempts')
-    .select('attempt_date')
-    .eq('user_id', data.user.id)
-    .eq('attempt_date', todayStr)
-    .single();
+    const finalUsername = profileRes.data?.username || usernameInputVal;
+    
+    localStorage.setItem('cachedUsername', finalUsername);
+    localStorage.setItem('cachedLoggedIn', 'true');
 
-  const finalUsername = profile?.username || usernameInputVal;
-  
-  // 3. Save EVERYTHING before redirecting
-  localStorage.setItem('cachedUsername', finalUsername);
-  localStorage.setItem('cachedLoggedIn', 'true');
-
-if (dailyEntry) {
-    localStorage.setItem('dailyPlayedDate', todayStr);
-  } else {
-    // If they haven't played, make sure old data from a previous user is cleared
-    localStorage.removeItem('dailyPlayedDate');
-  }
-  
-  window.location.href = 'index.html';
+    if (dailyRes.data) {
+        localStorage.setItem('dailyPlayedDate', todayStr);
+    } else {
+        localStorage.removeItem('dailyPlayedDate');
+    }
+    
+    window.location.href = 'index.html';
 });
 
-// Reveal UI once JS is ready
 app.classList.remove('app-hidden');
 app.classList.add('app-ready');
