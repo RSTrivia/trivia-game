@@ -181,13 +181,25 @@ function startTimer() {
 }
 
 async function handleTimeout() {
+    // 1. IMMEDIATELY disable buttons so user can't click to cheat
+    document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
+    
     playSound(wrongBuffer);
+    
+    // 2. Show the correct answer so they know what they missed
     await highlightCorrectAnswer();
+    
+    // 3. Move to end screen after a short delay
     setTimeout(endGame, 1000);
 }
 
 async function checkAnswer(choiceId, btn) { // choiceId is a number (1-4)
+    // Safety check: if time is already 0, ignore this click
+    if (timeLeft <= 0) return;
+    
     clearInterval(timer);
+    
+    // Immediately disable buttons to prevent double-clicks
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
 
     console.log("Checking answer for ID:", currentQuestion.id, "Choice index:", choiceId);
@@ -286,6 +298,7 @@ muteBtn.onclick = () => {
     muteBtn.querySelector('#muteIcon').textContent = muted ? '🔇' : '🔊';
     muteBtn.classList.toggle('is-muted', muted);
 };
+
 
 
 
