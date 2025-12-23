@@ -104,18 +104,32 @@ function lockDailyButton() {
 // ====== GAME ENGINE ======
 
 function resetGame() {
+    // 1. Stop any active logic
     clearInterval(timer);
+    
+    // 2. Reset numerical state
     score = 0;
-    // REMOVED: preloadQueue = [];  <-- We keep these for the next round!
     currentQuestion = null;
-    // Clear text and UI immediately to prevent flicker
+    // NOTE: We do NOT reset preloadQueue here. 
+    // This allows "Play Again" to use the 2 questions already buffered.
+
+    // 3. WIPE UI IMMEDIATELY (Prevents the flicker)
     questionText.textContent = '';
     answersBox.innerHTML = '';
+    
+    // 4. Handle Images
     questionImage.style.display = 'none';
-    questionImage.src = ''; // Clear the previous image source
+    questionImage.src = ''; 
+
+    // 5. Reset Timer Visuals
     timeLeft = 15;
     timeDisplay.textContent = timeLeft;
     timeWrap.classList.remove('red-timer');
+    
+    // 6. Reset Score Visual
+    if (scoreDisplay) {
+        scoreDisplay.textContent = `Score: 0`;
+    }
 }
 
 async function preloadNextQuestions() {
@@ -143,38 +157,46 @@ async function preloadNextQuestions() {
 }
 
 async function startGame() {
+    // A. Immediate UI setup
     document.body.classList.add('game-active'); 
     endGame.running = false;
-    
-    // 1. Show game UI immediately
     game.classList.remove('hidden');
     document.getElementById('start-screen').classList.add('hidden');
     endScreen.classList.add('hidden');
     
-    // 2. Prepare the state without wiping preloaded questions
+    // B. Clear score and timers, but NOT the preloaded questions
     resetGame();
     updateScore();
-    await loadSounds(); 
 
-    // 3. Get the full list of IDs from DB
-    const { data: idList, error } = await supabase.rpc('get_all_question_ids');
-    if (error) return console.error("RPC Error:", error.message);
+    // C. LOAD SOUNDS (Start this, but don't let it block the UI if possible)
+    loadSounds(); 
 
-    // 4. Create the new deck, but REMOVE the IDs that are already in the preloadQueue
-    const preloadedIds = preloadQueue.map(q => q.id);
-    remainingQuestions = idList
-        .map(item => item.id)
-        .filter(id => !preloadedIds.includes(id)) // Don't duplicate what we already have
-        .sort(() => Math.random() - 0.5);
-    
-    // 5. If for some reason preload was empty, fill it. Otherwise, this is instant.
-    if (preloadQueue.length === 0) {
-        await preloadNextQuestions(); 
+    // D. INSTANT START: If we have preloaded questions from the last game, start NOW
+    if (preloadQueue.length > 0) {
+        console.log("Instant start using preloaded questions...");
+        loadQuestion(); 
     }
-    
-    loadQuestion();
-}
 
+    // E. BACKGROUND SYNC: Refresh the deck of IDs from Supabase
+    const { data: idList, error } = await supabase.rpc('get_all_question_ids');
+    if (error) {
+        console.error("RPC Error:", error.message);
+    } else {
+        // Filter out IDs that are currently sitting in the preloadQueue 
+        // so we don't ask the same question twice.
+        const preloadedIds = preloadQueue.map(q => q.id);
+        remainingQuestions = idList
+            .map(item => item.id)
+            .filter(id => !preloadedIds.includes(id)) 
+            .sort(() => Math.random() - 0.5);
+    }
+
+    // F. FALLBACK: If preload was empty (first game ever), load now
+    if (!currentQuestion && preloadQueue.length === 0) {
+        await preloadNextQuestions(); 
+        loadQuestion();
+    }
+}
 async function loadQuestion() {
     answersBox.innerHTML = '';
     questionText.textContent = ''; // Add this line
@@ -441,7 +463,10 @@ startBtn.onclick = () => {
     startGame();
 };
 playAgainBtn.onclick = () => startGame();
-mainMenuBtn.onclick = () => window.location.reload();
+mainMenuBtn.onclick = () => {
+    preloadQueue = []; // Clear the buffer only when going back to menu
+    window.location.reload(); 
+};
 
 muteBtn.onclick = () => {
     muted = !muted;
@@ -507,6 +532,7 @@ function subscribeToDailyChanges(userId) {
         })
         .subscribe();
 }
+
 
 
 
