@@ -139,16 +139,24 @@ async function loadQuestion() {
         questionImage.style.display = 'none';
     }
 
+    // Map letters to the 1, 2, 3, 4 structure of your DB
     let answers = [
-        currentQuestion.answer_a, currentQuestion.answer_b, 
-        currentQuestion.answer_c, currentQuestion.answer_d
-    ].filter(Boolean).sort(() => Math.random() - 0.5);
-
-    answers.forEach((ansText) => {
+        { text: currentQuestion.answer_a, id: 1 },
+        { text: currentQuestion.answer_b, id: 2 },
+        { text: currentQuestion.answer_c, id: 3 },
+        { text: currentQuestion.answer_d, id: 4 }
+    ].filter(a => a.text).sort(() => Math.random() - 0.5);
+    
+    answers.forEach((ans) => {
         const btn = document.createElement('button');
-        btn.textContent = ansText;
+        btn.textContent = ans.text;
         btn.classList.add('answer-btn');
-        btn.onclick = () => checkAnswer(ansText, btn);
+        
+        // Store the number (1, 2, 3, or 4) on the button element
+        btn.dataset.answerId = ans.id; 
+
+        // Pass the NUMBER to checkAnswer, not the text
+        btn.onclick = () => checkAnswer(ans.id, btn);
         answersBox.appendChild(btn);
     });
 
@@ -212,9 +220,15 @@ async function checkAnswer(selected, btn) {
 }
 
 async function highlightCorrectAnswer() {
-    const { data: correctText } = await supabase.rpc('reveal_correct_answer', {input_id: currentQuestion.id });
+    const { data: correctId } = await supabase.rpc('reveal_correct_answer', { 
+        input_id: currentQuestion.id 
+    });
+
     document.querySelectorAll('.answer-btn').forEach(btn => {
-        if (btn.innerText.trim() === correctText) btn.classList.add('correct');
+        // Compare the button's stored ID to the correct ID from DB
+        if (parseInt(btn.dataset.answerId) === correctId) {
+            btn.classList.add('correct');
+        }
     });
 }
 
@@ -275,6 +289,7 @@ muteBtn.onclick = () => {
     muteBtn.querySelector('#muteIcon').textContent = muted ? '🔇' : '🔊';
     muteBtn.classList.toggle('is-muted', muted);
 };
+
 
 
 
