@@ -284,7 +284,29 @@ function updateScore() { scoreDisplay.textContent = `Score: ${score}`; }
 async function submitLeaderboardScore(user, val) {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
-    await supabase.from('scores').upsert({ user_id: session.user.id, username: user, score: val }, { onConflict: 'user_id' });
+
+    // 1. Check if the user already has a score
+    const { data: existingRecord } = await supabase
+        .from('scores')
+        .select('score')
+        .eq('user_id', session.user.id)
+        .single();
+
+    // 2. Only update if there's no previous score OR the new score is higher
+    if (!existingRecord || val > existingRecord.score) {
+        const { error } = await supabase
+            .from('scores')
+            .upsert({ 
+                user_id: session.user.id, 
+                username: user, 
+                score: val 
+            }, { onConflict: 'user_id' });
+
+        if (error) console.error("Error updating high score:", error.message);
+        else console.log("New high score saved!");
+    } else {
+        console.log("Score was not higher than personal best. No update made.");
+    }
 }
 
 // ====== EVENT LISTENERS ======
@@ -298,6 +320,7 @@ muteBtn.onclick = () => {
     muteBtn.querySelector('#muteIcon').textContent = muted ? '🔇' : '🔊';
     muteBtn.classList.toggle('is-muted', muted);
 };
+
 
 
 
