@@ -97,6 +97,18 @@
     #leaderboard li.second { background: linear-gradient(135deg, rgba(220,220,220,0.3) 0%, rgba(192,192,192,0.3) 100%); color: #C0C0C0; font-weight: 700; }
     #leaderboard li.third { background: rgba(205, 127, 50, 0.3); color: #CD7F32; font-weight: 700; }
 
+    /* Alignment System */
+    .rank-slot {
+        display: inline-block;
+        width: 38px;       /* Fixed width ensures name baseline is always straight */
+        text-align: left;
+    }
+
+    .number-nudge {
+        position: relative;
+        left: 6px;         /* Nudges 4-10 right to align under medals */
+    }
+
     .btn-small {
       background: rgba(0, 0, 0, 0.6);
       color: #d4af37;
@@ -122,31 +134,16 @@
       #leaderboard li { height: 38px !important; min-height: 38px !important; margin-bottom: 5px !important; font-size: 0.95rem !important; }
       .btn-small { margin-top: auto !important; margin-bottom: auto !important; align-self: center !important; }
     }
-
-.rank-slot {
-    display: inline-block;
-    width: 35px;       /* This stays fixed so names never move */
-    text-align: left;
-}
-
-/* This nudges the number to the right WITHOUT pushing the name */
-.number-nudge {
-    position: relative;
-    left: 6px;         /* This moves the 4, 5, 6... right */
-}
-    
   </style>
 </head>
 
 <body>
-  <div id="background-root">
-    <div id="bg-fade-layer"></div>
-  </div>
+  <div id="background-root"><div id="bg-fade-layer"></div></div>
 
   <div id="app">
     <div class="container">
       <h1 id="leaderboard-title">Leaderboard</h1>
-    <ul id="leaderboard">
+      <ul id="leaderboard">
           <li class="first"><span class="name-part"></span><span class="score-part"></span></li>
           <li class="second"><span class="name-part"></span><span class="score-part"></span></li>
           <li class="third"><span class="name-part"></span><span class="score-part"></span></li>
@@ -168,7 +165,7 @@
   <script type="module">
     const leaderboardRows = document.querySelectorAll('#leaderboard li');
 
-function updateLeaderboard(data) {
+    function updateLeaderboard(data) {
       leaderboardRows.forEach((row, i) => {
         const entry = data[i] || { username: '', score: '' };
         const nameSpan = row.querySelector('.name-part');
@@ -176,13 +173,15 @@ function updateLeaderboard(data) {
         
         const isMedal = i < 3;
         const rankIndicator = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
+        
+        // Only numbers (4-10) get the nudge class
         const innerClass = isMedal ? "" : "class='number-nudge'";
 
-        // Build the HTML
+        // Build the HTML using our fixed width slots
         const newNameHTML = `<span class="rank-slot"><span ${innerClass}>${rankIndicator}</span></span>${entry.username}`;
         const newScoreHTML = entry.username ? `${entry.score}` : '';
 
-        // Update ONLY if changed to prevent flicker
+        // Flicker check: Only update the DOM if the values actually changed
         if (nameSpan.innerHTML !== newNameHTML) nameSpan.innerHTML = newNameHTML;
         if (scoreSpan.innerHTML !== newScoreHTML) scoreSpan.innerHTML = newScoreHTML;
       });
@@ -202,8 +201,10 @@ function updateLeaderboard(data) {
       }
     }
 
+    // Refresh every minute
     setInterval(fetchLeaderboard, 60000);
 
+    // Initial load sequence
     (async () => {
       const cachedString = localStorage.getItem('leaderboard');
       if (cachedString) {
@@ -214,11 +215,3 @@ function updateLeaderboard(data) {
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
