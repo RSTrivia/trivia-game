@@ -9,10 +9,7 @@
     (function () {
       const bg = localStorage.getItem("bg_current");
       if (bg) {
-        document.documentElement.style.setProperty(
-          "--bg-image", 
-          `url('${bg}')`
-        );
+        document.documentElement.style.setProperty("--bg-image", `url('${bg}')`);
       }
     })();
   </script>
@@ -51,7 +48,7 @@
       padding: 40px 25px 25px 25px; 
       border-radius: 10px;
       width: 440px;            
-      max-width: 95%;     
+      max-width: 95%;      
       text-align: center;
       margin: 0 auto;
       box-sizing: border-box;
@@ -119,18 +116,43 @@
       text-decoration: none;
       width: 175px !important;           
       height: 45px !important;
+      min-height: 45px !important;
+      max-height: 45px !important;
       margin-top: 20px !important;
       transition: all 0.2s ease;
+      box-sizing: border-box !important;
     }
 
+    /* MOBILE RE-CALIBRATION (FROM GOOD OLD VERSION) */
     @media (max-width: 480px) {
       #app .container {
         width: 440px !important; 
         max-width: 95% !important; 
         height: 640px !important; 
+        min-height: 640px !important;
         padding: 40px 20px 15px 20px !important; 
+        justify-content: flex-start !important;
       }
-      h1#leaderboard-title { font-size: 2.3rem !important; }
+      h1#leaderboard-title { 
+        font-size: 2.3rem !important; 
+        margin-bottom: 30px !important;
+      }
+      #leaderboard {
+        height: 430px !important;
+        min-height: 430px !important;
+        margin: 0 !important;
+      }
+      #leaderboard li {
+        height: 38px !important;
+        min-height: 38px !important;
+        margin-bottom: 5px !important;
+        font-size: 0.95rem !important;
+      }
+      .btn-small {
+        margin-top: auto !important;
+        margin-bottom: auto !important;
+        align-self: center !important;
+      }
     }
   </style>
 </head>
@@ -165,28 +187,22 @@
   <script type="module">
     const leaderboardRows = document.querySelectorAll('#leaderboard li');
 
-    // 1. Function to update the HTML display
     function updateLeaderboard(data) {
       leaderboardRows.forEach((row, i) => {
         const entry = data[i] || { username: '---', score: '---' };
         const spans = row.querySelectorAll('span');
-        
         const pos = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
         
-        spans[0].innerHTML = `${pos} &nbsp; ${entry.username}`;
-        spans[1].innerHTML = `${entry.score}`;
+        spans[0].innerHTML = `${pos} &nbsp; ${entry.username || '---'}`;
+        spans[1].innerHTML = `${entry.score ?? '---'}`;
       });
     }
 
-    // 2. Fetch data from your Render Bridge
     async function fetchLeaderboard() {
       try {
         const response = await fetch('https://supabase-bridge-zzqp.onrender.com/api/get-scores');
-        
         if (!response.ok) throw new Error("Server waking up...");
-
         const data = await response.json();
-
         if (data) {
           localStorage.setItem('leaderboard', JSON.stringify(data));
           updateLeaderboard(data);
@@ -196,18 +212,15 @@
       }
     }
 
-    // 3. Auto-refresh (Polling) every 60 seconds
+    // Auto-refresh every 60 seconds
     setInterval(fetchLeaderboard, 60000);
 
-    // 4. Initial Load
+    // Initial Load
     (async () => {
-      // 1. Show cached data instantly if it exists
       const cachedString = localStorage.getItem('leaderboard');
       if (cachedString) {
         updateLeaderboard(JSON.parse(cachedString));
       }
-
-      // 2. Get fresh data from the server
       await fetchLeaderboard();
     })();
   </script>
