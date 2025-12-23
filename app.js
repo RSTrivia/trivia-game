@@ -290,15 +290,20 @@ async function loadAudio(url) {
 
 function playSound(buffer) {
     if (!buffer || muted) return;
-    if (audioCtx.state === 'suspended') audioCtx.resume();
+    
+    // 🔥 On mobile, we must resume inside the play call too 
+    // just in case the context auto-suspended
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+
     const source = audioCtx.createBufferSource();
     source.buffer = buffer;
     const gain = audioCtx.createGain();
     gain.gain.value = 0.5;
     source.connect(gain).connect(audioCtx.destination);
-    source.start();
+    source.start(0); // Add the 0 for older mobile browser compatibility
 }
-
 function updateScore() { scoreDisplay.textContent = `Score: ${score}`; }
 
 async function submitLeaderboardScore(user, val) {
@@ -375,10 +380,19 @@ if (dailyBtn) {
         dailyBtn.classList.add('disabled');
     }
 
-    dailyBtn.onclick = () => {
+    dailyBtn.onclick = async () => {
+        // 🔥 1. IMMEDIATE AUDIO UNLOCK
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+        // Start loading sounds immediately so the buffers are ready
+        loadSounds(); 
+
         if (!cachedLoggedIn) return alert("Please log in to play!");
         if (localStorage.getItem('dailyPlayedDate') === todayStr) return alert("Already played today!");
+        
         isDailyMode = true;
+        // Start the actual challenge logic
         startDailyChallenge();
     };
 }
@@ -413,3 +427,4 @@ function subscribeToDailyChanges(userId) {
         })
         .subscribe();
 }
+
