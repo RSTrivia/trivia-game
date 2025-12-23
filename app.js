@@ -565,117 +565,114 @@ function seededRandom(seed) {
     timeWrap.classList.remove('red-timer');
   }
 
-function preloadNextQuestions() {
+async function preloadNextQuestions() {
   let attempts = 0;
 
+  // We loop until we have 2 questions ready or we run out of IDs
   while (
     preloadQueue.length < 2 &&
-    remainingQuestions.length &&
+    remainingQuestions.length > 0 &&
     attempts < 10
   ) {
     attempts++;
 
+    // 1. Pick a random ID from our list of numbers
     const index = Math.floor(Math.random() * remainingQuestions.length);
-    const q = remainingQuestions[index];
+    const qId = remainingQuestions[index];
 
+    // 2. Prevent duplicates (Don't preload what's already in the queue or being shown)
     if (
-      q === currentQuestion ||
-      preloadQueue.some(p => p.id === q.id)
-    ) continue;
+      (currentQuestion && qId === currentQuestion.id) ||
+      preloadQueue.some(p => p.id === qId)
+    ) {
+      continue;
+    }
 
-    preloadQueue.push(q);
-    if (q.question_image) preloadImage(q.question_image);
+    // 3. Remove the ID from the "remaining" list immediately 
+    // This ensures no other loop tries to grab it
+    remainingQuestions.splice(index, 1);
+
+    // 4. Fetch the full data (text/image) for this specific ID
+    const { data, error } = await supabase.rpc('get_question_by_id', { q_id: qId });
+
+    if (!error && data && data[0]) {
+      const fullQuestion = data[0];
+      preloadQueue.push(fullQuestion);
+
+      // 5. Pre-download the image if it exists
+      if (fullQuestion.question_image) {
+        preloadImage(fullQuestion.question_image);
+      }
+    }
   }
 }
 
-
 async function loadQuestion() {
-    answersBox.innerHTML = '';
-    // If no questions left, trigger endGame and stop this function
-    if (!remainingQuestions.length) {
-        await endGame(); 
-        return;
+  answersBox.innerHTML = '';
+  
+  // 1. Check if the game is truly over
+  if (preloadQueue.length === 0 && remainingQuestions.length === 0) {
+    await endGame();
+    return;
+  }
+
+  // 2. Emergency Fetch: If the queue is empty but we have IDs left, 
+  // fill the queue before continuing.
+  if (preloadQueue.length === 0 && remainingQuestions.length > 0) {
+    await preloadNextQuestions();
+  }
+
+  // 3. GET THE QUESTION FROM THE QUEUE
+  // We don't need to call supabase.rpc here because preloadNextQuestions already did!
+  currentQuestion = preloadQueue.shift();
+
+  // 4. REFILL THE QUEUE IN THE BACKGROUND
+  // This happens while the player is reading the current question.
+  preloadNextQuestions();
+
+  // 5. Display Content (This part was correct)
+  questionText.textContent = currentQuestion.question;
+  
+  if (currentQuestion.question_image) {
+    questionImage.style.display = 'none';
+    questionImage.onload = () => { questionImage.style.display = 'block'; };
+    questionImage.src = currentQuestion.question_image;
+  } else {
+    questionImage.style.display = 'none';
+  }
+
+  // 6. Create Buttons
+  let answers = [
+    currentQuestion.answer_a, 
+    currentQuestion.answer_b, 
+    currentQuestion.answer_c, 
+    currentQuestion.answer_d
+  ].filter(Boolean).sort(() => Math.random() - 0.5);
+
+  answers.forEach((ansText) => {
+    const btn = document.createElement('button');
+    btn.textContent = ansText;
+    btn.classList.add('answer-btn');
+
+    if (isTouch) {
+      btn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        btn.click();
+      }, { passive: false });
     }
 
-    if (preloadQueue.length) {
-      currentQuestion = preloadQueue.shift();
-    
-      const idx = remainingQuestions.findIndex(
-        q => q.id === currentQuestion.id
-      );
-      if (idx > -1) remainingQuestions.splice(idx, 1);
-    } else {
-      const index = Math.floor(Math.random() * remainingQuestions.length);
-      currentQuestion = remainingQuestions.splice(index, 1)[0];
-    }
+    btn.onclick = () => checkAnswer(ansText, btn);
+    answersBox.appendChild(btn);
+  });
+  
+  // Don't forget to restart your timer here!
+  resetTimer(); 
+}
 
-
-    questionText.textContent = currentQuestion.question;
-    if (currentQuestion.question_image) {
-        questionImage.style.display = 'none';      // hide until loaded
-        questionImage.onload = () => {
-            questionImage.style.display = 'block'; // show once loaded
-        };
-        questionImage.src = currentQuestion.question_image;
-    } else {
-        questionImage.style.display = 'none';      // hide if no image
-    }
-    
-    preloadNextQuestions(); // start preloading the next question in background
-    // 1. Create the array of options from the question object
-    // Note: Use the column names exactly as they are in your Supabase table
-    let answers = [
-      currentQuestion.option_a, 
-      currentQuestion.option_b, 
-      currentQuestion.option_c, 
-      currentQuestion.option_d
-    ].sort(() => Math.random() - 0.5); // Shuffle for the UI
-
-   // 2. Now loop through that new array to create buttons
-    answers.forEach((ansText) => {
-      const btn = document.createElement('button');
-      btn.textContent = ansText;
-      btn.classList.add('answer-btn');
-      
-      if (isTouch) {
-        btn.addEventListener('touchend', (e) => {
-          e.preventDefault();
-          btn.click();
-        }, { passive: false });
-      }
-
-      // We send the actual text (ansText) to the checkAnswer function
-      btn.onclick = () => checkAnswer(ansText, btn);
-      answersBox.appendChild(btn);
-    });
-
-    clearInterval(timer);
-    timeLeft = 15;
-    timeDisplay.textContent = timeLeft;
-    timeDisplay.classList.remove('red-timer');
-    timeWrap.classList.remove('red-timer');
-
-    timer = setInterval(() => {
-      timeLeft--;
-      timeDisplay.textContent = timeLeft;
-    
-      timeWrap.classList.toggle('red-timer', timeLeft <= 5);
-    
-      if (timeLeft <= 0) {
-        clearInterval(timer);
-        
-        // 1. Immediately disable all buttons so they can't be clicked
-        document.querySelectorAll('.answer-btn').forEach(btn => {
-          btn.disabled = true;
-          btn.blur();
-        });
-
-        playSound(wrongBuffer);
-        highlightCorrectAnswer();
-        setTimeout(endGame, 1000);
-      }
-    }, 1000); // <--- This was missing!
-  } // <--- This closing brace for loadQuestion was also missing!
+  // 5. Timer Logic
+  clearInterval(timer);
+  startTimer(); // Call your timer function
+}
 
 async function checkAnswer(selected, btn) {
     clearInterval(timer);
@@ -803,12 +800,10 @@ async function highlightCorrectAnswer() {
 
 
 async function startGame() {
-// 1. FRESH HANDSHAKE
+  // 1. FRESH HANDSHAKE
   const { data: sessionData } = await supabase.auth.getSession();
 
-  // CHANGE: Only clear username if there is DEFINITELY no session anymore
   if (!sessionData.session && localStorage.getItem('cachedLoggedIn') === 'true') {
-    // If we thought we were logged in but the session is gone, THEN revert
     username = '';
     localStorage.setItem('cachedLoggedIn', 'false');
     if (userDisplay) userDisplay.querySelector('#usernameSpan').textContent = ' Guest';
@@ -818,45 +813,26 @@ async function startGame() {
   endGame.running = false;
   resetGame();
 
-  // Show the game container immediately
   game.classList.remove('hidden');
   document.getElementById('start-screen').classList.add('hidden');
   endScreen.classList.add('hidden');
   updateScore();
-
-  // Load sounds in background
   loadSounds(); 
-
-  // 2. FETCH QUESTIONS
-  const { data, error } = await supabase.from('questions').select('*');
   
-  if (error || !data?.length) {
-    console.error("Fetch error:", error);
-    alert('Failed to load questions. Please check your connection.');
-    return;
-  }
-
-  questions = data;
-  remainingQuestions = [...questions];
+ // 1. Get ONLY the list of IDs
+  const { data: idList, error } = await supabase.rpc('get_all_question_ids');
   
-// ✅ If we have a carried-over preloaded question
-if (preloadQueue.length) {
-  currentQuestion = preloadQueue.shift();
+  if (error || !idList?.length) return;
+  
+ // 2. Store and shuffle the IDs
+  remainingQuestions = idList.map(item => item.id).sort(() => Math.random() - 0.5);
+  
+  // 3. Preload the first couple of questions immediately
+  await preloadNextQuestions();
 
-  const idx = remainingQuestions.findIndex(
-    q => q.id === currentQuestion.id
-  );
-  if (idx > -1) remainingQuestions.splice(idx, 1);
-
+  // 4. Start the game
   loadQuestion();
-  return;
 }
-
-// Otherwise random start
-loadQuestion();
-
-}
-
 
  async function loadSounds() {
     correctBuffer = await loadAudio('./sounds/correct.mp3');
@@ -936,6 +912,7 @@ async function submitDailyScore(dailyScore) {
 
   if (error) console.error("Error updating daily score:", error.message);
 }
+
 
 
 
