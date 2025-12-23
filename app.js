@@ -332,6 +332,26 @@ muteBtn.onclick = () => {
 };
 
 
+authBtn.onclick = async () => {
+    if (cachedLoggedIn) {
+        // 1. Sign out from Supabase
+        const { error } = await supabase.auth.signOut();
+        if (error) {
+            console.error("Logout error:", error.message);
+        }
+
+        // 2. Clear local storage so the game knows they are gone
+        localStorage.removeItem('cachedLoggedIn');
+        localStorage.removeItem('cachedUsername');
+        localStorage.removeItem('dailyPlayedDate');
+
+        // 3. Refresh or redirect to update UI
+        window.location.reload();
+    } else {
+        // If not logged in, take them to the login/auth page
+        window.location.href = 'auth.html'; 
+    }
+};
 
 
 
