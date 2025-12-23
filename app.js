@@ -622,33 +622,32 @@ async function loadQuestion() {
     }
     
     preloadNextQuestions(); // start preloading the next question in background
-    
+    // 1. Create the array of options from the question object
+    // Note: Use the column names exactly as they are in your Supabase table
     let answers = [
-      { text: currentQuestion.answer_a, correct: currentQuestion.correct_answer === 1 },
-      { text: currentQuestion.answer_b, correct: currentQuestion.correct_answer === 2 },
-      { text: currentQuestion.answer_c, correct: currentQuestion.correct_answer === 3 },
-      { text: currentQuestion.answer_d, correct: currentQuestion.correct_answer === 4 }
-    ].sort(() => Math.random() - 0.5);
+      currentQuestion.option_a, 
+      currentQuestion.option_b, 
+      currentQuestion.option_c, 
+      currentQuestion.option_d
+    ].sort(() => Math.random() - 0.5); // Shuffle for the UI
 
-    answers.forEach((ans, i) => {
+   // 2. Now loop through that new array to create buttons
+    answers.forEach((ansText) => {
       const btn = document.createElement('button');
-      btn.textContent = ans.text;
+      btn.textContent = ansText;
       btn.classList.add('answer-btn');
+      
+      if (isTouch) {
+        btn.addEventListener('touchend', (e) => {
+          e.preventDefault();
+          btn.click();
+        }, { passive: false });
+      }
 
-    // Fix for Mobile Flicker/Ghost Highlight
-    if (isTouch) {
-      btn.addEventListener('touchend', (e) => {
-        e.preventDefault(); // Prevents the browser from firing a "fake" hover/mouse event
-        btn.click();        // Manually trigger the click logic below
-      }, { passive: false });
-    }
-
-      btn.onclick = () => checkAnswer(i + 1, btn);
+      // We send the actual text (ansText) to the checkAnswer function
+      btn.onclick = () => checkAnswer(ansText, btn);
       answersBox.appendChild(btn);
     });
-    
-    currentQuestion.correct_answer_shuffled =
-      answers.findIndex(a => a.correct) + 1;
 
     clearInterval(timer);
     timeLeft = 15;
@@ -678,37 +677,65 @@ async function loadQuestion() {
     }, 1000); // <--- This was missing!
   } // <--- This closing brace for loadQuestion was also missing!
 
-function checkAnswer(selected, btn) {
+async function checkAnswer(selected, btn) {
     clearInterval(timer);
 
-    // Force the button to lose focus so the mobile highlight disappears immediately
+    // Force the button to lose focus
     if (btn) btn.blur();
     
     document.querySelectorAll('.answer-btn').forEach(b => {
-    b.disabled = true;
-    b.blur(); // Blur all of them for safety
-  });
-
-    if (selected === currentQuestion.correct_answer_shuffled) {
-      playSound(correctBuffer);
-      btn.classList.add('correct');
-      score++;
-      updateScore();
-      setTimeout(loadQuestion, 1000);
-    } else {
-      playSound(wrongBuffer);
-      btn.classList.add('wrong');
-      highlightCorrectAnswer();
-      setTimeout(endGame, 1000);
-    }
-  }
-
-  function highlightCorrectAnswer() {
-    document.querySelectorAll('.answer-btn').forEach((btn, i) => {
-      if (i + 1 === currentQuestion.correct_answer_shuffled)
-        btn.classList.add('correct');
+        b.disabled = true;
+        b.blur(); 
     });
-  }
+
+    // --- NEW SECURE CHECK ---
+    // We ask the database: "Is this choice correct for this question ID?"
+    const { data: isCorrect, error } = await supabase.rpc('check_my_answer', {
+        q_id: currentQuestion.id, 
+        choice: selected
+    });
+
+    if (error) {
+        console.error("Security check failed:", error);
+        return;
+    }
+
+    if (isCorrect) {
+        playSound(correctBuffer);
+        btn.classList.add('correct');
+        score++;
+        updateScore();
+        setTimeout(loadQuestion, 1000);
+    } else {
+        playSound(wrongBuffer);
+        btn.classList.add('wrong');
+        
+        // Note: highlightCorrectAnswer() might need a small tweak 
+        // if the client no longer knows the correct answer!
+        await highlightCorrectAnswer(); 
+        
+        setTimeout(endGame, 1000);
+    }
+}
+
+async function highlightCorrectAnswer() {
+    // 1. Fetch the correct text from the server since the client doesn't have it
+    const { data: correctAnswerText, error } = await supabase.rpc('reveal_correct_answer', {
+        q_id: currentQuestion.id
+    });
+
+    if (error) {
+        console.error("Could not reveal answer:", error);
+        return;
+    }
+
+    // 2. Find the button that contains that specific text
+    document.querySelectorAll('.answer-btn').forEach((btn) => {
+        if (btn.innerText.trim() === correctAnswerText) {
+            btn.classList.add('correct');
+        }
+    });
+}
 
   function updateScore() {
     scoreDisplay.textContent = `Score: ${score}`;
@@ -909,6 +936,7 @@ async function submitDailyScore(dailyScore) {
 
   if (error) console.error("Error updating daily score:", error.message);
 }
+
 
 
 
