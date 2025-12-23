@@ -10,7 +10,6 @@ const signupBtn = document.getElementById('signupBtn');
 function setBusy(isBusy) {
     loginBtn.disabled = isBusy;
     signupBtn.disabled = isBusy;
-    loginBtn.textContent = isBusy ? 'Processing...' : 'Log In';
 }
 
 signupBtn.addEventListener('click', async () => {
