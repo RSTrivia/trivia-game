@@ -123,16 +123,16 @@
       .btn-small { margin-top: auto !important; margin-bottom: auto !important; align-self: center !important; }
     }
 
-    /* This ensures the 'Rank' part always takes up the same amount of room */
 .rank-slot {
     display: inline-block;
-    width: 35px; /* Adjust this to move the names closer/further from the medals */
+    width: 35px;       /* This stays fixed so names never move */
     text-align: left;
 }
-/* This targets ONLY numbers (like 4.) inside the rank slot */
-/* and pushes them to the right to sit under the medals */
-.number-rank {
-    margin-left: 6px;  /* Adjust this number to move 4-10 left or right */
+
+/* This nudges the number to the right WITHOUT pushing the name */
+.number-nudge {
+    position: relative;
+    left: 6px;         /* This moves the 4, 5, 6... right */
 }
     
   </style>
@@ -215,6 +215,7 @@
   </script>
 </body>
 </html>
+
 
 
 
