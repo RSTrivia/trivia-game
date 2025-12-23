@@ -33,9 +33,9 @@ signupBtn.addEventListener('click', async () => {
 
         if (!response.ok) throw new Error(result.error || "Signup failed");
 
-        // Success - Save the ID returned from the server
+        // Success - Save the ID as user_id
         if (result.user && result.user.id) {
-            localStorage.setItem('supabase_user_id', result.user.id);
+            localStorage.setItem('user_id', result.user.id);
         }
         
         localStorage.setItem('cachedUsername', username);
@@ -68,9 +68,9 @@ loginBtn.addEventListener('click', async () => {
         if (!response.ok) throw new Error(result.error || "Login failed");
 
         // --- THE FIX FOR PC + MOBILE ---
-        // Save the unique User ID so this device stays authenticated independently
+        // Save the unique ID as user_id
         if (result.userId) {
-            localStorage.setItem('supabase_user_id', result.userId);
+            localStorage.setItem('user_id', result.userId);
         }
 
         localStorage.setItem('cachedUsername', result.username);
