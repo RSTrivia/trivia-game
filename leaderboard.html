@@ -122,6 +122,14 @@
       #leaderboard li { height: 38px !important; min-height: 38px !important; margin-bottom: 5px !important; font-size: 0.95rem !important; }
       .btn-small { margin-top: auto !important; margin-bottom: auto !important; align-self: center !important; }
     }
+
+    /* This ensures the 'Rank' part always takes up the same amount of room */
+.rank-slot {
+    display: inline-block;
+    width: 35px; /* Adjust this to move the names closer/further from the medals */
+    text-align: left;
+}
+    
   </style>
 </head>
 
@@ -156,37 +164,25 @@
     const leaderboardRows = document.querySelectorAll('#leaderboard li');
 
    function updateLeaderboard(data) {
-      leaderboardRows.forEach((row, i) => {
-        const entry = data[i] || { username: '', score: '' };
-        const spans = row.querySelectorAll('span');
-        
-        const isMedal = i < 3;
-        const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉';
-        const rankNum = `${i + 1}.`;
+  leaderboardRows.forEach((row, i) => {
+    const entry = data[i] || { username: '', score: '' };
+    const spans = row.querySelectorAll('span');
+    
+    // Determine the Rank indicator
+    const rankIndicator = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
 
-        if (entry.username) {
-            if (isMedal) {
-                // MEDAL ROWS: Medal at the start, name follows normally
-                spans[0].innerHTML = `${medal} &nbsp; ${entry.username}`;
-            } else {
-                // NUMBER ROWS: We add spaces BEFORE the number 
-                // This pushes the number "4." to sit under the "S" in "Shir"
-                const indent = i + 1 < 10 ? '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' : '&nbsp;&nbsp;';
-                spans[0].innerHTML = `${indent}${rankNum} &nbsp; ${entry.username}`;
-            }
-            spans[1].innerHTML = `${entry.score}`;
-        } else {
-            // Empty rows: Show the indicator in its aligned position
-            if (isMedal) {
-                spans[0].innerHTML = medal;
-            } else {
-                const indent = i + 1 < 10 ? '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' : '&nbsp;&nbsp;';
-                spans[0].innerHTML = `${indent}${rankNum}`;
-            }
-            spans[1].innerHTML = ``;
-        }
-      });
+    if (entry.username) {
+        // We wrap the rank in a 'rank-slot' to force alignment
+        // No more &nbsp;&nbsp;&nbsp; needed!
+        spans[0].innerHTML = `<span class="rank-slot">${rankIndicator}</span>${entry.username}`;
+        spans[1].innerHTML = `${entry.score}`;
+    } else {
+        // If empty, just show the rank in its slot
+        spans[0].innerHTML = `<span class="rank-slot">${rankIndicator}</span>`;
+        spans[1].innerHTML = ``;
     }
+  });
+}
 
     async function fetchLeaderboard() {
       try {
@@ -214,5 +210,6 @@
   </script>
 </body>
 </html>
+
 
 
