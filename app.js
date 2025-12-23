@@ -97,7 +97,10 @@ async function startGame() {
     await loadSounds(); 
 
     const { data: idList, error } = await supabase.rpc('get_all_question_ids');
-    if (error || !idList?.length) return;
+    if (error) {
+    console.error("RPC Error:", error.message); // This will tell us EXACTLY why it's 400
+    return;
+}
 
     remainingQuestions = idList.map(item => item.id).sort(() => Math.random() - 0.5);
     questionsCount = remainingQuestions.length;
@@ -254,3 +257,4 @@ muteBtn.onclick = () => {
     muteBtn.querySelector('#muteIcon').textContent = muted ? '🔇' : '🔊';
     muteBtn.classList.toggle('is-muted', muted);
 };
+
