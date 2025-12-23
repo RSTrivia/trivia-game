@@ -38,7 +38,7 @@ let preloadQueue = [];
 let timer;
 let timeLeft = 15;
 let isDailyMode = false;
-let authLabel = authBtn?.querySelector('.btn-label');
+//let authLabel = authBtn?.querySelector('.btn-label');
 
 // ====== INITIAL UI SYNC ======
 if (userDisplay) userDisplay.querySelector('#usernameSpan').textContent = ' ' + (username || 'Guest');
@@ -368,6 +368,7 @@ if (dailyBtn) {
         startGame();
     };
 }
+
 
 
 
