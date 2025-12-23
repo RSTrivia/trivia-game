@@ -16,7 +16,8 @@
     
   document.addEventListener('DOMContentLoaded', () => {
     const span = document.getElementById('usernameSpan');
-    const authLabel = document.querySelector('#authBtn .btn-label');
+    const authBtn = document.getElementById('authBtn'); // Get the button
+    const authLabel = authBtn?.querySelector('.btn-label');
     const muteIcon = document.getElementById('muteIcon'); // Get the span
     const muteBtn = document.getElementById('muteBtn');   // Get the button
     const dailyBtn = document.getElementById('dailyBtn'); // Get the Daily Button
@@ -45,7 +46,25 @@
         dailyBtn.classList.add('disabled');
       }
     }
-  
+
+    // 4. 🔥 THE FIX: ATTACH CLICK DIRECTLY HERE
+    if (authBtn) {
+      authBtn.onclick = async () => {
+        if (localStorage.getItem('cachedLoggedIn') === 'true') {
+            // If they are logging out, we need Supabase from the window
+            // If window.supabase isn't ready, we at least clear local storage and refresh
+            if (window.supabase) await window.supabase.auth.signOut();
+            
+            localStorage.removeItem('cachedLoggedIn');
+            localStorage.removeItem('cachedUsername');
+            localStorage.removeItem('dailyPlayedDate');
+            window.location.reload();
+        } else {
+            // This will work even if app.js crashes!
+            window.location.href = 'auth.html';
+        }
+      };
+    }
   });
 </script>
 
@@ -140,6 +159,7 @@
   <script src="background.js" defer></script>
 </body>
 </html>
+
 
 
 
