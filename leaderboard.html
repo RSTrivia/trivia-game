@@ -210,27 +210,36 @@
     const leaderboardRows = document.querySelectorAll('#leaderboard li');
 
     function updateLeaderboard(data) {
-        leaderboardRows.forEach((row, i) => {
-            const entry = data[i] || { username: '', score: '' };
-            
-            // Get our specific columns
-            const rankCol = row.querySelector('.rank-col');
-            const nameCol = row.querySelector('.name-col');
-            const scoreCol = row.querySelector('.score-col');
-            
-            // Update Rank (keeps emoji or number)
-            const pos = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
-            rankCol.innerHTML = pos;
+      leaderboardRows.forEach((row, i) => {
+        const entry = data[i] || { username: '', score: '' };
+        const spans = row.querySelectorAll('span');
+        
+        // 1. Determine the Rank/Medal
+        const isMedal = i < 3;
+        const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉';
+        const rankNum = `${i + 1}.`;
 
-            // Update Name and Score
-            if (entry.username) {
-                nameCol.innerHTML = entry.username;
-                scoreCol.innerHTML = entry.score;
+        if (entry.username) {
+            // 2. THE ALIGNMENT TRICK:
+            // Medals are wider than text numbers. 
+            // We use &nbsp; to nudge the numbers to the right 
+            // so the first letter of the name starts at the same spot.
+            if (isMedal) {
+                // For Medals: Standard emoji + 1 space
+                spans[0].innerHTML = `${medal} &nbsp; ${entry.username}`;
             } else {
-                nameCol.innerHTML = '';
-                scoreCol.innerHTML = '';
+                // For Numbers: We add extra spaces before the number to push it over
+                // This aligns the names with the rows above
+                const padding = i + 1 < 10 ? '&nbsp;&nbsp;&nbsp;' : '&nbsp;'; 
+                spans[0].innerHTML = `${padding}${rankNum} &nbsp; ${entry.username}`;
             }
-        });
+            spans[1].innerHTML = `${entry.score}`;
+        } else {
+            // Keep it clean if empty - only show the rank indicator
+            spans[0].innerHTML = isMedal ? medal : `&nbsp;&nbsp;&nbsp;${rankNum}`;
+            spans[1].innerHTML = ``;
+        }
+      });
     }
 
     async function fetchLeaderboard() {
@@ -260,5 +269,6 @@
   </script>
 </body>
 </html>
+
 
 
