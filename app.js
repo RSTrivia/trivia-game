@@ -23,6 +23,19 @@ const userDisplay = document.getElementById('userDisplay');
 const authBtn = document.getElementById('authBtn');
 const muteBtn = document.getElementById('muteBtn');
 const dailyBtn = document.getElementById('dailyBtn');
+const dailyMessages = {
+  0: ["Ouch. Zero XP gained today.", "Lumbridge is calling your name."],
+  1: ["At least it's not a zero!", "One is better than none... barely."],
+  2: ["Tomorrow will be better!", "The RNG was not in your favor."],
+  3: ["A bronze-tier effort.", "You're still warming up, right?"],
+  4: ["Getting there! Halfway to decent.", "Not bad, but not quite 'pro'."],
+  5: ["A solid 50%. Perfectly balanced.", "Mid-level performance!"],
+  6: ["You did great!", "Above average! Keep it up."],
+  7: ["Nice! You really know your OSRS.", "Solid score! High-scores material."],
+  8: ["Legendary! You're a walking wiki.", "Almost a perfect run!"],
+  9: ["Incredible! So close to perfection!", "An elite achievement."],
+  10: ["Perfect! A True Completionist!", "Absolute Master of Trivia!"]
+};
 
 let correctBuffer, wrongBuffer;
 let muted = cachedMuted;
@@ -264,10 +277,53 @@ async function endGame() {
     endScreen.classList.remove('hidden');
     finalScore.textContent = score;
 
+    const gameOverTitle = document.getElementById('game-over-title');
+    const gzTitle = document.getElementById('gz-title');
+
     if (isDailyMode) {
-        console.log("Daily complete. Score displayed locally.");
+        // Daily Mode: No "Play Again", show a specific flavor message
+        playAgainBtn.classList.add('hidden');
+        
+        const options = dailyMessages[score] || ["Game Over!"];
+        const randomMsg = options[Math.floor(Math.random() * options.length)];
+        
+        if (gameOverTitle) {
+            gameOverTitle.textContent = randomMsg;
+            gameOverTitle.classList.remove('hidden');
+        }
+        if (gzTitle) gzTitle.classList.add('hidden');
+
+        if (username && username !== 'Guest') {
+            // Update the existing daily_attempts row with the final score
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                await supabase.from('daily_attempts')
+                    .update({ score: score })
+                    .eq('user_id', session.user.id)
+                    .eq('attempt_date', todayStr);
+            }
+        }
         isDailyMode = false; 
     } else {
+        // Standard Mode: Show "Play Again" and "Gz" if they won
+        playAgainBtn.classList.remove('hidden');
+        
+        // Assuming 10 questions is a "perfect" run for standard mode or check against remaining
+        if (score > 0 && remainingQuestions.length === 0 && preloadQueue.length === 0) {
+            const gzMessages = ['Gz!', 'Go touch grass', 'See you in Lumbridge'];
+            if (gzTitle) {
+                gzTitle.textContent = gzMessages[Math.floor(Math.random() * gzMessages.length)];
+                gzTitle.classList.remove('hidden');
+            }
+            if (gameOverTitle) gameOverTitle.classList.add('hidden');
+        } else {
+            if (gameOverTitle) {
+                gameOverTitle.textContent = "Game Over!";
+                gameOverTitle.classList.remove('hidden');
+            }
+            if (gzTitle) gzTitle.classList.add('hidden');
+        }
+
         if (username && username !== 'Guest') {
             await submitLeaderboardScore(username, score);
         }
@@ -427,4 +483,5 @@ function subscribeToDailyChanges(userId) {
         })
         .subscribe();
 }
+
 
