@@ -270,8 +270,9 @@ async function highlightCorrectAnswer() {
 async function endGame() {
     if (endGame.running) return;
     endGame.running = true;
+    console.log("EndGame triggered. Score:", score, "Daily Mode:", isDailyMode); // Debugging line
+
     clearInterval(timer);
-    
     document.body.classList.remove('game-active'); 
     game.classList.add('hidden');
     endScreen.classList.remove('hidden');
@@ -281,10 +282,11 @@ async function endGame() {
     const gzTitle = document.getElementById('gz-title');
 
     if (isDailyMode) {
-        // Daily Mode: No "Play Again", show a specific flavor message
         playAgainBtn.classList.add('hidden');
         
-        const options = dailyMessages[score] || ["Game Over!"];
+        // Cap the score at 10 to match your dailyMessages keys
+        const scoreKey = Math.min(score, 10);
+        const options = dailyMessages[scoreKey] || ["Challenge Complete!"];
         const randomMsg = options[Math.floor(Math.random() * options.length)];
         
         if (gameOverTitle) {
@@ -293,8 +295,8 @@ async function endGame() {
         }
         if (gzTitle) gzTitle.classList.add('hidden');
 
+        // Supabase Sync
         if (username && username !== 'Guest') {
-            // Update the existing daily_attempts row with the final score
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
                 await supabase.from('daily_attempts')
@@ -305,28 +307,10 @@ async function endGame() {
         }
         isDailyMode = false; 
     } else {
-        // Standard Mode: Show "Play Again" and "Gz" if they won
+        // Standard Mode logic...
         playAgainBtn.classList.remove('hidden');
-        
-        // Assuming 10 questions is a "perfect" run for standard mode or check against remaining
-        if (score > 0 && remainingQuestions.length === 0 && preloadQueue.length === 0) {
-            const gzMessages = ['Gz!', 'Go touch grass', 'See you in Lumbridge'];
-            if (gzTitle) {
-                gzTitle.textContent = gzMessages[Math.floor(Math.random() * gzMessages.length)];
-                gzTitle.classList.remove('hidden');
-            }
-            if (gameOverTitle) gameOverTitle.classList.add('hidden');
-        } else {
-            if (gameOverTitle) {
-                gameOverTitle.textContent = "Game Over!";
-                gameOverTitle.classList.remove('hidden');
-            }
-            if (gzTitle) gzTitle.classList.add('hidden');
-        }
-
-        if (username && username !== 'Guest') {
-            await submitLeaderboardScore(username, score);
-        }
+        if (gameOverTitle) gameOverTitle.textContent = "Game Over!";
+        if (gameOverTitle) gameOverTitle.classList.remove('hidden');
     }
     endGame.running = false;
 }
@@ -483,5 +467,6 @@ function subscribeToDailyChanges(userId) {
         })
         .subscribe();
 }
+
 
 
