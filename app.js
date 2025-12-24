@@ -659,6 +659,31 @@ function subscribeToDailyChanges(userId) {
 }
 
 
+// ====== MOBILE TAP FEEDBACK (THE FLASH) ======
+document.addEventListener('DOMContentLoaded', () => {
+    // Select everything that should "light up"
+    const interactables = document.querySelectorAll('.btn, .btn-small, #authBtn, .answer-btn');
+
+    interactables.forEach(el => {
+        // 1. Instant light up on finger touch
+        el.addEventListener('touchstart', function() {
+            this.classList.add('tapped');
+        }, { passive: true });
+
+        // 2. Remove light up after touch ends
+        el.addEventListener('touchend', function() {
+            // 150ms delay keeps the gold visible long enough for the eye to see it
+            setTimeout(() => {
+                this.classList.remove('tapped');
+            }, 150);
+        });
+
+        // 3. Remove if finger slides off the button
+        el.addEventListener('touchcancel', () => {
+            el.classList.remove('tapped');
+        });
+    });
+});
 
 
 
