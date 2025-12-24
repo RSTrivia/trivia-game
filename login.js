@@ -1,11 +1,12 @@
+import { supabase } from './supabase.js';
+
 const app = document.getElementById('app');
 const usernameInput = document.getElementById('username');
 const passwordInput = document.getElementById('password');
 const loginBtn = document.getElementById('loginBtn');
 const signupBtn = document.getElementById('signupBtn');
 
-const BRIDGE_URL = 'https://supabase-bridge-zzqp.onrender.com/api';
-
+// Helper to disable/enable UI during loading
 function setBusy(isBusy) {
     loginBtn.disabled = isBusy;
     signupBtn.disabled = isBusy;
@@ -16,85 +17,99 @@ signupBtn.addEventListener('click', async () => {
     const password = passwordInput.value;
     const alphanumericRegex = /^[a-zA-Z0-9]+$/;
 
-    if (!username || username.length > 12 || !alphanumericRegex.test(username) || password.length < 6) {
-        return alert("Check username (max 12, letters/numbers) and password (min 6).");
+    // Enhanced Validation
+    if (!username) {
+        return alert("Please enter a username.");
+    }
+    if (username.length > 12) {
+        return alert("Username cannot be longer than 12 characters.");
+    }
+    if (!alphanumericRegex.test(username)) {
+        return alert("Username can only contain letters and numbers.");
+    }
+    if (password.length < 6) {
+        return alert("Password must be at least 6 characters.");
     }
 
     setBusy(true);
+    const email = username.toLowerCase() + '@example.com';
+    
+    // 1. Sign Up
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ 
+        email, 
+        password,
+        options: { data: { display_name: username } } // Backup storage of username
+    });
 
-   try {
-        const response = await fetch(`${BRIDGE_URL}/signup`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
-        });
-
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.error || "Signup failed");
-
-        // --- THE FIX FOR PC + MOBILE ---
-        // Save the unique ID and Username immediately after signup
-        if (result.userId) {
-            localStorage.setItem('userId', result.userId);
-        }
-
-        localStorage.setItem('cachedUsername', result.username); 
-        localStorage.setItem('cachedLoggedIn', 'true');
-        localStorage.removeItem('dailyPlayedDate'); // Ensure a new user isn't accidentally blocked
-       
-        // Go straight to the game
-        window.location.href = 'index.html';
-
-    } catch (err) {
-        alert(err.message);
+    if (signUpError) {
+        alert(signUpError.message.includes("already registered") ? "Username taken!" : signUpError.message);
         setBusy(false);
+        return;
+    }
+
+    // 2. Create Profile Record
+    if (signUpData.user) {
+        const { error: profileError } = await supabase
+            .from('profiles')
+            .insert({ id: signUpData.user.id, username: username });
+
+        if (profileError) console.error("Profile error:", profileError.message);
+    }
+
+    // 3. Auto Login
+    const { error: loginError } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (loginError) {
+        alert("Account created! Please log in manually.");
+        setBusy(false);
+    } else {
+        localStorage.setItem('cachedUsername', username);
+        localStorage.setItem('cachedLoggedIn', 'true');
+        window.location.href = 'index.html';
     }
 });
 
 loginBtn.addEventListener('click', async () => {
-    // 1. We take what they typed (e.g., "shir" or "Shir")
-    const typedUsername = usernameInput.value.trim();
+    const usernameInputVal = usernameInput.value.trim();
     const password = passwordInput.value;
+    const todayStr = new Date().toISOString().split('T')[0];
 
-    if (!typedUsername || !password) return alert("Enter credentials.");
+    if (!usernameInputVal || !password) return alert("Enter credentials.");
 
     setBusy(true);
+    const email = usernameInputVal.toLowerCase() + '@example.com';
+    
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    
+    if (error || !data.user) {
+        alert("Login failed: " + (error ? error.message : "User not found"));
+        setBusy(false);
+        return;
+    }
 
+    // 🛡️ Wrap in try/catch to ensure we ALWAYS redirect, even if DB fetch fails
     try {
-        const response = await fetch(`${BRIDGE_URL}/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            // 2. Send the typed name to the bridge
-            body: JSON.stringify({ username: typedUsername, password })
-        });
+        const [profileRes, dailyRes] = await Promise.all([
+            supabase.from('profiles').select('username').eq('id', data.user.id).single(),
+            supabase.from('daily_attempts').select('attempt_date').eq('user_id', data.user.id).eq('attempt_date', todayStr).single()
+        ]);
 
-        const result = await response.json();
+        const finalUsername = profileRes.data?.username || usernameInputVal;
+        localStorage.setItem('cachedUsername', finalUsername);
 
-        if (!response.ok) throw new Error(result.error || "Login failed");
-
-        // --- THE FIX FOR PC + MOBILE ---
-        if (result.userId) {
-                localStorage.setItem('userId', result.userId); 
-            }
-        // --- STICKY CASING FIX ---
-        // Instead of saving 'typedUsername', we save 'result.username'.
-        // The server will look up the profile and send back the original casing (e.g., "Shir").
-        localStorage.setItem('cachedUsername', result.username);
-        localStorage.setItem('cachedLoggedIn', 'true');
-        
-        if (result.hasPlayedToday) {
-            localStorage.setItem('dailyPlayedDate', new Date().toISOString().split('T')[0]);
+        if (dailyRes.data) {
+            localStorage.setItem('dailyPlayedDate', todayStr);
         } else {
             localStorage.removeItem('dailyPlayedDate');
         }
-
-        window.location.href = 'index.html';
-
     } catch (err) {
-        alert(err.message);
-        setBusy(false);
+        console.warn("Post-login data fetch failed, proceeding with defaults:", err);
+        localStorage.setItem('cachedUsername', usernameInputVal);
     }
+    
+    // Save state and go home
+    localStorage.setItem('cachedLoggedIn', 'true');
+    window.location.href = 'index.html';
 });
-
 app.classList.remove('app-hidden');
 app.classList.add('app-ready');
