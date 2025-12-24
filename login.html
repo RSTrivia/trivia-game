@@ -58,9 +58,18 @@
   <!-- Scripts -->
   <script src="background.js"></script>
   <script type="module" src="login.js"></script>
+   <script>
+  // Mobile Flash for Leaderboard Main Menu Button
+  const mainMenu = document.querySelector('.btn-small');
+  if (mainMenu) {
+    mainMenu.addEventListener('touchstart', () => mainMenu.classList.add('tapped'), {passive: true});
+    mainMenu.addEventListener('touchend', () => setTimeout(() => mainMenu.classList.remove('tapped'), 150));
+  }
+</script>
 
 </body>
 </html>
+
 
 
 
