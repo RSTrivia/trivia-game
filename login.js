@@ -35,7 +35,7 @@ signupBtn.addEventListener('click', async () => {
         // --- THE FIX FOR PC + MOBILE ---
         // Save the unique ID and Username immediately after signup
         if (result.userId) {
-            localStorage.setItem('user_id', result.userId);
+            localStorage.setItem('userId', result.userId);
         }
 
         localStorage.setItem('cachedUsername', result.username); 
