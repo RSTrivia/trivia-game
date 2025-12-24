@@ -37,24 +37,6 @@ function handleAuthAction() {
   }
 }
 
-  if (isLoggedIn) {
-    localStorage.removeItem('cachedLoggedIn');
-    localStorage.removeItem('cachedUsername');
-    localStorage.removeItem('dailyPlayedDate');
-    
-    // Lock background then reload
-    lockBackground();
-    setTimeout(() => {
-      window.location.reload();
-    }, 50);
-  } else {
-    // Lock background then go to login
-    lockBackground();
-    setTimeout(() => {
-      window.location.href = 'login.html';
-    }, 50);
-  }
-
   document.addEventListener('DOMContentLoaded', () => {
     const span = document.getElementById('usernameSpan');
     const authBtn = document.getElementById('authBtn');
@@ -182,6 +164,7 @@ function handleAuthAction() {
   <script src="background.js" defer></script>
 </body>
 </html>
+
 
 
 
