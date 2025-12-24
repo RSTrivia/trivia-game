@@ -457,23 +457,32 @@ muteBtn.onclick = () => {
 };
 
 if (dailyBtn) {
-    const hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
-    if (cachedLoggedIn && !hasPlayed) {
+    // We check localStorage directly here to ensure we have the absolute latest status
+    const isLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
+    const hasPlayedToday = localStorage.getItem('dailyPlayedDate') === todayStr;
+
+    if (isLoggedIn && !hasPlayedToday) {
+        // TURN GOLD: User is logged in and hasn't played
         dailyBtn.classList.add('is-active');
         dailyBtn.classList.remove('disabled');
-    } else {
-        lockDailyButton();
-    }
-
-    dailyBtn.onclick = async () => {
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        loadSounds(); 
-
-        if (!cachedLoggedIn) return alert("Please log in to play!");
-        if (localStorage.getItem('dailyPlayedDate') === todayStr) return alert("Already played today!");
         
-        startDailyChallenge();
-    };
+        dailyBtn.onclick = async () => {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            await loadSounds(); // Ensure sounds are ready
+            startDailyChallenge();
+        };
+    } else {
+        // STAY GREY: Either not logged in or already played
+        lockDailyButton();
+        
+        dailyBtn.onclick = () => {
+            if (!isLoggedIn) {
+                alert("Please log in to play Daily Mode!");
+            } else {
+                alert("You've already played today's challenge!");
+            }
+        };
+    }
 }
 
 function shuffleWithSeed(array, seed) {
@@ -501,4 +510,5 @@ function subscribeToDailyChanges(userId) {
 }
 
 function updateScore() { scoreDisplay.textContent = `Score: ${score}`; }
+
 
