@@ -1,7 +1,14 @@
 import { supabase } from './supabase.js';
 window.supabase = supabase; 
 const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-
+// Add this near the top of app.js
+supabase.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_IN') {
+    console.log("App.js: User signed in successfully!", session.user.email);
+  } else if (event === 'SIGNED_OUT') {
+    console.log("App.js: User signed out.");
+  }
+});
 // ====== UI & STATE ======
 const cachedMuted = localStorage.getItem('muted') === 'true';
 const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
@@ -17,7 +24,13 @@ const scoreDisplay = document.getElementById('score');
 const questionText = document.getElementById('questionText');
 const questionImage = document.getElementById('questionImage');
 const answersBox = document.getElementById('answers');
-const timeDisplay = document.getElementById('time');
+const timeDisplay = document.getElementById('time');supabase.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_IN') {
+    console.log("App.js: User signed in successfully!", session.user.email);
+  } else if (event === 'SIGNED_OUT') {
+    console.log("App.js: User signed out.");
+  }
+});
 const timeWrap = document.getElementById('time-wrap');
 const userDisplay = document.getElementById('userDisplay');
 const authBtn = document.getElementById('authBtn');
@@ -522,6 +535,7 @@ function subscribeToDailyChanges(userId) {
 }
 
 function updateScore() { scoreDisplay.textContent = `Score: ${score}`; }
+
 
 
 
