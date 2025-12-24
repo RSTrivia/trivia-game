@@ -300,36 +300,36 @@ async function highlightCorrectAnswer() {
 }
 
 async function submitLeaderboardScore(user, val) {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-        console.error("Submission blocked: No session found.");
-        return;
+    // 1. Force a fresh check of the user
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !authUser) {
+        console.error("Submission blocked: No active session found. Error:", authError?.message);
+        // Fallback: Try one last time with getSession
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
     }
 
     const currentScore = Number(val);
-    console.log(`Checking score for ${user} (ID: ${session.user.id}). Attempting to submit: ${currentScore}`);
+    const userId = authUser?.id || (await supabase.auth.getSession()).data.session?.user.id;
 
-    // 1. First, just try to UPSERT immediately. 
-    // This is more efficient and will give us a direct error if it fails.
+    console.log(`Checking score for ${user} (ID: ${userId}). Attempting to submit: ${currentScore}`);
+
     const { data, error } = await supabase
         .from('scores')
         .upsert({ 
-            user_id: session.user.id, 
+            user_id: userId, 
             username: user, 
             score: currentScore 
         }, { onConflict: 'user_id' })
-        .select(); // This asks the DB to return what it did
+        .select();
 
     if (error) {
-        // THIS WILL PRINT THE EXACT REASON IN RED IN YOUR CONSOLE
         console.error("DATABASE REJECTED SUBMISSION:", error.message);
-        console.error("Error Code:", error.code);
-        console.error("Error Details:", error.details);
     } else {
         console.log("SUCCESS! Database accepted the score:", data);
     }
 }
-
 async function endGame() {
     if (endGame.running) return;
     endGame.running = true;
@@ -535,6 +535,7 @@ function subscribeToDailyChanges(userId) {
 }
 
 function updateScore() { scoreDisplay.textContent = `Score: ${score}`; }
+
 
 
 
