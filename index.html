@@ -10,7 +10,7 @@
   const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
   const cachedMuted = localStorage.getItem('muted') === 'true';
   const todayStr = new Date().toISOString().split('T')[0];
-  const hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
+  let hasPlayed = false;
 
   function handleAuthAction() {
     console.log("Auth button was physically clicked!"); // If you don't see this in F12, the button is blocked by CSS
@@ -36,7 +36,9 @@
     const muteIcon = document.getElementById('muteIcon');
     const muteBtn = document.getElementById('muteBtn');
     const dailyBtn = document.getElementById('dailyBtn');
-
+    // Re-check the value inside the listener
+    hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
+    
     if (span) span.textContent = ' ' + cachedUsername;
     if (authLabel) authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
 
@@ -154,6 +156,7 @@
   <script src="background.js" defer></script>
 </body>
 </html>
+
 
 
 
