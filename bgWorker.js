@@ -1,7 +1,7 @@
 let currentBg;
 let backgrounds;
 let nextChangeTime;
-const CHANGE_INTERVAL = 240000;
+const CHANGE_INTERVAL = 5000;//240000;
 
 onmessage = (e) => {
   currentBg = e.data.current;
