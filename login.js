@@ -63,8 +63,13 @@ signupBtn.addEventListener('click', async () => {
         alert("Account created! Please log in manually.");
         setBusy(false);
     } else {
+        // SUCCESSFUL AUTO-LOGIN
         localStorage.setItem('cachedUsername', username);
         localStorage.setItem('cachedLoggedIn', 'true');
+    
+        // 🛡️ CRITICAL FIX: Clear old daily play data from previous users on this device
+        localStorage.removeItem('dailyPlayedDate'); 
+    
         window.location.href = 'index.html';
     }
 });
