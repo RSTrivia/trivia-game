@@ -1,9 +1,2 @@
-# Ignore local environment variables
-.env
-
-# Ignore node modules (for your Render project)
-node_modules/
-
-# Ignore OS specific files
-.DS_Store
-Thumbs.db
+# Secret keys file
+config.js
