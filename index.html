@@ -25,18 +25,22 @@
   let hasPlayed = false;
 
   function handleAuthAction() {
-    console.log("Auth button was physically clicked!"); // If you don't see this in F12, the button is blocked by CSS
+    // Force background save logic here...
+    setTimeout(() => {
+      window.location.href = 'login.html';
+    }, 50);
+    //console.log("Auth button was physically clicked!"); // If you don't see this in F12, the button is blocked by CSS
     
     const isLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
 
     if (isLoggedIn) {
-      console.log("Logging out...");
+     //console.log("Logging out...");
       localStorage.removeItem('cachedLoggedIn');
       localStorage.removeItem('cachedUsername');
       localStorage.removeItem('dailyPlayedDate');
       window.location.reload();
     } else {
-      console.log("Attempting redirect to auth.html");
+      //console.log("Attempting redirect to auth.html");
       window.location.href = 'login.html';
     }
   }
@@ -168,6 +172,7 @@
   <script src="background.js" defer></script>
 </body>
 </html>
+
 
 
 
