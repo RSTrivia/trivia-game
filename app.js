@@ -391,6 +391,15 @@ async function endGame() {
         if (username && username !== 'Guest') {
             await submitLeaderboardScore(username, score);
         }
+        // NEW - Get the freshest username and session
+        const { data: { session } } = await supabase.auth.getSession();
+        const activeUsername = localStorage.getItem('cachedUsername');
+        
+        if (session && activeUsername && activeUsername !== 'Guest') {
+            await submitLeaderboardScore(activeUsername, score);
+        } else {
+          console.log("Not logged in or Guest mode - score not submitted.");
+        }
     }
     endGame.running = false;
 }
@@ -535,6 +544,7 @@ function subscribeToDailyChanges(userId) {
 }
 
 function updateScore() { scoreDisplay.textContent = `Score: ${score}`; }
+
 
 
 
