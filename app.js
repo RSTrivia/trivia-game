@@ -241,6 +241,7 @@ function resetGame() {
     
     // 4. Handle Images
     questionImage.style.display = 'none';
+    questionImage.style.opacity = '0';
     questionImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
     // 5. Reset Timer Visuals
@@ -322,7 +323,9 @@ async function startGame() {
 async function loadQuestion() {
     // A. IMMEDIATE CLEANUP: Hide and clear before doing anything else
     questionImage.style.display = 'none';
+    questionImage.style.opacity = '0'; // Extra safety
     questionImage.src = ''; 
+  
     questionText.textContent = '';
     answersBox.innerHTML = '';
 
@@ -339,14 +342,16 @@ async function loadQuestion() {
     // B. SET TEXT
     questionText.textContent = currentQuestion.question;
 
-    // C. IMAGE LOADING (The flicker-fixer)
+   // 2. DETACHED LOADING: Load the image in a background object
     if (currentQuestion.question_image) {
         const tempImg = new Image();
         tempImg.onload = () => {
-            // Only set the src and show the image once it's FULLY in memory
+            // ONLY execute this when the image is 100% ready in the cache
             questionImage.src = currentQuestion.question_image;
             questionImage.style.display = 'block';
+            questionImage.style.opacity = '1';
         };
+        // Trigger the background load
         tempImg.src = currentQuestion.question_image;
     }
 
@@ -702,6 +707,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
 
 
 
