@@ -1,5 +1,6 @@
-import { supabase } from './supabase.js';
-window.supabase = supabase; 
+
+// Add this near the top of app.js
+const API_BASE = 'https://supabase-bridge-zzqp.onrender.com';
 const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 // Add this near the top of app.js
 supabase.auth.onAuthStateChange((event, session) => {
@@ -146,7 +147,8 @@ async function preloadNextQuestions() {
         }
 
         remainingQuestions.splice(index, 1);
-        const { data, error } = await supabase.rpc('get_question_by_id', { input_id: qId });
+        const response = await fetch(`${API_BASE}/api/get-question-by-id?id=${qId}`);
+        const data = await response.json();
 
         if (!error && data && data[0]) {
             preloadQueue.push(data[0]);
@@ -300,21 +302,27 @@ async function highlightCorrectAnswer() {
 }
 
 async function submitLeaderboardScore(user, val) {
-    // Get the ID we stored during login
     const userId = localStorage.getItem('userId'); 
 
-    const response = await fetch('/api/submit-score', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-            username: user, 
-            score: Number(val),
-            userId: userId // Send the unique ID!
-        })
-    });
-    
-    const result = await response.json();
-    console.log(result.message);
+    try {
+        // We add API_BASE here so it goes to Render
+        const response = await fetch(`${API_BASE}/api/submit-score`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                username: user, 
+                score: Number(val),
+                userId: userId 
+            })
+        });
+        
+        if (!response.ok) throw new Error(`Server error: ${response.status}`);
+
+        const result = await response.json();
+        console.log("Leaderboard result:", result.message);
+    } catch (err) {
+        console.error("Failed to submit score:", err);
+    }
 }
 
 async function endGame() {
@@ -531,6 +539,7 @@ function subscribeToDailyChanges(userId) {
 }
 
 function updateScore() { scoreDisplay.textContent = `Score: ${score}`; }
+
 
 
 
