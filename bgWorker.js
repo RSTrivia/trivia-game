@@ -19,7 +19,7 @@ onmessage = (e) => {
       currentBg = nextBg;
       
       // Update the deadline immediately so we don't spam the main thread
-      nextChangeTime = now + 5000; // 5 seconds for testing
+      nextChangeTime = now + 240000; // 4 mins for
       
       postMessage(nextBg);
     }
