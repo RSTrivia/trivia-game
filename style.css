@@ -712,27 +712,36 @@ input.input-field:-webkit-autofill:active {
   }
 } */
 
-/* mobile tap */
+/* ====== MOBILE NO-FLICKER BUTTONS ====== */
 @media (pointer: coarse) {
-  /* 1. Prevent "ghost" hovers on mobile */
-  .btn:hover, .btn-small:hover {
-    background: rgba(0, 0, 0, 0.6);
+  /* 1. Reset all hover/active for the big .btn and .btn-small */
+  .btn:hover, .btn-small:hover, 
+  #dailyBtn.is-active:hover {
+    background: rgba(0, 0, 0, 0.6) !important;
+    border-color: #d4af37 !important;
+    color: #d4af37 !important;
   }
 
-  /* 2. INSTANT press state (No delay when finger goes down) */
+  /* 2. THE PRESS (Finger Down) */
   .btn:active, .btn-small:active,
-  .btn.tapped, .btn-small.tapped {
-    background-color: #000000 !important; /* Matches your small button fix */
+  .btn.tapped, .btn-small.tapped,
+  #dailyBtn.is-active:active {
+    background-color: #000000 !important;
     border-color: #ffea8a !important;
     color: #ffea8a !important;
-    transition: 0s !important; 
-    transform: scale(0.98); /* Added a tiny physical "press" feel */
+    transition: 0s !important; /* Force instant highlight */
+    transform: scale(0.97);     /* Physical "click" feel */
   }
 
-  /* 3. SLOW return state (Fades out when finger is lifted) */
-  /* This ensures you actually see the highlight! */
-  .btn, .btn-small {
-    transition: background 0.4s ease, border-color 0.4s ease, color 0.4s ease, transform 0.2s ease !important;
+  /* 3. THE RELEASE (Finger Up - The "Slow Glow" Return) */
+  .btn, .btn-small, #dailyBtn.is-active {
+    /* We use 0.5s here so you can actually see the gold highlight fade away */
+    transition: background 0.5s ease, border-color 0.5s ease, color 0.5s ease, transform 0.2s ease !important;
+  }
+
+  /* 4. Disable system gray boxes */
+  * {
+    -webkit-tap-highlight-color: transparent !important;
   }
 }
 
@@ -882,6 +891,7 @@ input.input-field:-webkit-autofill:active {
     /* Keep this at 0s so it feels like a physical click */
     transition: 0s !important;
 }
+
 
 
 
