@@ -330,14 +330,16 @@ async function loadQuestion() {
 
     currentQuestion = preloadQueue.shift();
     preloadNextQuestions(); 
-
+    
     questionText.textContent = currentQuestion.question;
     if (currentQuestion.question_image) {
         questionImage.style.display = 'none';
-        questionImage.onload = () => { questionImage.style.display = 'block'; };
+      // 2. Set the src
         questionImage.src = currentQuestion.question_image;
+        questionImage.onload = () => { questionImage.style.display = 'block'; };
     } else {
         questionImage.style.display = 'none';
+        questionImage.src = '';
     }
 
     let answers = [
@@ -691,6 +693,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
 
 
 
