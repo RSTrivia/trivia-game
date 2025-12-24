@@ -24,27 +24,43 @@
   const todayStr = new Date().toISOString().split('T')[0];
   let hasPlayed = false;
 
-  function handleAuthAction() {
-    // Force background save logic here...
+function handleAuthAction() {
+  const isLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
+
+  // --- Background Lock Helper ---
+  const lockBackground = () => {
+    const fadeLayer = document.getElementById("bg-fade-layer");
+    let finalBg = localStorage.getItem("bg_current");
+
+    // If we are mid-fade, grab the target image instead of the old one
+    if (fadeLayer && parseFloat(window.getComputedStyle(fadeLayer).opacity) > 0.1) {
+      const bgUrl = fadeLayer.style.backgroundImage.slice(5, -2);
+      if (bgUrl) {
+        finalBg = bgUrl;
+        localStorage.setItem("bg_current", finalBg);
+      }
+    }
+    document.documentElement.style.setProperty("--bg-image", `url('${finalBg}')`);
+  };
+
+  if (isLoggedIn) {
+    localStorage.removeItem('cachedLoggedIn');
+    localStorage.removeItem('cachedUsername');
+    localStorage.removeItem('dailyPlayedDate');
+    
+    // Lock background then reload
+    lockBackground();
+    setTimeout(() => {
+      window.location.reload();
+    }, 50);
+  } else {
+    // Lock background then go to login
+    lockBackground();
     setTimeout(() => {
       window.location.href = 'login.html';
     }, 50);
-    //console.log("Auth button was physically clicked!"); // If you don't see this in F12, the button is blocked by CSS
-    
-    const isLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
-
-    if (isLoggedIn) {
-     //console.log("Logging out...");
-      localStorage.removeItem('cachedLoggedIn');
-      localStorage.removeItem('cachedUsername');
-      localStorage.removeItem('dailyPlayedDate');
-      window.location.reload();
-    } else {
-      //console.log("Attempting redirect to auth.html");
-      window.location.href = 'login.html';
-    }
   }
-
+}
   document.addEventListener('DOMContentLoaded', () => {
     const span = document.getElementById('usernameSpan');
     const authBtn = document.getElementById('authBtn');
@@ -172,6 +188,7 @@
   <script src="background.js" defer></script>
 </body>
 </html>
+
 
 
 
