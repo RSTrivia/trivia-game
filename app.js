@@ -465,7 +465,10 @@ startBtn.onclick = () => {
 playAgainBtn.onclick = () => startGame();
 mainMenuBtn.onclick = () => {
     preloadQueue = []; // Clear the buffer only when going back to menu
-    window.location.reload(); 
+    // Manual UI Reset instead:
+    document.getElementById('end-screen').classList.add('hidden');
+    document.getElementById('start-screen').classList.remove('hidden');
+    document.body.classList.remove('game-active');
 };
 
 muteBtn.onclick = () => {
@@ -532,6 +535,7 @@ function subscribeToDailyChanges(userId) {
         })
         .subscribe();
 }
+
 
 
 
