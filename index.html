@@ -12,22 +12,23 @@
   const todayStr = new Date().toISOString().split('T')[0];
   const hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
 
-  function handleAuthAction() {
-    console.log("Auth button was physically clicked!"); // If you don't see this in F12, the button is blocked by CSS
+async function handleAuthAction() {
+  if (cachedLoggedIn) {
+    // This is the missing piece! It kills the session
+    await supabase.auth.signOut(); 
     
-    const isLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
-
-    if (isLoggedIn) {
-      console.log("Logging out...");
-      localStorage.removeItem('cachedLoggedIn');
-      localStorage.removeItem('cachedUsername');
-      localStorage.removeItem('dailyPlayedDate');
-      window.location.reload();
-    } else {
-      console.log("Attempting redirect to auth.html");
-      window.location.href = 'login.html';
-    }
+    localStorage.removeItem('cachedLoggedIn');
+    localStorage.removeItem('cachedUsername');
+    localStorage.removeItem('dailyPlayedDate');
+    
+    // Clear everything else to be safe
+    localStorage.clear(); 
+    
+    window.location.reload();
+  } else {
+    window.location.href = 'login.html';
   }
+}
 
   document.addEventListener('DOMContentLoaded', () => {
     const span = document.getElementById('usernameSpan');
@@ -153,6 +154,7 @@
   <script src="background.js" defer></script>
 </body>
 </html>
+
 
 
 
