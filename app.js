@@ -288,23 +288,43 @@ async function highlightCorrectAnswer() {
 
 async function submitLeaderboardScore(user, val) {
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
+    
+    if (!session) {
+        console.error("Score submission failed: No active login session.");
+        return;
+    }
 
-    // 1. Fetch current high score from the 'scores' table
-    const { data: record } = await supabase
+    // 1. Fetch current high score
+    const { data: record, error: fetchError } = await supabase
         .from('scores')
         .select('score')
         .eq('user_id', session.user.id)
         .maybeSingle();
 
-    // 2. Only submit if no record exists OR the new score is higher
+    if (fetchError) {
+        console.error("Database fetch error:", fetchError.message);
+        return;
+    }
+
+    // 2. Logic check
     if (!record || val > record.score) {
-        await supabase.from('scores').upsert({ 
+        console.log(`Attempting to upsert: ${user} - ${val}`);
+        
+        const { error: upsertError } = await supabase.from('scores').upsert({ 
             user_id: session.user.id, 
             username: user, 
-            score: val 
+            score: parseInt(val) // Ensure it's a number
         }, { onConflict: 'user_id' });
-        console.log("New Personal Best submitted to leaderboard!");
+
+        if (upsertError) {
+            // THIS WILL TELL YOU THE EXACT PROBLEM
+            console.error("SUBMISSION ERROR:", upsertError.message);
+            console.error("Error Details:", upsertError.details);
+        } else {
+            console.log("Success! Score is now in the database.");
+        }
+    } else {
+        console.log("Score was not higher than previous record. Skipping.");
     }
 }
 
@@ -513,6 +533,7 @@ function subscribeToDailyChanges(userId) {
 }
 
 function updateScore() { scoreDisplay.textContent = `Score: ${score}`; }
+
 
 
 
