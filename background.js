@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!fadeLayer) return;
 
   const FADE_DURATION = 1500;
-  const CHANGE_INTERVAL = 240000; // 4 minutes
+  const CHANGE_INTERVAL = 5000;//240000; // 4 minutes
   
   const backgrounds = [
     "images/background.jpg",
