@@ -160,30 +160,10 @@ function handleAuthAction() {
   <script type="module" src="supabase.js"></script>
   <script type="module" src="app.js"></script>
   <script src="background.js" defer></script>
-    <script>
-  // This logic is what makes the "good" buttons work
-  const mobileButtons = document.querySelectorAll('.btn, .btn-small');
-
-  mobileButtons.forEach(button => {
-    button.addEventListener('touchstart', () => {
-      button.classList.add('tapped');
-    }, {passive: true});
-
-    button.addEventListener('touchend', () => {
-      // Small delay so the human eye actually sees the gold flash before it disappears
-      setTimeout(() => {
-        button.classList.remove('tapped');
-      }, 100); 
-    });
-
-    // Security: if the user drags their finger away, remove the highlight
-    button.addEventListener('touchcancel', () => {
-      button.classList.remove('tapped');
-    });
-  });
-</script>
+    
 </body>
 </html>
+
 
 
 
