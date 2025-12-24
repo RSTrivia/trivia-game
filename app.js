@@ -1,12 +1,11 @@
-// ====== CONFIGURATION ======
-const API_BASE = 'https://supabase-bridge-zzqp.onrender.com';
+import { supabase } from './supabase.js';
+window.supabase = supabase; 
 const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
 // ====== UI & STATE ======
 const cachedMuted = localStorage.getItem('muted') === 'true';
 const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
 const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
-const userId = localStorage.getItem('userId'); 
 
 const startBtn = document.getElementById('startBtn');
 const playAgainBtn = document.getElementById('playAgainBtn');
@@ -24,7 +23,6 @@ const userDisplay = document.getElementById('userDisplay');
 const authBtn = document.getElementById('authBtn');
 const muteBtn = document.getElementById('muteBtn');
 const dailyBtn = document.getElementById('dailyBtn');
-
 const dailyMessages = {
   0: ["Ouch. Zero XP gained today.", "Lumbridge is calling your name."],
   1: ["At least it's not a zero!", "One is better than none... barely."],
@@ -64,11 +62,41 @@ if (muteBtn) {
     if (cachedMuted) muteBtn.classList.add('is-muted');
 }
 
+// ====== AUTH & REALTIME SYNC ======
+async function initializeAuth() {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (session) {
+        // Start listening for changes on other devices immediately
+        subscribeToDailyChanges(session.user.id);
+        
+        // Double check database truth (in case localStorage is cleared)
+        const { data: existing } = await supabase
+            .from('daily_attempts')
+            .select('id')
+            .eq('user_id', session.user.id)
+            .eq('attempt_date', todayStr)
+            .maybeSingle();
+            
+        if (existing) {
+            localStorage.setItem('dailyPlayedDate', todayStr);
+            lockDailyButton();
+        }
+    }
+
+    // Listen for login/logout events
+    supabase.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+            subscribeToDailyChanges(session.user.id);
+        }
+    });
+}
+initializeAuth();
+
 function lockDailyButton() {
     if (dailyBtn) {
         dailyBtn.classList.remove('is-active');
         dailyBtn.classList.add('disabled');
-        const label = dailyBtn.querySelector('.btn-label');
         dailyBtn.onclick = () => alert("You've already played today's challenge!");
     }
 }
@@ -76,17 +104,32 @@ function lockDailyButton() {
 // ====== GAME ENGINE ======
 
 function resetGame() {
+    // 1. Stop any active logic
     clearInterval(timer);
+    
+    // 2. Reset numerical state
     score = 0;
     currentQuestion = null;
+    // NOTE: We do NOT reset preloadQueue here. 
+    // This allows "Play Again" to use the 2 questions already buffered.
+
+    // 3. WIPE UI IMMEDIATELY (Prevents the flicker)
     questionText.textContent = '';
     answersBox.innerHTML = '';
+    
+    // 4. Handle Images
     questionImage.style.display = 'none';
     questionImage.src = ''; 
+
+    // 5. Reset Timer Visuals
     timeLeft = 15;
     timeDisplay.textContent = timeLeft;
     timeWrap.classList.remove('red-timer');
-    if (scoreDisplay) scoreDisplay.textContent = `Score: 0`;
+    
+    // 6. Reset Score Visual
+    if (scoreDisplay) {
+        scoreDisplay.textContent = `Score: 0`;
+    }
 }
 
 async function preloadNextQuestions() {
@@ -95,52 +138,68 @@ async function preloadNextQuestions() {
         attempts++;
         const index = Math.floor(Math.random() * remainingQuestions.length);
         const qId = remainingQuestions[index]; 
-        
-        if (preloadQueue.some(p => p.id === qId)) continue;
+
+        if ((currentQuestion && qId === currentQuestion.id) || preloadQueue.some(p => p.id === qId)) {
+            continue;
+        }
 
         remainingQuestions.splice(index, 1);
-        
-        try {
-            // Using your Render server to get specific question data
-            const resp = await fetch(`${API_BASE}/api/get-questions`);
-            const allData = await resp.json();
-            const specificQ = allData.find(q => q.id === qId);
+        const { data, error } = await supabase.rpc('get_question_by_id', { input_id: qId });
 
-            if (specificQ) {
-                preloadQueue.push(specificQ);
-                if (specificQ.question_image) {
-                    const img = new Image();
-                    img.src = specificQ.question_image;
-                }
+        if (!error && data && data[0]) {
+            preloadQueue.push(data[0]);
+            if (data[0].question_image) {
+                const img = new Image();
+                img.src = data[0].question_image;
             }
-        } catch (e) { console.error("Preload fail", e); }
+        }
     }
 }
 
 async function startGame() {
+    // A. Immediate UI setup
     document.body.classList.add('game-active'); 
+    endGame.running = false;
     game.classList.remove('hidden');
     document.getElementById('start-screen').classList.add('hidden');
     endScreen.classList.add('hidden');
     
+    // B. Clear score and timers, but NOT the preloaded questions
     resetGame();
     updateScore();
+
+    // C. LOAD SOUNDS (Start this, but don't let it block the UI if possible)
     loadSounds(); 
 
-    if (!isDailyMode) {
-        try {
-            const response = await fetch(`${API_BASE}/api/get-question-ids`);
-            const idList = await response.json();
-            remainingQuestions = idList.sort(() => Math.random() - 0.5);
-        } catch (e) { console.error("ID fetch fail", e); }
+    // D. INSTANT START: If we have preloaded questions from the last game, start NOW
+    if (preloadQueue.length > 0) {
+        console.log("Instant start using preloaded questions...");
+        loadQuestion(); 
     }
 
-    if (preloadQueue.length === 0) await preloadNextQuestions(); 
-    loadQuestion();
-}
+    // E. BACKGROUND SYNC: Refresh the deck of IDs from Supabase
+    const { data: idList, error } = await supabase.rpc('get_all_question_ids');
+    if (error) {
+        console.error("RPC Error:", error.message);
+    } else {
+        // Filter out IDs that are currently sitting in the preloadQueue 
+        // so we don't ask the same question twice.
+        const preloadedIds = preloadQueue.map(q => q.id);
+        remainingQuestions = idList
+            .map(item => item.id)
+            .filter(id => !preloadedIds.includes(id)) 
+            .sort(() => Math.random() - 0.5);
+    }
 
+    // F. FALLBACK: If preload was empty (first game ever), load now
+    if (!currentQuestion && preloadQueue.length === 0) {
+        await preloadNextQuestions(); 
+        loadQuestion();
+    }
+}
 async function loadQuestion() {
     answersBox.innerHTML = '';
+    questionText.textContent = ''; // Add this line
     if (preloadQueue.length === 0 && remainingQuestions.length === 0) {
         await endGame();
         return;
@@ -155,6 +214,8 @@ async function loadQuestion() {
         questionImage.style.display = 'none';
         questionImage.onload = () => { questionImage.style.display = 'block'; };
         questionImage.src = currentQuestion.question_image;
+    } else {
+        questionImage.style.display = 'none';
     }
 
     let answers = [
@@ -196,7 +257,12 @@ async function handleTimeout() {
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
     playSound(wrongBuffer);
     await highlightCorrectAnswer();
-    setTimeout(isDailyMode ? loadQuestion : endGame, 1500);
+    
+    if (isDailyMode) {
+        setTimeout(loadQuestion, 1500);
+    } else {
+        setTimeout(endGame, 1000);
+    }
 }
 
 async function checkAnswer(choiceId, btn) {
@@ -204,103 +270,113 @@ async function checkAnswer(choiceId, btn) {
     clearInterval(timer);
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
 
-    try {
-        const resp = await fetch(`${API_BASE}/api/check-answer`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ questionId: currentQuestion.id, choice: choiceId })
-        });
-        const { isCorrect } = await resp.json();
+    const { data: isCorrect, error } = await supabase.rpc('check_my_answer', {
+        input_id: currentQuestion.id,
+        choice: choiceId
+    });
 
-        if (isCorrect) {
-            playSound(correctBuffer);
-            btn.classList.add('correct');
-            score++;
-            updateScore();
-            setTimeout(loadQuestion, 1000);
+    if (error) return console.error("RPC Error:", error);
+
+    if (isCorrect) {
+        playSound(correctBuffer);
+        btn.classList.add('correct');
+        score++;
+        updateScore();
+        setTimeout(loadQuestion, 1000);
+    } else {
+        playSound(wrongBuffer);
+        btn.classList.add('wrong');
+        await highlightCorrectAnswer();
+        if (isDailyMode) {
+            setTimeout(loadQuestion, 1500);
         } else {
-            playSound(wrongBuffer);
-            btn.classList.add('wrong');
-            await highlightCorrectAnswer();
-            setTimeout(isDailyMode ? loadQuestion : endGame, 1500);
+            setTimeout(endGame, 1000);
         }
-    } catch (e) { console.error("Check Answer failed", e); }
+    }
 }
 
 async function highlightCorrectAnswer() {
-    try {
-        const resp = await fetch(`${API_BASE}/api/check-answer`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ questionId: currentQuestion.id, choice: 0 }) // choice 0 forces server to return correctId
-        });
-        const { correctId } = await resp.json();
-        document.querySelectorAll('.answer-btn').forEach(btn => {
-            if (parseInt(btn.dataset.answerId) === correctId) btn.classList.add('correct');
-        });
-    } catch (e) { console.error("Highlight failed", e); }
-}
-
-async function submitLeaderboardScore(user, val) {
-    const userId = localStorage.getItem('userId'); 
-
-    // If there is no userId, we can't save to the database using your current server logic
-    if (!userId) {
-        console.warn("No userId found. Score not submitted to leaderboard.");
-        return;
-    }
-
-    try {
-        const response = await fetch(`${API_BASE}/api/submit-score`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                username: user, 
-                score: Number(val),
-                userId: userId 
-            })
-        });
-        
-        const result = await response.json();
-        console.log("Result:", result.message);
-    } catch (err) {
-        console.error("Network error:", err);
-    }
+    const { data: correctId } = await supabase.rpc('reveal_correct_answer', { 
+        input_id: currentQuestion.id 
+    });
+    document.querySelectorAll('.answer-btn').forEach(btn => {
+        if (parseInt(btn.dataset.answerId) === correctId) {
+            btn.classList.add('correct');
+        }
+    });
 }
 
 async function endGame() {
+    if (endGame.running) return;
+    endGame.running = true;
     clearInterval(timer);
+    
+    // UI Transitions
     document.body.classList.remove('game-active'); 
     game.classList.add('hidden');
     endScreen.classList.remove('hidden');
+    
+    // Set final score number
     if (finalScore) finalScore.textContent = score;
 
     const gameOverTitle = document.getElementById('game-over-title');
     const gzTitle = document.getElementById('gz-title');
+
+    // Reset titles to be safe
     if (gameOverTitle) gameOverTitle.classList.add('hidden');
     if (gzTitle) gzTitle.classList.add('hidden');
 
     if (isDailyMode) {
+        // 1. Daily Mode UI
         if (playAgainBtn) playAgainBtn.classList.add('hidden');
+        
+        // 2. Select Message (Cap score at 10)
         const scoreKey = Math.min(Math.max(score, 0), 10);
         const options = dailyMessages[scoreKey] || ["Game Over!"];
+        const randomMsg = options[Math.floor(Math.random() * options.length)];
+        
+        // 3. Update GameOver Title with flavor text
         if (gameOverTitle) {
-            gameOverTitle.textContent = options[Math.floor(Math.random() * options.length)];
+            gameOverTitle.textContent = randomMsg;
             gameOverTitle.classList.remove('hidden');
         }
-        // Daily scores are handled by your server during login/signup logic or a separate endpoint
+
+        // 4. Save Score to Database
+        if (username && username !== 'Guest') {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                await supabase.from('daily_attempts')
+                    .update({ score: score })
+                    .eq('user_id', session.user.id)
+                    .eq('attempt_date', todayStr);
+            }
+        }
+        isDailyMode = false; // Reset for next non-daily game
     } else {
+        // Standard Mode UI
         if (playAgainBtn) playAgainBtn.classList.remove('hidden');
-        if (gameOverTitle) {
-            gameOverTitle.textContent = "Game Over!";
-            gameOverTitle.classList.remove('hidden');
+        
+        // Show "Gz" if they finished all questions, otherwise "Game Over"
+        if (score > 0 && remainingQuestions.length === 0 && preloadQueue.length === 0) {
+            const gzMessages = ['Gz!', 'Go touch grass', 'See you in Lumbridge'];
+            if (gzTitle) {
+                gzTitle.textContent = gzMessages[Math.floor(Math.random() * gzMessages.length)];
+                gzTitle.classList.remove('hidden');
+            }
+        } else {
+            if (gameOverTitle) {
+                gameOverTitle.textContent = "Game Over!";
+                gameOverTitle.classList.remove('hidden');
+            }
         }
-        if (cachedLoggedIn && username !== 'Guest') {
+
+        if (username && username !== 'Guest') {
             await submitLeaderboardScore(username, score);
         }
     }
-    isDailyMode = false;
+    endGame.running = false;
 }
+endGame.running = false;
 
 // ====== HELPERS & AUDIO ======
 async function loadSounds() {
@@ -316,47 +392,58 @@ async function loadAudio(url) {
 
 function playSound(buffer) {
     if (!buffer || muted) return;
-    if (audioCtx.state === 'suspended') audioCtx.resume();
+    
+    // 🔥 On mobile, we must resume inside the play call too 
+    // just in case the context auto-suspended
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+
     const source = audioCtx.createBufferSource();
     source.buffer = buffer;
-    source.connect(audioCtx.destination);
-    source.start(0);
+    const gain = audioCtx.createGain();
+    gain.gain.value = 0.5;
+    source.connect(gain).connect(audioCtx.destination);
+    source.start(0); // Add the 0 for older mobile browser compatibility
 }
+function updateScore() { scoreDisplay.textContent = `Score: ${score}`; }
 
-function updateScore() { if (scoreDisplay) scoreDisplay.textContent = `Score: ${score}`; }
-
-// ====== DAILY CHALLENGE SEED LOGIC ======
-function shuffleWithSeed(array, seed) {
-    let arr = [...array];
-    let m = arr.length, t, i;
-    while (m) {
-        i = Math.floor(seededRandom(seed++) * m--);
-        t = arr[m]; arr[m] = arr[i]; arr[i] = t;
+async function submitLeaderboardScore(user, val) {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+    const { data: record } = await supabase.from('scores').select('score').eq('user_id', session.user.id).single();
+    if (!record || val > record.score) {
+        await supabase.from('scores').upsert({ user_id: session.user.id, username: user, score: val }, { onConflict: 'user_id' });
     }
-    return arr;
-}
-function seededRandom(seed) {
-    let x = Math.sin(seed) * 10000;
-    return x - Math.floor(x);
 }
 
 async function startDailyChallenge() {
-    if (!cachedLoggedIn) return alert("Log in to play Daily Mode!");
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return alert("Log in to play Daily Mode!");
+
+    const { error: burnError } = await supabase
+        .from('daily_attempts')
+        .insert({ user_id: session.user.id, attempt_date: todayStr });
+
+    if (burnError) return alert("You've already played today!");
     
-    // Check with server if already played
-    const response = await fetch(`${API_BASE}/api/get-question-ids`);
-    const allQuestions = await response.json();
+    localStorage.setItem('dailyPlayedDate', todayStr);
+    lockDailyButton(); // Gray out immediately on this device
+
+    const { data: allQuestions } = await supabase.from('questions').select('id').order('id', { ascending: true });
+    if (!allQuestions || allQuestions.length < 10) return alert("Error loading questions.");
 
     const startDate = new Date('2025-12-22'); 
     const diffTime = Math.abs(new Date() - startDate);
     const dayCounter = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     
     const questionsPerDay = 10;
-    const cycleNumber = Math.floor((dayCounter * questionsPerDay) / allQuestions.length);
-    const chunkIndex = (dayCounter * questionsPerDay) % allQuestions.length;
+    const daysPerCycle = Math.floor(allQuestions.length / questionsPerDay); 
+    const cycleNumber = Math.floor(dayCounter / daysPerCycle); 
+    const dayInCycle = dayCounter % daysPerCycle;
 
     const shuffledList = shuffleWithSeed(allQuestions, cycleNumber);
-    const dailyIds = shuffledList.slice(chunkIndex, chunkIndex + 10);
+    const dailyIds = shuffledList.slice(dayInCycle * questionsPerDay, (dayInCycle * questionsPerDay) + questionsPerDay).map(q => q.id);
 
     isDailyMode = true;
     resetGame();
@@ -371,23 +458,84 @@ async function startDailyChallenge() {
 }
 
 // ====== EVENT LISTENERS ======
-startBtn.onclick = () => { isDailyMode = false; startGame(); };
+startBtn.onclick = () => {
+    isDailyMode = false;
+    startGame();
+};
 playAgainBtn.onclick = () => startGame();
-mainMenuBtn.onclick = () => location.reload(); 
+mainMenuBtn.onclick = () => {
+    preloadQueue = []; // Clear the buffer only when going back to menu
+    window.location.reload(); 
+};
 
 muteBtn.onclick = () => {
     muted = !muted;
     localStorage.setItem('muted', muted);
     muteBtn.querySelector('#muteIcon').textContent = muted ? '🔇' : '🔊';
+    muteBtn.classList.toggle('is-muted', muted);
 };
 
 if (dailyBtn) {
-    const hasPlayedToday = localStorage.getItem('dailyPlayedDate') === todayStr;
-    if (cachedLoggedIn && !hasPlayedToday) {
+    const hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
+    if (cachedLoggedIn && !hasPlayed) {
         dailyBtn.classList.add('is-active');
-        dailyBtn.onclick = () => startDailyChallenge();
+        dailyBtn.classList.remove('disabled');
     } else {
-        lockDailyButton();
+        dailyBtn.classList.remove('is-active');
+        dailyBtn.classList.add('disabled');
     }
+
+    dailyBtn.onclick = async () => {
+        // 🔥 1. IMMEDIATE AUDIO UNLOCK
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+        // Start loading sounds immediately so the buffers are ready
+        loadSounds(); 
+
+        if (!cachedLoggedIn) return alert("Please log in to play!");
+        if (localStorage.getItem('dailyPlayedDate') === todayStr) return alert("Already played today!");
+        
+        isDailyMode = true;
+        // Start the actual challenge logic
+        startDailyChallenge();
+    };
 }
+
+function shuffleWithSeed(array, seed) {
+    let arr = [...array];
+    let m = arr.length, t, i;
+    while (m) {
+        i = Math.floor(seededRandom(seed++) * m--);
+        t = arr[m]; arr[m] = arr[i]; arr[i] = t;
+    }
+    return arr;
+}
+
+function seededRandom(seed) {
+    let x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
+}
+
+function subscribeToDailyChanges(userId) {
+    supabase
+        .channel('daily-updates')
+        .on('postgres_changes', {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'daily_attempts',
+            filter: `user_id=eq.${userId}`
+        }, (payload) => {
+            console.log('Daily challenge sync: locking button.');
+            localStorage.setItem('dailyPlayedDate', todayStr);
+            lockDailyButton();
+        })
+        .subscribe();
+}
+
+
+
+
+
+
 
