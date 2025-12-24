@@ -12,23 +12,22 @@
   const todayStr = new Date().toISOString().split('T')[0];
   const hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
 
-async function handleAuthAction() {
+  function handleAuthAction() {
+    console.log("Auth button was physically clicked!"); // If you don't see this in F12, the button is blocked by CSS
+    
     const isLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
 
     if (isLoggedIn) {
-        // --- LOGOUT LOGIC ---
-        localStorage.removeItem('userId');
-        localStorage.removeItem('cachedUsername');
-        localStorage.removeItem('cachedLoggedIn');
-        localStorage.removeItem('dailyPlayedDate');
-        
-        // Refresh to reset the UI state
-        window.location.reload();
+      console.log("Logging out...");
+      localStorage.removeItem('cachedLoggedIn');
+      localStorage.removeItem('cachedUsername');
+      localStorage.removeItem('dailyPlayedDate');
+      window.location.reload();
     } else {
-        // --- REDIRECT TO LOGIN ---
-        window.location.href = 'login.html'; // Or whatever your login page is
+      console.log("Attempting redirect to auth.html");
+      window.location.href = 'login.html';
     }
-}
+  }
 
   document.addEventListener('DOMContentLoaded', () => {
     const span = document.getElementById('usernameSpan');
@@ -150,13 +149,11 @@ async function handleAuthAction() {
 
   <!-- Scripts -->
   <script src="config.js"></script>
+  <script type="module" src="supabase.js"></script>
   <script type="module" src="app.js"></script>
   <script src="background.js" defer></script>
 </body>
 </html>
-
-
-
 
 
 
