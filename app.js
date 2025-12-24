@@ -288,13 +288,11 @@ async function highlightCorrectAnswer() {
 
 async function submitLeaderboardScore(user, val) {
     const { data: { session } } = await supabase.auth.getSession();
-    
-    if (!session) {
-        console.error("Score submission failed: No active login session.");
-        return;
-    }
+    if (!session) return;
 
-    // 1. Fetch current high score
+    const currentVal = Number(val);
+
+    // 1. Fetch record
     const { data: record, error: fetchError } = await supabase
         .from('scores')
         .select('score')
@@ -302,29 +300,31 @@ async function submitLeaderboardScore(user, val) {
         .maybeSingle();
 
     if (fetchError) {
-        console.error("Database fetch error:", fetchError.message);
+        console.error("Database error:", fetchError.message);
         return;
     }
 
-    // 2. Logic check
-    if (!record || val > record.score) {
-        console.log(`Attempting to upsert: ${user} - ${val}`);
-        
-        const { error: upsertError } = await supabase.from('scores').upsert({ 
-            user_id: session.user.id, 
-            username: user, 
-            score: parseInt(val) // Ensure it's a number
-        }, { onConflict: 'user_id' });
+    // 2. Determine if we should update
+    // Logic: If there is NO record OR the current value is higher than the saved one
+    const isNewUser = !record;
+    const isNewHiScore = record && currentVal > Number(record.score);
+
+    if (isNewUser || isNewHiScore) {
+        console.log(isNewUser ? "First time player! Creating record..." : "New High Score! Updating...");
+
+        const { error: upsertError } = await supabase
+            .from('scores')
+            .upsert({ 
+                user_id: session.user.id, 
+                username: user, 
+                score: currentVal 
+            }, { onConflict: 'user_id' });
 
         if (upsertError) {
-            // THIS WILL TELL YOU THE EXACT PROBLEM
-            console.error("SUBMISSION ERROR:", upsertError.message);
-            console.error("Error Details:", upsertError.details);
-        } else {
-            console.log("Success! Score is now in the database.");
+            console.error("Upsert failed:", upsertError.message);
         }
     } else {
-        console.log("Score was not higher than previous record. Skipping.");
+        console.log(`No update needed. Current: ${currentVal}, Best: ${record.score}`);
     }
 }
 
@@ -533,6 +533,7 @@ function subscribeToDailyChanges(userId) {
 }
 
 function updateScore() { scoreDisplay.textContent = `Score: ${score}`; }
+
 
 
 
