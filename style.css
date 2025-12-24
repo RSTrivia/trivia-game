@@ -709,27 +709,25 @@ input.input-field:-webkit-autofill:active {
 
 /* mobile tap */
 @media (pointer: coarse) {
-  /* 1. Prevent "sticky" hover from ever happening */
+  /* Remove the hover override that was blocking the flash */
   .btn:hover, .btn-small:hover {
-    background: rgba(0, 0, 0, 0.6) !important;
-    border-color: #d4af37 !important;
+    /* Let the default state sit here, but don't use !important */
+    background: rgba(0, 0, 0, 0.6);
   }
 
-  /* 2. The Flash: Triggered by finger touch (active) or our JS class (tapped) */
+  /* Trigger the flash INSTANTLY on touch */
   .btn:active, .btn-small:active,
   .btn.tapped, .btn-small.tapped {
-    background: rgba(0, 0, 0, 0.9) !important;
+    background: rgba(212, 175, 55, 0.2) !important; /* Slight gold tint bg */
     border-color: #ffea8a !important;
     color: #ffea8a !important;
-    /* transition 0s makes it turn gold INSTANTLY when finger hits screen */
-    transition: 0s !important; 
+    transition: 0s !important; /* NO DELAY when pushing down */
   }
 
-  /* 3. The "Leaderboard" Feeling: The Fade Out */
+  /* The fade-out effect when letting go */
   .btn, .btn-small {
-    /* 0.2s duration to fade, but 0.1s DELAY before it starts fading.
-       This "holds" the gold border so it doesn't just flicker. */
-    transition: all 0.2s ease 0.1s !important; 
+    /* Smoothly return to normal, NO delay on the return */
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease !important;
   }
 }
 
@@ -866,6 +864,7 @@ input.input-field:-webkit-autofill:active {
     background-color: rgba(212, 175, 55, 0.2) !important;
     transform: scale(0.96);
 }
+
 
 
 
