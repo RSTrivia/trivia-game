@@ -432,7 +432,14 @@ async function endGame() {
     if (endGame.running) return;
     endGame.running = true;
     clearInterval(timer);
-    
+  
+    // --- clean up the game -------------
+    questionText.textContent = ''; 
+    answersBox.innerHTML = '';
+    questionImage.style.display = 'none';
+    questionImage.src = ''; 
+    // -----------------------------------
+  
     // UI Transitions
     document.body.classList.remove('game-active'); 
     game.classList.add('hidden');
@@ -684,6 +691,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
 
 
 
