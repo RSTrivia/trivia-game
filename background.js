@@ -27,24 +27,29 @@ document.addEventListener("DOMContentLoaded", () => {
   worker.postMessage({ current: currentBg, backgrounds });
 
   worker.onmessage = (e) => {
-const nextBg = e.data;
+  const nextBg = e.data;
 
-  // Only fade if the background is actually different
-  if (nextBg === currentBg) return;
+  // 1. Prevent overlapping transitions
+  if (nextBg === currentBg || fadeLayer.style.opacity == 1) return;
 
-  // Preload the next image
   const img = new Image();
   img.src = nextBg;
   img.onload = () => {
-    // Fade overlay once image is loaded
-    fadeLayer.style.transition = `opacity ${FADE_DURATION}ms ease-in-out`;
+    // 2. Set the image to the overlay layer first
     fadeLayer.style.backgroundImage = `url('${nextBg}')`;
+    
+    // 3. Trigger the CSS Fade In
+    fadeLayer.style.transition = `opacity ${FADE_DURATION}ms ease-in-out`;
     fadeLayer.style.opacity = 1;
-    fadeLayer.style.transform = 'translateZ(0)';
 
     setTimeout(() => {
+      // 4. Once fully faded in, swap the bottom real background
       document.documentElement.style.setProperty("--bg-image", `url('${nextBg}')`);
+      
+      // 5. Hide the overlay immediately (the real bg is now identical)
+      fadeLayer.style.transition = 'none'; 
       fadeLayer.style.opacity = 0;
+      
       currentBg = nextBg;
       localStorage.setItem("bg_current", currentBg);
     }, FADE_DURATION);
