@@ -28,30 +28,33 @@ document.addEventListener("DOMContentLoaded", () => {
 
   worker.onmessage = (e) => {
   const nextBg = e.data;
-
-  // 1. Prevent overlapping transitions
-  if (nextBg === currentBg || fadeLayer.style.opacity == 1) return;
+  if (nextBg === currentBg) return;
 
   const img = new Image();
   img.src = nextBg;
   img.onload = () => {
-    // 2. Set the image to the overlay layer first
+    // 1. Prepare the Fade Layer
+    fadeLayer.style.transition = 'none'; // Reset any old transitions
     fadeLayer.style.backgroundImage = `url('${nextBg}')`;
     
-    // 3. Trigger the CSS Fade In
+    // 2. Fade IN the Overlay (Now the user sees the new image)
     fadeLayer.style.transition = `opacity ${FADE_DURATION}ms ease-in-out`;
     fadeLayer.style.opacity = 1;
 
+    // 3. Wait for the fade to COMPLETE before swapping the base variable
     setTimeout(() => {
-      // 4. Once fully faded in, swap the bottom real background
+      // Update the base variable behind the opaque overlay
       document.documentElement.style.setProperty("--bg-image", `url('${nextBg}')`);
       
-      // 5. Hide the overlay immediately (the real bg is now identical)
-      fadeLayer.style.transition = 'none'; 
-      fadeLayer.style.opacity = 0;
+      // IMPORTANT: Add a tiny delay (50ms) to ensure the CSS variable has painted
+      setTimeout(() => {
+        fadeLayer.style.transition = `opacity ${FADE_DURATION}ms ease-in-out`;
+        fadeLayer.style.opacity = 0; // Fade the overlay OUT to reveal the identical base
+        
+        currentBg = nextBg;
+        localStorage.setItem("bg_current", currentBg);
+      }, 50);
       
-      currentBg = nextBg;
-      localStorage.setItem("bg_current", currentBg);
     }, FADE_DURATION);
   };
 };
