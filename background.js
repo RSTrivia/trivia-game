@@ -59,3 +59,8 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 };
 });
+
+window.addEventListener("beforeunload", () => {
+  // Terminate the worker so it can't post messages while the page is switching
+  if (worker) worker.terminate(); 
+});
