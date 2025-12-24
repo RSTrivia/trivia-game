@@ -260,6 +260,7 @@ a {
   margin: 10px 0;
   border-radius: 8px;
   display: none;
+  background-color: transparent;
 }
 
 /* ====== OSRS TITLE ===== */
@@ -881,6 +882,7 @@ input.input-field:-webkit-autofill:active {
     /* Keep this at 0s so it feels like a physical click */
     transition: 0s !important;
 }
+
 
 
 
