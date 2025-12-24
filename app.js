@@ -300,36 +300,30 @@ async function highlightCorrectAnswer() {
 }
 
 async function submitLeaderboardScore(user, val) {
-    // 1. Force a fresh check of the user
-    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+    console.log(`Sending score to server: ${user} - ${val}`);
 
-    if (authError || !authUser) {
-        console.error("Submission blocked: No active session found. Error:", authError?.message);
-        // Fallback: Try one last time with getSession
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) return;
-    }
+    try {
+        const response = await fetch('/api/save-score', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                username: user, 
+                score: Number(val) 
+            })
+        });
 
-    const currentScore = Number(val);
-    const userId = authUser?.id || (await supabase.auth.getSession()).data.session?.user.id;
+        const result = await response.json();
 
-    console.log(`Checking score for ${user} (ID: ${userId}). Attempting to submit: ${currentScore}`);
-
-    const { data, error } = await supabase
-        .from('scores')
-        .upsert({ 
-            user_id: userId, 
-            username: user, 
-            score: currentScore 
-        }, { onConflict: 'user_id' })
-        .select();
-
-    if (error) {
-        console.error("DATABASE REJECTED SUBMISSION:", error.message);
-    } else {
-        console.log("SUCCESS! Database accepted the score:", data);
+        if (response.ok) {
+            console.log("Server saved the score!", result);
+        } else {
+            console.error("Server rejected the score:", result.error);
+        }
+    } catch (err) {
+        console.error("Network error sending score to server:", err);
     }
 }
+
 async function endGame() {
     if (endGame.running) return;
     endGame.running = true;
@@ -544,6 +538,7 @@ function subscribeToDailyChanges(userId) {
 }
 
 function updateScore() { scoreDisplay.textContent = `Score: ${score}`; }
+
 
 
 
