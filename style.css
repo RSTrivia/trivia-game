@@ -869,15 +869,18 @@ input.input-field:-webkit-autofill:active {
     transform: scale(0.96);
 }
 
-
-
-/* Fix the "Squishy" Transparency */
+/* Fix the "Squishy" Transparency without the internal glow */
 .btn-small:active, .btn-small.tapped {
-    background-color: rgba(212, 175, 55, 0.4) !important; /* Solidifies the click */
+    /* Use a solid dark color instead of transparent gold */
+    background-color: #000000 !important; 
+    
+    /* Keep the border and text gold so it still "lights up" the edges */
+    border-color: #ffea8a !important;
+    color: #ffea8a !important;
+    
+    /* Keep this at 0s so it feels like a physical click */
     transition: 0s !important;
 }
-
-
 
 
 
