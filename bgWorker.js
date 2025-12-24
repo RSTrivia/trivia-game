@@ -1,14 +1,13 @@
 let currentBg;
 let backgrounds;
-const CHANGE_INTERVAL = 240000; // 4 Minutes (Match your game speed)
+const CHANGE_INTERVAL = 240000; // 4 minutes
 
 onmessage = (e) => {
   currentBg = e.data.current;
   backgrounds = e.data.backgrounds;
 
-  // IMPORTANT: Use setInterval only. 
-  // This ensures the FIRST change happens AFTER the interval has passed.
   setInterval(() => {
+    // pick a new background different from current
     const choices = backgrounds.filter(b => b !== currentBg);
     const nextBg = choices[Math.floor(Math.random() * choices.length)];
 
