@@ -714,25 +714,25 @@ input.input-field:-webkit-autofill:active {
 
 /* mobile tap */
 @media (pointer: coarse) {
-  /* Remove the hover override that was blocking the flash */
+  /* 1. Prevent "ghost" hovers on mobile */
   .btn:hover, .btn-small:hover {
-    /* Let the default state sit here, but don't use !important */
     background: rgba(0, 0, 0, 0.6);
   }
 
-  /* Trigger the flash INSTANTLY on touch */
+  /* 2. INSTANT press state (No delay when finger goes down) */
   .btn:active, .btn-small:active,
   .btn.tapped, .btn-small.tapped {
-    background: rgba(212, 175, 55, 0.2) !important; /* Slight gold tint bg */
+    background-color: #000000 !important; /* Matches your small button fix */
     border-color: #ffea8a !important;
     color: #ffea8a !important;
-    transition: 0s !important; /* NO DELAY when pushing down */
+    transition: 0s !important; 
+    transform: scale(0.98); /* Added a tiny physical "press" feel */
   }
 
-  /* The fade-out effect when letting go */
+  /* 3. SLOW return state (Fades out when finger is lifted) */
+  /* This ensures you actually see the highlight! */
   .btn, .btn-small {
-    /* Smoothly return to normal, NO delay on the return */
-    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease !important;
+    transition: background 0.4s ease, border-color 0.4s ease, color 0.4s ease, transform 0.2s ease !important;
   }
 }
 
@@ -882,6 +882,7 @@ input.input-field:-webkit-autofill:active {
     /* Keep this at 0s so it feels like a physical click */
     transition: 0s !important;
 }
+
 
 
 
