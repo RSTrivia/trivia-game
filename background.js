@@ -83,3 +83,23 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   };
 });
+
+// This makes "Leaderboard" and "Login" links wait a split second 
+// so the background script can "save" its state before the page dies.
+document.addEventListener('click', (e) => {
+  const link = e.target.closest('a');
+  if (link && link.href.includes('.html')) {
+    e.preventDefault(); // Stop the instant "jump"
+    
+    const targetUrl = link.href;
+    const targetBg = localStorage.getItem("bg_current");
+
+    // Force the background to be solid and saved
+    document.documentElement.style.setProperty("--bg-image", `url('${targetBg}')`);
+    
+    // Now leave the page after a tiny "breath"
+    setTimeout(() => {
+      window.location.href = targetUrl;
+    }, 50); 
+  }
+});
