@@ -321,7 +321,13 @@ async function startGame() {
 }
 async function loadQuestion() {
     answersBox.innerHTML = '';
-    questionText.textContent = ''; // Add this line
+    questionText.textContent = ''; 
+    
+    // 1. COMPLETELY reset the image element every single time
+    questionImage.style.display = 'none';
+    questionImage.onload = null; // Clear old listeners
+    questionImage.src = ''; 
+
     if (preloadQueue.length === 0 && remainingQuestions.length === 0) {
         await endGame();
         return;
@@ -330,16 +336,19 @@ async function loadQuestion() {
 
     currentQuestion = preloadQueue.shift();
     preloadNextQuestions(); 
-    
+
     questionText.textContent = currentQuestion.question;
+
+    // 2. Only if there is an image, prepare the "reveal"
     if (currentQuestion.question_image) {
-        questionImage.style.display = 'none';
-      // 2. Set the src
-        questionImage.src = currentQuestion.question_image;
-        questionImage.onload = () => { questionImage.style.display = 'block'; };
-    } else {
-        questionImage.style.display = 'none';
-        questionImage.src = '';
+        // Create a temporary "off-screen" image to handle loading
+        const tempImg = new Image();
+        tempImg.onload = () => {
+            // ONLY once the off-screen image is ready, update the UI
+            questionImage.src = currentQuestion.question_image;
+            questionImage.style.display = 'block';
+        };
+        tempImg.src = currentQuestion.question_image;
     }
 
     let answers = [
@@ -693,6 +702,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
 
 
 
