@@ -241,7 +241,7 @@ function resetGame() {
     
     // 4. Handle Images
     questionImage.style.display = 'none';
-    questionImage.removeAttribute('src');
+    questionImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
     // 5. Reset Timer Visuals
     timeLeft = 15;
@@ -320,37 +320,37 @@ async function startGame() {
     }
 }
 async function loadQuestion() {
-    answersBox.innerHTML = '';
-    questionText.textContent = ''; 
-    
-    // 1. COMPLETELY reset the image element every single time
+    // A. IMMEDIATE CLEANUP: Hide and clear before doing anything else
     questionImage.style.display = 'none';
-    questionImage.onload = null; // Clear old listeners
     questionImage.src = ''; 
+    questionText.textContent = '';
+    answersBox.innerHTML = '';
 
     if (preloadQueue.length === 0 && remainingQuestions.length === 0) {
         await endGame();
         return;
     }
+    
     if (preloadQueue.length === 0) await preloadNextQuestions();
 
     currentQuestion = preloadQueue.shift();
     preloadNextQuestions(); 
 
+    // B. SET TEXT
     questionText.textContent = currentQuestion.question;
 
-    // 2. Only if there is an image, prepare the "reveal"
+    // C. IMAGE LOADING (The flicker-fixer)
     if (currentQuestion.question_image) {
-        // Create a temporary "off-screen" image to handle loading
         const tempImg = new Image();
         tempImg.onload = () => {
-            // ONLY once the off-screen image is ready, update the UI
+            // Only set the src and show the image once it's FULLY in memory
             questionImage.src = currentQuestion.question_image;
             questionImage.style.display = 'block';
         };
         tempImg.src = currentQuestion.question_image;
     }
 
+    // D. RENDER ANSWERS
     let answers = [
         { text: currentQuestion.answer_a, id: 1 },
         { text: currentQuestion.answer_b, id: 2 },
@@ -702,6 +702,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
 
 
 
