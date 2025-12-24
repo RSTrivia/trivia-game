@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!fadeLayer) return;
 
   const FADE_DURATION = 1500;
-  const CHANGE_INTERVAL = 5000; // 5 Seconds for testing
+  const CHANGE_INTERVAL = 5000; 
   const backgrounds = [
     "images/background.jpg",
     "images/background2.png",
@@ -16,23 +16,41 @@ document.addEventListener("DOMContentLoaded", () => {
   let isNavigating = false;
   window.addEventListener("beforeunload", () => { isNavigating = true; });
 
+  // --- 1. THE HANDOFF (FINISH FADE FROM PREVIOUS PAGE) ---
+  const lastBg = localStorage.getItem("bg_previous"); 
+  const currentBgFromStore = localStorage.getItem("bg_current") || backgrounds[0];
+
+  if (lastBg && lastBg !== currentBgFromStore) {
+    // We arrived mid-transition! 
+    // Show the OLD background on top of the NEW one
+    fadeLayer.style.transition = 'none';
+    fadeLayer.style.backgroundImage = `url('${lastBg}')`;
+    fadeLayer.style.opacity = '1';
+    void fadeLayer.offsetWidth; // Force render
+
+    // Fade it OUT to reveal the new base background
+    fadeLayer.style.transition = `opacity ${FADE_DURATION}ms ease-in-out`;
+    fadeLayer.style.opacity = '0';
+    
+    // Reset handoff so it doesn't trigger again on refresh
+    localStorage.setItem("bg_previous", currentBgFromStore);
+  }
+
+  // Set initial base background
+  document.documentElement.style.setProperty("--bg-image", `url('${currentBgFromStore}')`);
+
   // Preload
   backgrounds.forEach(src => { const img = new Image(); img.src = src; });
 
-  let currentBg = localStorage.getItem("bg_current") || backgrounds[0];
   let nextChangeTime = localStorage.getItem("bg_next_change");
-
-  if (!nextChangeTime || isNaN(nextChangeTime) || parseInt(nextChangeTime) > Date.now() + 300000) {
+  if (!nextChangeTime || isNaN(nextChangeTime)) {
     nextChangeTime = Date.now() + CHANGE_INTERVAL;
     localStorage.setItem("bg_next_change", nextChangeTime);
   }
 
-  // Set initial background
-  document.documentElement.style.setProperty("--bg-image", `url('${currentBg}')`);
-
   const worker = new Worker("bgWorker.js");
   worker.postMessage({ 
-    current: currentBg, 
+    current: currentBgFromStore, 
     backgrounds, 
     nextChangeTime: parseInt(nextChangeTime) 
   });
@@ -51,31 +69,32 @@ document.addEventListener("DOMContentLoaded", () => {
     img.onload = () => {
       if (isNavigating) return;
 
-      // 1. SAVE IMMEDIATELY: Next page will now know to use the new BG
+      // --- 2. START TRANSITION & SAVE STATE ---
+      // We save the 'current' as 'previous' so the next page can hand-off
+      localStorage.setItem("bg_previous", localStorage.getItem("bg_current"));
       localStorage.setItem("bg_current", nextBg);
 
-      // 2. Prepare Fade Layer
+      // Prepare Fade Layer (this shows the NEW image on top)
       fadeLayer.style.transition = 'none';
       fadeLayer.style.backgroundImage = `url('${nextBg}')`;
       fadeLayer.style.opacity = '0';
       void fadeLayer.offsetWidth; 
 
-      // 3. Fade In
       fadeLayer.style.transition = `opacity ${FADE_DURATION}ms ease-in-out`;
       fadeLayer.style.opacity = '1';
 
       setTimeout(() => {
         if (isNavigating) return;
 
-        // 4. Swap Base Image
+        // Swap Base Image
         document.documentElement.style.setProperty("--bg-image", `url('${nextBg}')`);
         
         setTimeout(() => {
           if (isNavigating) return;
-          // 5. Reset Fade Layer
           fadeLayer.style.opacity = '0';
-          currentBg = nextBg;
           localStorage.setItem("bg_next_change", Date.now() + CHANGE_INTERVAL);
+          // Sync previous once finished
+          localStorage.setItem("bg_previous", nextBg);
         }, 50);
         
       }, FADE_DURATION);
