@@ -16,32 +16,16 @@ document.addEventListener("DOMContentLoaded", () => {
   let isNavigating = false;
   window.addEventListener("beforeunload", () => { isNavigating = true; });
 
-  // --- 1. THE HANDOFF (FINISH FADE FROM PREVIOUS PAGE) ---
-  const lastBg = localStorage.getItem("bg_previous"); 
-  const currentBgFromStore = localStorage.getItem("bg_current") || backgrounds[0];
+  // 1. Get the current "Stable" background
+  let currentBg = localStorage.getItem("bg_current") || backgrounds[0];
+  
+  // Apply it immediately to the base
+  document.documentElement.style.setProperty("--bg-image", `url('${currentBg}')`);
 
-  if (lastBg && lastBg !== currentBgFromStore) {
-    // We arrived mid-transition! 
-    // Show the OLD background on top of the NEW one
-    fadeLayer.style.transition = 'none';
-    fadeLayer.style.backgroundImage = `url('${lastBg}')`;
-    fadeLayer.style.opacity = '1';
-    void fadeLayer.offsetWidth; // Force render
-
-    // Fade it OUT to reveal the new base background
-    fadeLayer.style.transition = `opacity ${FADE_DURATION}ms ease-in-out`;
-    fadeLayer.style.opacity = '0';
-    
-    // Reset handoff so it doesn't trigger again on refresh
-    localStorage.setItem("bg_previous", currentBgFromStore);
-  }
-
-  // Set initial base background
-  document.documentElement.style.setProperty("--bg-image", `url('${currentBgFromStore}')`);
-
-  // Preload
+  // 2. Preload
   backgrounds.forEach(src => { const img = new Image(); img.src = src; });
 
+  // 3. Worker Setup
   let nextChangeTime = localStorage.getItem("bg_next_change");
   if (!nextChangeTime || isNaN(nextChangeTime)) {
     nextChangeTime = Date.now() + CHANGE_INTERVAL;
@@ -49,54 +33,45 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   const worker = new Worker("bgWorker.js");
-  worker.postMessage({ 
-    current: currentBgFromStore, 
-    backgrounds, 
-    nextChangeTime: parseInt(nextChangeTime) 
-  });
+  worker.postMessage({ current: currentBg, backgrounds, nextChangeTime: parseInt(nextChangeTime) });
 
   worker.onmessage = (e) => {
     const nextBg = e.data;
-
-    if (document.hidden || isNavigating) {
-      localStorage.setItem("bg_current", nextBg);
-      localStorage.setItem("bg_next_change", Date.now() + CHANGE_INTERVAL);
-      return;
-    }
+    if (document.hidden || isNavigating || nextBg === currentBg) return;
 
     const img = new Image();
     img.src = nextBg;
     img.onload = () => {
       if (isNavigating) return;
 
-      // --- 2. START TRANSITION & SAVE STATE ---
-      // We save the 'current' as 'previous' so the next page can hand-off
-      localStorage.setItem("bg_previous", localStorage.getItem("bg_current"));
-      localStorage.setItem("bg_current", nextBg);
-
-      // Prepare Fade Layer (this shows the NEW image on top)
+      // --- THE SMOOTH SWAP ---
+      // We put the NEXT image on the fade layer (invisible)
       fadeLayer.style.transition = 'none';
       fadeLayer.style.backgroundImage = `url('${nextBg}')`;
       fadeLayer.style.opacity = '0';
       void fadeLayer.offsetWidth; 
 
+      // Fade the NEW image IN
       fadeLayer.style.transition = `opacity ${FADE_DURATION}ms ease-in-out`;
       fadeLayer.style.opacity = '1';
+
+      // Halfway through or at the end, we update storage
+      // so if the user clicks now, the next page loads the NEW image
+      localStorage.setItem("bg_current", nextBg);
 
       setTimeout(() => {
         if (isNavigating) return;
 
-        // Swap Base Image
+        // Make the NEW image the base
         document.documentElement.style.setProperty("--bg-image", `url('${nextBg}')`);
         
+        // Hide the fade layer (it's now identical to the base)
         setTimeout(() => {
           if (isNavigating) return;
           fadeLayer.style.opacity = '0';
+          currentBg = nextBg;
           localStorage.setItem("bg_next_change", Date.now() + CHANGE_INTERVAL);
-          // Sync previous once finished
-          localStorage.setItem("bg_previous", nextBg);
         }, 50);
-        
       }, FADE_DURATION);
     };
   };
