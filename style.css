@@ -59,6 +59,10 @@ html, body {
   100% { opacity: 1; }
 }
 
+a, button {
+    -webkit-tap-highlight-color: transparent; /* Removes the system "box" animation */
+    outline: none;
+}
 
 /* ====== APP WRAPPER ===== */
 #app {
@@ -867,6 +871,11 @@ input.input-field:-webkit-autofill:active {
 
 
 
+/* Fix the "Squishy" Transparency */
+.btn-small:active, .btn-small.tapped {
+    background-color: rgba(212, 175, 55, 0.4) !important; /* Solidifies the click */
+    transition: 0s !important;
+}
 
 
 
