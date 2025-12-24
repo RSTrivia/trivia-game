@@ -84,20 +84,32 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 });
 
-// This makes "Leaderboard" and "Login" links wait a split second 
-// so the background script can "save" its state before the page dies.
 document.addEventListener('click', (e) => {
   const link = e.target.closest('a');
+  // Check if it's an internal link
   if (link && link.href.includes('.html')) {
-    e.preventDefault(); // Stop the instant "jump"
+    e.preventDefault(); 
     
     const targetUrl = link.href;
-    const targetBg = localStorage.getItem("bg_current");
-
-    // Force the background to be solid and saved
-    document.documentElement.style.setProperty("--bg-image", `url('${targetBg}')`);
     
-    // Now leave the page after a tiny "breath"
+    // 1. Check if the fade layer is currently visible (opacity > 0)
+    // If it is, that means 'fadeLayer.style.backgroundImage' is the NEW image
+    const fadeLayer = document.getElementById("bg-fade-layer");
+    let finalBg = localStorage.getItem("bg_current");
+
+    if (fadeLayer && parseFloat(window.getComputedStyle(fadeLayer).opacity) > 0.1) {
+       // Extract the URL from the backgroundImage string "url('...')"
+       const bgUrl = fadeLayer.style.backgroundImage.slice(5, -2);
+       if (bgUrl) {
+         finalBg = bgUrl;
+         localStorage.setItem("bg_current", finalBg);
+       }
+    }
+
+    // 2. Lock it in
+    document.documentElement.style.setProperty("--bg-image", `url('${finalBg}')`);
+    
+    // 3. Navigate
     setTimeout(() => {
       window.location.href = targetUrl;
     }, 50); 
