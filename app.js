@@ -300,28 +300,21 @@ async function highlightCorrectAnswer() {
 }
 
 async function submitLeaderboardScore(user, val) {
-    console.log(`Sending score to server: ${user} - ${val}`);
+    // Get the ID we stored during login
+    const userId = localStorage.getItem('userId'); 
 
-    try {
-        const response = await fetch('/api/save-score', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                username: user, 
-                score: Number(val) 
-            })
-        });
-
-        const result = await response.json();
-
-        if (response.ok) {
-            console.log("Server saved the score!", result);
-        } else {
-            console.error("Server rejected the score:", result.error);
-        }
-    } catch (err) {
-        console.error("Network error sending score to server:", err);
-    }
+    const response = await fetch('/api/submit-score', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+            username: user, 
+            score: Number(val),
+            userId: userId // Send the unique ID!
+        })
+    });
+    
+    const result = await response.json();
+    console.log(result.message);
 }
 
 async function endGame() {
@@ -538,6 +531,7 @@ function subscribeToDailyChanges(userId) {
 }
 
 function updateScore() { scoreDisplay.textContent = `Score: ${score}`; }
+
 
 
 
