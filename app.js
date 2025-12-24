@@ -684,29 +684,32 @@ function subscribeToDailyChanges(userId) {
 
 // ====== MOBILE TAP FEEDBACK (THE FLASH) ======
 document.addEventListener('DOMContentLoaded', () => {
-    // Select everything that should "light up"
-    const interactables = document.querySelectorAll('.btn, .btn-small, #authBtn, .answer-btn');
-
-    interactables.forEach(el => {
-        // 1. Instant light up on finger touch
-        el.addEventListener('touchstart', function() {
-            this.classList.add('tapped');
+    // This function applies the flash to any button we give it
+    const applyFlash = (el) => {
+        el.addEventListener('touchstart', () => {
+            el.classList.add('tapped');
         }, { passive: true });
 
-        // 2. Remove light up after touch ends
-        el.addEventListener('touchend', function() {
-            // 150ms delay keeps the gold visible long enough for the eye to see it
+        el.addEventListener('touchend', () => {
             setTimeout(() => {
-                this.classList.remove('tapped');
-            }, 150);
+                el.classList.remove('tapped');
+            }, 100); // Fast 80ms flash
         });
 
-        // 3. Remove if finger slides off the button
         el.addEventListener('touchcancel', () => {
             el.classList.remove('tapped');
         });
-    });
+    };
+
+    // 1. Apply to all buttons currently on the screen
+    const staticButtons = document.querySelectorAll('.btn, .btn-small, #authBtn, #muteBtn');
+    staticButtons.forEach(applyFlash);
+
+    // 2. SPECIAL FIX FOR ANSWER BUTTONS:
+    // Since answer buttons are created dynamically, we need to apply the flash 
+    // inside the loadQuestion function. 
 });
+
 
 
 
