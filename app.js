@@ -446,7 +446,10 @@ startBtn.onclick = () => {
 playAgainBtn.onclick = () => startGame();
 mainMenuBtn.onclick = () => {
     preloadQueue = []; 
-    window.location.reload(); 
+    game.classList.add('hidden');
+    endScreen.classList.add('hidden');
+    document.getElementById('start-screen').classList.remove('hidden');
+    document.body.classList.remove('game-active');
 };
 
 muteBtn.onclick = () => {
@@ -510,5 +513,6 @@ function subscribeToDailyChanges(userId) {
 }
 
 function updateScore() { scoreDisplay.textContent = `Score: ${score}`; }
+
 
 
