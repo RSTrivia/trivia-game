@@ -1,6 +1,6 @@
 let currentBg;
 let backgrounds;
-const CHANGE_INTERVAL = 3000;//240000; // 4 Minutes (Match your game speed)
+const CHANGE_INTERVAL = 240000; // 4 Minutes (Match your game speed)
 
 onmessage = (e) => {
   currentBg = e.data.current;
