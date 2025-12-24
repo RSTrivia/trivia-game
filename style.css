@@ -21,6 +21,11 @@ html, body {
   background-position: center;
   background-repeat: no-repeat;
   pointer-events: none;
+  /* Force GPU rendering to prevent the "white flash" */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 #background-img {
@@ -861,6 +866,7 @@ input.input-field:-webkit-autofill:active {
     background-color: rgba(212, 175, 55, 0.2) !important;
     transform: scale(0.96);
 }
+
 
 
 
