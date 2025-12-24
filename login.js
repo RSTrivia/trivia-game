@@ -74,10 +74,8 @@ loginBtn.addEventListener('click', async () => {
 
         // --- THE FIX FOR PC + MOBILE ---
         if (result.userId) {
-            localStorage.setItem('user_id', result.userId);
-
-        }
-
+                localStorage.setItem('userId', result.userId); 
+            }
         // --- STICKY CASING FIX ---
         // Instead of saving 'typedUsername', we save 'result.username'.
         // The server will look up the profile and send back the original casing (e.g., "Shir").
