@@ -241,7 +241,7 @@ function resetGame() {
     
     // 4. Handle Images
     questionImage.style.display = 'none';
-    questionImage.src = ''; 
+    questionImage.removeAttribute('src');
 
     // 5. Reset Timer Visuals
     timeLeft = 15;
@@ -691,6 +691,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
 
 
 
