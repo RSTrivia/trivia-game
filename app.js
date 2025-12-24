@@ -243,15 +243,29 @@ async function highlightCorrectAnswer() {
 
 async function submitLeaderboardScore(user, val) {
     const userId = localStorage.getItem('userId'); 
+
+    // If there is no userId, we can't save to the database using your current server logic
+    if (!userId) {
+        console.warn("No userId found. Score not submitted to leaderboard.");
+        return;
+    }
+
     try {
         const response = await fetch(`${API_BASE}/api/submit-score`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username: user, score: Number(val), userId: userId })
+            body: JSON.stringify({ 
+                username: user, 
+                score: Number(val),
+                userId: userId 
+            })
         });
+        
         const result = await response.json();
-        console.log("Score result:", result.message);
-    } catch (err) { console.error("Failed to submit score:", err); }
+        console.log("Result:", result.message);
+    } catch (err) {
+        console.error("Network error:", err);
+    }
 }
 
 async function endGame() {
@@ -376,3 +390,4 @@ if (dailyBtn) {
         lockDailyButton();
     }
 }
+
