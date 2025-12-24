@@ -288,43 +288,32 @@ async function highlightCorrectAnswer() {
 
 async function submitLeaderboardScore(user, val) {
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
-
-    const currentVal = Number(val);
-
-    // 1. Fetch record
-    const { data: record, error: fetchError } = await supabase
-        .from('scores')
-        .select('score')
-        .eq('user_id', session.user.id)
-        .maybeSingle();
-
-    if (fetchError) {
-        console.error("Database error:", fetchError.message);
+    if (!session) {
+        console.error("Submission blocked: No session found.");
         return;
     }
 
-    // 2. Determine if we should update
-    // Logic: If there is NO record OR the current value is higher than the saved one
-    const isNewUser = !record;
-    const isNewHiScore = record && currentVal > Number(record.score);
+    const currentScore = Number(val);
+    console.log(`Checking score for ${user} (ID: ${session.user.id}). Attempting to submit: ${currentScore}`);
 
-    if (isNewUser || isNewHiScore) {
-        console.log(isNewUser ? "First time player! Creating record..." : "New High Score! Updating...");
+    // 1. First, just try to UPSERT immediately. 
+    // This is more efficient and will give us a direct error if it fails.
+    const { data, error } = await supabase
+        .from('scores')
+        .upsert({ 
+            user_id: session.user.id, 
+            username: user, 
+            score: currentScore 
+        }, { onConflict: 'user_id' })
+        .select(); // This asks the DB to return what it did
 
-        const { error: upsertError } = await supabase
-            .from('scores')
-            .upsert({ 
-                user_id: session.user.id, 
-                username: user, 
-                score: currentVal 
-            }, { onConflict: 'user_id' });
-
-        if (upsertError) {
-            console.error("Upsert failed:", upsertError.message);
-        }
+    if (error) {
+        // THIS WILL PRINT THE EXACT REASON IN RED IN YOUR CONSOLE
+        console.error("DATABASE REJECTED SUBMISSION:", error.message);
+        console.error("Error Code:", error.code);
+        console.error("Error Details:", error.details);
     } else {
-        console.log(`No update needed. Current: ${currentVal}, Best: ${record.score}`);
+        console.log("SUCCESS! Database accepted the score:", data);
     }
 }
 
@@ -533,6 +522,7 @@ function subscribeToDailyChanges(userId) {
 }
 
 function updateScore() { scoreDisplay.textContent = `Score: ${score}`; }
+
 
 
 
