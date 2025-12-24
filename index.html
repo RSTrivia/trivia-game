@@ -27,21 +27,15 @@
 function handleAuthAction() {
   const isLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
 
-  // --- Background Lock Helper ---
-  const lockBackground = () => {
-    const fadeLayer = document.getElementById("bg-fade-layer");
-    let finalBg = localStorage.getItem("bg_current");
-
-    // If we are mid-fade, grab the target image instead of the old one
-    if (fadeLayer && parseFloat(window.getComputedStyle(fadeLayer).opacity) > 0.1) {
-      const bgUrl = fadeLayer.style.backgroundImage.slice(5, -2);
-      if (bgUrl) {
-        finalBg = bgUrl;
-        localStorage.setItem("bg_current", finalBg);
-      }
-    }
-    document.documentElement.style.setProperty("--bg-image", `url('${finalBg}')`);
-  };
+  if (isLoggedIn) {
+    localStorage.removeItem('cachedLoggedIn');
+    localStorage.removeItem('cachedUsername');
+    localStorage.removeItem('dailyPlayedDate');
+    window.location.reload();
+  } else {
+    window.location.href = 'login.html';
+  }
+}
 
   if (isLoggedIn) {
     localStorage.removeItem('cachedLoggedIn');
@@ -188,6 +182,7 @@ function handleAuthAction() {
   <script src="background.js" defer></script>
 </body>
 </html>
+
 
 
 
