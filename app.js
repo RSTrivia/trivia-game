@@ -24,17 +24,139 @@ const authBtn = document.getElementById('authBtn');
 const muteBtn = document.getElementById('muteBtn');
 const dailyBtn = document.getElementById('dailyBtn');
 const dailyMessages = {
-  0: ["Ouch. Zero XP gained today.", "Lumbridge is calling your name."],
-  1: ["At least it's not a zero!", "One is better than none... barely."],
-  2: ["Tomorrow will be better!", "The RNG was not in your favor."],
-  3: ["A bronze-tier effort.", "You're still warming up, right?"],
-  4: ["Getting there! Halfway to decent.", "Not bad, but not quite 'pro'."],
-  5: ["A solid 50%. Perfectly balanced.", "Mid-level performance!"],
-  6: ["You did great!", "Above average! Keep it up."],
-  7: ["Nice! You really know your OSRS.", "Solid score! High-scores material."],
-  8: ["Legendary! You're a walking wiki.", "Almost a perfect run!"],
-  9: ["Incredible! So close to perfection!", "An elite achievement."],
-  10: ["Perfect! A True Completionist!", "Absolute Master of Trivia!"]
+  0: [
+    "Ouch. Zero XP gained today.",
+    "Lumbridge is calling your name.",
+    "Sit.",
+    "You've been slapped by the Sandwich Lady.",
+    "Back to Tutorial Island for you.",
+    "You've been defeated. Try again tomorrow!",
+    "Buying brain for 10k?",
+    "Your hitpoints reached 0. Oh dear.",
+    "You're splashing on a seagull in Port Sarim.",
+    "This score is lower than the chances of a 3rd Age Pickaxe."
+  ],
+  1: [
+    "At least it's not a zero!",
+    "A 1 is infinitely better than a 0.",
+    "You hit a 1! Better than a splat.",
+    "Thumbs down log out.",
+    "It's a start!",
+    "It can only go higher from here.",
+    "Well, you didn't go home empty-handed!",
+    "The RNG gods are laughing at you.",
+    "Logging out in shame.",
+    "A true noob has appeared."
+  ],
+  2: [
+    "Tomorrow will be better!",
+    "The RNG was not in your favor.",
+    "You're getting there!",
+    "Still stuck in the Al-Kharid gate.",
+    "Try again tomorrow.",
+    "A bronze-tier effort.",
+    "It's progress!",
+    "A couple of lucky guesses?",
+    "Tomorrow is a new day.",
+    "Better than a disconnect, I guess."
+  ],
+  3: [
+    "The grind continues.",
+    "You're still warming up, right?",
+    "Leveling up slowly!",
+    "Three is the number of heads on a KBD.",
+    "Better every day.",
+    "Practice makes perfect.",
+    "Nice try, adventurer.",
+    "Keep your prayer up!",
+    "Keep grinding, you'll get there.",
+    "An iron-tier effort."
+  ],
+  4: [
+    "Getting there!",
+    "Almost halfway!",
+    "A solid effort.",
+    "Not a noob anymore.",
+    "Still in the F2P zone, aren't we?",
+    "Getting the hang of it!",
+    "A silver-tier effort.",
+    "Keep clicking!",
+    "You wouldn't survive the Wilderness like this.",
+    "Consistent gains. Keep at it!"
+  ],
+  5: [
+    "A solid 50%. Perfectly balanced.",
+    "Mid-level performance!",
+    "You've reached the mid-game grind.",
+    "Halfway to 99! (Except not really).",
+    "The big 50!",
+    "A steel-tier effort.",
+    "Halfway to legendary.",
+    "The Wise Old Man thinks you're 'okay'.",
+    "Keep the grind alive!",
+    "Not bad, adventurer."
+  ],
+  6: [
+    "Decent, but not great.",
+    "Above average! Keep it up.",
+    "You know your stuff.",
+    "You're starting to smell like a member.",
+    "More right than wrong!",
+    "A gold-tier effort.",
+    "The Varrock Museum wants your brain.",
+    "A respectable showing, adventurer.",
+    "You're gaining some serious XP now.",
+    "Not quite elite."
+  ],
+  7: [
+    "Nice! You really know your OSRS.",
+    "Solid score! High-scores material.",
+    "Beast of a score.",
+    "A mithril-tier effort.",
+    "Slaying the questions.",
+    "A very smart drop!",
+    "You're efficient, I'll give you that.",
+    "Almost impressive.",
+    "Almost at the top of the ladder.",
+    "You clearly don't bankstand all day."
+  ],
+  8: [
+    "Legendary! You're a walking wiki.",
+    "Almost perfect.",
+    "You've got the fire cape of trivia.",
+    "Absolute unit.",
+    "You're clicking with precision.",
+    "Incredible score!",
+    "An adamant-tier effort.",
+    "Purple chest vibes!",
+    "Ready for the Inferno.",
+    "High-tier gains."
+  ],
+  9: [
+    "Incredible! So close to perfection!",
+    "An elite achievement.",
+    "A rune-tier effort.",
+    "You're a trivia beast.",
+    "Only one question stood in your way.",
+    "One hit from greatness.",
+    "You've reached the final boss.",
+    "Basically a genius.",
+    "So close, you can smell the Max Score.",
+    "Your brain is worth 2,147,483,647 gp."
+  ],
+  10: [
+    "Perfect! A True Completionist!",
+    "Absolute Master of Trivia!",
+    "Zezima is shaking right now.",
+    "Absolute 10/10.",
+    "You are the OSRS Wiki.",
+    "A literal god.",
+    "A flawless Victory. Gz!",
+    "PERFECT SCORE!",
+    "A true Grandmaster.",
+    "Buying your brain for 2147m.",
+    "Total domination.",
+  ]
 };
 
 let correctBuffer, wrongBuffer;
@@ -535,6 +657,7 @@ function subscribeToDailyChanges(userId) {
         })
         .subscribe();
 }
+
 
 
 
