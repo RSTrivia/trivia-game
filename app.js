@@ -903,11 +903,9 @@ if (shareBtn) {
             if (muteBtn) muteBtn.style.opacity = '1';
         }
     };
-}
-    };
-}
-  
+}  
 });
+
 
 
 
