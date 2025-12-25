@@ -185,35 +185,43 @@ if (muteBtn) {
     if (cachedMuted) muteBtn.classList.add('is-muted');
 }
 
-async function updateShareButtonState() {
-    // 1. Get the live session status
-    const { data: { session } } = await supabase.auth.getSession();
-    const isLoggedIn = !!session;
+async function hasUserCompletedDaily(session) {
+    if (!session) return false;
 
-    // 2. Check if they have played today
-    const hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
+    const { data } = await supabase
+        .from('daily_attempts')
+        .select('id')
+        .eq('user_id', session.user.id)
+        .eq('attempt_date', todayStr)
+        .maybeSingle();
 
-    if (shareBtn) {
-        // Always show the button so Guests can see it exists
-        shareBtn.style.display = "flex";
-
-        // Logic: ONLY enable if they are BOTH Logged In AND have Played
-        if (isLoggedIn && hasPlayed) {
-            shareBtn.classList.remove('is-disabled');
-            shareBtn.style.opacity = "1";
-            shareBtn.style.pointerEvents = "auto";
-            //shareBtn.style.filter = "grayscale(0%)"; // Ensure full color
-        } 
-        else {
-            // If Guest OR hasn't played, keep it locked/grey
-            shareBtn.classList.add('is-disabled');
-            shareBtn.style.opacity = "0.5";
-            shareBtn.style.pointerEvents = "none";
-            //shareBtn.style.filter = "grayscale(100%)"; // Force grey look
-        }
-    }
+    return !!data;
 }
 
+
+async function updateShareButtonState() {
+    const { data: { session } } = await supabase.auth.getSession();
+
+    let canShare = false;
+
+    if (session) {
+        canShare = await hasUserCompletedDaily(session);
+    }
+
+    if (!shareBtn) return;
+
+    shareBtn.style.display = "flex";
+
+    if (canShare) {
+        shareBtn.classList.remove('is-disabled');
+        shareBtn.style.opacity = "1";
+        shareBtn.style.pointerEvents = "auto";
+    } else {
+        shareBtn.classList.add('is-disabled');
+        shareBtn.style.opacity = "0.5";
+        shareBtn.style.pointerEvents = "none";
+    }
+}
 
 async function initializeAuth() {
     // 1. Check current session immediately
@@ -990,6 +998,7 @@ if (shareBtn) {
     };
 }  
 });
+
 
 
 
