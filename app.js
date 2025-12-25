@@ -185,6 +185,20 @@ if (muteBtn) {
     if (cachedMuted) muteBtn.classList.add('is-muted');
 }
 
+function updateShareButtonState() {
+    const hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
+    if (shareBtn) {
+        if (cachedLoggedIn && hasPlayed) {
+            shareBtn.classList.remove('is-disabled');
+            shareBtn.style.opacity = "1";
+        } else {
+            shareBtn.classList.add('is-disabled');
+            shareBtn.style.opacity = "0.5";
+        }
+    }
+}
+
+
 // ====== AUTH & REALTIME SYNC ======
 async function initializeAuth() {
     const { data: { session } } = await supabase.auth.getSession();
@@ -238,7 +252,7 @@ async function fetchDailyStatus(userId) {
             subscribeToDailyChanges(session.user.id);
         }
     });
-}
+
 initializeAuth();
 
 function lockDailyButton() {
@@ -847,6 +861,7 @@ if (shareBtn) {
 }
   
 });
+
 
 
 
