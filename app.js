@@ -496,9 +496,24 @@ async function endGame() {
                     .eq('attempt_date', todayStr);
             }
         }
+        // 1. SAVE the score to localStorage so the share button can find it
         localStorage.setItem('lastDailyScore', score); 
-        // This instantly turns the button gold when the game ends
-        if (shareBtn) shareBtn.classList.remove('is-disabled'); 
+    
+        // 2. ACTIVATE the button (make it gold)
+        if (shareBtn) {
+            shareBtn.classList.remove('is-disabled');
+        }
+    
+        // 3. Save Score to Database
+        if (username && username !== 'Guest') {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+            await supabase.from('daily_attempts')
+                .update({ score: score })
+                .eq('user_id', session.user.id)
+                .eq('attempt_date', todayStr);
+        }
+    }
         isDailyMode = false; // Reset for next non-daily game
     } else {
         // Standard Mode UI
@@ -752,6 +767,7 @@ if (shareBtn) {
     // Since answer buttons are created dynamically, we need to apply the flash 
     // inside the loadQuestion function. 
 });
+
 
 
 
