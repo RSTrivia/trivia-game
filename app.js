@@ -189,22 +189,42 @@ async function initializeAuth() {
     const { data: { session } } = await supabase.auth.getSession();
     
     if (session) {
-        // Start listening for changes on other devices immediately
         subscribeToDailyChanges(session.user.id);
-        
-        // Double check database truth (in case localStorage is cleared)
-        const { data: existing } = await supabase
-            .from('daily_attempts')
-            .select('id')
-            .eq('user_id', session.user.id)
-            .eq('attempt_date', todayStr)
-            .maybeSingle();
-            
-        if (existing) {
-            localStorage.setItem('dailyPlayedDate', todayStr);
-            lockDailyButton();
-        }
+        // Fetch the truth from the database (Fixes the PC -> Mobile sync)
+        await fetchDailyStatus(session.user.id);
     }
+
+    supabase.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+            subscribeToDailyChanges(session.user.id);
+            fetchDailyStatus(session.user.id);
+        }
+    });
+}
+
+
+// ====== NEW: FETCH SCORE FROM DATABASE ======
+async function fetchDailyStatus(userId) {
+    const { data, error } = await supabase
+        .from('daily_attempts')
+        .select('score')
+        .eq('user_id', userId)
+        .eq('attempt_date', todayStr)
+        .maybeSingle();
+
+    if (data && data.score !== null) {
+        // Sync the score to localStorage and UI so Share button works
+        localStorage.setItem('dailyPlayedDate', todayStr);
+        localStorage.setItem('lastDailyScore', data.score);
+        
+        // Update the end-screen UI in case they are looking at it
+        if (finalScore) finalScore.textContent = data.score;
+        
+        lockDailyButton();
+        updateShareButtonState();
+    }
+}
+
 
     // Listen for login/logout events
     supabase.auth.onAuthStateChange((event, session) => {
@@ -745,14 +765,18 @@ if (shareBtn) {
     shareBtn.onclick = async () => {
         if (shareBtn.classList.contains('is-disabled')) return;
 
-        // 1. CAPTURE DATA IMMEDIATELY (Fixes Mobile "0" score issue)
-        const currentScore = document.getElementById('finalScore')?.textContent || "0";
+        // 1. IMPROVED CAPTURE: Check screen first, then localStorage
+        let currentScore = document.getElementById('finalScore')?.textContent;
+        
+        // If screen says 0, try to get the saved score from our fetchDailyStatus sync
+        if (!currentScore || currentScore === "0") {
+            currentScore = localStorage.getItem('lastDailyScore') || "0";
+        }
+
         const currentMsg = document.getElementById('game-over-title')?.textContent || "Daily Challenge";
 
         try {
             const target = document.querySelector('.container');
-
-            // UI Preparation
             shareBtn.style.opacity = '0';
             const muteBtn = document.getElementById('muteBtn');
             if (muteBtn) muteBtn.style.opacity = '0';
@@ -762,7 +786,6 @@ if (shareBtn) {
                 scale: 2, 
                 useCORS: true,
                 onclone: (clonedDoc) => {
-                    // --- A. FORCE DIMENSIONS ---
                     const clonedContainer = clonedDoc.querySelector('.container');
                     if (clonedContainer) {
                         clonedContainer.style.width = '450px'; 
@@ -772,120 +795,89 @@ if (shareBtn) {
                         clonedContainer.style.display = 'block';
                     }
 
-                    const startScreen = clonedDoc.getElementById('start-screen');
                     const endScreen = clonedDoc.getElementById('end-screen');
-                    const playAgain = clonedDoc.getElementById('playAgainBtn');
-                    const mainMenu = clonedDoc.getElementById('mainMenuBtn');
-                    const title = clonedDoc.getElementById('main-title');
-                
-                    // --- B. VISIBILITY & LAYOUT ---
-                    if (startScreen) startScreen.classList.add('hidden');
                     if (endScreen) {
                         endScreen.classList.remove('hidden');
                         endScreen.style.display = 'flex';
                         endScreen.style.flexDirection = 'column';
                         endScreen.style.alignItems = 'center';
                       
-                        if (playAgain) playAgain.style.display = 'none';
-                        if (mainMenu) mainMenu.style.display = 'none';
+                        const pb = clonedDoc.getElementById('playAgainBtn');
+                        const mm = clonedDoc.getElementById('mainMenuBtn');
+                        if (pb) pb.style.display = 'none';
+                        if (mm) mm.style.display = 'none';
                       
                         const finalScoreElem = clonedDoc.getElementById('finalScore');
                         const msgTitleElem = clonedDoc.getElementById('game-over-title');
                         
                         if (finalScoreElem) {
-                            // Inject the live score we captured
                             finalScoreElem.textContent = currentScore;
-                            // REMOVED fixed fontSize to keep your original CSS look
                         }
                         if (msgTitleElem) {
                             msgTitleElem.textContent = currentMsg;
                             msgTitleElem.classList.remove('hidden');
-                            msgTitleElem.style.textAlign = 'center';
                         }
 
-                        // --- C. DATE LOGIC ---
+                        // Date
                         const dateTag = clonedDoc.createElement('div');
-                        const dateOptions = { year: 'numeric', month: 'short', day: 'numeric' };
-                        dateTag.textContent = new Date().toLocaleDateString('en-US', dateOptions);
-
+                        dateTag.textContent = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
                         Object.assign(dateTag.style, {
-                            marginTop: '30px',
-                            fontSize: '18px',
-                            color: '#a77b0a',
-                            fontFamily: "'Cinzel', serif",
-                            textAlign: 'center',
-                            opacity: '0.8',
-                            letterSpacing: '2px',
-                            textTransform: 'uppercase'
+                            marginTop: '30px', fontSize: '18px', color: '#a77b0a',
+                            fontFamily: "'Cinzel', serif", textAlign: 'center',
+                            opacity: '0.8', letterSpacing: '2px', textTransform: 'uppercase'
                         });
                         endScreen.appendChild(dateTag);
-                    }
-                
-                    // --- D. TITLE FIX ---
-                    if (title) {
-                        Object.assign(title.style, {
-                            background: 'none',
-                            backgroundImage: 'none',
-                            webkitBackgroundClip: 'initial',
-                            color: '#000000',
-                            webkitTextFillColor: '#000000',
-                            fontFamily: "'Cinzel', serif",
-                            fontWeight: "700",
-                            fontSize: "42px", // Consistent size for the photo
-                            textAlign: "center",
-                            textShadow: `
-                                0 0 4px rgba(0,0,0,0.8),
-                                1px 1px 0 #000,
-                                2px 2px 2px rgba(0,0,0,0.6),
-                                0 0 12px rgba(212, 175, 55, 0.95),
-                                0 0 30px rgba(212, 175, 55, 0.75),
-                                0 0 55px rgba(212, 175, 55, 0.45)`
-                        });
                     }
                 }
             });
 
-            // Restore Real UI
             shareBtn.style.opacity = '1';
             if (muteBtn) muteBtn.style.opacity = '1';
 
-            // --- E. SMART SHARING LOGIC ---
             canvas.toBlob(async (blob) => {
                 if (!blob) return;
                 const file = new File([blob], "OSRS_Daily_Score.png", { type: "image/png" });
-
                 if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    try {
-                        await navigator.share({
-                            files: [file],
-                            title: 'OSRS Trivia Daily Score',
-                            text: `I scored ${currentScore}/10 on today's OSRS Trivia! ⚔️`
-                        });
-                    } catch (shareErr) {
-                        console.log("Share cancelled or failed:", shareErr);
-                    }
-                } 
-                else {
-                    try {
-                        const data = [new ClipboardItem({ [blob.type]: blob })];
-                        await navigator.clipboard.write(data);
-                        alert("Daily Score Card copied to clipboard! ⚔️");
-                    } catch (clipErr) {
-                        console.error("Clipboard failed:", clipErr);
-                        alert("Sharing not supported. Please long-press the image to save.");
-                    }
+                    await navigator.share({ files: [file], title: 'OSRS Trivia', text: `I scored ${currentScore}/10 on today's OSRS Trivia! ⚔️` });
+                } else {
+                    const data = [new ClipboardItem({ [blob.type]: blob })];
+                    await navigator.clipboard.write(data);
+                    alert("Score Card copied! ⚔️");
                 }
             }, 'image/png');
-
         } catch (err) {
-            console.error("Capture failed:", err);
             shareBtn.style.opacity = '1';
-            const muteBtn = document.getElementById('muteBtn');
-            if (muteBtn) muteBtn.style.opacity = '1';
         }
     };
 }
+
+
+
+  // ====== NEW: FETCH SCORE FROM DATABASE ======
+async function fetchDailyStatus(userId) {
+    const { data, error } = await supabase
+        .from('daily_attempts')
+        .select('score')
+        .eq('user_id', userId)
+        .eq('attempt_date', todayStr)
+        .maybeSingle();
+
+    if (data && data.score !== null) {
+        // Sync the score to localStorage and UI so Share button works
+        localStorage.setItem('dailyPlayedDate', todayStr);
+        localStorage.setItem('lastDailyScore', data.score);
+        
+        // Update the end-screen UI in case they are looking at it
+        if (finalScore) finalScore.textContent = data.score;
+        
+        lockDailyButton();
+        updateShareButtonState();
+    }
+}
+
+  
 });
+
 
 
 
