@@ -177,10 +177,31 @@ let isDailyMode = false;
 if (userDisplay) userDisplay.querySelector('#usernameSpan').textContent = ' ' + (username || 'Guest');
 async function syncAuthButton() {
     if (!authBtn) return;
-    const label = authBtn.querySelector('.btn-label');
+
     const { data: { session } } = await supabase.auth.getSession();
+
+    // Update the button label
+    const label = authBtn.querySelector('.btn-label');
     if (label) label.textContent = session ? 'Log Out' : 'Log In';
+
+    // Set click behavior
+    authBtn.onclick = async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+            // User is logged in → log them out
+            await supabase.auth.signOut();
+            // Optionally update UI immediately
+            if (label) label.textContent = 'Log In';
+            updateShareButtonState();
+            syncDailyButton();
+        } else {
+            // User is logged out → go to login flow
+            // Example: redirect to login page or show modal
+            window.location.href = '/login';
+        }
+    };
 }
+
 syncAuthButton();
 if (muteBtn) {
     muteBtn.querySelector('#muteIcon').textContent = cachedMuted ? '🔇' : '🔊';
@@ -1011,6 +1032,7 @@ if (shareBtn) {
     };
 }  
 });
+
 
 
 
