@@ -262,60 +262,47 @@ async function init() {
     await new Promise(res => document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', res) : res());
 
     supabase.auth.onAuthStateChange(async (event, session) => {
-        console.log("Auth event:", event);
-        
         if (isRefreshing) return;
         isRefreshing = true;
 
         if (session) {
-            // 1. Refresh UI
             await refreshAuthUI();
-            
-            // 2. Real-time Subscription: Clean up old one first, then start new one
             if (dailySubscription) supabase.removeChannel(dailySubscription);
             dailySubscription = subscribeToDailyChanges(session.user.id);
-            
         } else {
             username = 'Guest';
-            localStorage.removeItem('cachedLoggedIn'); 
-            localStorage.removeItem('cachedUsername');
-            if (dailySubscription) {
-                supabase.removeChannel(dailySubscription);
-                dailySubscription = null;
-            }
+            if (dailySubscription) supabase.removeChannel(dailySubscription);
             await refreshAuthUI(); 
         }
-        
         isRefreshing = false;
     });
 
-    // Run the initial sync
-    await refreshAuthUI();
+    // Standard Game Button
+    if (startBtn) {
+        startBtn.onclick = () => {
+            isDailyMode = false;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            loadSounds();
+            startGame();
+        };
+    }
 
-    // Setup Daily Button
+    // Daily Game Button
     if (dailyBtn) {
         dailyBtn.onclick = async () => {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) return alert("Log in to play Daily Mode!");
-            
             const played = await hasUserCompletedDaily(session);
             if (played) return alert("You've already played today!");
 
             if (audioCtx.state === 'suspended') await audioCtx.resume();
             loadSounds(); 
-            isDailyMode = true;
             startDailyChallenge();
         };
     }
-    if (startBtn) {
-      startBtn.onclick = () => {
-          isDailyMode = false; // Ensure we aren't in daily mode
-          if (audioCtx.state === 'suspended') audioCtx.resume();
-          loadSounds();
-          startGame(); // <--- This was missing!
-      };
-}
-} // <--- Syntax fix: This closes the init function properly
+
+    await refreshAuthUI();
+}// <--- Syntax fix: This closes the init function properly
 
 // Start the app
 init();
@@ -1099,6 +1086,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
