@@ -174,43 +174,39 @@ let timeLeft = 15;
 let isDailyMode = false;
 
 // ====== INITIAL UI SYNC ======
-async function syncUsername(session) {
+async function refreshAuthUI() {
+    const { data: { session } } = await supabase.auth.getSession();
     const span = document.querySelector('#usernameSpan');
     const label = authBtn?.querySelector('.btn-label');
 
-    // 1. If no session, reset to Guest IMMEDIATELY
     if (!session) {
+        // --- LOGGED OUT STATE ---
         username = 'Guest';
         if (span) span.textContent = ' Guest';
         if (label) label.textContent = 'Log In';
-        return;
-    }
+        
+        // Wipe local storage so it doesn't leak into the next session
+        localStorage.removeItem('lastDailyScore');
+        localStorage.removeItem('lastDailyMessage');
+    } else {
+        // --- LOGGED IN STATE ---
+        if (label) label.textContent = 'Log Out';
+        
+        // Fetch real username from profiles
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('username')
+            .eq('id', session.user.id)
+            .single();
 
-    // 2. If session exists, fetch the real username
-    const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('id', session.user.id)
-        .single();
-
-    username = (!error && profile?.username) ? profile.username : 'Guest';
-
-    if (span) span.textContent = ' ' + username;
-    if (label) label.textContent = 'Log Out';
-}
-
-async function updateUIAfterAuthChange() {
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    // Sync username first
-    await syncUsername();
-    
-    // NEW: If logged in, fetch status and WAIT for it to update localStorage
-    if (session?.user) {
+        username = profile?.username || 'Guest';
+        if (span) span.textContent = ' ' + username;
+        
+        // Fetch their daily status from DB to ensure sync
         await fetchDailyStatus(session.user.id);
     }
-    
-    // Now these will see the updated localStorage/session state
+
+    // Always sync these buttons based on the result above
     await syncDailyButton();
     await updateShareButtonState();
 }
@@ -219,14 +215,10 @@ authBtn.onclick = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     
     if (session) {
-        // 1. Sign out
+        // 1. Sign out from Supabase
         await supabase.auth.signOut(); 
-
-        // 2. Wipe Local Data
-        localStorage.removeItem('lastDailyScore');
-        localStorage.removeItem('lastDailyMessage');
         
-        // 3. Reset UI Elements
+        // 2. Clear UI immediately
         if (finalScore) finalScore.textContent = "0";
         const gameOverTitle = document.getElementById('game-over-title');
         if (gameOverTitle) {
@@ -234,10 +226,8 @@ authBtn.onclick = async () => {
             gameOverTitle.classList.add('hidden');
         }
 
-        // 4. Update UI State (Force to Guest)
-        await syncUsername(null);
-        await syncDailyButton();
-        await updateShareButtonState(); 
+        // 3. Run the master sync to lock everything to "Guest" mode
+        await refreshAuthUI();
     } else {
         window.location.href = '/login';
     }
@@ -264,45 +254,31 @@ async function syncDailyButton() {
         dailyBtn.classList.add('disabled');
     }
 }
-
 async function init() {
+    // Wait for DOM
     await new Promise(res => document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', res) : res());
 
-    // Single source of truth for the session on load
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (session) {
-        await fetchDailyStatus(session.user.id); 
-        subscribeToDailyChanges(session.user.id);
-        await syncUsername(session); 
-    } else {
-        localStorage.removeItem('lastDailyScore');
-        localStorage.removeItem('lastDailyMessage');
-        await syncUsername(null); 
-    }
+    // Run the master sync once on load
+    await refreshAuthUI();
 
-    await syncDailyButton();
-    await updateShareButtonState();
-
-    // Attach Daily Click handler
+    // Setup the Daily Button click
     if (dailyBtn) {
         dailyBtn.onclick = async () => {
-            const { data: { session: activeSession } } = await supabase.auth.getSession();
-            if (audioCtx.state === 'suspended') await audioCtx.resume();
-            loadSounds(); 
-
-            if (!activeSession) return alert("Log in to play Daily Mode!");
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return alert("Log in to play Daily Mode!");
             
-            const played = await hasUserCompletedDaily(activeSession);
+            const played = await hasUserCompletedDaily(session);
             if (played) return alert("You've already played today!");
 
+            if (audioCtx.state === 'suspended') await audioCtx.resume();
+            loadSounds(); 
             isDailyMode = true;
             startDailyChallenge();
         };
     }
 }
 
-// Start everything
+// Start the app
 init();
 
 if (muteBtn) {
@@ -1083,6 +1059,7 @@ if (shareBtn) {
 }  
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
