@@ -741,67 +741,66 @@ function updateShareButtonState() {
 updateShareButtonState();
 
 if (shareBtn) {
-   shareBtn.onclick = async () => {
+  shareBtn.onclick = async () => {
     if (shareBtn.classList.contains('is-disabled')) return;
 
     try {
-        const target = document.getElementById('end-screen');
+        // 1. Target the .container (the black box)
+        const target = document.querySelector('.container');
         
-        // Hide button during capture
+        // Hide UI buttons during capture so they don't appear in the image
+        const muteBtn = document.getElementById('muteBtn');
         shareBtn.style.opacity = '0';
+        if (muteBtn) muteBtn.style.opacity = '0';
 
-        // 1. Capture with crossOrigin settings
+        // 2. Capture with CORS support for the Cinzel font
         const canvas = await html2canvas(target, {
-            backgroundColor: '#1a1a1a',
-            scale: 2,
-            useCORS: true, // IMPORTANT: Allows capturing images from Supabase/external URLs
-            allowTaint: false, // Prevents the canvas from being 'polluted'
-            logging: false
+            backgroundColor: null, // Keeps the container's CSS background
+            scale: 2,              // Higher quality
+            useCORS: true,         // Allows the script to "see" the Cinzel font
+            logging: false,
+            allowTaint: false
         });
 
+        // Restore UI visibility
         shareBtn.style.opacity = '1';
+        if (muteBtn) muteBtn.style.opacity = '1';
 
-        // 2. Convert to Blob with a specific type
+        // 3. Convert to Blob and Copy
         canvas.toBlob(async (blob) => {
-            // Check if blob exists before accessing .type
             if (!blob) {
-                console.error("Canvas to Blob failed. Likely a CORS/Security issue.");
-                alert("Security block: Cannot copy image. Try right-clicking the result and saving it!");
+                alert("Capture failed. Check if you added 'crossorigin' to your font link!");
                 return;
             }
 
             try {
-                // 3. Write to Clipboard
-                const item = new ClipboardItem({ [blob.type]: blob });
+                const item = new ClipboardItem({ "image/png": blob });
                 await navigator.clipboard.write([item]);
                 
-                // Success Feedback
+                // Visual feedback
                 const icon = document.getElementById('shareIcon');
-                const oldText = icon.textContent;
+                const originalText = icon.textContent;
                 icon.textContent = '✅';
-                alert("Score image copied to clipboard! ⚔️");
-                setTimeout(() => { icon.textContent = oldText; }, 2000);
+                alert("Black container copied to clipboard! ⚔️");
+                setTimeout(() => { icon.textContent = originalText; }, 2000);
 
-            } catch (clipboardErr) {
-                console.error("Clipboard Write Error:", clipboardErr);
-                
-                // Fallback: If clipboard fails, try downloading the image
-                const dataUrl = canvas.toDataURL("image/png");
+            } catch (err) {
+                // PC Fallback: Direct Download
                 const link = document.createElement('a');
-                link.download = `osrs-score-${todayStr}.png`;
-                link.href = dataUrl;
+                link.download = `osrs-trivia-score.png`;
+                link.href = canvas.toDataURL("image/png");
                 link.click();
-                alert("Clipboard blocked. Image downloaded instead! ⚔️");
+                alert("Clipboard blocked. Image downloaded instead!");
             }
         }, 'image/png');
 
-    } catch (err) {
-        console.error("html2canvas error:", err);
-        shareBtn.style.opacity = '1';
+    } catch (error) {
+        console.error("Screenshot error:", error);
     }
 };
 }
 });
+
 
 
 
