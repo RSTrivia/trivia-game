@@ -185,15 +185,26 @@ if (muteBtn) {
     if (cachedMuted) muteBtn.classList.add('is-muted');
 }
 
-function updateShareButtonState() {
+async function updateShareButtonState() {
+    // 1. Get the live session status from Supabase
+    const { data: { session } } = await supabase.auth.getSession();
+    const isLoggedIn = !!session;
+
+    // 2. Check if they have played today
     const hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
+
     if (shareBtn) {
-        if (cachedLoggedIn && hasPlayed) {
+        // GOLD only if BOTH are true
+        if (isLoggedIn && hasPlayed) {
             shareBtn.classList.remove('is-disabled');
             shareBtn.style.opacity = "1";
-        } else {
+            shareBtn.style.pointerEvents = "auto"; // Ensure it can be clicked
+        } 
+        // GREY if either is false
+        else {
             shareBtn.classList.add('is-disabled');
             shareBtn.style.opacity = "0.5";
+            shareBtn.style.pointerEvents = "none"; // Stop clicks when grey
         }
     }
 }
@@ -247,11 +258,19 @@ async function fetchDailyStatus(userId) {
 
 
     // Listen for login/logout events
-    supabase.auth.onAuthStateChange((event, session) => {
+    // Listen for login/logout events
+    supabase.auth.onAuthStateChange(async (event, session) => {
         if (event === 'SIGNED_IN' && session) {
+            // 1. Start listening for changes
             subscribeToDailyChanges(session.user.id);
+            // 2. IMPORTANT: Go get the score so the button turns gold
+            await fetchDailyStatus(session.user.id);
+        } else if (event === 'SIGNED_OUT') {
+            // 3. Turn the button grey immediately when logging out
+            updateShareButtonState();
         }
     });
+
 
 initializeAuth();
 
@@ -886,6 +905,7 @@ if (shareBtn) {
 }
   
 });
+
 
 
 
