@@ -234,8 +234,6 @@ async function initializeAuth() {
         }
     });
 }
-// Call the initialization
-initializeAuth();
 
 // ====== NEW: FETCH SCORE FROM DATABASE ======
 async function fetchDailyStatus(userId) {
@@ -258,22 +256,6 @@ async function fetchDailyStatus(userId) {
         updateShareButtonState();  // <--- THIS TRIGGERS THE GREY COLOR
     }
 }
-
-
-    // Listen for login/logout events
-    // Listen for login/logout events
-    supabase.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'SIGNED_IN' && session) {
-            // 1. Start listening for changes
-            subscribeToDailyChanges(session.user.id);
-            // 2. IMPORTANT: Go get the score so the button turns gold
-            await fetchDailyStatus(session.user.id);
-        } else if (event === 'SIGNED_OUT') {
-            // 3. Turn the button grey immediately when logging out
-            updateShareButtonState();
-        }
-    });
-
 
 initializeAuth();
 
@@ -905,6 +887,7 @@ if (shareBtn) {
     };
 }  
 });
+
 
 
 
