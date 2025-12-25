@@ -186,7 +186,7 @@ if (muteBtn) {
 }
 
 async function updateShareButtonState() {
-    // 1. Get the live session status from Supabase
+    // 1. Get the live session status
     const { data: { session } } = await supabase.auth.getSession();
     const isLoggedIn = !!session;
 
@@ -194,20 +194,22 @@ async function updateShareButtonState() {
     const hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
 
     if (shareBtn) {
-      // Show the button always, but only ENABLE if Logged In AND Played
+        // Always show the button so Guests can see it exists
         shareBtn.style.display = "flex";
-     // ONLY unlock if they are Logged In AND have finished the daily
+
+        // Logic: ONLY enable if they are BOTH Logged In AND have Played
         if (isLoggedIn && hasPlayed) {
             shareBtn.classList.remove('is-disabled');
             shareBtn.style.opacity = "1";
             shareBtn.style.pointerEvents = "auto";
+            shareBtn.style.filter = "grayscale(0%)"; // Ensure full color
         } 
-       // If they are a Guest OR haven't played, keep it locked
         else {
-           shareBtn.classList.add('is-disabled');
+            // If Guest OR hasn't played, keep it locked/grey
+            shareBtn.classList.add('is-disabled');
             shareBtn.style.opacity = "0.5";
             shareBtn.style.pointerEvents = "none";
-        
+            shareBtn.style.filter = "grayscale(100%)"; // Force grey look
         }
     }
 }
@@ -581,7 +583,8 @@ async function endGame() {
     } else {
         // Standard Mode UI
         if (playAgainBtn) playAgainBtn.classList.remove('hidden');
-        
+        // This ensures the button refreshes to its "Locked" state for guests/standard play
+        updateShareButtonState();
         // Show "Gz" if they finished all questions, otherwise "Game Over"
         if (score > 0 && remainingQuestions.length === 0 && preloadQueue.length === 0) {
             const gzMessages = ['Gz!', 'Go touch grass', 'See you in Lumbridge'];
@@ -590,12 +593,6 @@ async function endGame() {
                 gzTitle.classList.remove('hidden');
             }
         } else {
-          // Standard Mode: Explicitly ensure it stays disabled/hidden
-        if (shareBtn) {
-            shareBtn.classList.add('is-disabled');
-            shareBtn.style.opacity = "0.5";
-            shareBtn.style.pointerEvents = "none";
-        }
             if (gameOverTitle) {
                 gameOverTitle.textContent = "Game Over!";
                 gameOverTitle.classList.remove('hidden');
@@ -993,6 +990,7 @@ if (shareBtn) {
     };
 }  
 });
+
 
 
 
