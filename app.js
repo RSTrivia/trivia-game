@@ -309,8 +309,7 @@ async function init() {
     // Run initial UI sync
     await refreshAuthUI();
 }
-// Start the app
-init();
+
 
 if (muteBtn) {
     muteBtn.querySelector('#muteIcon').textContent = cachedMuted ? '🔇' : '🔊';
@@ -497,6 +496,9 @@ async function startGame() {
         loadQuestion();
     }
 }
+
+// Start the app
+init();
 async function loadQuestion() {
     // A. IMMEDIATE CLEANUP: Hide and clear before doing anything else
     questionImage.style.display = 'none';
@@ -1091,6 +1093,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
