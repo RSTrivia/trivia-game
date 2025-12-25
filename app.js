@@ -750,60 +750,51 @@ if (shareBtn) {
             return;
         }
 
-        const lastScore = localStorage.getItem('lastDailyScore') || 0;
-        const shareTitle = "⚔️ OSRS Daily Trivia ⚔️";
-        const shareText = `I scored ${lastScore}/10 on today's OSRS Trivia! Can you beat me?`;
-
         try {
-            // 2. Capture the 'end-screen' element as a canvas
             const target = document.getElementById('end-screen');
             
-            // Temporary: Make sure share button doesn't appear in the screenshot
-            shareBtn.style.visibility = 'hidden'; 
-            
+            // Temporary: Hide the share button so it's not in the picture
+            shareBtn.style.opacity = '0';
+
+            // 2. Generate the image
             const canvas = await html2canvas(target, {
-                backgroundColor: '#1a1a1a', // Matches your game's dark theme
-                scale: 2, // Better quality for high-res screens
+                backgroundColor: '#1a1a1a', 
+                scale: 2,
                 logging: false,
-                useCORS: true // Essential if you have external images
+                useCORS: true
             });
 
-            shareBtn.style.visibility = 'visible';
+            shareBtn.style.opacity = '1';
 
-            // 3. Convert Canvas to a Blob (File data)
+            // 3. Copy to Clipboard
             canvas.toBlob(async (blob) => {
-                const files = [
-                    new File([blob], `osrs-score-${todayStr}.png`, { type: 'image/png' })
-                ];
+                try {
+                    const data = [new ClipboardItem({ [blob.type]: blob })];
+                    await navigator.clipboard.write(data);
+                    
+                    // 4. Visual Feedback
+                    const originalIcon = document.getElementById('shareIcon').textContent;
+                    document.getElementById('shareIcon').textContent = '✅';
+                    alert("Score image copied to clipboard! ⚔️");
+                    
+                    setTimeout(() => {
+                        document.getElementById('shareIcon').textContent = originalIcon;
+                    }, 2000);
 
-                // 4. Check if the browser can share files
-                if (navigator.canShare && navigator.canShare({ files })) {
-                    try {
-                        await navigator.share({
-                            title: shareTitle,
-                            text: shareText,
-                            files: files
-                        });
-                    } catch (err) {
-                        if (err.name !== 'AbortError') console.error("Share failed:", err);
-                    }
-                } else {
-                    // Fallback for browsers that don't support file sharing
-                    const link = document.createElement('a');
-                    link.download = `OSRS_Score_${todayStr}.png`;
-                    link.href = canvas.toDataURL();
-                    link.click();
-                    alert("Sharing images isn't supported on this browser, so we've downloaded it for you! ⚔️");
+                } catch (err) {
+                    console.error(err);
+                    alert("Failed to copy. Make sure you are using HTTPS and a modern browser.");
                 }
-            }, 'image/png');
+            });
 
         } catch (error) {
             console.error("Screenshot error:", error);
-            alert("Could not generate share image.");
+            alert("Could not generate image.");
         }
     };
 }
 });
+
 
 
 
