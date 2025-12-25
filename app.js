@@ -746,55 +746,63 @@ if (shareBtn) {
 
     try {
         const target = document.getElementById('end-screen');
+        
+        // Hide button during capture
         shareBtn.style.opacity = '0';
 
-        // 1. Generate Canvas
+        // 1. Capture with crossOrigin settings
         const canvas = await html2canvas(target, {
             backgroundColor: '#1a1a1a',
             scale: 2,
-            useCORS: true // Try to handle cross-origin images
+            useCORS: true, // IMPORTANT: Allows capturing images from Supabase/external URLs
+            allowTaint: false, // Prevents the canvas from being 'polluted'
+            logging: false
         });
 
         shareBtn.style.opacity = '1';
 
-        // 2. Convert to Blob
+        // 2. Convert to Blob with a specific type
         canvas.toBlob(async (blob) => {
+            // Check if blob exists before accessing .type
             if (!blob) {
-                alert("Could not generate image data.");
+                console.error("Canvas to Blob failed. Likely a CORS/Security issue.");
+                alert("Security block: Cannot copy image. Try right-clicking the result and saving it!");
                 return;
             }
 
             try {
-                // 3. Use the modern ClipboardItem constructor
-                const data = [new ClipboardItem({ "image/png": blob })];
+                // 3. Write to Clipboard
+                const item = new ClipboardItem({ [blob.type]: blob });
+                await navigator.clipboard.write([item]);
                 
-                // We wrap this in a permission check for some browsers
-                await navigator.clipboard.write(data);
-                
-                // Success feedback
-                const originalIcon = document.getElementById('shareIcon').textContent;
-                document.getElementById('shareIcon').textContent = '✅';
+                // Success Feedback
+                const icon = document.getElementById('shareIcon');
+                const oldText = icon.textContent;
+                icon.textContent = '✅';
                 alert("Score image copied to clipboard! ⚔️");
-                setTimeout(() => { document.getElementById('shareIcon').textContent = originalIcon; }, 2000);
+                setTimeout(() => { icon.textContent = oldText; }, 2000);
 
-            } catch (clipboardError) {
-                console.error("Clipboard Error:", clipboardError);
+            } catch (clipboardErr) {
+                console.error("Clipboard Write Error:", clipboardErr);
                 
-                // FALLBACK: If copy fails, offer a download so the user isn't stuck
+                // Fallback: If clipboard fails, try downloading the image
+                const dataUrl = canvas.toDataURL("image/png");
                 const link = document.createElement('a');
-                link.download = `osrs-daily-${todayStr}.png`;
-                link.href = canvas.toDataURL("image/png");
+                link.download = `osrs-score-${todayStr}.png`;
+                link.href = dataUrl;
                 link.click();
-                alert("Browser blocked clipboard copy, so I've downloaded the image for you instead! ⚔️");
+                alert("Clipboard blocked. Image downloaded instead! ⚔️");
             }
         }, 'image/png');
 
     } catch (err) {
-        console.error("Screenshot error:", err);
+        console.error("html2canvas error:", err);
+        shareBtn.style.opacity = '1';
     }
 };
 }
 });
+
 
 
 
