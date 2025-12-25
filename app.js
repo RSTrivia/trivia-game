@@ -459,50 +459,35 @@ console.log("Fetching question id:", qId, "error:", error, "data:", data);
 }
 
 async function startGame() {
-
-  console.log("startGame called");
-  console.log("Remaining questions:", remainingQuestions);
-  console.log("Preload queue:", preloadQueue);
-    // A. Immediate UI setup
+    console.log("startGame called");
+    
+    // 1. UI setup
     document.body.classList.add('game-active'); 
     gameEnding = false;
     game.classList.remove('hidden');
     document.getElementById('start-screen').classList.add('hidden');
     endScreen.classList.add('hidden');
-    
-    // B. Clear score and timers, but NOT the preloaded questions
+
     resetGame();
     updateScore();
+    loadSounds();
 
-    // C. LOAD SOUNDS (Start this, but don't let it block the UI if possible)
-    loadSounds(); 
-
-    // D. INSTANT START: If we have preloaded questions from the last game, start NOW
-    if (preloadQueue.length > 0) {
-        console.log("Instant start using preloaded questions...");
-        loadQuestion(); 
-    }
-
-    // E. BACKGROUND SYNC: Refresh the deck of IDs from Supabase
+    // 2. Fetch all question IDs first
     const { data: idList, error } = await supabase.rpc('get_all_question_ids');
     if (error) {
         console.error("RPC Error:", error.message);
-    } else {
-        // Filter out IDs that are currently sitting in the preloadQueue 
-        // so we don't ask the same question twice.
-        const preloadedIds = preloadQueue.map(q => q.id);
-        remainingQuestions = idList
-            .map(item => item.id)
-            .filter(id => !preloadedIds.includes(id)) 
-            .sort(() => Math.random() - 0.5);
+        return;
     }
-    console.log("All question IDs:", idList);
-    // F. FALLBACK: If preload was empty (first game ever), load now
-    if (!currentQuestion && preloadQueue.length === 0) {
-        await preloadNextQuestions(); 
-        await loadQuestion();
-    }
+    remainingQuestions = idList.map(item => item.id).sort(() => Math.random() - 0.5);
+    console.log("Remaining questions after fetch:", remainingQuestions);
+
+    // 3. Preload first questions
+    await preloadNextQuestions();
+    
+    // 4. Start the first question
+    loadQuestion();
 }
+
 
 // Start the app
 init();
@@ -1074,6 +1059,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
