@@ -434,6 +434,8 @@ function resetGame() {
 }
 
 async function preloadNextQuestions() {
+  const { data, error } = await supabase.rpc('get_question_by_id', { input_id: qId });
+console.log("Fetching question id:", qId, "error:", error, "data:", data);
     let attempts = 0;
     while (preloadQueue.length < 2 && remainingQuestions.length > 0 && attempts < 10) {
         attempts++;
@@ -448,7 +450,7 @@ async function preloadNextQuestions() {
         const { data, error } = await supabase.rpc('get_question_by_id', { input_id: qId });
 
         if (!error && data && data[0]) {
-            preloadQueue.push(data[0]);
+            preloadQueue.push(Array.isArray(data) ? data[0] : data);
             if (data[0].question_image) {
                 const img = new Image();
                 img.src = data[0].question_image;
@@ -495,11 +497,11 @@ async function startGame() {
             .filter(id => !preloadedIds.includes(id)) 
             .sort(() => Math.random() - 0.5);
     }
-
+    console.log("All question IDs:", idList);
     // F. FALLBACK: If preload was empty (first game ever), load now
     if (!currentQuestion && preloadQueue.length === 0) {
         await preloadNextQuestions(); 
-        loadQuestion();
+        await loadQuestion();
     }
 }
 
@@ -1073,6 +1075,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
