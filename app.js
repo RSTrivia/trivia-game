@@ -764,38 +764,15 @@ if (shareBtn) {
                 const startScreen = clonedDoc.getElementById('start-screen');
                 const endScreen = clonedDoc.getElementById('end-screen');
                 const playAgain = clonedDoc.getElementById('playAgainBtn');
-                const mainMenu = clonedDoc.getElementById('mainMenuBtn'); // FIXED: Defined this
+                const mainMenu = clonedDoc.getElementById('mainMenuBtn');
                 const title = clonedDoc.getElementById('main-title');
             
                 // 2. Force Screen Visibility for the photo
                 if (startScreen) startScreen.classList.add('hidden');
                 if (endScreen) {
-                    // 1. Create the Date Element
-                    const dateTag = clonedDoc.createElement('div');
-                    
-                    // 2. Format today's date (e.g., Dec 25, 2025)
-                    const options = { year: 'numeric', month: 'short', day: 'numeric' };
-                    const displayDate = new Date().toLocaleDateString('en-US', options);
-                    dateTag.textContent = displayDate;
-            
-                    // 3. Style it to match the OSRS UI
-                    Object.assign(dateTag.style, {
-                        marginTop: '20px',
-                        fontSize: '1.2rem',
-                        color: '#a77b0a', // Muted gold/bronze
-                        fontFamily: "'Cinzel', serif",
-                        textAlign: 'center',
-                        opacity: '0.8',
-                        letterSpacing: '1px'
-                    });
-            
-                    // 4. Append it to the end screen
-                    endScreen.appendChild(dateTag);
-                }
-          
                     endScreen.classList.remove('hidden');
                   
-                    // Hide the buttons in the screenshot
+                    // Hide the navigation buttons in the screenshot
                     if (playAgain) playAgain.style.display = 'none';
                     if (mainMenu) mainMenu.style.display = 'none';
                   
@@ -808,29 +785,38 @@ if (shareBtn) {
                         msgTitleElem.textContent = savedMsg;
                         msgTitleElem.classList.remove('hidden');
                     }
+
+                    // --- ADD DATE LOGIC HERE ---
+                    const dateTag = clonedDoc.createElement('div');
+                    const dateOptions = { year: 'numeric', month: 'short', day: 'numeric' };
+                    const displayDate = new Date().toLocaleDateString('en-US', dateOptions);
+                    dateTag.textContent = displayDate;
+
+                    Object.assign(dateTag.style, {
+                        marginTop: '25px',
+                        fontSize: '1.1rem',
+                        color: '#a77b0a', // Muted OSRS Bronze/Gold
+                        fontFamily: "'Cinzel', serif",
+                        textAlign: 'center',
+                        opacity: '0.7',
+                        letterSpacing: '2px',
+                        textTransform: 'uppercase'
+                    });
+                    endScreen.appendChild(dateTag);
+                    // ---------------------------
                 }
             
-                // 3. THE TITLE FIX (Match site exactly)
-                // 2. THE TITLE FIX (Black center + Site's exact glow)
+                // 3. THE TITLE FIX (Black center + Gold Glow)
                 if (title) {
-                    // 1. Completely remove the gradient/background box
                     title.style.background = 'none';
                     title.style.backgroundImage = 'none';
                     title.style.webkitBackgroundClip = 'initial';
                     title.style.backgroundClip = 'initial';
-                
-                    // 2. Force the text to be BLACK (This gives you the dark center)
                     title.style.color = '#000000'; 
                     title.style.webkitTextFillColor = '#000000';
-                    
-                    // 3. Match site font weight and caps
                     title.style.fontFamily = "'Cinzel', serif";
                     title.style.fontWeight = "700";
                     title.style.fontSize = "3.2rem";
-                    title.style.letterSpacing = "2px";
-                    title.style.textTransform = "uppercase"; 
-                
-                    // 4. YOUR EXACT CSS SHADOWS (Creates the gold outline/glow)
                     title.style.textShadow = `
                         0 0 4px rgba(0,0,0,0.8),
                         1px 1px 0 #000,
@@ -861,6 +847,7 @@ if (shareBtn) {
 };
 }
 });
+
 
 
 
