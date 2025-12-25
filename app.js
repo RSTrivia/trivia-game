@@ -268,23 +268,30 @@ async function syncDailyButton() {
     }
 }
 
+let isRefreshing = false;
+
 async function init() {
-    // Wait for DOM
     await new Promise(res => document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', res) : res());
 
-    // IMPORTANT: Listen for Auth Changes first
-        supabase.auth.onAuthStateChange((event, session) => {
+    supabase.auth.onAuthStateChange(async (event, session) => {
         console.log("Auth event:", event, "Session exists:", !!session);
-    
+        
+        // Prevent logic from overlapping if events fire rapidly
+        if (isRefreshing) return;
+        isRefreshing = true;
+
         if (!session) {
-            // FORCE GUEST - No matter what the event name is
+            // Ensure Guest variables are set before UI refreshes
             username = 'Guest';
-            localStorage.clear();
-            refreshAuthUI(); 
+            localStorage.removeItem('cachedLoggedIn'); 
+            localStorage.removeItem('cachedUsername');
+            // We use the "Top-Down" refreshAuthUI logic here
+            await refreshAuthUI(); 
         } else {
-            // LOGGED IN
-            refreshAuthUI();
+            await refreshAuthUI();
         }
+        
+        isRefreshing = false;
     });
 
     // Run the initial sync
@@ -1087,6 +1094,7 @@ if (shareBtn) {
 }  
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
