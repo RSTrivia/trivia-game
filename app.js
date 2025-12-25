@@ -266,13 +266,30 @@ async function syncDailyButton() {
 }
 
 async function init() {
-    await new Promise(res => document.addEventListener('DOMContentLoaded', res));
-    
-    supabase.auth.onAuthStateChange(async (event, session) => {
-        console.log("Auth Event:", event);
-        // This single call now handles fetching status AND updating the button
-        await updateUIAfterAuthChange();
-    });
+    // 1. Wait for the page to load
+    await new Promise(res => document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', res) : res());
+
+    // 2. Sync the UI (Check if they already played)
+    await syncDailyButton();
+
+    // 3. Assign the click handler ONCE
+    dailyBtn.onclick = async () => {
+        console.log("Daily Button Clicked"); // Debugging line
+        
+        if (audioCtx.state === 'suspended') {
+            await audioCtx.resume();
+        }
+        loadSounds(); 
+
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return alert("Log in to play Daily Mode!");
+        
+        const played = await hasUserCompletedDaily(session);
+        if (played) return alert("You've already played today!");
+
+        isDailyMode = true;
+        startDailyChallenge();
+    };
 }
 init();
 
@@ -789,27 +806,6 @@ muteBtn.onclick = () => {
 //await syncDailyButton();
 syncDailyButton();
 
-    dailyBtn.onclick = async () => {
-        // 🔥 1. IMMEDIATE AUDIO UNLOCK
-        if (audioCtx.state === 'suspended') {
-            audioCtx.resume();
-        }
-        // Start loading sounds immediately so the buffers are ready
-        loadSounds(); 
-
-        //if (!cachedLoggedIn) return alert("Please log in to play!");
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) return alert("Log in to play Daily Mode!");
-        
-        const played = await hasUserCompletedDaily(session);
-        if (played) return alert("You've already played today!");
-
-        
-        isDailyMode = true;
-        // Start the actual challenge logic
-        startDailyChallenge();
-    };
-
 function shuffleWithSeed(array, seed) {
     let arr = [...array];
     let m = arr.length, t, i;
@@ -1068,6 +1064,7 @@ if (shareBtn) {
 }  
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
