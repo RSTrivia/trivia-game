@@ -177,43 +177,46 @@ async function refreshAuthUI() {
     const span = document.querySelector('#usernameSpan');
     const label = authBtn?.querySelector('.btn-label');
 
-   // If there is no session, or if Supabase threw an error
     if (!session || error) {
+        // --- FORCE GUEST STATE ---
         username = 'Guest';
         if (span) span.textContent = ' Guest';
         if (label) label.textContent = 'Log In';
         
-        // Ensure buttons are in Guest mode
+        // Disable Daily Challenge
         if (dailyBtn) {
             dailyBtn.classList.add('disabled');
             dailyBtn.classList.remove('is-active');
+            dailyBtn.style.pointerEvents = 'none';
+            dailyBtn.style.opacity = '0.5';
         }
-        
-        // Force the share button to hide/grey out
+
+        // Hide/Disable Share
         if (shareBtn) {
             shareBtn.classList.add('is-disabled');
             shareBtn.classList.remove('is-active');
             shareBtn.style.opacity = "0.5";
             shareBtn.style.pointerEvents = "none";
         }
-        return; // STOP HERE. Don't run the "Logged In" code below.
-    } else {
-        // --- LOGGED IN STATE ---
-        if (label) label.textContent = 'Log Out';
-        
-        // Fetch real username from profiles
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('username')
-            .eq('id', session.user.id)
-            .single();
-
-        username = profile?.username || 'Guest';
-        if (span) span.textContent = ' ' + username;
-        
-        // Fetch their daily status from DB to ensure sync
-        await fetchDailyStatus(session.user.id);
+        return; // Exit here for guests
     }
+
+    // --- LOGGED IN STATE ---
+    if (label) label.textContent = 'Log Out';
+    
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', session.user.id)
+        .maybeSingle(); // Use maybeSingle to avoid errors if profile is missing
+
+    username = profile?.username || 'Player';
+    if (span) span.textContent = ' ' + username;
+    
+    await fetchDailyStatus(session.user.id);
+    await syncDailyButton();
+    await updateShareButtonState();
+}
 
     // Always sync these buttons based on the result above
     await syncDailyButton();
@@ -283,6 +286,16 @@ async function init() {
             isDailyMode = true;
             startDailyChallenge();
         };
+      // Listen for Auth Changes (Sign In / Sign Out)
+    supabase.auth.onAuthStateChange((event, session) => {
+        console.log("Auth event:", event);
+        if (event === 'SIGNED_OUT') {
+            localStorage.clear();
+            refreshAuthUI(); // This will now trigger the Guest logic
+        } else if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+            refreshAuthUI();
+        }
+    });
     }
 }
 
@@ -1066,6 +1079,7 @@ if (shareBtn) {
 }  
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
