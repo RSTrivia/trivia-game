@@ -742,111 +742,139 @@ function updateShareButtonState() {
 updateShareButtonState();
 
 if (shareBtn) {
- shareBtn.onclick = async () => {
-    if (shareBtn.classList.contains('is-disabled')) return;
+    shareBtn.onclick = async () => {
+        if (shareBtn.classList.contains('is-disabled')) return;
 
-    try {
-        const target = document.querySelector('.container');
-        const savedScore = localStorage.getItem('lastDailyScore') || "0";
-        const savedMsg = localStorage.getItem('lastDailyMessage') || "Daily Challenge";
+        try {
+            const target = document.querySelector('.container');
+            const savedScore = localStorage.getItem('lastDailyScore') || "0";
+            const savedMsg = localStorage.getItem('lastDailyMessage') || "Daily Challenge";
 
-        // 1. Hide real UI buttons temporarily
-        shareBtn.style.opacity = '0';
-        const muteBtn = document.getElementById('muteBtn');
-        if (muteBtn) muteBtn.style.opacity = '0';
+            // 1. Hide real UI buttons temporarily so they don't flicker
+            shareBtn.style.opacity = '0';
+            const muteBtn = document.getElementById('muteBtn');
+            if (muteBtn) muteBtn.style.opacity = '0';
 
-        const canvas = await html2canvas(target, {
-            backgroundColor: '#0a0a0a', 
-            scale: 2,
-            useCORS: true,
-            onclone: (clonedDoc) => {
-                // Find elements in the clone
-                const startScreen = clonedDoc.getElementById('start-screen');
-                const endScreen = clonedDoc.getElementById('end-screen');
-                const playAgain = clonedDoc.getElementById('playAgainBtn');
-                const mainMenu = clonedDoc.getElementById('mainMenuBtn');
-                const title = clonedDoc.getElementById('main-title');
-            
-                // 2. Force Screen Visibility for the photo
-                if (startScreen) startScreen.classList.add('hidden');
-                if (endScreen) {
-                    endScreen.classList.remove('hidden');
-                  
-                    // Hide the navigation buttons in the screenshot
-                    if (playAgain) playAgain.style.display = 'none';
-                    if (mainMenu) mainMenu.style.display = 'none';
-                  
-                    // Inject saved data into the clone
-                    const finalScoreElem = clonedDoc.getElementById('finalScore');
-                    const msgTitleElem = clonedDoc.getElementById('game-over-title');
-                    
-                    if (finalScoreElem) finalScoreElem.textContent = savedScore;
-                    if (msgTitleElem) {
-                        msgTitleElem.textContent = savedMsg;
-                        msgTitleElem.classList.remove('hidden');
+            const canvas = await html2canvas(target, {
+                backgroundColor: '#0a0a0a', 
+                scale: 2, // High resolution
+                useCORS: true,
+                onclone: (clonedDoc) => {
+                    // --- A. FORCE FIXED DIMENSIONS ---
+                    const clonedContainer = clonedDoc.querySelector('.container');
+                    if (clonedContainer) {
+                        clonedContainer.style.width = '400px'; 
+                        clonedContainer.style.height = 'auto';
+                        clonedContainer.style.padding = '40px 20px';
+                        clonedContainer.style.margin = '0';
+                        clonedContainer.style.display = 'block';
                     }
 
-                    // --- ADD DATE LOGIC HERE ---
-                    const dateTag = clonedDoc.createElement('div');
-                    const dateOptions = { year: 'numeric', month: 'short', day: 'numeric' };
-                    const displayDate = new Date().toLocaleDateString('en-US', dateOptions);
-                    dateTag.textContent = displayDate;
+                    // Find elements in the clone
+                    const startScreen = clonedDoc.getElementById('start-screen');
+                    const endScreen = clonedDoc.getElementById('end-screen');
+                    const playAgain = clonedDoc.getElementById('playAgainBtn');
+                    const mainMenu = clonedDoc.getElementById('mainMenuBtn');
+                    const title = clonedDoc.getElementById('main-title');
+                
+                    // --- B. SCREEN VISIBILITY ---
+                    if (startScreen) startScreen.classList.add('hidden');
+                    if (endScreen) {
+                        endScreen.classList.remove('hidden');
+                        endScreen.style.display = 'flex';
+                        endScreen.style.flexDirection = 'column';
+                        endScreen.style.alignItems = 'center';
+                      
+                        // Hide the navigation buttons in the screenshot
+                        if (playAgain) playAgain.style.display = 'none';
+                        if (mainMenu) mainMenu.style.display = 'none';
+                      
+                        // Inject saved data into the clone
+                        const finalScoreElem = clonedDoc.getElementById('finalScore');
+                        const msgTitleElem = clonedDoc.getElementById('game-over-title');
+                        
+                        if (finalScoreElem) finalScoreElem.textContent = savedScore;
+                        if (msgTitleElem) {
+                            msgTitleElem.textContent = savedMsg;
+                            msgTitleElem.classList.remove('hidden');
+                            msgTitleElem.style.textAlign = 'center';
+                        }
 
-                    Object.assign(dateTag.style, {
-                        marginTop: '25px',
-                        fontSize: '1.1rem',
-                        color: '#a77b0a', // Muted OSRS Bronze/Gold
-                        fontFamily: "'Cinzel', serif",
-                        textAlign: 'center',
-                        opacity: '0.7',
-                        letterSpacing: '2px',
-                        textTransform: 'uppercase'
-                    });
-                    endScreen.appendChild(dateTag);
-                    // ---------------------------
+                        // --- C. ADD DATE LOGIC ---
+                        const dateTag = clonedDoc.createElement('div');
+                        const dateOptions = { year: 'numeric', month: 'short', day: 'numeric' };
+                        const displayDate = new Date().toLocaleDateString('en-US', dateOptions);
+                        dateTag.textContent = displayDate;
+
+                        Object.assign(dateTag.style, {
+                            marginTop: '30px',
+                            fontSize: '1rem',
+                            color: '#a77b0a', // Muted OSRS Bronze/Gold
+                            fontFamily: "'Cinzel', serif",
+                            textAlign: 'center',
+                            opacity: '0.7',
+                            letterSpacing: '2px',
+                            textTransform: 'uppercase'
+                        });
+                        endScreen.appendChild(dateTag);
+                    }
+                
+                    // --- D. THE TITLE FIX (Black center + Gold Glow) ---
+                    if (title) {
+                        title.style.background = 'none';
+                        title.style.backgroundImage = 'none';
+                        title.style.webkitBackgroundClip = 'initial';
+                        title.style.backgroundClip = 'initial';
+                        title.style.color = '#000000'; 
+                        title.style.webkitTextFillColor = '#000000';
+                        title.style.fontFamily = "'Cinzel', serif";
+                        title.style.fontWeight = "700";
+                        title.style.fontSize = "3rem";
+                        title.style.textAlign = "center";
+                        title.style.textShadow = `
+                            0 0 4px rgba(0,0,0,0.8),
+                            1px 1px 0 #000,
+                            2px 2px 2px rgba(0,0,0,0.6),
+                            0 0 12px rgba(212, 175, 55, 0.95),
+                            0 0 30px rgba(212, 175, 55, 0.75),
+                            0 0 55px rgba(212, 175, 55, 0.45)
+                        `;
+                    }
                 }
-            
-                // 3. THE TITLE FIX (Black center + Gold Glow)
-                if (title) {
-                    title.style.background = 'none';
-                    title.style.backgroundImage = 'none';
-                    title.style.webkitBackgroundClip = 'initial';
-                    title.style.backgroundClip = 'initial';
-                    title.style.color = '#000000'; 
-                    title.style.webkitTextFillColor = '#000000';
-                    title.style.fontFamily = "'Cinzel', serif";
-                    title.style.fontWeight = "700";
-                    title.style.fontSize = "3.2rem";
-                    title.style.textShadow = `
-                        0 0 4px rgba(0,0,0,0.8),
-                        1px 1px 0 #000,
-                        2px 2px 2px rgba(0,0,0,0.6),
-                        0 0 12px rgba(212, 175, 55, 0.95),
-                        0 0 30px rgba(212, 175, 55, 0.75),
-                        0 0 55px rgba(212, 175, 55, 0.45)
-                    `;
+            });
+
+            // 4. Restore real UI visibility
+            shareBtn.style.opacity = '1';
+            if (muteBtn) muteBtn.style.opacity = '1';
+
+            // 5. Copy to clipboard
+            canvas.toBlob(async (blob) => {
+                if (!blob) return;
+                try {
+                    const data = [new ClipboardItem({ [blob.type]: blob })];
+                    await navigator.clipboard.write(data);
+                    alert("Daily Score Card copied to clipboard! ⚔️");
+                } catch (clipboardErr) {
+                    // Fallback for some mobile browsers
+                    console.error("Clipboard API failed, trying download fallback");
+                    const link = document.createElement('a');
+                    link.download = `OSRS_Daily_${new Date().toISOString().split('T')[0]}.png`;
+                    link.href = canvas.toDataURL();
+                    link.click();
                 }
-            }
-        });
+            }, 'image/png');
 
-        // 4. Restore real UI visibility
-        shareBtn.style.opacity = '1';
-        if (muteBtn) muteBtn.style.opacity = '1';
-
-        // 5. Copy to clipboard
-        canvas.toBlob(async (blob) => {
-            if (!blob) return;
-            const data = [new ClipboardItem({ [blob.type]: blob })];
-            await navigator.clipboard.write(data);
-            alert("Daily Score Card copied to clipboard! ⚔️");
-        }, 'image/png');
-
-    } catch (err) {
-        console.error("Capture failed:", err);
-    }
-};
+        } catch (err) {
+            console.error("Capture failed:", err);
+            // Ensure UI is restored even if it fails
+            shareBtn.style.opacity = '1';
+            const muteBtn = document.getElementById('muteBtn');
+            if (muteBtn) muteBtn.style.opacity = '1';
+        }
+    };
 }
 });
+
 
 
 
