@@ -177,29 +177,26 @@ let isDailyMode = false;
 async function syncUsername() {
     const { data: { session } } = await supabase.auth.getSession();
 
-    if (!session) {
-        username = 'Guest';
-    } else {
-        // Fetch from profiles table
+    let newUsername = 'Guest';
+    if (session) {
         const { data: profile, error } = await supabase
             .from('profiles')
             .select('username')
             .eq('user_id', session.user.id)
             .single();
 
-        if (error) {
-            console.error('Error fetching username from profiles:', error);
-            username = 'Guest';
-        } else {
-            username = profile?.username || 'Guest';
-        }
+        if (!error && profile?.username) newUsername = profile.username;
     }
 
+    username = newUsername;
+
+    // Only update DOM if userDisplay exists
     if (userDisplay) {
         const span = userDisplay.querySelector('#usernameSpan');
         if (span) span.textContent = ' ' + username;
     }
 }
+
 
 syncUsername();
 async function syncAuthButton() {
@@ -313,18 +310,18 @@ async function initialize() {
 initialize();
 // --- Initialize auth once
 async function initializeAuth() {
-    await syncAuthButton(); // first update
+    await syncAuthButton(); // sets login/logout button correctly
+    await syncUsername();   // sets initial username
 
-    // Auth state listener
+    // Listen for login/logout events
     supabase.auth.onAuthStateChange(async (event, session) => {
-    await syncAuthButton();        // update button label & handler
-    await updateShareButtonState();
-    await syncDailyButton();
-    await syncUsername();          // refresh username
-});
+        await syncAuthButton();  // update login/logout button
+        await syncUsername();    // update username display
+        await updateShareButtonState();
+        await syncDailyButton();
+    });
 }
 
-initializeAuth();
 
 // ====== NEW: FETCH SCORE FROM DATABASE ======
 async function fetchDailyStatus(userId) {
@@ -351,7 +348,6 @@ async function fetchDailyStatus(userId) {
     }
 }
 
-initializeAuth();
 
 function lockDailyButton() {
     if (dailyBtn) {
@@ -1064,6 +1060,9 @@ if (shareBtn) {
     };
 }  
 });
+
+// Initialize auth & session listener only once
+initializeAuth();
 
 
 
