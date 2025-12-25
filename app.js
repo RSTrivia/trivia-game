@@ -742,7 +742,7 @@ function updateShareButtonState() {
 updateShareButtonState();
 
 if (shareBtn) {
-  shareBtn.onclick = async () => {
+ shareBtn.onclick = async () => {
     if (shareBtn.classList.contains('is-disabled')) return;
 
     try {
@@ -750,16 +750,17 @@ if (shareBtn) {
         const savedScore = localStorage.getItem('lastDailyScore') || "0";
         const savedMsg = localStorage.getItem('lastDailyMessage') || "Daily Challenge";
 
-        // Hide UI for the photo
+        // UI cleanup
         shareBtn.style.opacity = '0';
         if (document.getElementById('muteBtn')) document.getElementById('muteBtn').style.opacity = '0';
 
         const canvas = await html2canvas(target, {
-            backgroundColor: '#000000', // Ensure a solid black container background
+            // This ensures the container itself stays dark/black
+            backgroundColor: '#0a0a0a', 
             scale: 2,
             useCORS: true,
             onclone: (clonedDoc) => {
-                // 1. Force the Screen Visibility
+                // 1. Force End Screen Visibility
                 const startScreen = clonedDoc.getElementById('start-screen');
                 const endScreen = clonedDoc.getElementById('end-screen');
                 if (startScreen) startScreen.classList.add('hidden');
@@ -773,26 +774,32 @@ if (shareBtn) {
                     }
                 }
 
-                // 2. RECREATE THE OSRS TITLE (Black center + Gold Glow)
+                // 2. THE TITLE FIX (Bold, Caps, No Yellow Box)
                 const title = clonedDoc.getElementById('main-title');
                 if (title) {
-                    // Reset the gradient clipping that causes the "yellow box"
+                    // REMOVE the gradient that causes the yellow box
+                    title.style.background = 'none';
+                    title.style.backgroundImage = 'none';
                     title.style.webkitBackgroundClip = 'initial';
                     title.style.backgroundClip = 'initial';
-                    title.style.webkitTextFillColor = 'initial';
                     
-                    // Style the text
-                    title.style.color = '#111111'; // Dark/Black center
-                    title.style.textTransform = 'uppercase'; // FORCED CAPSLOCK
+                    // FORCE Font Style
+                    title.style.fontFamily = "'Cinzel', serif";
+                    title.style.fontWeight = "700"; 
+                    title.style.textTransform = 'uppercase';
                     
-                    // This creates the "Gold Outline + Glow" look
+                    // OSRS COLORS (Black center, gold glow)
+                    title.style.color = '#000000'; 
+                    title.style.webkitTextFillColor = '#000000';
+                    
+                    // REBUILD THE GLOW
                     title.style.textShadow = `
                         -1px -1px 0 #d4af37,  
                          1px -1px 0 #d4af37,
                         -1px  1px 0 #d4af37,
                          1px  1px 0 #d4af37,
-                         0 0 10px rgba(212, 175, 55, 0.8),
-                         0 0 20px rgba(212, 175, 55, 0.6)
+                         0 0 10px rgba(212, 175, 55, 1),
+                         0 0 25px rgba(212, 175, 55, 0.7)
                     `;
                 }
             }
@@ -805,7 +812,7 @@ if (shareBtn) {
         canvas.toBlob(async (blob) => {
             const data = [new ClipboardItem({ [blob.type]: blob })];
             await navigator.clipboard.write(data);
-            alert("OSRS Daily Score Card copied! ⚔️");
+            alert("Daily Score Card copied to clipboard! ⚔️");
         }, 'image/png');
 
     } catch (err) {
@@ -814,6 +821,7 @@ if (shareBtn) {
 };
 }
 });
+
 
 
 
