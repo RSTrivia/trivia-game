@@ -175,17 +175,28 @@ let isDailyMode = false;
 async function refreshAuthUI() {
     const { data: { session } } = await supabase.auth.getSession();
     const span = document.querySelector('#usernameSpan');
-    const label = authBtn?.querySelector('.btn-label');
+    const label = ?.querySelector('.btn-label');
 
-    if (!session) {
-        // --- LOGGED OUT STATE ---
+   // If there is no session, or if Supabase threw an error
+    if (!session || error) {
         username = 'Guest';
         if (span) span.textContent = ' Guest';
         if (label) label.textContent = 'Log In';
         
-        // Wipe local storage so it doesn't leak into the next session
-        localStorage.removeItem('lastDailyScore');
-        localStorage.removeItem('lastDailyMessage');
+        // Ensure buttons are in Guest mode
+        if (dailyBtn) {
+            dailyBtn.classList.add('disabled');
+            dailyBtn.classList.remove('is-active');
+        }
+        
+        // Force the share button to hide/grey out
+        if (shareBtn) {
+            shareBtn.classList.add('is-disabled');
+            shareBtn.classList.remove('is-active');
+            shareBtn.style.opacity = "0.5";
+            shareBtn.style.pointerEvents = "none";
+        }
+        return; // STOP HERE. Don't run the "Logged In" code below.
     } else {
         // --- LOGGED IN STATE ---
         if (label) label.textContent = 'Log Out';
@@ -213,24 +224,21 @@ authBtn.onclick = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     
     if (session) {
+        // 1. Sign out from Supabase
         await supabase.auth.signOut(); 
         
-        // 🛡️ CRITICAL: Clear the cache you created in login.js
-        localStorage.removeItem('cachedUsername');
-        localStorage.removeItem('cachedLoggedIn');
-        localStorage.removeItem('lastDailyScore');
-        localStorage.removeItem('lastDailyMessage');
-
-        // Reset UI immediately
-        username = 'Guest';
-        if (document.querySelector('#usernameSpan')) {
-            document.querySelector('#usernameSpan').textContent = ' Guest';
-        }
+        // 2. Clear EVERY piece of local evidence
+        localStorage.clear(); // This is safer than removing items one by one
         
-        // Refresh the whole UI state
-        await refreshAuthUI();
+        // 3. Reset the global variables immediately
+        username = 'Guest';
+        isDailyMode = false;
+        
+        // 4. Force a hard refresh to the main menu
+        // This is the "Nuclear Option" to ensure no ghost data remains in memory
+        window.location.href = 'index.html'; 
     } else {
-        window.location.href = '/login'; // Or your login page path
+        window.location.href = 'login.html';
     }
 };
 
@@ -1058,6 +1066,7 @@ if (shareBtn) {
 }  
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
