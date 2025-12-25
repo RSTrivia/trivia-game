@@ -747,71 +747,74 @@ if (shareBtn) {
 
     try {
         const target = document.querySelector('.container');
-        
-        // Pull the "Memory" of the last daily game
         const savedScore = localStorage.getItem('lastDailyScore') || "0";
         const savedMsg = localStorage.getItem('lastDailyMessage') || "Daily Challenge";
 
-        // Hide UI buttons for the photo
+        // Hide UI for the photo
         shareBtn.style.opacity = '0';
-        const muteBtn = document.getElementById('muteBtn');
-        if (muteBtn) muteBtn.style.opacity = '0';
+        if (document.getElementById('muteBtn')) document.getElementById('muteBtn').style.opacity = '0';
 
         const canvas = await html2canvas(target, {
-            backgroundColor: '#1a1a1a',
+            backgroundColor: '#000000', // Ensure a solid black container background
             scale: 2,
             useCORS: true,
             onclone: (clonedDoc) => {
-                // 1. MANIPULATE THE GHOST DOM
+                // 1. Force the Screen Visibility
                 const startScreen = clonedDoc.getElementById('start-screen');
                 const endScreen = clonedDoc.getElementById('end-screen');
-                const title = clonedDoc.getElementById('main-title');
-
-                // Show End Screen, Hide Start Screen in the photo
                 if (startScreen) startScreen.classList.add('hidden');
                 if (endScreen) {
                     endScreen.classList.remove('hidden');
-                    
-                    // Inject the saved score and daily message
-                    const scoreSpan = clonedDoc.getElementById('finalScore');
-                    const gameOverTitle = clonedDoc.getElementById('game-over-title');
-                    
-                    if (scoreSpan) scoreSpan.textContent = savedScore;
-                    if (gameOverTitle) {
-                        gameOverTitle.textContent = savedMsg;
-                        gameOverTitle.classList.remove('hidden');
+                    clonedDoc.getElementById('finalScore').textContent = savedScore;
+                    const msgTitle = clonedDoc.getElementById('game-over-title');
+                    if (msgTitle) {
+                        msgTitle.textContent = savedMsg;
+                        msgTitle.classList.remove('hidden');
                     }
                 }
 
-                // 2. FIX TITLE (Glow + Correct OSRS Color)
+                // 2. RECREATE THE OSRS TITLE (Black center + Gold Glow)
+                const title = clonedDoc.getElementById('main-title');
                 if (title) {
+                    // Reset the gradient clipping that causes the "yellow box"
                     title.style.webkitBackgroundClip = 'initial';
                     title.style.backgroundClip = 'initial';
-                    title.style.webkitTextFillColor = '#f2b705';
-                    title.style.color = '#f2b705';
-                    // Re-apply that big gold glow
-                    title.style.textShadow = '0 0 12px rgba(212, 175, 55, 0.95), 0 0 30px rgba(212, 175, 55, 0.75)';
+                    title.style.webkitTextFillColor = 'initial';
+                    
+                    // Style the text
+                    title.style.color = '#111111'; // Dark/Black center
+                    title.style.textTransform = 'uppercase'; // FORCED CAPSLOCK
+                    
+                    // This creates the "Gold Outline + Glow" look
+                    title.style.textShadow = `
+                        -1px -1px 0 #d4af37,  
+                         1px -1px 0 #d4af37,
+                        -1px  1px 0 #d4af37,
+                         1px  1px 0 #d4af37,
+                         0 0 10px rgba(212, 175, 55, 0.8),
+                         0 0 20px rgba(212, 175, 55, 0.6)
+                    `;
                 }
             }
         });
 
         // Restore UI
         shareBtn.style.opacity = '1';
-        if (muteBtn) muteBtn.style.opacity = '1';
+        if (document.getElementById('muteBtn')) document.getElementById('muteBtn').style.opacity = '1';
 
-        // 3. COPY TO CLIPBOARD
         canvas.toBlob(async (blob) => {
             const data = [new ClipboardItem({ [blob.type]: blob })];
             await navigator.clipboard.write(data);
-            alert("Daily Score Card copied to clipboard! ⚔️");
+            alert("OSRS Daily Score Card copied! ⚔️");
         }, 'image/png');
 
     } catch (err) {
-        console.error("Share failed:", err);
+        console.error("Capture failed:", err);
     }
 };
 }
 });
+
 
 
 
