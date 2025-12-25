@@ -291,21 +291,30 @@ async function updateShareButtonState() {
 
     const { data: { session } } = await supabase.auth.getSession();
 
-    // 🔒 GUEST = COMPLETELY HIDDEN
+    // GUEST = disabled
     if (!session) {
         shareBtn.style.display = "flex";
         shareBtn.classList.add('is-disabled');
         shareBtn.style.opacity = "0.5";
-        shareBtn.style.pointerEvents = "none";    // prevent clicks
+        shareBtn.style.pointerEvents = "none";
         return;
     }
 
     // Logged in → show button
     shareBtn.style.display = "flex";
 
-    const canShare = await hasUserCompletedDaily(session);
+    // 1️⃣ Try localStorage first
+    const lastScore = localStorage.getItem('lastDailyScore');
+    if (lastScore && parseInt(lastScore) > 0) {
+        shareBtn.classList.remove('is-disabled');
+        shareBtn.style.opacity = "1";
+        shareBtn.style.pointerEvents = "auto";
+        return;
+    }
 
-    if (canShare) {
+    // 2️⃣ Fallback: check database
+    const played = await hasUserCompletedDaily(session);
+    if (played) {
         shareBtn.classList.remove('is-disabled');
         shareBtn.style.opacity = "1";
         shareBtn.style.pointerEvents = "auto";
@@ -315,6 +324,7 @@ async function updateShareButtonState() {
         shareBtn.style.pointerEvents = "none";
     }
 }
+
 
 
 // ====== NEW: FETCH SCORE FROM DATABASE ======
@@ -627,6 +637,7 @@ async function endGame() {
         }
         // 1. SAVE the score to localStorage so the share button can find it
         localStorage.setItem('lastDailyScore', score); 
+        await updateShareButtonState(); 
         localStorage.setItem('lastDailyMessage', randomMsg); // save random message
       
         // 3. Save Score to Database
@@ -1068,6 +1079,7 @@ if (shareBtn) {
     };
 }  
 });
+
 
 
 
