@@ -178,7 +178,8 @@ async function syncUsername() {
     const { data: { session } } = await supabase.auth.getSession();
 
     let newUsername = 'Guest';
-    if (session) {
+    // If no session, skip profile fetch entirely
+    if (session && session.user) {
         const { data: profile, error } = await supabase
             .from('profiles')
             .select('username')
@@ -190,15 +191,17 @@ async function syncUsername() {
 
     username = newUsername;
 
-    // Only update DOM if userDisplay exists
     if (userDisplay) {
         const span = userDisplay.querySelector('#usernameSpan');
         if (span) span.textContent = ' ' + username;
     }
-    // Auth button
+
     if (authBtn) {
         const label = authBtn.querySelector('.btn-label');
-        if (label) label.textContent = session ? 'Log Out' : 'Log In';
+        if (label) {
+            // Check session directly here to ensure button text is accurate
+            label.textContent = session ? 'Log Out' : 'Log In';
+        }
     }
 }
 
@@ -211,15 +214,24 @@ async function updateUIAfterAuthChange() {
     await updateShareButtonState();
 }
 
-     authBtn.onclick = async () => {
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
-      if (currentSession) {
-          await supabase.auth.signOut();
-      } else {
-          window.location.href = '/login';
-      }
-      await updateUIAfterAuthChange();
-  };
+authBtn.onclick = async () => {
+    const { data: { session: currentSession } } = await supabase.auth.getSession();
+    
+    if (currentSession) {
+        // 1. Tell Supabase to end the session
+        await supabase.auth.signOut();
+        
+        // 2. Clear local score tracking so the next user/guest starts fresh
+        localStorage.removeItem('lastDailyScore');
+        localStorage.removeItem('lastDailyMessage');
+        
+        // 3. Update the UI now that we are officially logged out
+        await updateUIAfterAuthChange();
+    } else {
+        // If no session exists, send them to login
+        window.location.href = '/login';
+    }
+};
 
 
 async function syncDailyButton() {
@@ -1061,6 +1073,7 @@ if (shareBtn) {
 }  
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
