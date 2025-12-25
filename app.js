@@ -177,12 +177,13 @@ async function refreshAuthUI() {
     const span = document.querySelector('#usernameSpan');
     const label = authBtn?.querySelector('.btn-label');
 
-    // 1. DEFAULT EVERYTHING TO GUEST (The "Safe" state)
+    // 1. FORCE RESET EVERYTHING TO GUEST FIRST
+    // This removes the "bounce back" effect
     username = 'Guest';
     if (span) span.textContent = ' Guest';
     if (label) label.textContent = 'Log In';
     
-    // Reset Daily Button to disabled
+    // Reset Daily Button
     if (dailyBtn) {
         dailyBtn.classList.add('disabled');
         dailyBtn.classList.remove('is-active');
@@ -190,7 +191,7 @@ async function refreshAuthUI() {
         dailyBtn.style.pointerEvents = 'none';
     }
 
-    // Reset Share Button to disabled
+    // Reset Share Button
     if (shareBtn) {
         shareBtn.classList.add('is-disabled');
         shareBtn.classList.remove('is-active');
@@ -198,10 +199,11 @@ async function refreshAuthUI() {
         shareBtn.style.pointerEvents = "none";
     }
 
-    // 2. ONLY IF SESSION EXISTS, UPGRADE TO LOGGED IN
+    // 2. ONLY IF A VALID SESSION EXISTS, UPGRADE THE UI
     if (session && session.user) {
         if (label) label.textContent = 'Log Out';
         
+        // Use the profile username if available
         const { data: profile } = await supabase
             .from('profiles')
             .select('username')
@@ -210,11 +212,15 @@ async function refreshAuthUI() {
 
         username = profile?.username || 'Player';
         if (span) span.textContent = ' ' + username;
-
-        // Re-enable interactions
+        
+        // Re-enable features for logged-in user
         await fetchDailyStatus(session.user.id);
         await syncDailyButton();
         await updateShareButtonState();
+    } else {
+        // 3. CLEANUP: If no session, clear your login.js cache keys
+        localStorage.removeItem('cachedLoggedIn');
+        localStorage.removeItem('cachedUsername');
     }
 }
 
@@ -222,15 +228,20 @@ authBtn.onclick = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     
     if (session) {
-        // 1. Clear everything local first so UI can't "bounce back"
-        localStorage.clear();
-        sessionStorage.clear();
+        // 1. Clear the specific keys created in login.js
+        localStorage.removeItem('cachedLoggedIn');
+        localStorage.removeItem('cachedUsername');
+        localStorage.removeItem('lastDailyScore');
+        localStorage.removeItem('lastDailyMessage');
         
-        // 2. Sign out of Supabase
+        // 2. Perform the signout
         await supabase.auth.signOut(); 
         
-        // 3. Immediate Redirect to a clean URL
-        window.location.replace(window.location.origin + window.location.pathname);
+        // 3. Force the UI to update immediately
+        await refreshAuthUI();
+        
+        // 4. Redirect to index to ensure a fresh JS state
+        window.location.replace('index.html'); 
     } else {
         window.location.href = 'login.html';
     }
@@ -1076,6 +1087,7 @@ if (shareBtn) {
 }  
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
