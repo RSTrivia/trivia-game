@@ -786,9 +786,10 @@ if (shareBtn) {
             currentScore = localStorage.getItem('lastDailyScore') || "0";
         }
 
-        const currentMsg = document.getElementById('game-over-title')?.textContent || "Daily Challenge";
-
         try {
+            const target = document.querySelector('.container');
+            const savedMsg = localStorage.getItem('lastDailyMessage') || "Daily Challenge";
+          
             const target = document.querySelector('.container');
             shareBtn.style.opacity = '0';
             const muteBtn = document.getElementById('muteBtn');
@@ -799,6 +800,7 @@ if (shareBtn) {
                 scale: 2, 
                 useCORS: true,
                 onclone: (clonedDoc) => {
+                    // --- A. FORCE DIMENSIONS (Prevents Mobile Shrinking) ---
                     const clonedContainer = clonedDoc.querySelector('.container');
                     if (clonedContainer) {
                         clonedContainer.style.width = '450px'; 
@@ -808,29 +810,37 @@ if (shareBtn) {
                         clonedContainer.style.display = 'block';
                     }
 
+                    const startScreen = clonedDoc.getElementById('start-screen');
                     const endScreen = clonedDoc.getElementById('end-screen');
+                    const playAgain = clonedDoc.getElementById('playAgainBtn');
+                    const mainMenu = clonedDoc.getElementById('mainMenuBtn');
+                    const title = clonedDoc.getElementById('main-title');
+                
+                    // --- B. VISIBILITY & LAYOUT ---
+                    if (startScreen) startScreen.classList.add('hidden');
                     if (endScreen) {
                         endScreen.classList.remove('hidden');
                         endScreen.style.display = 'flex';
                         endScreen.style.flexDirection = 'column';
                         endScreen.style.alignItems = 'center';
                       
-                        const pb = clonedDoc.getElementById('playAgainBtn');
-                        const mm = clonedDoc.getElementById('mainMenuBtn');
-                        if (pb) pb.style.display = 'none';
-                        if (mm) mm.style.display = 'none';
+                        if (playAgain) playAgain.style.display = 'none';
+                        if (mainMenu) mainMenu.style.display = 'none';
                       
+                        // Forced Text Sizes for high-res output
                         const finalScoreElem = clonedDoc.getElementById('finalScore');
                         const msgTitleElem = clonedDoc.getElementById('game-over-title');
                         
                         if (finalScoreElem) {
-                            finalScoreElem.textContent = currentScore;
+                            finalScoreElem.textContent = savedScore;
+                            finalScoreElem.style.fontSize = '80px'; 
                         }
                         if (msgTitleElem) {
-                            msgTitleElem.textContent = currentMsg;
+                            msgTitleElem.textContent = savedMsg;
                             msgTitleElem.classList.remove('hidden');
+                            msgTitleElem.style.fontSize = '24px';
+                            msgTitleElem.style.textAlign = 'center';
                         }
-
                         // Date
                         const dateTag = clonedDoc.createElement('div');
                         dateTag.textContent = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
@@ -840,6 +850,27 @@ if (shareBtn) {
                             opacity: '0.8', letterSpacing: '2px', textTransform: 'uppercase'
                         });
                         endScreen.appendChild(dateTag);
+                    }
+                  // --- D. TITLE FIX (Locked Pixel Size) ---
+                    if (title) {
+                        Object.assign(title.style, {
+                            background: 'none',
+                            backgroundImage: 'none',
+                            webkitBackgroundClip: 'initial',
+                            color: '#000000',
+                            webkitTextFillColor: '#000000',
+                            fontFamily: "'Cinzel', serif",
+                            fontWeight: "700",
+                            fontSize: "48px",
+                            textAlign: "center",
+                            textShadow: `
+                                0 0 4px rgba(0,0,0,0.8),
+                                1px 1px 0 #000,
+                                2px 2px 2px rgba(0,0,0,0.6),
+                                0 0 12px rgba(212, 175, 55, 0.95),
+                                0 0 30px rgba(212, 175, 55, 0.75),
+                                0 0 55px rgba(212, 175, 55, 0.45)`
+                        });
                     }
                 }
             });
@@ -867,14 +898,14 @@ if (shareBtn) {
                     }
                 } 
                 // 3. PC Logic: Copy to clipboard directly, NO share menu
-                else {
+               else {
                     try {
                         const data = [new ClipboardItem({ [blob.type]: blob })];
                         await navigator.clipboard.write(data);
-                        alert("Score Card copied to clipboard! ⚔️");
-                    } catch (err) {
-                        console.error("Clipboard failed", err);
-                        alert("Failed to copy. Try right-clicking the image if it appears.");
+                        alert("Daily Score Card copied to clipboard! ⚔️");
+                    } catch (clipErr) {
+                        console.error("Clipboard failed:", clipErr);
+                        alert("Sharing not supported. Please long-press the image to save.");
                     }
                 }
             }, 'image/png');
@@ -887,6 +918,7 @@ if (shareBtn) {
     };
 }  
 });
+
 
 
 
