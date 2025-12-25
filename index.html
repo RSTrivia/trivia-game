@@ -29,6 +29,7 @@ function handleAuthAction() {
     localStorage.removeItem('cachedLoggedIn');
     localStorage.removeItem('cachedUsername');
     localStorage.removeItem('dailyPlayedDate');
+    localStorage.removeItem('lastDailyScore');
     window.location.reload();
   } else {
     window.location.href = 'login.html';
@@ -168,6 +169,7 @@ function handleAuthAction() {
     
 </body>
 </html>
+
 
 
 
