@@ -212,16 +212,20 @@ async function fetchDailyStatus(userId) {
         .eq('attempt_date', todayStr)
         .maybeSingle();
 
-    if (data && data.score !== null) {
-        // Sync the score to localStorage and UI so Share button works
+    // If data exists, it means the user played on SOME device today
+    if (data) {
         localStorage.setItem('dailyPlayedDate', todayStr);
-        localStorage.setItem('lastDailyScore', data.score);
+        localStorage.setItem('lastDailyScore', data.score ?? "0");
         
-        // Update the end-screen UI in case they are looking at it
-        if (finalScore) finalScore.textContent = data.score;
+        // Update the screen so the share image isn't blank
+        if (finalScore) finalScore.textContent = data.score ?? "0";
         
-        lockDailyButton();
-        updateShareButtonState();
+        lockDailyButton();         // Play button -> Grey
+        updateShareButtonState();  // Share button -> Gold
+    } else {
+        // If no data, they haven't played today yet
+        // Ensure Share button stays grey
+        updateShareButtonState(); 
     }
 }
 
@@ -748,13 +752,23 @@ document.addEventListener('DOMContentLoaded', () => {
   const shareBtn = document.getElementById('shareBtn');
 
 function updateShareButtonState() {
+    // 1. Check if we are logged in
     const isGuest = !cachedLoggedIn || cachedUsername === 'Guest';
+    
+    // 2. Check if there is a record of playing today 
+    // (This is set either by finishing a game OR by fetchDailyStatus)
     const hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
 
     if (!isGuest && hasPlayed) {
+        // ONLY unlock if both are true
         shareBtn.classList.remove('is-disabled');
+        shareBtn.style.opacity = '1';
+        shareBtn.style.pointerEvents = 'auto';
     } else {
+        // Keep it grey and unclickable
         shareBtn.classList.add('is-disabled');
+        shareBtn.style.opacity = '0.5'; // Visual cue for disabled
+        shareBtn.style.pointerEvents = 'none';
     }
 }
 
@@ -850,33 +864,9 @@ if (shareBtn) {
         }
     };
 }
-
-
-
-  // ====== NEW: FETCH SCORE FROM DATABASE ======
-async function fetchDailyStatus(userId) {
-    const { data, error } = await supabase
-        .from('daily_attempts')
-        .select('score')
-        .eq('user_id', userId)
-        .eq('attempt_date', todayStr)
-        .maybeSingle();
-
-    if (data && data.score !== null) {
-        // Sync the score to localStorage and UI so Share button works
-        localStorage.setItem('dailyPlayedDate', todayStr);
-        localStorage.setItem('lastDailyScore', data.score);
-        
-        // Update the end-screen UI in case they are looking at it
-        if (finalScore) finalScore.textContent = data.score;
-        
-        lockDailyButton();
-        updateShareButtonState();
-    }
-}
-
   
 });
+
 
 
 
