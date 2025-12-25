@@ -173,9 +173,9 @@ let isDailyMode = false;
 
 // ====== INITIAL UI SYNC ======
 async function refreshAuthUI() {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session }, error } = await supabase.auth.getSession();
     const span = document.querySelector('#usernameSpan');
-    const label = ?.querySelector('.btn-label');
+    const label = authBtn?.querySelector('.btn-label');
 
    // If there is no session, or if Supabase threw an error
     if (!session || error) {
@@ -1066,6 +1066,7 @@ if (shareBtn) {
 }  
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
