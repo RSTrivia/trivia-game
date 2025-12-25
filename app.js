@@ -177,19 +177,28 @@ let isDailyMode = false;
 async function syncUsername() {
     const { data: { session } } = await supabase.auth.getSession();
 
-    let newUsername = 'Guest';
-    // If no session, skip profile fetch entirely
-    if (session && session.user) {
-        const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('username')
-            .eq('id', session.user.id)
-            .single();
-
-        if (!error && profile?.username) newUsername = profile.username;
+    // If no session, reset EVERYTHING to guest immediately
+    if (!session) {
+        username = 'Guest';
+        if (userDisplay) {
+            const span = userDisplay.querySelector('#usernameSpan');
+            if (span) span.textContent = ' Guest';
+        }
+        if (authBtn) {
+            const label = authBtn.querySelector('.btn-label');
+            if (label) label.textContent = 'Log In';
+        }
+        return; // Stop here!
     }
 
-    username = newUsername;
+    // If there IS a session, proceed with fetching profile
+    const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', session.user.id)
+        .single();
+
+    username = (!error && profile?.username) ? profile.username : 'Guest';
 
     if (userDisplay) {
         const span = userDisplay.querySelector('#usernameSpan');
@@ -198,10 +207,7 @@ async function syncUsername() {
 
     if (authBtn) {
         const label = authBtn.querySelector('.btn-label');
-        if (label) {
-            // Check session directly here to ensure button text is accurate
-            label.textContent = session ? 'Log Out' : 'Log In';
-        }
+        if (label) label.textContent = 'Log Out';
     }
 }
 
@@ -215,20 +221,17 @@ async function updateUIAfterAuthChange() {
 }
 
 authBtn.onclick = async () => {
-    const { data: { session: currentSession } } = await supabase.auth.getSession();
+    const { data: { session } } = await supabase.auth.getSession();
     
-    if (currentSession) {
-        // 1. Tell Supabase to end the session
-        await supabase.auth.signOut();
-        
-        // 2. Clear local score tracking so the next user/guest starts fresh
+    if (session) {
+        // Clear storage BEFORE signing out
         localStorage.removeItem('lastDailyScore');
         localStorage.removeItem('lastDailyMessage');
         
-        // 3. Update the UI now that we are officially logged out
-        await updateUIAfterAuthChange();
+        await supabase.auth.signOut(); 
+        // Note: updateUIAfterAuthChange() will be called automatically 
+        // by the onAuthStateChange listener we set up in init()
     } else {
-        // If no session exists, send them to login
         window.location.href = '/login';
     }
 };
@@ -256,15 +259,11 @@ async function syncDailyButton() {
 }
 
 async function init() {
-    // Wait for DOM
     await new Promise(res => document.addEventListener('DOMContentLoaded', res));
     
-    // Initial UI sync
-    await updateUIAfterAuthChange(); 
-    await syncDailyButton();
-
-    // Listen to auth changes
-    supabase.auth.onAuthStateChange(async (_event, session) => {
+    // This listener handles the INITIAL load AND every login/logout automatically
+    supabase.auth.onAuthStateChange(async (event, session) => {
+        console.log("Auth Event:", event);
         await updateUIAfterAuthChange();
     });
 }
@@ -1073,6 +1072,7 @@ if (shareBtn) {
 }  
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
