@@ -459,33 +459,36 @@ console.log("Fetching question id:", qId, "error:", error, "data:", data);
 }
 
 async function startGame() {
-    console.log("startGame called");
-    
-    // 1. UI setup
-    document.body.classList.add('game-active'); 
-    gameEnding = false;
-    game.classList.remove('hidden');
-    document.getElementById('start-screen').classList.add('hidden');
-    endScreen.classList.add('hidden');
+    try {
+        console.log("startGame called");
 
-    resetGame();
-    updateScore();
-    loadSounds();
+        // UI setup
+        document.body.classList.add('game-active'); 
+        gameEnding = false;
+        if (!game) throw new Error("Game element not found");
+        game.classList.remove('hidden');
+        const startScreen = document.getElementById('start-screen');
+        if (!startScreen) throw new Error("Start screen element not found");
+        startScreen.classList.add('hidden');
+        if (!endScreen) throw new Error("End screen element not found");
+        endScreen.classList.add('hidden');
 
-    // 2. Fetch all question IDs first
-    const { data: idList, error } = await supabase.rpc('get_all_question_ids');
-    if (error) {
-        console.error("RPC Error:", error.message);
-        return;
+        resetGame();
+        updateScore();
+
+        console.log("Fetching question IDs...");
+        const { data: idList, error } = await supabase.rpc('get_all_question_ids');
+        if (error) throw new Error(error.message);
+        remainingQuestions = idList.map(item => item.id).sort(() => Math.random() - 0.5);
+        console.log("Remaining questions:", remainingQuestions);
+
+        await preloadNextQuestions();
+        console.log("Preload queue:", preloadQueue);
+
+        loadQuestion();
+    } catch (err) {
+        console.error("startGame error:", err);
     }
-    remainingQuestions = idList.map(item => item.id).sort(() => Math.random() - 0.5);
-    console.log("Remaining questions after fetch:", remainingQuestions);
-
-    // 3. Preload first questions
-    await preloadNextQuestions();
-    
-    // 4. Start the first question
-    loadQuestion();
 }
 
 
@@ -1059,6 +1062,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
