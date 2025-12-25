@@ -4,7 +4,6 @@ const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
 // ====== UI & STATE ======
 const cachedMuted = localStorage.getItem('muted') === 'true';
-let username = 'Guest';
 
 const shareBtn = document.getElementById('shareBtn');
 const startBtn = document.getElementById('startBtn');
@@ -1060,6 +1059,7 @@ if (shareBtn) {
 }  
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
