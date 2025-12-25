@@ -206,21 +206,26 @@ async function syncAuthButton() {
     if (!authBtn) return;
 
     const { data: { session } } = await supabase.auth.getSession();
-
     const label = authBtn.querySelector('.btn-label');
     if (label) label.textContent = session ? 'Log Out' : 'Log In';
 
     authBtn.onclick = async () => {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-            // Log out
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        if (currentSession) {
+            // LOG OUT
             await supabase.auth.signOut();
 
-            // Refresh buttons
+            // Immediately reset username display
+            username = 'Guest';
+            const span = userDisplay.querySelector('#usernameSpan');
+            if (span) span.textContent = ' ' + username;
+
+            // Update buttons
             await updateShareButtonState();
             await syncDailyButton();
-            syncAuthButton(); // update label to "Log In"
+            if (label) label.textContent = 'Log In';
         } else {
+            // LOG IN → redirect
             window.location.href = '/login';
         }
     };
@@ -310,13 +315,13 @@ initialize();
 async function initializeAuth() {
     await syncAuthButton(); // first update
 
-    // Listen to auth state changes
+    // Auth state listener
     supabase.auth.onAuthStateChange(async (event, session) => {
-        await syncAuthButton();       // update button
-        await updateShareButtonState();
-        await syncDailyButton();
-        await syncUsername();         // update username display too
-    });
+    await syncAuthButton();        // update button label & handler
+    await updateShareButtonState();
+    await syncDailyButton();
+    await syncUsername();          // refresh username
+});
 }
 
 initializeAuth();
@@ -1059,6 +1064,7 @@ if (shareBtn) {
     };
 }  
 });
+
 
 
 
