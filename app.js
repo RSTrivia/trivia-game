@@ -197,8 +197,6 @@ async function syncUsername() {
     }
 }
 
-
-syncUsername();
 async function syncAuthButton() {
     if (!authBtn) return;
 
@@ -228,8 +226,48 @@ async function syncAuthButton() {
     };
 }
 
+async function syncDailyButton() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!dailyBtn) return;
 
-syncAuthButton();
+    if (!session) {
+        dailyBtn.classList.remove('is-active');
+        dailyBtn.classList.add('disabled');
+        return;
+    }
+
+    const played = await hasUserCompletedDaily(session);
+
+    if (!played) {
+        dailyBtn.classList.add('is-active');
+        dailyBtn.classList.remove('disabled');
+    } else {
+        dailyBtn.classList.remove('is-active');
+        dailyBtn.classList.add('disabled');
+    }
+}
+
+async function init() {
+    // wait for DOM
+    await new Promise(res => document.addEventListener('DOMContentLoaded', res));
+    
+    // sync button and username once session is ready
+    await syncAuthButton();
+    await syncUsername();
+    await syncDailyButton();
+
+    // listen to auth changes
+    supabase.auth.onAuthStateChange(async (_event, session) => {
+        await syncAuthButton();
+        await syncUsername();
+        await updateShareButtonState();
+        await syncDailyButton();
+    });
+}
+
+init();
+
+
 if (muteBtn) {
     muteBtn.querySelector('#muteIcon').textContent = cachedMuted ? '🔇' : '🔊';
     if (cachedMuted) muteBtn.classList.add('is-muted');
@@ -277,49 +315,6 @@ async function updateShareButtonState() {
         shareBtn.style.opacity = "0.5";
         shareBtn.style.pointerEvents = "none";
     }
-}
-
-async function syncDailyButton() {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!dailyBtn) return;
-
-    if (!session) {
-        dailyBtn.classList.remove('is-active');
-        dailyBtn.classList.add('disabled');
-        return;
-    }
-
-    const played = await hasUserCompletedDaily(session);
-
-    if (!played) {
-        dailyBtn.classList.add('is-active');
-        dailyBtn.classList.remove('disabled');
-    } else {
-        dailyBtn.classList.remove('is-active');
-        dailyBtn.classList.add('disabled');
-    }
-}
-async function initialize() {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-        await syncUsername();
-    }
-    initializeAuth(); // set up auth listeners
-}
-
-initialize();
-// --- Initialize auth once
-async function initializeAuth() {
-    await syncAuthButton(); // sets login/logout button correctly
-    await syncUsername();   // sets initial username
-
-    // Listen for login/logout events
-    supabase.auth.onAuthStateChange(async (event, session) => {
-        await syncAuthButton();  // update login/logout button
-        await syncUsername();    // update username display
-        await updateShareButtonState();
-        await syncDailyButton();
-    });
 }
 
 
@@ -839,6 +834,7 @@ function subscribeToDailyChanges(userId) {
 // ====== MOBILE TAP FEEDBACK (THE FLASH) ======
 document.addEventListener('DOMContentLoaded', () => {
     syncDailyButton();
+     syncUsername();
 
     // This function applies the flash to any button we give it
     const applyFlash = (el) => {
@@ -1063,6 +1059,7 @@ if (shareBtn) {
 
 // Initialize auth & session listener only once
 initializeAuth();
+
 
 
 
