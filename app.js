@@ -240,7 +240,6 @@ async function fetchDailyStatus(userId) {
     const { data, error } = await supabase
         .from('daily_attempts')
         .select('score, message') //message
-        .select('score') //score
         .eq('user_id', userId)
         .eq('attempt_date', todayStr)
         .maybeSingle();
@@ -968,6 +967,7 @@ if (shareBtn) {
     };
 }  
 });
+
 
 
 
