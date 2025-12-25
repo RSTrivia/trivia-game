@@ -218,11 +218,6 @@ async function refreshAuthUI() {
     await updateShareButtonState();
 }
 
-    // Always sync these buttons based on the result above
-    await syncDailyButton();
-    await updateShareButtonState();
-}
-
 authBtn.onclick = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     
@@ -1079,6 +1074,7 @@ if (shareBtn) {
 }  
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
