@@ -769,12 +769,11 @@ if (shareBtn) {
             if (startScreen) startScreen.classList.add('hidden');
             if (endScreen) {
                 endScreen.classList.remove('hidden');
-                
-                // --- HIDE THE PLAY AGAIN BUTTON IN THE PICTURE ---
-                if (playAgain) {
-                    playAgain.style.display = 'none';
-                }
-        
+              
+            // hide the buttons    
+            if (playAgain) playAgain.style.display = 'none';
+            if (mainMenu) mainMenu.style.display = 'none';
+              
                 // Inject saved data
                 clonedDoc.getElementById('finalScore').textContent = savedScore;
                 const msgTitle = clonedDoc.getElementById('game-over-title');
@@ -786,24 +785,33 @@ if (shareBtn) {
         
             // 2. THE TITLE FIX (Bold, Caps, No Yellow Box)
             if (title) {
-                title.style.background = 'none';
-                title.style.backgroundImage = 'none';
-                title.style.webkitBackgroundClip = 'initial';
-                title.style.backgroundClip = 'initial';
-                title.style.fontFamily = "'Cinzel', serif";
-                title.style.fontWeight = "700"; 
-                title.style.textTransform = 'uppercase';
-                title.style.color = '#000000'; 
-                title.style.webkitTextFillColor = '#000000';
-                title.style.textShadow = `
-                    -1px -1px 0 #d4af37,  
-                     1px -1px 0 #d4af37,
-                    -1px  1px 0 #d4af37,
-                     1px  1px 0 #d4af37,
-                     0 0 10px rgba(212, 175, 55, 1),
-                     0 0 25px rgba(212, 175, 55, 0.7)
-                `;
-            }
+              // Strip the gradient (which causes the yellow box)
+              title.style.background = 'none';
+              title.style.webkitBackgroundClip = 'initial';
+              title.style.backgroundClip = 'initial';
+          
+              // Set the text color to the main Gold from your gradient (#f2b705)
+              // This makes the letters solid gold so they can hold your shadows
+              title.style.color = '#f2b705'; 
+              title.style.webkitTextFillColor = '#f2b705';
+              
+              // Force font properties
+              title.style.fontFamily = "'Cinzel', serif";
+              title.style.fontWeight = "700";
+              title.style.fontSize = "3.2rem";
+              title.style.letterSpacing = "2px";
+              title.style.textTransform = "uppercase"; // To match CAPSLOCK
+          
+              // 1:1 REPLICA OF YOUR CSS TEXT-SHADOW
+              title.style.textShadow = `
+                  0 0 4px rgba(0,0,0,0.8),
+                  1px 1px 0 #000,
+                  2px 2px 2px rgba(0,0,0,0.6),
+                  0 0 12px rgba(212, 175, 55, 0.95),
+                  0 0 30px rgba(212, 175, 55, 0.75),
+                  0 0 55px rgba(212, 175, 55, 0.45)
+              `;
+          }
         }
         });
 
@@ -823,6 +831,7 @@ if (shareBtn) {
 };
 }
 });
+
 
 
 
