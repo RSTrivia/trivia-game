@@ -741,59 +741,61 @@ function updateShareButtonState() {
 updateShareButtonState();
 
 if (shareBtn) {
-    shareBtn.onclick = async () => {
-        // 1. Guard against disabled clicks
-        if (shareBtn.classList.contains('is-disabled')) {
-            const isGuest = !cachedLoggedIn || cachedUsername === 'Guest';
-            if (isGuest) alert("Log in to save and share daily scores!");
-            else alert("Complete today's Daily Challenge to share your score!");
-            return;
-        }
+   shareBtn.onclick = async () => {
+    if (shareBtn.classList.contains('is-disabled')) return;
 
-        try {
-            const target = document.getElementById('end-screen');
-            
-            // Temporary: Hide the share button so it's not in the picture
-            shareBtn.style.opacity = '0';
+    try {
+        const target = document.getElementById('end-screen');
+        shareBtn.style.opacity = '0';
 
-            // 2. Generate the image
-            const canvas = await html2canvas(target, {
-                backgroundColor: '#1a1a1a', 
-                scale: 2,
-                logging: false,
-                useCORS: true
-            });
+        // 1. Generate Canvas
+        const canvas = await html2canvas(target, {
+            backgroundColor: '#1a1a1a',
+            scale: 2,
+            useCORS: true // Try to handle cross-origin images
+        });
 
-            shareBtn.style.opacity = '1';
+        shareBtn.style.opacity = '1';
 
-            // 3. Copy to Clipboard
-            canvas.toBlob(async (blob) => {
-                try {
-                    const data = [new ClipboardItem({ [blob.type]: blob })];
-                    await navigator.clipboard.write(data);
-                    
-                    // 4. Visual Feedback
-                    const originalIcon = document.getElementById('shareIcon').textContent;
-                    document.getElementById('shareIcon').textContent = '✅';
-                    alert("Score image copied to clipboard! ⚔️");
-                    
-                    setTimeout(() => {
-                        document.getElementById('shareIcon').textContent = originalIcon;
-                    }, 2000);
+        // 2. Convert to Blob
+        canvas.toBlob(async (blob) => {
+            if (!blob) {
+                alert("Could not generate image data.");
+                return;
+            }
 
-                } catch (err) {
-                    console.error(err);
-                    alert("Failed to copy. Make sure you are using HTTPS and a modern browser.");
-                }
-            });
+            try {
+                // 3. Use the modern ClipboardItem constructor
+                const data = [new ClipboardItem({ "image/png": blob })];
+                
+                // We wrap this in a permission check for some browsers
+                await navigator.clipboard.write(data);
+                
+                // Success feedback
+                const originalIcon = document.getElementById('shareIcon').textContent;
+                document.getElementById('shareIcon').textContent = '✅';
+                alert("Score image copied to clipboard! ⚔️");
+                setTimeout(() => { document.getElementById('shareIcon').textContent = originalIcon; }, 2000);
 
-        } catch (error) {
-            console.error("Screenshot error:", error);
-            alert("Could not generate image.");
-        }
-    };
+            } catch (clipboardError) {
+                console.error("Clipboard Error:", clipboardError);
+                
+                // FALLBACK: If copy fails, offer a download so the user isn't stuck
+                const link = document.createElement('a');
+                link.download = `osrs-daily-${todayStr}.png`;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+                alert("Browser blocked clipboard copy, so I've downloaded the image for you instead! ⚔️");
+            }
+        }, 'image/png');
+
+    } catch (err) {
+        console.error("Screenshot error:", err);
+    }
+};
 }
 });
+
 
 
 
