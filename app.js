@@ -745,76 +745,60 @@ if (shareBtn) {
     if (shareBtn.classList.contains('is-disabled')) return;
 
     try {
-        // 1. Target the .container (the black box)
         const target = document.querySelector('.container');
         
-        // Hide UI buttons during capture so they don't appear in the image
-        const muteBtn = document.getElementById('muteBtn');
+        // UI cleanup for the photo
         shareBtn.style.opacity = '0';
+        const muteBtn = document.getElementById('muteBtn');
         if (muteBtn) muteBtn.style.opacity = '0';
 
-      const canvas = await html2canvas(target, {
-          backgroundColor: '#0a0a0a', // Solid dark background for the box
-          scale: 2,
-          useCORS: true,
-          allowTaint: false,
-          onclone: (clonedDoc) => {
-              const title = clonedDoc.getElementById('main-title');
-              if (title) {
-                  // html2canvas struggles with background-clip: text. 
-                  // We fix the "Yellow Box" by forcing the text color and removing the clip for the capture.
-                  title.style.webkitBackgroundClip = 'initial';
-                  title.style.backgroundClip = 'initial';
-                  title.style.webkitTextFillColor = '#f2b705'; // A solid OSRS gold
-                  title.style.color = '#f2b705';
-                  
-                  // Re-apply the shadow/glow to ensure it looks same as site
-                  title.style.textShadow = '0 0 12px rgba(212, 175, 55, 0.95), 0 0 30px rgba(212, 175, 55, 0.75)';
-              }
-          }
-      });
-    }
-});
-});
+        const canvas = await html2canvas(target, {
+            backgroundColor: '#1a1a1a',
+            scale: 2,
+            useCORS: true,
+            onclone: (clonedDoc) => {
+                // 1. Find the elements in the "ghost" copy of your site
+                const startScreen = clonedDoc.getElementById('start-screen');
+                const endScreen = clonedDoc.getElementById('end-screen');
+                const title = clonedDoc.getElementById('main-title');
 
-        // Restore UI visibility
+                // 2. FORCE the End Screen to show and Start Screen to hide
+                if (startScreen) startScreen.classList.add('hidden');
+                if (endScreen) {
+                    endScreen.classList.remove('hidden');
+                    // Ensure the final score text is actually filled in the clone
+                    const scoreVal = document.getElementById('finalScore').textContent;
+                    clonedDoc.getElementById('finalScore').textContent = scoreVal;
+                }
+
+                // 3. Fix the "Yellow Box" title issue we discussed
+                if (title) {
+                    title.style.webkitBackgroundClip = 'initial';
+                    title.style.backgroundClip = 'initial';
+                    title.style.webkitTextFillColor = '#f2b705';
+                    title.style.color = '#f2b705';
+                }
+            }
+        });
+
+        // Restore UI
         shareBtn.style.opacity = '1';
         if (muteBtn) muteBtn.style.opacity = '1';
 
-        // 3. Convert to Blob and Copy
+        // 4. Copy to Clipboard
         canvas.toBlob(async (blob) => {
-            if (!blob) {
-                alert("Capture failed. Check if you added 'crossorigin' to your font link!");
-                return;
-            }
-
-            try {
-                const item = new ClipboardItem({ "image/png": blob });
-                await navigator.clipboard.write([item]);
-                
-                // Visual feedback
-                const icon = document.getElementById('shareIcon');
-                const originalText = icon.textContent;
-                icon.textContent = '✅';
-                alert("Black container copied to clipboard! ⚔️");
-                setTimeout(() => { icon.textContent = originalText; }, 2000);
-
-            } catch (err) {
-                // PC Fallback: Direct Download
-                const link = document.createElement('a');
-                link.download = `osrs-trivia-score.png`;
-                link.href = canvas.toDataURL("image/png");
-                link.click();
-                alert("Clipboard blocked. Image downloaded instead!");
-            }
+            const data = [new ClipboardItem({ [blob.type]: blob })];
+            await navigator.clipboard.write(data);
+            alert("Daily Score Card copied to clipboard! ⚔️");
         }, 'image/png');
 
-    } catch (error) {
-        console.error("Screenshot error:", error);
+    } catch (err) {
+        console.error("Share failed:", err);
     }
 };
 }
 });
+
 
 
 
