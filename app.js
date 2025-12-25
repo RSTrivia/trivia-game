@@ -178,15 +178,15 @@ async function syncUsername(session) {
     const span = document.querySelector('#usernameSpan');
     const label = authBtn?.querySelector('.btn-label');
 
+    // 1. If no session, reset to Guest IMMEDIATELY
     if (!session) {
-        // Force UI to Guest
         username = 'Guest';
         if (span) span.textContent = ' Guest';
         if (label) label.textContent = 'Log In';
         return;
     }
 
-    // Fetch Profile
+    // 2. If session exists, fetch the real username
     const { data: profile, error } = await supabase
         .from('profiles')
         .select('username')
@@ -219,14 +219,14 @@ authBtn.onclick = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     
     if (session) {
-        // 1. Log Out first
+        // 1. Sign out
         await supabase.auth.signOut(); 
 
-        // 2. Clear storage
+        // 2. Wipe Local Data
         localStorage.removeItem('lastDailyScore');
         localStorage.removeItem('lastDailyMessage');
         
-        // 3. Reset End Screen UI
+        // 3. Reset UI Elements
         if (finalScore) finalScore.textContent = "0";
         const gameOverTitle = document.getElementById('game-over-title');
         if (gameOverTitle) {
@@ -234,13 +234,10 @@ authBtn.onclick = async () => {
             gameOverTitle.classList.add('hidden');
         }
 
-        // 4. Force UI to Guest state
+        // 4. Update UI State (Force to Guest)
         await syncUsername(null);
         await syncDailyButton();
         await updateShareButtonState(); 
-        
-        // Optional: reload the page to ensure all state is fresh
-        // window.location.reload(); 
     } else {
         window.location.href = '/login';
     }
@@ -269,45 +266,44 @@ async function syncDailyButton() {
 }
 
 async function init() {
-    // 1. Wait for the page to load
     await new Promise(res => document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', res) : res());
 
-    // 2. Get the session ONCE
+    // Single source of truth for the session on load
     const { data: { session } } = await supabase.auth.getSession();
     
     if (session) {
-        // Logged in: Fetch DB data and sync UI
         await fetchDailyStatus(session.user.id); 
         subscribeToDailyChanges(session.user.id);
-        await syncUsername(session); // Pass session directly to avoid extra calls
+        await syncUsername(session); 
     } else {
-        // NOT logged in: Wipe data and show Guest
         localStorage.removeItem('lastDailyScore');
         localStorage.removeItem('lastDailyMessage');
         await syncUsername(null); 
     }
 
-    // 3. Final UI Sync
     await syncDailyButton();
     await updateShareButtonState();
 
-    // 4. Daily Click handler
-    dailyBtn.onclick = async () => {
-        const { data: { session: activeSession } } = await supabase.auth.getSession();
-        if (audioCtx.state === 'suspended') await audioCtx.resume();
-        loadSounds(); 
+    // Attach Daily Click handler
+    if (dailyBtn) {
+        dailyBtn.onclick = async () => {
+            const { data: { session: activeSession } } = await supabase.auth.getSession();
+            if (audioCtx.state === 'suspended') await audioCtx.resume();
+            loadSounds(); 
 
-        if (!activeSession) return alert("Log in to play Daily Mode!");
-        
-        const played = await hasUserCompletedDaily(activeSession);
-        if (played) return alert("You've already played today!");
+            if (!activeSession) return alert("Log in to play Daily Mode!");
+            
+            const played = await hasUserCompletedDaily(activeSession);
+            if (played) return alert("You've already played today!");
 
-        isDailyMode = true;
-        startDailyChallenge();
-    };
+            isDailyMode = true;
+            startDailyChallenge();
+        };
+    }
 }
-init();
 
+// Start everything
+init();
 
 if (muteBtn) {
     muteBtn.querySelector('#muteIcon').textContent = cachedMuted ? '🔇' : '🔊';
@@ -827,7 +823,7 @@ muteBtn.onclick = () => {
 };
 
 //await syncDailyButton();
-syncDailyButton();
+
 
 function shuffleWithSeed(array, seed) {
     let arr = [...array];
@@ -1087,6 +1083,7 @@ if (shareBtn) {
 }  
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
