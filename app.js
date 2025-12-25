@@ -307,6 +307,14 @@ async function init() {
             startDailyChallenge();
         };
     }
+    if (startBtn) {
+      startBtn.onclick = () => {
+          isDailyMode = false; // Ensure we aren't in daily mode
+          if (audioCtx.state === 'suspended') audioCtx.resume();
+          loadSounds();
+          startGame(); // <--- This was missing!
+      };
+}
 } // <--- Syntax fix: This closes the init function properly
 
 // Start the app
@@ -960,17 +968,20 @@ async function startDailyChallenge() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return alert("Log in to play Daily Mode!");
 
+    // 1. Burn the attempt
     const { error: burnError } = await supabase
         .from('daily_attempts')
         .insert({ user_id: session.user.id, attempt_date: todayStr });
 
     if (burnError) return alert("You've already played today!");
     
-    lockDailyButton(); // Gray out immediately on this device
+    lockDailyButton(); 
 
+    // 2. Load Questions
     const { data: allQuestions } = await supabase.from('questions').select('id').order('id', { ascending: true });
     if (!allQuestions || allQuestions.length < 10) return alert("Error loading questions.");
 
+    // 3. Deterministic Selection
     const startDate = new Date('2025-12-22'); 
     const diffTime = Math.abs(new Date() - startDate);
     const dayCounter = Math.floor(diffTime / (1000 * 60 * 60 * 24));
@@ -983,15 +994,17 @@ async function startDailyChallenge() {
     const shuffledList = shuffleWithSeed(allQuestions, cycleNumber);
     const dailyIds = shuffledList.slice(dayInCycle * questionsPerDay, (dayInCycle * questionsPerDay) + questionsPerDay).map(q => q.id);
 
+    // 4. UI Transition
     isDailyMode = true;
-    preloadQueue = [];
+    preloadQueue = []; // Clear the "Standard" questions out
     resetGame();
-    remainingQuestions = dailyIds; 
+    remainingQuestions = dailyIds; // Assign the specific 10 IDs
     
     document.body.classList.add('game-active'); 
     document.getElementById('start-screen').classList.add('hidden');
     game.classList.remove('hidden');
     
+    // 5. Start the engine
     await preloadNextQuestions();
     loadQuestion();
 }
@@ -1086,6 +1099,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
