@@ -275,7 +275,15 @@ async function syncDailyButton() {
         dailyBtn.classList.add('disabled');
     }
 }
+async function initialize() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+        await syncUsername();
+    }
+    initializeAuth(); // set up auth listeners
+}
 
+initialize();
 // --- Initialize auth once
 async function initializeAuth() {
     await syncAuthButton(); // first update
@@ -285,6 +293,7 @@ async function initializeAuth() {
         await syncAuthButton();       // update button
         await updateShareButtonState();
         await syncDailyButton();
+        await syncUsername();         // update username display too
     });
 }
 
@@ -1028,6 +1037,7 @@ if (shareBtn) {
     };
 }  
 });
+
 
 
 
