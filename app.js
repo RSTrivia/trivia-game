@@ -4,7 +4,7 @@ const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
 // ====== UI & STATE ======
 const cachedMuted = localStorage.getItem('muted') === 'true';
-const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
+let username = 'Guest';
 
 const shareBtn = document.getElementById('shareBtn');
 const startBtn = document.getElementById('startBtn');
@@ -215,24 +215,26 @@ authBtn.onclick = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     
     if (session) {
-        // 1. Sign out from Supabase
         await supabase.auth.signOut(); 
         
-        // 2. Clear UI immediately
-        if (finalScore) finalScore.textContent = "0";
-        const gameOverTitle = document.getElementById('game-over-title');
-        if (gameOverTitle) {
-            gameOverTitle.textContent = "";
-            gameOverTitle.classList.add('hidden');
-        }
+        // 🛡️ CRITICAL: Clear the cache you created in login.js
+        localStorage.removeItem('cachedUsername');
+        localStorage.removeItem('cachedLoggedIn');
+        localStorage.removeItem('lastDailyScore');
+        localStorage.removeItem('lastDailyMessage');
 
-        // 3. Run the master sync to lock everything to "Guest" mode
+        // Reset UI immediately
+        username = 'Guest';
+        if (document.querySelector('#usernameSpan')) {
+            document.querySelector('#usernameSpan').textContent = ' Guest';
+        }
+        
+        // Refresh the whole UI state
         await refreshAuthUI();
     } else {
-        window.location.href = '/login';
+        window.location.href = '/login'; // Or your login page path
     }
 };
-
 
 async function syncDailyButton() {
     const { data: { session } } = await supabase.auth.getSession();
@@ -835,7 +837,6 @@ function subscribeToDailyChanges(userId) {
 // ====== MOBILE TAP FEEDBACK (THE FLASH) ======
 document.addEventListener('DOMContentLoaded', () => {
   (async () => {
-       syncDailyButton();
     //syncUsername();
     
     // This function applies the flash to any button we give it
@@ -1059,6 +1060,7 @@ if (shareBtn) {
 }  
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
