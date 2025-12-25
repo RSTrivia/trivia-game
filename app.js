@@ -822,7 +822,6 @@ if (shareBtn) {
                             position: 'relative',
                             transform: 'none', // Remove mobile scaling
                             boxSizing: 'border-box'
-                            overflow: 'hidden' // Clip any leaking pixels
                         });
                     }
 
@@ -945,3 +944,4 @@ if (shareBtn) {
     };
 }  
 });
+
