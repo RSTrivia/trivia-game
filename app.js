@@ -789,7 +789,6 @@ if (shareBtn) {
             
                 // 3. THE TITLE FIX (Match site exactly)
                 // 2. THE TITLE FIX (Black center + Site's exact glow)
-                const title = clonedDoc.getElementById('main-title');
                 if (title) {
                     // 1. Completely remove the gradient/background box
                     title.style.background = 'none';
@@ -839,6 +838,7 @@ if (shareBtn) {
 };
 }
 });
+
 
 
 
