@@ -780,11 +780,18 @@ if (shareBtn) {
 
         // 1. IMPROVED CAPTURE: Check screen first, then localStorage
         let currentScore = document.getElementById('finalScore')?.textContent;
-        
-        // If screen says 0, try to get the saved score from our fetchDailyStatus sync
+       // If screen says 0, try to get the saved score from our fetchDailyStatus sync
         if (!currentScore || currentScore === "0") {
             currentScore = localStorage.getItem('lastDailyScore') || "0";
         }
+      
+        // We get the message currently visible on the screen
+        let currentMessage = document.getElementById('game-over-title')?.textContent;
+        // If the screen is empty (e.g. user refreshed), fall back to storage
+        if (!currentMessage || currentMessage === "" || currentMessage === "Game Over!") {
+            currentMessage = localStorage.getItem('lastDailyMessage') || "Daily Challenge";
+        }
+         
 
         try {
             const target = document.querySelector('.container');
@@ -805,7 +812,7 @@ if (shareBtn) {
                     const clonedBody = clonedDoc.body;
                     clonedBody.style.width = '450px';
                     clonedBody.style.height = '600px';
-                    clonedBody.style.overflow = 'hidden';
+                    //clonedBody.style.overflow = 'hidden';
 
                     if (clonedContainer) {
                         // Reset all container styles to be a fixed "card"
@@ -860,7 +867,7 @@ if (shareBtn) {
 
                         if (msgTitleElem) {
                           // 2. Force the content and remove any hiding classes
-                            msgTitleElem.textContent = messageToDisplay;
+                            msgTitleElem.textContent = currentMessage;
                             msgTitleElem.classList.remove('hidden');
                             msgTitleElem.style.fontSize = '24px';
                             msgTitleElem.style.textAlign = 'center';
@@ -954,5 +961,6 @@ if (shareBtn) {
     };
 }  
 });
+
 
 
