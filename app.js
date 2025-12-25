@@ -833,8 +833,21 @@ function subscribeToDailyChanges(userId) {
 // ====== MOBILE TAP FEEDBACK (THE FLASH) ======
 document.addEventListener('DOMContentLoaded', () => {
     syncDailyButton();
-     syncUsername();
-
+    //syncUsername();
+      const span = document.getElementById('usernameSpan');
+    if (span) {
+        const { data: { session } } = await supabase.auth.getSession();
+        let displayName = 'Guest';
+        if (session) {
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('username')
+                .eq('user_id', session.user.id)
+                .single();
+            if (profile?.username) displayName = profile.username;
+        }
+        span.textContent = ' ' + displayName;
+    }
     // This function applies the flash to any button we give it
     const applyFlash = (el) => {
         el.addEventListener('touchstart', () => {
@@ -1055,6 +1068,7 @@ if (shareBtn) {
     };
 }  
 });
+
 
 
 
