@@ -202,7 +202,7 @@ async function updateShareButtonState() {
             shareBtn.classList.remove('is-disabled');
             shareBtn.style.opacity = "1";
             shareBtn.style.pointerEvents = "auto";
-            shareBtn.style.filter = "grayscale(0%)"; // Ensure full color
+            //shareBtn.style.filter = "grayscale(0%)"; // Ensure full color
         } 
         else {
             // If Guest OR hasn't played, keep it locked/grey
@@ -990,6 +990,7 @@ if (shareBtn) {
     };
 }  
 });
+
 
 
 
