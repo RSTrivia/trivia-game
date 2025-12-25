@@ -5,7 +5,6 @@ const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 // ====== UI & STATE ======
 const cachedMuted = localStorage.getItem('muted') === 'true';
 const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
-const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
 
 const shareBtn = document.getElementById('shareBtn');
 const startBtn = document.getElementById('startBtn');
@@ -165,7 +164,7 @@ let muted = cachedMuted;
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 const todayStr = new Date().toISOString().split('T')[0];
 
-let username = cachedLoggedIn ? cachedUsername : '';
+let username = '';
 let score = 0;
 let remainingQuestions = [];
 let currentQuestion = null;
@@ -176,10 +175,13 @@ let isDailyMode = false;
 
 // ====== INITIAL UI SYNC ======
 if (userDisplay) userDisplay.querySelector('#usernameSpan').textContent = ' ' + (username || 'Guest');
-if (authBtn) {
+async function syncAuthButton() {
+    if (!authBtn) return;
     const label = authBtn.querySelector('.btn-label');
-    if (label) label.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
+    const { data: { session } } = await supabase.auth.getSession();
+    if (label) label.textContent = session ? 'Log Out' : 'Log In';
 }
+syncAuthButton();
 if (muteBtn) {
     muteBtn.querySelector('#muteIcon').textContent = cachedMuted ? '🔇' : '🔊';
     if (cachedMuted) muteBtn.classList.add('is-muted');
@@ -200,17 +202,22 @@ async function hasUserCompletedDaily(session) {
 
 
 async function updateShareButtonState() {
-    const { data: { session } } = await supabase.auth.getSession();
-
-    let canShare = false;
-
-    if (session) {
-        canShare = await hasUserCompletedDaily(session);
-    }
-
     if (!shareBtn) return;
 
+    const { data: { session } } = await supabase.auth.getSession();
+
+    // 🔒 GUEST = COMPLETELY HIDDEN
+    if (!session) {
+        shareBtn.style.display = "none";
+        shareBtn.classList.add('is-disabled');
+        shareBtn.style.pointerEvents = "none";
+        return;
+    }
+
+    // Logged in → show button
     shareBtn.style.display = "flex";
+
+    const canShare = await hasUserCompletedDaily(session);
 
     if (canShare) {
         shareBtn.classList.remove('is-disabled');
@@ -220,6 +227,27 @@ async function updateShareButtonState() {
         shareBtn.classList.add('is-disabled');
         shareBtn.style.opacity = "0.5";
         shareBtn.style.pointerEvents = "none";
+    }
+}
+
+async function syncDailyButton() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!dailyBtn) return;
+
+    if (!session) {
+        dailyBtn.classList.remove('is-active');
+        dailyBtn.classList.add('disabled');
+        return;
+    }
+
+    const played = await hasUserCompletedDaily(session);
+
+    if (!played) {
+        dailyBtn.classList.add('is-active');
+        dailyBtn.classList.remove('disabled');
+    } else {
+        dailyBtn.classList.remove('is-active');
+        dailyBtn.classList.add('disabled');
     }
 }
 
@@ -235,29 +263,14 @@ async function initializeAuth() {
     }
 
     // 2. Listen for future login/logout events (ONLY ONE LISTENER NEEDED)
-    supabase.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'SIGNED_IN' && session) {
-            subscribeToDailyChanges(session.user.id);
-            await fetchDailyStatus(session.user.id);
-        } else if (event === 'SIGNED_OUT') {
-              // 1. Clear Storage
-            localStorage.removeItem('dailyPlayedDate');
-            localStorage.removeItem('lastDailyScore');
-            localStorage.removeItem('lastDailyMessage'); // Add this line
-            localStorage.removeItem('cachedLoggedIn');
-            localStorage.removeItem('cachedUsername');
-          // 2. Reset Script Variables
-            username = 'Guest';
-            score = 0;
-          // 3. Reset UI Text (Prevent the share button from "seeing" old text)
-            if (finalScore) finalScore.textContent = "0";
-            const msgTitle = document.getElementById('game-over-title');
-            if (msgTitle) msgTitle.textContent = "";
-          
-          // 4. Update the actual Button UI (Gray it out)
-            updateShareButtonState();
-        }
-    });
+  supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+          await syncDailyButton();
+          await updateShareButtonState();
+          await syncAuthButton();
+      }
+  });
+
 }
 
 // ====== NEW: FETCH SCORE FROM DATABASE ======
@@ -270,7 +283,6 @@ async function fetchDailyStatus(userId) {
         .maybeSingle();
 
     if (data) {
-        localStorage.setItem('dailyPlayedDate', todayStr);
         localStorage.setItem('lastDailyScore', data.score ?? "0");
         // SYNC THE MESSAGE FROM DATABASE
         if (data.message) {
@@ -278,7 +290,8 @@ async function fetchDailyStatus(userId) {
         }
         if (finalScore) finalScore.textContent = data.score ?? "0";
         
-        lockDailyButton();         
+        lockDailyButton();
+        syncDailyButton();
         updateShareButtonState();  // <--- THIS TRIGGERS THE GOLD COLOR
     } else {
         updateShareButtonState();  // <--- THIS TRIGGERS THE GREY COLOR
@@ -717,15 +730,7 @@ muteBtn.onclick = () => {
     muteBtn.classList.toggle('is-muted', muted);
 };
 
-if (dailyBtn) {
-    const hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
-    if (cachedLoggedIn && !hasPlayed) {
-        dailyBtn.classList.add('is-active');
-        dailyBtn.classList.remove('disabled');
-    } else {
-        dailyBtn.classList.remove('is-active');
-        dailyBtn.classList.add('disabled');
-    }
+await syncDailyButton();
 
     dailyBtn.onclick = async () => {
         // 🔥 1. IMMEDIATE AUDIO UNLOCK
@@ -735,8 +740,13 @@ if (dailyBtn) {
         // Start loading sounds immediately so the buffers are ready
         loadSounds(); 
 
-        if (!cachedLoggedIn) return alert("Please log in to play!");
-        if (localStorage.getItem('dailyPlayedDate') === todayStr) return alert("Already played today!");
+        //if (!cachedLoggedIn) return alert("Please log in to play!");
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return alert("Log in to play Daily Mode!");
+        
+        const played = await hasUserCompletedDaily(session);
+        if (played) return alert("You've already played today!");
+
         
         isDailyMode = true;
         // Start the actual challenge logic
@@ -769,7 +779,6 @@ function subscribeToDailyChanges(userId) {
             filter: `user_id=eq.${userId}`
         }, (payload) => {
             console.log('Daily challenge sync: locking button.');
-            localStorage.setItem('dailyPlayedDate', todayStr);
             lockDailyButton();
         })
         .subscribe();
@@ -778,6 +787,8 @@ function subscribeToDailyChanges(userId) {
 
 // ====== MOBILE TAP FEEDBACK (THE FLASH) ======
 document.addEventListener('DOMContentLoaded', () => {
+    syncDailyButton();
+
     // This function applies the flash to any button we give it
     const applyFlash = (el) => {
         el.addEventListener('touchstart', () => {
@@ -998,6 +1009,7 @@ if (shareBtn) {
     };
 }  
 });
+
 
 
 
