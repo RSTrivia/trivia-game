@@ -177,33 +177,25 @@ async function refreshAuthUI() {
     const span = document.querySelector('#usernameSpan');
     const label = authBtn?.querySelector('.btn-label');
 
-    // 1. FORCE RESET EVERYTHING TO GUEST FIRST
-    // This removes the "bounce back" effect
+    // 1. Initial State: Assume Guest
     username = 'Guest';
     if (span) span.textContent = ' Guest';
     if (label) label.textContent = 'Log In';
     
-    // Reset Daily Button
-    if (dailyBtn) {
-        dailyBtn.classList.add('disabled');
-        dailyBtn.classList.remove('is-active');
-        dailyBtn.style.opacity = '0.5';
-        dailyBtn.style.pointerEvents = 'none';
-    }
+    // Explicitly disable these until session is proven
+    [dailyBtn, shareBtn].forEach(btn => {
+        if (btn) {
+            btn.classList.add('is-disabled', 'disabled');
+            btn.classList.remove('is-active');
+            btn.style.opacity = '0.5';
+            btn.style.pointerEvents = 'none';
+        }
+    });
 
-    // Reset Share Button
-    if (shareBtn) {
-        shareBtn.classList.add('is-disabled');
-        shareBtn.classList.remove('is-active');
-        shareBtn.style.opacity = "0.5";
-        shareBtn.style.pointerEvents = "none";
-    }
-
-    // 2. ONLY IF A VALID SESSION EXISTS, UPGRADE THE UI
+    // 2. If Session exists, upgrade UI
     if (session && session.user) {
         if (label) label.textContent = 'Log Out';
         
-        // Use the profile username if available
         const { data: profile } = await supabase
             .from('profiles')
             .select('username')
@@ -213,12 +205,9 @@ async function refreshAuthUI() {
         username = profile?.username || 'Player';
         if (span) span.textContent = ' ' + username;
         
-        // Re-enable features for logged-in user
+        // Fetch daily status from DB and THEN update buttons
         await fetchDailyStatus(session.user.id);
-        await syncDailyButton();
-        await updateShareButtonState();
     } else {
-        // 3. CLEANUP: If no session, clear your login.js cache keys
         localStorage.removeItem('cachedLoggedIn');
         localStorage.removeItem('cachedUsername');
     }
@@ -334,33 +323,30 @@ async function hasUserCompletedDaily(session) {
 }
 
 
-async function updateShareButtonState() {
+aasync function updateShareButtonState() {
     if (!shareBtn) return;
 
-    // Await the session to be 100% sure we aren't using a cached 'Guest' state
     const { data: { session } } = await supabase.auth.getSession();
   
-    // 1. IF GUEST: Force grey and disabled
+    // Guest = Always disabled
     if (!session) {
         shareBtn.classList.add('is-disabled');
-        shareBtn.classList.remove('is-active'); // Ensure gold is removed
+        shareBtn.classList.remove('is-active');
         shareBtn.style.opacity = "0.5";
         shareBtn.style.pointerEvents = "none";
         return;
     }
 
-    // 2. IF LOGGED IN: Check both Storage and DB
-    const lastScore = localStorage.getItem('lastDailyScore');
+    // Check localStorage (just finished playing) OR DB (played earlier)
+    const localScore = localStorage.getItem('lastDailyScore');
     const hasPlayedToday = await hasUserCompletedDaily(session);
 
-    // If they have played, make it GOLD (is-active) and CLICKABLE
-    if (lastScore !== null || hasPlayedToday) {
+    if ((localScore !== null && localScore !== undefined) || hasPlayedToday) {
         shareBtn.classList.remove('is-disabled');
         shareBtn.classList.add('is-active'); 
         shareBtn.style.opacity = "1";
         shareBtn.style.pointerEvents = "auto";
     } else {
-        // Logged in but hasn't played daily yet
         shareBtn.classList.add('is-disabled');
         shareBtn.classList.remove('is-active');
         shareBtn.style.opacity = "0.5";
@@ -370,33 +356,30 @@ async function updateShareButtonState() {
 
 
 // ====== NEW: FETCH SCORE FROM DATABASE ======
+// Ensure fetchDailyStatus calls the button update at the end
 async function fetchDailyStatus(userId) {
     const { data, error } = await supabase
         .from('daily_attempts')
-        .select('score, message') //message
+        .select('score, message')
         .eq('user_id', userId)
         .eq('attempt_date', todayStr)
         .maybeSingle();
 
-  if (data) {
-          localStorage.setItem('lastDailyScore', data.score ?? "0");
-          // SYNC THE MESSAGE FROM DATABASE
-          if (data.message) {
-              localStorage.setItem('lastDailyMessage', data.message);
-        }
-        // CRITICAL: Update the actual HTML elements so the share capture sees them
+    if (data) {
+        localStorage.setItem('lastDailyScore', data.score ?? "0");
+        if (data.message) localStorage.setItem('lastDailyMessage', data.message);
+        
         if (finalScore) finalScore.textContent = data.score ?? "0";
         const gameOverTitle = document.getElementById('game-over-title');
         if (gameOverTitle && data.message) {
             gameOverTitle.textContent = data.message;
             gameOverTitle.classList.remove('hidden');
         }
-        lockDailyButton();
-        await syncDailyButton();
-        await updateShareButtonState();  // <--- THIS TRIGGERS THE GOLD COLOR
-    } else {
-        await updateShareButtonState();  // <--- THIS TRIGGERS THE GREY COLOR
     }
+    
+    // Always sync button states after checking DB
+    await syncDailyButton();
+    await updateShareButtonState();
 }
 
 
@@ -1093,6 +1076,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
