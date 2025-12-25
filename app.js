@@ -194,18 +194,20 @@ async function updateShareButtonState() {
     const hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
 
     if (shareBtn) {
+      // Show the button always, but only ENABLE if Logged In AND Played
+        shareBtn.style.display = "flex";
      // ONLY unlock if they are Logged In AND have finished the daily
         if (isLoggedIn && hasPlayed) {
             shareBtn.classList.remove('is-disabled');
             shareBtn.style.opacity = "1";
-            shareBtn.style.pointerEvents = "auto"; // Ensure it can be clicked
-            shareBtn.style.display = "flex"; // Ensure it's not hidden by display: none
+            shareBtn.style.pointerEvents = "auto";
         } 
        // If they are a Guest OR haven't played, keep it locked
         else {
-            shareBtn.classList.add('is-disabled');
+           shareBtn.classList.add('is-disabled');
             shareBtn.style.opacity = "0.5";
-            shareBtn.style.pointerEvents = "none"; // Stop clicks when grey
+            shareBtn.style.pointerEvents = "none";
+        
         }
     }
 }
@@ -548,13 +550,6 @@ async function endGame() {
         localStorage.setItem('lastDailyScore', score); 
         localStorage.setItem('lastDailyMessage', randomMsg); // save random message
       
-        // 2. ACTIVATE the button (make it gold)
-        if (shareBtn) {
-            shareBtn.classList.remove('is-disabled');
-            shareBtn.style.opacity = "1";
-            shareBtn.style.pointerEvents = "auto"; // This "re-arms" the button
-        }
-    
         // 3. Save Score to Database
         if (username && username !== 'Guest') {
             const { data: { session } } = await supabase.auth.getSession();
@@ -980,6 +975,7 @@ if (shareBtn) {
     };
 }  
 });
+
 
 
 
