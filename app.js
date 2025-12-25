@@ -210,29 +210,32 @@ async function updateShareButtonState() {
 }
 
 
-// ====== AUTH & REALTIME SYNC ======
 async function initializeAuth() {
+    // 1. Check current session immediately
     const { data: { session } } = await supabase.auth.getSession();
     
     if (session) {
         subscribeToDailyChanges(session.user.id);
-        // Fetch the truth from the database
         await fetchDailyStatus(session.user.id);
     } else {
-        // If no session, ensure button is grey
         updateShareButtonState();
     }
 
+    // 2. Listen for future login/logout events (ONLY ONE LISTENER NEEDED)
     supabase.auth.onAuthStateChange(async (event, session) => {
         if (event === 'SIGNED_IN' && session) {
             subscribeToDailyChanges(session.user.id);
             await fetchDailyStatus(session.user.id);
         } else if (event === 'SIGNED_OUT') {
+            // Reset local storage on logout so guest sees fresh state
+            localStorage.removeItem('dailyPlayedDate');
+            localStorage.removeItem('lastDailyScore');
             updateShareButtonState();
         }
     });
 }
-
+// Call the initialization
+initializeAuth();
 
 // ====== NEW: FETCH SCORE FROM DATABASE ======
 async function fetchDailyStatus(userId) {
@@ -905,6 +908,7 @@ if (shareBtn) {
 }
   
 });
+
 
 
 
