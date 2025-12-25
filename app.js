@@ -770,6 +770,29 @@ if (shareBtn) {
                 // 2. Force Screen Visibility for the photo
                 if (startScreen) startScreen.classList.add('hidden');
                 if (endScreen) {
+                    // 1. Create the Date Element
+                    const dateTag = clonedDoc.createElement('div');
+                    
+                    // 2. Format today's date (e.g., Dec 25, 2025)
+                    const options = { year: 'numeric', month: 'short', day: 'numeric' };
+                    const displayDate = new Date().toLocaleDateString('en-US', options);
+                    dateTag.textContent = displayDate;
+            
+                    // 3. Style it to match the OSRS UI
+                    Object.assign(dateTag.style, {
+                        marginTop: '20px',
+                        fontSize: '1.2rem',
+                        color: '#a77b0a', // Muted gold/bronze
+                        fontFamily: "'Cinzel', serif",
+                        textAlign: 'center',
+                        opacity: '0.8',
+                        letterSpacing: '1px'
+                    });
+            
+                    // 4. Append it to the end screen
+                    endScreen.appendChild(dateTag);
+                }
+          
                     endScreen.classList.remove('hidden');
                   
                     // Hide the buttons in the screenshot
@@ -838,6 +861,7 @@ if (shareBtn) {
 };
 }
 });
+
 
 
 
