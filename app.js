@@ -832,7 +832,7 @@ if (shareBtn) {
                         
                         if (finalScoreElem) {
                             finalScoreElem.textContent = currentScore;
-                            finalScoreElem.style.fontSize = '80px'; 
+                            //finalScoreElem.style.fontSize = '80px'; 
                         }
                         if (msgTitleElem) {
                             msgTitleElem.textContent = savedMsg;
@@ -917,6 +917,7 @@ if (shareBtn) {
     };
 }  
 });
+
 
 
 
