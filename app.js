@@ -759,50 +759,52 @@ if (shareBtn) {
             backgroundColor: '#0a0a0a', 
             scale: 2,
             useCORS: true,
-            onclone: (clonedDoc) => {
-                // 1. Force End Screen Visibility
-                const startScreen = clonedDoc.getElementById('start-screen');
-                const endScreen = clonedDoc.getElementById('end-screen');
-                if (startScreen) startScreen.classList.add('hidden');
-                if (endScreen) {
-                    endScreen.classList.remove('hidden');
-                    clonedDoc.getElementById('finalScore').textContent = savedScore;
-                    const msgTitle = clonedDoc.getElementById('game-over-title');
-                    if (msgTitle) {
-                        msgTitle.textContent = savedMsg;
-                        msgTitle.classList.remove('hidden');
-                    }
+        onclone: (clonedDoc) => {
+            // 1. Force Screen Visibility
+            const startScreen = clonedDoc.getElementById('start-screen');
+            const endScreen = clonedDoc.getElementById('end-screen');
+            const playAgain = clonedDoc.getElementById('playAgainBtn'); // Find the button
+            const title = clonedDoc.getElementById('main-title');
+        
+            if (startScreen) startScreen.classList.add('hidden');
+            if (endScreen) {
+                endScreen.classList.remove('hidden');
+                
+                // --- HIDE THE PLAY AGAIN BUTTON IN THE PICTURE ---
+                if (playAgain) {
+                    playAgain.style.display = 'none';
                 }
-
-                // 2. THE TITLE FIX (Bold, Caps, No Yellow Box)
-                const title = clonedDoc.getElementById('main-title');
-                if (title) {
-                    // REMOVE the gradient that causes the yellow box
-                    title.style.background = 'none';
-                    title.style.backgroundImage = 'none';
-                    title.style.webkitBackgroundClip = 'initial';
-                    title.style.backgroundClip = 'initial';
-                    
-                    // FORCE Font Style
-                    title.style.fontFamily = "'Cinzel', serif";
-                    title.style.fontWeight = "700"; 
-                    title.style.textTransform = 'uppercase';
-                    
-                    // OSRS COLORS (Black center, gold glow)
-                    title.style.color = '#000000'; 
-                    title.style.webkitTextFillColor = '#000000';
-                    
-                    // REBUILD THE GLOW
-                    title.style.textShadow = `
-                        -1px -1px 0 #d4af37,  
-                         1px -1px 0 #d4af37,
-                        -1px  1px 0 #d4af37,
-                         1px  1px 0 #d4af37,
-                         0 0 10px rgba(212, 175, 55, 1),
-                         0 0 25px rgba(212, 175, 55, 0.7)
-                    `;
+        
+                // Inject saved data
+                clonedDoc.getElementById('finalScore').textContent = savedScore;
+                const msgTitle = clonedDoc.getElementById('game-over-title');
+                if (msgTitle) {
+                    msgTitle.textContent = savedMsg;
+                    msgTitle.classList.remove('hidden');
                 }
             }
+        
+            // 2. THE TITLE FIX (Bold, Caps, No Yellow Box)
+            if (title) {
+                title.style.background = 'none';
+                title.style.backgroundImage = 'none';
+                title.style.webkitBackgroundClip = 'initial';
+                title.style.backgroundClip = 'initial';
+                title.style.fontFamily = "'Cinzel', serif";
+                title.style.fontWeight = "700"; 
+                title.style.textTransform = 'uppercase';
+                title.style.color = '#000000'; 
+                title.style.webkitTextFillColor = '#000000';
+                title.style.textShadow = `
+                    -1px -1px 0 #d4af37,  
+                     1px -1px 0 #d4af37,
+                    -1px  1px 0 #d4af37,
+                     1px  1px 0 #d4af37,
+                     0 0 10px rgba(212, 175, 55, 1),
+                     0 0 25px rgba(212, 175, 55, 0.7)
+                `;
+            }
+        }
         });
 
         // Restore UI
@@ -821,6 +823,7 @@ if (shareBtn) {
 };
 }
 });
+
 
 
 
