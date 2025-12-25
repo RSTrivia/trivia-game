@@ -194,15 +194,14 @@ async function updateShareButtonState() {
     const hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
 
     if (shareBtn) {
-        // If they played today, the button stays active (Gold/Visible) 
-        // regardless of whether they are on the End Screen or Main Menu.
-        if (hasPlayed) {
+     // ONLY unlock if they are Logged In AND have finished the daily
+        if (isLoggedIn && hasPlayed) {
             shareBtn.classList.remove('is-disabled');
             shareBtn.style.opacity = "1";
             shareBtn.style.pointerEvents = "auto"; // Ensure it can be clicked
             shareBtn.style.display = "flex"; // Ensure it's not hidden by display: none
         } 
-        // If they haven't played, or aren't logged in, keep it disabled
+       // If they are a Guest OR haven't played, keep it locked
         else {
             shareBtn.classList.add('is-disabled');
             shareBtn.style.opacity = "0.5";
@@ -981,6 +980,7 @@ if (shareBtn) {
     };
 }  
 });
+
 
 
 
