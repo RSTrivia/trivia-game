@@ -569,6 +569,8 @@ async function endGame() {
                 .eq('attempt_date', todayStr);
         }
     }
+        // Refresh the button state to unlock it
+        await updateShareButtonState();
         isDailyMode = false; // Reset for next non-daily game
     } else {
         // Standard Mode UI
@@ -693,6 +695,8 @@ mainMenuBtn.onclick = () => {
     document.getElementById('end-screen').classList.add('hidden');
     document.getElementById('start-screen').classList.remove('hidden');
     document.body.classList.remove('game-active');
+  // Run the sync to ensure shareBtn stays active on the start screen
+    updateShareButtonState();
 };
 
 muteBtn.onclick = () => {
@@ -977,6 +981,7 @@ if (shareBtn) {
     };
 }  
 });
+
 
 
 
