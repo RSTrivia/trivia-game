@@ -556,6 +556,7 @@ async function endGame() {
     if (gameOverTitle) gameOverTitle.classList.add('hidden');
     if (gzTitle) gzTitle.classList.add('hidden');
 
+     const { data: { session } } = await supabase.auth.getSession();
     if (isDailyMode) {
         // 1. Daily Mode UI
         if (playAgainBtn) playAgainBtn.classList.add('hidden');
@@ -586,18 +587,17 @@ async function endGame() {
         localStorage.setItem('lastDailyMessage', randomMsg); // save random message
       
         // 3. Save Score to Database
-        if (username && username !== 'Guest') {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-            await supabase.from('daily_attempts')
-                .update({ 
-                score: score,
-                message: randomMsg 
-            })
+        if (session) {
+            await supabase
+                .from('daily_attempts')
+                .update({
+                    score: score,
+                    message: randomMsg
+                })
                 .eq('user_id', session.user.id)
                 .eq('attempt_date', todayStr);
         }
-    }
+    
         // Refresh the button state to unlock it
         await updateShareButtonState();
         isDailyMode = false; // Reset for next non-daily game
@@ -620,8 +620,11 @@ async function endGame() {
             }
         }
 
-        if (username && username !== 'Guest') {
-            await submitLeaderboardScore(username, score);
+        if (session) {
+            await submitLeaderboardScore(
+                session.user.user_metadata?.username || 'Player',
+                score
+            );
         }
     }
     endGame.running = false;
@@ -677,7 +680,6 @@ async function startDailyChallenge() {
 
     if (burnError) return alert("You've already played today!");
     
-    localStorage.setItem('dailyPlayedDate', todayStr);
     lockDailyButton(); // Gray out immediately on this device
 
     const { data: allQuestions } = await supabase.from('questions').select('id').order('id', { ascending: true });
@@ -730,7 +732,8 @@ muteBtn.onclick = () => {
     muteBtn.classList.toggle('is-muted', muted);
 };
 
-await syncDailyButton();
+//await syncDailyButton();
+syncDailyButton();
 
     dailyBtn.onclick = async () => {
         // 🔥 1. IMMEDIATE AUDIO UNLOCK
@@ -752,7 +755,6 @@ await syncDailyButton();
         // Start the actual challenge logic
         startDailyChallenge();
     };
-}
 
 function shuffleWithSeed(array, seed) {
     let arr = [...array];
@@ -1009,6 +1011,7 @@ if (shareBtn) {
     };
 }  
 });
+
 
 
 
