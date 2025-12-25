@@ -498,7 +498,8 @@ async function endGame() {
         }
         // 1. SAVE the score to localStorage so the share button can find it
         localStorage.setItem('lastDailyScore', score); 
-    
+        localStorage.setItem('lastDailyMessage', randomMsg); // save random message
+      
         // 2. ACTIVATE the button (make it gold)
         if (shareBtn) {
             shareBtn.classList.remove('is-disabled');
@@ -747,7 +748,11 @@ if (shareBtn) {
     try {
         const target = document.querySelector('.container');
         
-        // UI cleanup for the photo
+        // Pull the "Memory" of the last daily game
+        const savedScore = localStorage.getItem('lastDailyScore') || "0";
+        const savedMsg = localStorage.getItem('lastDailyMessage') || "Daily Challenge";
+
+        // Hide UI buttons for the photo
         shareBtn.style.opacity = '0';
         const muteBtn = document.getElementById('muteBtn');
         if (muteBtn) muteBtn.style.opacity = '0';
@@ -757,26 +762,35 @@ if (shareBtn) {
             scale: 2,
             useCORS: true,
             onclone: (clonedDoc) => {
-                // 1. Find the elements in the "ghost" copy of your site
+                // 1. MANIPULATE THE GHOST DOM
                 const startScreen = clonedDoc.getElementById('start-screen');
                 const endScreen = clonedDoc.getElementById('end-screen');
                 const title = clonedDoc.getElementById('main-title');
 
-                // 2. FORCE the End Screen to show and Start Screen to hide
+                // Show End Screen, Hide Start Screen in the photo
                 if (startScreen) startScreen.classList.add('hidden');
                 if (endScreen) {
                     endScreen.classList.remove('hidden');
-                    // Ensure the final score text is actually filled in the clone
-                    const scoreVal = document.getElementById('finalScore').textContent;
-                    clonedDoc.getElementById('finalScore').textContent = scoreVal;
+                    
+                    // Inject the saved score and daily message
+                    const scoreSpan = clonedDoc.getElementById('finalScore');
+                    const gameOverTitle = clonedDoc.getElementById('game-over-title');
+                    
+                    if (scoreSpan) scoreSpan.textContent = savedScore;
+                    if (gameOverTitle) {
+                        gameOverTitle.textContent = savedMsg;
+                        gameOverTitle.classList.remove('hidden');
+                    }
                 }
 
-                // 3. Fix the "Yellow Box" title issue we discussed
+                // 2. FIX TITLE (Glow + Correct OSRS Color)
                 if (title) {
                     title.style.webkitBackgroundClip = 'initial';
                     title.style.backgroundClip = 'initial';
                     title.style.webkitTextFillColor = '#f2b705';
                     title.style.color = '#f2b705';
+                    // Re-apply that big gold glow
+                    title.style.textShadow = '0 0 12px rgba(212, 175, 55, 0.95), 0 0 30px rgba(212, 175, 55, 0.75)';
                 }
             }
         });
@@ -785,7 +799,7 @@ if (shareBtn) {
         shareBtn.style.opacity = '1';
         if (muteBtn) muteBtn.style.opacity = '1';
 
-        // 4. Copy to Clipboard
+        // 3. COPY TO CLIPBOARD
         canvas.toBlob(async (blob) => {
             const data = [new ClipboardItem({ [blob.type]: blob })];
             await navigator.clipboard.write(data);
@@ -798,6 +812,7 @@ if (shareBtn) {
 };
 }
 });
+
 
 
 
