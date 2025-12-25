@@ -4,6 +4,7 @@ const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
 // ====== UI & STATE ======
 const cachedMuted = localStorage.getItem('muted') === 'true';
+let dailySubscription = null; // Track this globally to prevent duplicates
 let username = 'Guest';
 const shareBtn = document.getElementById('shareBtn');
 const startBtn = document.getElementById('startBtn');
@@ -187,8 +188,8 @@ async function refreshAuthUI() {
         if (btn) {
             btn.classList.add('is-disabled', 'disabled');
             btn.classList.remove('is-active');
-            btn.style.opacity = '0.5';
-            btn.style.pointerEvents = 'none';
+            //btn.style.opacity = '0.5';
+            //btn.style.pointerEvents = 'none';
         }
     });
 
@@ -239,8 +240,7 @@ async function syncDailyButton() {
     if (!dailyBtn) return;
 
     if (!session) {
-        dailyBtn.classList.remove('is-active');
-        dailyBtn.classList.add('disabled');
+        lockDailyButton();
         return;
     }
 
@@ -249,9 +249,10 @@ async function syncDailyButton() {
     if (!played) {
         dailyBtn.classList.add('is-active');
         dailyBtn.classList.remove('disabled');
+        dailyBtn.style.pointerEvents = 'auto'; // UNLOCK physically
+        dailyBtn.style.opacity = '1';          // Ensure it looks clickable
     } else {
-        dailyBtn.classList.remove('is-active');
-        dailyBtn.classList.add('disabled');
+      lockDailyButton();
     }
 }
 
@@ -261,21 +262,28 @@ async function init() {
     await new Promise(res => document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', res) : res());
 
     supabase.auth.onAuthStateChange(async (event, session) => {
-        console.log("Auth event:", event, "Session exists:", !!session);
+        console.log("Auth event:", event);
         
-        // Prevent logic from overlapping if events fire rapidly
         if (isRefreshing) return;
         isRefreshing = true;
 
-        if (!session) {
-            // Ensure Guest variables are set before UI refreshes
+        if (session) {
+            // 1. Refresh UI
+            await refreshAuthUI();
+            
+            // 2. Real-time Subscription: Clean up old one first, then start new one
+            if (dailySubscription) supabase.removeChannel(dailySubscription);
+            dailySubscription = subscribeToDailyChanges(session.user.id);
+            
+        } else {
             username = 'Guest';
             localStorage.removeItem('cachedLoggedIn'); 
             localStorage.removeItem('cachedUsername');
-            // We use the "Top-Down" refreshAuthUI logic here
+            if (dailySubscription) {
+                supabase.removeChannel(dailySubscription);
+                dailySubscription = null;
+            }
             await refreshAuthUI(); 
-        } else {
-            await refreshAuthUI();
         }
         
         isRefreshing = false;
@@ -387,7 +395,8 @@ function lockDailyButton() {
     if (dailyBtn) {
         dailyBtn.classList.remove('is-active');
         dailyBtn.classList.add('disabled');
-        dailyBtn.onclick = () => alert("You've already played today's challenge!");
+        dailyBtn.style.pointerEvents = 'none'; // Lock physically
+        dailyBtn.style.opacity = '0.5';
     }
 }
 
@@ -975,6 +984,7 @@ async function startDailyChallenge() {
     const dailyIds = shuffledList.slice(dayInCycle * questionsPerDay, (dayInCycle * questionsPerDay) + questionsPerDay).map(q => q.id);
 
     isDailyMode = true;
+    preloadQueue = [];
     resetGame();
     remainingQuestions = dailyIds; 
     
@@ -1076,6 +1086,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
