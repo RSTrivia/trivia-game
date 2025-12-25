@@ -742,7 +742,7 @@ updateShareButtonState();
 
 if (shareBtn) {
     shareBtn.onclick = async () => {
-        // Prevent click if disabled
+        // 1. Guard against disabled clicks
         if (shareBtn.classList.contains('is-disabled')) {
             const isGuest = !cachedLoggedIn || cachedUsername === 'Guest';
             if (isGuest) alert("Log in to save and share daily scores!");
@@ -751,22 +751,60 @@ if (shareBtn) {
         }
 
         const lastScore = localStorage.getItem('lastDailyScore') || 0;
-        const text = `⚔️ OSRS Daily Trivia ⚔️\n🏆 Score: ${lastScore}/10\n📅 ${todayStr}\n\nCan you beat my score?`;
+        const shareTitle = "⚔️ OSRS Daily Trivia ⚔️";
+        const shareText = `I scored ${lastScore}/10 on today's OSRS Trivia! Can you beat me?`;
 
-        if (navigator.share) {
-            try {
-                await navigator.share({ title: 'OSRS Trivia', text: text, url: window.location.href });
-            } catch (err) {}
-        } else {
-            await navigator.clipboard.writeText(text);
-            alert("Score copied to clipboard! ⚔️");
+        try {
+            // 2. Capture the 'end-screen' element as a canvas
+            const target = document.getElementById('end-screen');
+            
+            // Temporary: Make sure share button doesn't appear in the screenshot
+            shareBtn.style.visibility = 'hidden'; 
+            
+            const canvas = await html2canvas(target, {
+                backgroundColor: '#1a1a1a', // Matches your game's dark theme
+                scale: 2, // Better quality for high-res screens
+                logging: false,
+                useCORS: true // Essential if you have external images
+            });
+
+            shareBtn.style.visibility = 'visible';
+
+            // 3. Convert Canvas to a Blob (File data)
+            canvas.toBlob(async (blob) => {
+                const files = [
+                    new File([blob], `osrs-score-${todayStr}.png`, { type: 'image/png' })
+                ];
+
+                // 4. Check if the browser can share files
+                if (navigator.canShare && navigator.canShare({ files })) {
+                    try {
+                        await navigator.share({
+                            title: shareTitle,
+                            text: shareText,
+                            files: files
+                        });
+                    } catch (err) {
+                        if (err.name !== 'AbortError') console.error("Share failed:", err);
+                    }
+                } else {
+                    // Fallback for browsers that don't support file sharing
+                    const link = document.createElement('a');
+                    link.download = `OSRS_Score_${todayStr}.png`;
+                    link.href = canvas.toDataURL();
+                    link.click();
+                    alert("Sharing images isn't supported on this browser, so we've downloaded it for you! ⚔️");
+                }
+            }, 'image/png');
+
+        } catch (error) {
+            console.error("Screenshot error:", error);
+            alert("Could not generate share image.");
         }
     };
 }
-    // 2. SPECIAL FIX FOR ANSWER BUTTONS:
-    // Since answer buttons are created dynamically, we need to apply the flash 
-    // inside the loadQuestion function. 
 });
+
 
 
 
