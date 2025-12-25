@@ -831,7 +831,7 @@ if (shareBtn) {
                         const msgTitleElem = clonedDoc.getElementById('game-over-title');
                         
                         if (finalScoreElem) {
-                            finalScoreElem.textContent = savedScore;
+                            finalScoreElem.textContent = currentScore;
                             finalScoreElem.style.fontSize = '80px'; 
                         }
                         if (msgTitleElem) {
@@ -917,6 +917,7 @@ if (shareBtn) {
     };
 }  
 });
+
 
 
 
