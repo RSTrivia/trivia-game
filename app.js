@@ -230,9 +230,21 @@ async function initializeAuth() {
             subscribeToDailyChanges(session.user.id);
             await fetchDailyStatus(session.user.id);
         } else if (event === 'SIGNED_OUT') {
-            // Reset local storage on logout so guest sees fresh state
+              // 1. Clear Storage
             localStorage.removeItem('dailyPlayedDate');
             localStorage.removeItem('lastDailyScore');
+            localStorage.removeItem('lastDailyMessage'); // Add this line
+            localStorage.removeItem('cachedLoggedIn');
+            localStorage.removeItem('cachedUsername');
+          // 2. Reset Script Variables
+            username = 'Guest';
+            score = 0;
+          // 3. Reset UI Text (Prevent the share button from "seeing" old text)
+            if (finalScore) finalScore.textContent = "0";
+            const msgTitle = document.getElementById('game-over-title');
+            if (msgTitle) msgTitle.textContent = "";
+          
+          // 4. Update the actual Button UI (Gray it out)
             updateShareButtonState();
         }
     });
@@ -790,6 +802,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 if (shareBtn) {
     shareBtn.onclick = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        alert("Please log in to share your score!");
+        updateShareButtonState(); // Force it to stay grey
+        return;
+    }
         if (shareBtn.classList.contains('is-disabled')) return;
 
         // 1. IMPROVED CAPTURE: Check screen first, then localStorage
@@ -975,6 +993,7 @@ if (shareBtn) {
     };
 }  
 });
+
 
 
 
