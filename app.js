@@ -244,19 +244,15 @@ async function syncDailyButton() {
 }
 
 async function init() {
-    // wait for DOM
+    // Wait for DOM
     await new Promise(res => document.addEventListener('DOMContentLoaded', res));
     
-    // sync button and username once session is ready
-    await syncAuthButton();
+    // Initial UI sync
+    await updateUIAfterAuthChange(); 
     await syncDailyButton();
 
-    // listen to auth changes
+    // Listen to auth changes
     supabase.auth.onAuthStateChange(async (_event, session) => {
-        //await syncAuthButton();
-        //await syncUsername();
-        //await updateShareButtonState();
-        //await syncDailyButton();
         await updateUIAfterAuthChange();
     });
 }
@@ -1065,6 +1061,7 @@ if (shareBtn) {
 }  
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
