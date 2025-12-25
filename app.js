@@ -496,6 +496,9 @@ async function endGame() {
                     .eq('attempt_date', todayStr);
             }
         }
+        localStorage.setItem('lastDailyScore', score); 
+        // This instantly turns the button gold when the game ends
+        if (shareBtn) shareBtn.classList.remove('is-disabled'); 
         isDailyMode = false; // Reset for next non-daily game
     } else {
         // Standard Mode UI
@@ -705,10 +708,51 @@ document.addEventListener('DOMContentLoaded', () => {
     const staticButtons = document.querySelectorAll('.btn, .btn-small, #authBtn, #muteBtn');
     staticButtons.forEach(applyFlash);
 
+
+  const shareBtn = document.getElementById('shareBtn');
+
+function updateShareButtonState() {
+    const isGuest = !cachedLoggedIn || cachedUsername === 'Guest';
+    const hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
+
+    if (!isGuest && hasPlayed) {
+        shareBtn.classList.remove('is-disabled');
+    } else {
+        shareBtn.classList.add('is-disabled');
+    }
+}
+
+// Initial check on page load
+updateShareButtonState();
+
+if (shareBtn) {
+    shareBtn.onclick = async () => {
+        // Prevent click if disabled
+        if (shareBtn.classList.contains('is-disabled')) {
+            const isGuest = !cachedLoggedIn || cachedUsername === 'Guest';
+            if (isGuest) alert("Log in to save and share daily scores!");
+            else alert("Complete today's Daily Challenge to share your score!");
+            return;
+        }
+
+        const lastScore = localStorage.getItem('lastDailyScore') || 0;
+        const text = `⚔️ OSRS Daily Trivia ⚔️\n🏆 Score: ${lastScore}/10\n📅 ${todayStr}\n\nCan you beat my score?`;
+
+        if (navigator.share) {
+            try {
+                await navigator.share({ title: 'OSRS Trivia', text: text, url: window.location.href });
+            } catch (err) {}
+        } else {
+            await navigator.clipboard.writeText(text);
+            alert("Score copied to clipboard! ⚔️");
+        }
+    };
+}
     // 2. SPECIAL FIX FOR ANSWER BUTTONS:
     // Since answer buttons are created dynamically, we need to apply the flash 
     // inside the loadQuestion function. 
 });
+
 
 
 
