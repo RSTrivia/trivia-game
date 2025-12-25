@@ -231,16 +231,25 @@ authBtn.onclick = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     
     if (session) {
-        // Clear storage BEFORE signing out
+        // 1. CLEAR EVERYTHING from storage
         localStorage.removeItem('lastDailyScore');
         localStorage.removeItem('lastDailyMessage');
-        // 2. Perform the sign out
+        
+        // 2. RESET THE UI TEXT (Prevents the share capture from seeing old data)
+        if (finalScore) finalScore.textContent = "0";
+        const gameOverTitle = document.getElementById('game-over-title');
+        if (gameOverTitle) {
+            gameOverTitle.textContent = "";
+            gameOverTitle.classList.add('hidden');
+        }
+
+        // 3. LOG OUT
         await supabase.auth.signOut(); 
-        // 3. FORCE UI REFRESH IMMEDIATELY
-        // This ensures the button turns grey and the username resets to "Guest"
+
+        // 4. SYNC UI
         await syncUsername();
         await syncDailyButton();
-        await updateShareButtonState();
+        await updateShareButtonState(); 
     } else {
         window.location.href = '/login';
     }
@@ -272,33 +281,35 @@ async function init() {
     // 1. Wait for the page to load
     await new Promise(res => document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', res) : res());
 
-    // --- ADD THIS BLOCK ---
     const { data: { session } } = await supabase.auth.getSession();
+    
     if (session) {
-        // This pulls the score from DB and saves it to localStorage/UI
+        // Logged in: Sync DB data to local state
         await fetchDailyStatus(session.user.id); 
-        // Start listening for changes (optional but good for multi-device sync)
         subscribeToDailyChanges(session.user.id);
+    } else {
+        // NOT logged in: Explicitly wipe daily-related storage 
+        // to prevent updateShareButtonState from enabling the button for a Guest
+        localStorage.removeItem('lastDailyScore');
+        localStorage.removeItem('lastDailyMessage');
     }
-    // ----------------------
-  
-    // 2. Sync the UI (Check if they already played)
+
+    // 2. Sync the UI
+    // syncUsername is crucial here to ensure the display says "Guest"
+    await syncUsername(); 
     await syncDailyButton();
     await updateShareButtonState();
-  
-    // 3. Assign the click handler ONCE
+
+    // 3. Click handler
     dailyBtn.onclick = async () => {
-        console.log("Daily Button Clicked"); // Debugging line
+        const { data: { session: activeSession } } = await supabase.auth.getSession();
         
-        if (audioCtx.state === 'suspended') {
-            await audioCtx.resume();
-        }
+        if (audioCtx.state === 'suspended') await audioCtx.resume();
         loadSounds(); 
 
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) return alert("Log in to play Daily Mode!");
+        if (!activeSession) return alert("Log in to play Daily Mode!");
         
-        const played = await hasUserCompletedDaily(session);
+        const played = await hasUserCompletedDaily(activeSession);
         if (played) return alert("You've already played today!");
 
         isDailyMode = true;
@@ -331,7 +342,8 @@ async function updateShareButtonState() {
     if (!shareBtn) return;
 
     const { data: { session } } = await supabase.auth.getSession();
-
+  
+    // IF GUEST: Always disable and hide gold color. No exceptions.
     if (!session) {
         shareBtn.classList.add('is-disabled');
         shareBtn.classList.remove('is-active'); // Remove the gold color
@@ -340,17 +352,17 @@ async function updateShareButtonState() {
         return;
     }
 
-    // Check if they finished today (either in storage or via helper)
+   // IF LOGGED IN: Check if they played
     const lastScore = localStorage.getItem('lastDailyScore');
     const hasPlayedToday = await hasUserCompletedDaily(session);
 
     // If we have a score OR the DB says they played
     if (lastScore !== null || hasPlayedToday) {
         shareBtn.classList.remove('is-disabled');
+        shareBtn.classList.add('is-active'); 
         shareBtn.style.opacity = "1";
         shareBtn.style.pointerEvents = "auto";
-        // Optional: Force the gold color class here if you have one
-        shareBtn.classList.add('is-active'); 
+        
     } else {
         shareBtn.classList.add('is-disabled');
         shareBtn.classList.remove('is-active');
@@ -1085,6 +1097,7 @@ if (shareBtn) {
 }  
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
