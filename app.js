@@ -788,17 +788,27 @@ if (shareBtn) {
                 }
             
                 // 3. THE TITLE FIX (Match site exactly)
+                // 2. THE TITLE FIX (Black center + Site's exact glow)
+                const title = clonedDoc.getElementById('main-title');
                 if (title) {
+                    // 1. Completely remove the gradient/background box
                     title.style.background = 'none';
+                    title.style.backgroundImage = 'none';
                     title.style.webkitBackgroundClip = 'initial';
                     title.style.backgroundClip = 'initial';
-                    title.style.color = '#f2b705'; 
-                    title.style.webkitTextFillColor = '#f2b705';
+                
+                    // 2. Force the text to be BLACK (This gives you the dark center)
+                    title.style.color = '#000000'; 
+                    title.style.webkitTextFillColor = '#000000';
+                    
+                    // 3. Match site font weight and caps
                     title.style.fontFamily = "'Cinzel', serif";
                     title.style.fontWeight = "700";
                     title.style.fontSize = "3.2rem";
                     title.style.letterSpacing = "2px";
-                    title.style.textTransform = "uppercase";
+                    title.style.textTransform = "uppercase"; 
+                
+                    // 4. YOUR EXACT CSS SHADOWS (Creates the gold outline/glow)
                     title.style.textShadow = `
                         0 0 4px rgba(0,0,0,0.8),
                         1px 1px 0 #000,
@@ -829,6 +839,7 @@ if (shareBtn) {
 };
 }
 });
+
 
 
 
