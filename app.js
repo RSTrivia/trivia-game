@@ -337,13 +337,13 @@ async function hasUserCompletedDaily(session) {
 async function updateShareButtonState() {
     if (!shareBtn) return;
 
-    // Use getSession to be 100% sure of current status
+    // Await the session to be 100% sure we aren't using a cached 'Guest' state
     const { data: { session } } = await supabase.auth.getSession();
   
-    // 1. IF GUEST: Kill it.
+    // 1. IF GUEST: Force grey and disabled
     if (!session) {
         shareBtn.classList.add('is-disabled');
-        shareBtn.classList.remove('is-active');
+        shareBtn.classList.remove('is-active'); // Ensure gold is removed
         shareBtn.style.opacity = "0.5";
         shareBtn.style.pointerEvents = "none";
         return;
@@ -353,14 +353,14 @@ async function updateShareButtonState() {
     const lastScore = localStorage.getItem('lastDailyScore');
     const hasPlayedToday = await hasUserCompletedDaily(session);
 
-    // If they have played, make it GOLD and CLICKABLE
+    // If they have played, make it GOLD (is-active) and CLICKABLE
     if (lastScore !== null || hasPlayedToday) {
         shareBtn.classList.remove('is-disabled');
-        shareBtn.classList.add('is-active'); // This triggers your CSS gold/yellow
+        shareBtn.classList.add('is-active'); 
         shareBtn.style.opacity = "1";
         shareBtn.style.pointerEvents = "auto";
     } else {
-        // They are logged in but haven't played the daily yet
+        // Logged in but hasn't played daily yet
         shareBtn.classList.add('is-disabled');
         shareBtn.classList.remove('is-active');
         shareBtn.style.opacity = "0.5";
@@ -732,173 +732,6 @@ async function endGame() {
 }
 endGame.running = false;
 
-// ====== HELPERS & AUDIO ======
-async function loadSounds() {
-    if (!correctBuffer) correctBuffer = await loadAudio('./sounds/correct.mp3');
-    if (!wrongBuffer) wrongBuffer = await loadAudio('./sounds/wrong.mp3');
-}
-
-async function loadAudio(url) {
-    const resp = await fetch(url);
-    const buf = await resp.arrayBuffer();
-    return audioCtx.decodeAudioData(buf);
-}
-
-function playSound(buffer) {
-    if (!buffer || muted) return;
-    
-    // 🔥 On mobile, we must resume inside the play call too 
-    // just in case the context auto-suspended
-    if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-    }
-
-    const source = audioCtx.createBufferSource();
-    source.buffer = buffer;
-    const gain = audioCtx.createGain();
-    gain.gain.value = 0.5;
-    source.connect(gain).connect(audioCtx.destination);
-    source.start(0); // Add the 0 for older mobile browser compatibility
-}
-function updateScore() { scoreDisplay.textContent = `Score: ${score}`; }
-
-async function submitLeaderboardScore(user, val) {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
-    const { data: record } = await supabase.from('scores').select('score').eq('user_id', session.user.id).single();
-    if (!record || val > record.score) {
-        await supabase.from('scores').upsert({ user_id: session.user.id, username: user, score: val }, { onConflict: 'user_id' });
-    }
-}
-
-async function startDailyChallenge() {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return alert("Log in to play Daily Mode!");
-
-    const { error: burnError } = await supabase
-        .from('daily_attempts')
-        .insert({ user_id: session.user.id, attempt_date: todayStr });
-
-    if (burnError) return alert("You've already played today!");
-    
-    lockDailyButton(); // Gray out immediately on this device
-
-    const { data: allQuestions } = await supabase.from('questions').select('id').order('id', { ascending: true });
-    if (!allQuestions || allQuestions.length < 10) return alert("Error loading questions.");
-
-    const startDate = new Date('2025-12-22'); 
-    const diffTime = Math.abs(new Date() - startDate);
-    const dayCounter = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    
-    const questionsPerDay = 10;
-    const daysPerCycle = Math.floor(allQuestions.length / questionsPerDay); 
-    const cycleNumber = Math.floor(dayCounter / daysPerCycle); 
-    const dayInCycle = dayCounter % daysPerCycle;
-
-    const shuffledList = shuffleWithSeed(allQuestions, cycleNumber);
-    const dailyIds = shuffledList.slice(dayInCycle * questionsPerDay, (dayInCycle * questionsPerDay) + questionsPerDay).map(q => q.id);
-
-    isDailyMode = true;
-    resetGame();
-    remainingQuestions = dailyIds; 
-    
-    document.body.classList.add('game-active'); 
-    document.getElementById('start-screen').classList.add('hidden');
-    game.classList.remove('hidden');
-    
-    await preloadNextQuestions();
-    loadQuestion();
-}
-
-// ====== EVENT LISTENERS ======
-startBtn.onclick = () => {
-    isDailyMode = false;
-    startGame();
-};
-playAgainBtn.onclick = () => startGame();
-mainMenuBtn.onclick = () => {
-    preloadQueue = []; // Clear the buffer only when going back to menu
-    // Manual UI Reset instead:
-    document.getElementById('end-screen').classList.add('hidden');
-    document.getElementById('start-screen').classList.remove('hidden');
-    document.body.classList.remove('game-active');
-  // Run the sync to ensure shareBtn stays active on the start screen
-    updateShareButtonState();
-};
-
-muteBtn.onclick = () => {
-    muted = !muted;
-    localStorage.setItem('muted', muted);
-    muteBtn.querySelector('#muteIcon').textContent = muted ? '🔇' : '🔊';
-    muteBtn.classList.toggle('is-muted', muted);
-};
-
-//await syncDailyButton();
-
-
-function shuffleWithSeed(array, seed) {
-    let arr = [...array];
-    let m = arr.length, t, i;
-    while (m) {
-        i = Math.floor(seededRandom(seed++) * m--);
-        t = arr[m]; arr[m] = arr[i]; arr[i] = t;
-    }
-    return arr;
-}
-
-function seededRandom(seed) {
-    let x = Math.sin(seed) * 10000;
-    return x - Math.floor(x);
-}
-
-function subscribeToDailyChanges(userId) {
-    supabase
-        .channel('daily-updates')
-        .on('postgres_changes', {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'daily_attempts',
-            filter: `user_id=eq.${userId}`
-        }, (payload) => {
-            console.log('Daily challenge sync: locking button.');
-            lockDailyButton();
-        })
-        .subscribe();
-}
-
-
-// ====== MOBILE TAP FEEDBACK (THE FLASH) ======
-document.addEventListener('DOMContentLoaded', () => {
-  (async () => {
-    //syncUsername();
-    
-    // This function applies the flash to any button we give it
-    const applyFlash = (el) => {
-        el.addEventListener('touchstart', () => {
-            el.classList.add('tapped');
-        }, { passive: true });
-
-        el.addEventListener('touchend', () => {
-            setTimeout(() => {
-                el.classList.remove('tapped');
-            }, 100); // Fast 80ms flash
-        });
-
-        el.addEventListener('touchcancel', () => {
-            el.classList.remove('tapped');
-        });
-    };
-
-    // 1. Apply to all buttons currently on the screen
-    const staticButtons = document.querySelectorAll('.btn, .btn-small, #authBtn, #muteBtn');
-    staticButtons.forEach(applyFlash);
-
-
-  //const shareBtn = document.getElementById('shareBtn');
-
-// Initial check on page load
-//updateShareButtonState();
-
 if (shareBtn) {
     shareBtn.onclick = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -1091,8 +924,176 @@ if (shareBtn) {
         }
     };
 }  
+
+// ====== HELPERS & AUDIO ======
+async function loadSounds() {
+    if (!correctBuffer) correctBuffer = await loadAudio('./sounds/correct.mp3');
+    if (!wrongBuffer) wrongBuffer = await loadAudio('./sounds/wrong.mp3');
+}
+
+async function loadAudio(url) {
+    const resp = await fetch(url);
+    const buf = await resp.arrayBuffer();
+    return audioCtx.decodeAudioData(buf);
+}
+
+function playSound(buffer) {
+    if (!buffer || muted) return;
+    
+    // 🔥 On mobile, we must resume inside the play call too 
+    // just in case the context auto-suspended
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+
+    const source = audioCtx.createBufferSource();
+    source.buffer = buffer;
+    const gain = audioCtx.createGain();
+    gain.gain.value = 0.5;
+    source.connect(gain).connect(audioCtx.destination);
+    source.start(0); // Add the 0 for older mobile browser compatibility
+}
+function updateScore() { scoreDisplay.textContent = `Score: ${score}`; }
+
+async function submitLeaderboardScore(user, val) {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+    const { data: record } = await supabase.from('scores').select('score').eq('user_id', session.user.id).single();
+    if (!record || val > record.score) {
+        await supabase.from('scores').upsert({ user_id: session.user.id, username: user, score: val }, { onConflict: 'user_id' });
+    }
+}
+
+async function startDailyChallenge() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return alert("Log in to play Daily Mode!");
+
+    const { error: burnError } = await supabase
+        .from('daily_attempts')
+        .insert({ user_id: session.user.id, attempt_date: todayStr });
+
+    if (burnError) return alert("You've already played today!");
+    
+    lockDailyButton(); // Gray out immediately on this device
+
+    const { data: allQuestions } = await supabase.from('questions').select('id').order('id', { ascending: true });
+    if (!allQuestions || allQuestions.length < 10) return alert("Error loading questions.");
+
+    const startDate = new Date('2025-12-22'); 
+    const diffTime = Math.abs(new Date() - startDate);
+    const dayCounter = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    const questionsPerDay = 10;
+    const daysPerCycle = Math.floor(allQuestions.length / questionsPerDay); 
+    const cycleNumber = Math.floor(dayCounter / daysPerCycle); 
+    const dayInCycle = dayCounter % daysPerCycle;
+
+    const shuffledList = shuffleWithSeed(allQuestions, cycleNumber);
+    const dailyIds = shuffledList.slice(dayInCycle * questionsPerDay, (dayInCycle * questionsPerDay) + questionsPerDay).map(q => q.id);
+
+    isDailyMode = true;
+    resetGame();
+    remainingQuestions = dailyIds; 
+    
+    document.body.classList.add('game-active'); 
+    document.getElementById('start-screen').classList.add('hidden');
+    game.classList.remove('hidden');
+    
+    await preloadNextQuestions();
+    loadQuestion();
+}
+
+// ====== EVENT LISTENERS ======
+startBtn.onclick = () => {
+    isDailyMode = false;
+    startGame();
+};
+playAgainBtn.onclick = () => startGame();
+mainMenuBtn.onclick = () => {
+    preloadQueue = []; // Clear the buffer only when going back to menu
+    // Manual UI Reset instead:
+    document.getElementById('end-screen').classList.add('hidden');
+    document.getElementById('start-screen').classList.remove('hidden');
+    document.body.classList.remove('game-active');
+  // Run the sync to ensure shareBtn stays active on the start screen
+    updateShareButtonState();
+};
+
+muteBtn.onclick = () => {
+    muted = !muted;
+    localStorage.setItem('muted', muted);
+    muteBtn.querySelector('#muteIcon').textContent = muted ? '🔇' : '🔊';
+    muteBtn.classList.toggle('is-muted', muted);
+};
+
+//await syncDailyButton();
+
+
+function shuffleWithSeed(array, seed) {
+    let arr = [...array];
+    let m = arr.length, t, i;
+    while (m) {
+        i = Math.floor(seededRandom(seed++) * m--);
+        t = arr[m]; arr[m] = arr[i]; arr[i] = t;
+    }
+    return arr;
+}
+
+function seededRandom(seed) {
+    let x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
+}
+
+function subscribeToDailyChanges(userId) {
+    supabase
+        .channel('daily-updates')
+        .on('postgres_changes', {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'daily_attempts',
+            filter: `user_id=eq.${userId}`
+        }, (payload) => {
+            console.log('Daily challenge sync: locking button.');
+            lockDailyButton();
+        })
+        .subscribe();
+}
+
+
+// ====== MOBILE TAP FEEDBACK (THE FLASH) ======
+document.addEventListener('DOMContentLoaded', () => {
+  (async () => {
+    //syncUsername();
+    
+    // This function applies the flash to any button we give it
+    const applyFlash = (el) => {
+        el.addEventListener('touchstart', () => {
+            el.classList.add('tapped');
+        }, { passive: true });
+
+        el.addEventListener('touchend', () => {
+            setTimeout(() => {
+                el.classList.remove('tapped');
+            }, 100); // Fast 80ms flash
+        });
+
+        el.addEventListener('touchcancel', () => {
+            el.classList.remove('tapped');
+        });
+    };
+
+    // 1. Apply to all buttons currently on the screen
+    const staticButtons = document.querySelectorAll('.btn, .btn-small, #authBtn, #muteBtn');
+    staticButtons.forEach(applyFlash);
+
+
+  //const shareBtn = document.getElementById('shareBtn');
+
+// Initial check on page load
+//updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
