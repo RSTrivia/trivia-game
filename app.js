@@ -180,23 +180,18 @@ async function syncAuthButton() {
 
     const { data: { session } } = await supabase.auth.getSession();
 
-    // Update the button label
+    // Update button label
     const label = authBtn.querySelector('.btn-label');
     if (label) label.textContent = session ? 'Log Out' : 'Log In';
 
-    // Set click behavior
+    // Click behavior
     authBtn.onclick = async () => {
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
-            // User is logged in → log them out
+            // Just sign out
             await supabase.auth.signOut();
-            // Optionally update UI immediately
-            if (label) label.textContent = 'Log In';
-            updateShareButtonState();
-            syncDailyButton();
         } else {
-            // User is logged out → go to login flow
-            // Example: redirect to login page or show modal
+            // Redirect to login page
             window.location.href = '/login';
         }
     };
@@ -272,27 +267,19 @@ async function syncDailyButton() {
     }
 }
 
+// --- Initialize auth once
 async function initializeAuth() {
-    // 1. Check current session immediately
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (session) {
-        subscribeToDailyChanges(session.user.id);
-        await fetchDailyStatus(session.user.id);
-    } else {
-        updateShareButtonState();
-    }
+    await syncAuthButton(); // first update
 
-    // 2. Listen for future login/logout events (ONLY ONE LISTENER NEEDED)
-  supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
-          await syncDailyButton();
-          await updateShareButtonState();
-          await syncAuthButton();
-      }
-  });
-
+    // Listen to auth state changes
+    supabase.auth.onAuthStateChange(async (event, session) => {
+        await syncAuthButton();       // update button
+        await updateShareButtonState();
+        await syncDailyButton();
+    });
 }
+
+initializeAuth();
 
 // ====== NEW: FETCH SCORE FROM DATABASE ======
 async function fetchDailyStatus(userId) {
@@ -1032,6 +1019,7 @@ if (shareBtn) {
     };
 }  
 });
+
 
 
 
