@@ -261,9 +261,14 @@ async function syncDailyButton() {
 async function init() {
     await new Promise(res => document.addEventListener('DOMContentLoaded', res));
     
-    // This listener handles the INITIAL load AND every login/logout automatically
     supabase.auth.onAuthStateChange(async (event, session) => {
         console.log("Auth Event:", event);
+        
+        // NEW: If we have a user, go get their score from the DB
+        if (session?.user) {
+            await fetchDailyStatus(session.user.id);
+        }
+        
         await updateUIAfterAuthChange();
     });
 }
@@ -309,7 +314,7 @@ async function updateShareButtonState() {
 
     // 1️⃣ Try localStorage first
     const lastScore = localStorage.getItem('lastDailyScore');
-    if (lastScore && parseInt(lastScore) > 0) {
+    if (lastScore !== null) {
         shareBtn.classList.remove('is-disabled');
         shareBtn.style.opacity = "1";
         shareBtn.style.pointerEvents = "auto";
@@ -1072,6 +1077,7 @@ if (shareBtn) {
 }  
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
