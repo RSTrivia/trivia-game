@@ -847,25 +847,35 @@ if (shareBtn) {
                         // Forced Text Sizes for high-res output
                         const finalScoreElem = clonedDoc.getElementById('finalScore');
                         const msgTitleElem = clonedDoc.getElementById('game-over-title');
-                        
+                        // 1. Get the message: First from the actual screen, then fallback to storage
+                        let messageToDisplay = document.getElementById('game-over-title')?.textContent;
+                        if (!messageToDisplay || messageToDisplay === "Game Over!") {
+                            messageToDisplay = localStorage.getItem('lastDailyMessage') || "Daily Challenge Completed!";
+                        }
+                                              
                         if (finalScoreElem) {
                             finalScoreElem.textContent = currentScore;
                             //finalScoreElem.style.fontSize = '80px'; 
                         }
+
                         if (msgTitleElem) {
-                            msgTitleElem.textContent = savedMsg;
+                          // 2. Force the content and remove any hiding classes
+                            msgTitleElem.textContent = messageToDisplay;
                             msgTitleElem.classList.remove('hidden');
                             msgTitleElem.style.fontSize = '24px';
                             msgTitleElem.style.textAlign = 'center';
-                          // Force visibility and styling specifically for the canvas
-                            Object.assign(msgTitleElem.style, {
-                                display: 'block', 
-                                visibility: 'visible',
-                                fontSize: '24px',
-                                textAlign: 'center',
-                                color: '#ffffff', // Ensure white text
-                                opacity: '1'
-                            });
+                            // 3. Force absolute visibility for the canvas renderer
+                              Object.assign(msgTitleElem.style, {
+                                  display: 'block', 
+                                  visibility: 'visible',
+                                  opacity: '1',
+                                  fontSize: '24px',
+                                  textAlign: 'center',
+                                  color: '#ffffff',
+                                  marginTop: '10px',
+                                  marginBottom: '10px',
+                                  width: '100%'
+                              });
                         }
                         // Date
                         const dateTag = clonedDoc.createElement('div');
@@ -944,4 +954,5 @@ if (shareBtn) {
     };
 }  
 });
+
 
