@@ -164,10 +164,11 @@ let correctBuffer, wrongBuffer;
 let muted = cachedMuted;
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 const todayStr = new Date().toISOString().split('T')[0];
-
+let questions = [];
 let score = 0;
 let remainingQuestions = [];
 let currentQuestion = null;
+let currentQuestionIndex = 0;
 let preloadQueue = []; 
 let timer;
 let timeLeft = 15;
@@ -1071,6 +1072,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
