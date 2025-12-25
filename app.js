@@ -195,36 +195,32 @@ async function syncUsername() {
         const span = userDisplay.querySelector('#usernameSpan');
         if (span) span.textContent = ' ' + username;
     }
+    // Auth button
+    if (authBtn) {
+        const label = authBtn.querySelector('.btn-label');
+        if (label) label.textContent = session ? 'Log Out' : 'Log In';
+    }
 }
 
-async function syncAuthButton() {
-    if (!authBtn) return;
-
-    const { data: { session } } = await supabase.auth.getSession();
-    const label = authBtn.querySelector('.btn-label');
-    if (label) label.textContent = session ? 'Log Out' : 'Log In';
-
-    authBtn.onclick = async () => {
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
-        if (currentSession) {
-            // LOG OUT
-            await supabase.auth.signOut();
-
-            // Immediately reset username display
-            username = 'Guest';
-            const span = userDisplay.querySelector('#usernameSpan');
-            if (span) span.textContent = ' ' + username;
-
-            // Update buttons
-            await updateShareButtonState();
-            await syncDailyButton();
-            if (label) label.textContent = 'Log In';
-        } else {
-            // LOG IN → redirect
-            window.location.href = '/login';
-        }
-    };
+async function updateUIAfterAuthChange() {
+    //username and auth bth
+    await syncUsername()
+    // Daily button
+    await syncDailyButton();
+    // Share button
+    await updateShareButtonState();
 }
+
+     authBtn.onclick = async () => {
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      if (currentSession) {
+          await supabase.auth.signOut();
+      } else {
+          window.location.href = '/login';
+      }
+      await updateUIAfterAuthChange();
+  };
+
 
 async function syncDailyButton() {
     const { data: { session } } = await supabase.auth.getSession();
@@ -257,10 +253,11 @@ async function init() {
 
     // listen to auth changes
     supabase.auth.onAuthStateChange(async (_event, session) => {
-        await syncAuthButton();
-        await syncUsername();
-        await updateShareButtonState();
-        await syncDailyButton();
+        //await syncAuthButton();
+        //await syncUsername();
+        //await updateShareButtonState();
+        //await syncDailyButton();
+        await updateUIAfterAuthChange();
     });
 }
 
@@ -345,10 +342,10 @@ async function fetchDailyStatus(userId) {
         if (finalScore) finalScore.textContent = data.score ?? "0";
         
         lockDailyButton();
-        syncDailyButton();
-        updateShareButtonState();  // <--- THIS TRIGGERS THE GOLD COLOR
+        await syncDailyButton();
+        await updateShareButtonState();  // <--- THIS TRIGGERS THE GOLD COLOR
     } else {
-        updateShareButtonState();  // <--- THIS TRIGGERS THE GREY COLOR
+        await updateShareButtonState();  // <--- THIS TRIGGERS THE GREY COLOR
     }
 }
 
@@ -846,20 +843,7 @@ document.addEventListener('DOMContentLoaded', () => {
   (async () => {
        syncDailyButton();
     //syncUsername();
-      const span = document.getElementById('usernameSpan');
-    if (span) {
-        const { data: { session } } = await supabase.auth.getSession();
-        let displayName = 'Guest';
-        if (session) {
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('username')
-                .eq('id', session.user.id)
-                .single();
-            if (profile?.username) displayName = profile.username;
-        }
-        span.textContent = ' ' + displayName;
-    }
+    
     // This function applies the flash to any button we give it
     const applyFlash = (el) => {
         el.addEventListener('touchstart', () => {
@@ -1081,6 +1065,7 @@ if (shareBtn) {
 }  
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
