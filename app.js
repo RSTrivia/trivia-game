@@ -6,6 +6,7 @@ const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 const cachedMuted = localStorage.getItem('muted') === 'true';
 let dailySubscription = null; // Track this globally to prevent duplicates
 let username = 'Guest';
+let gameEnding = false;
 const shareBtn = document.getElementById('shareBtn');
 const startBtn = document.getElementById('startBtn');
 const playAgainBtn = document.getElementById('playAgainBtn');
@@ -458,7 +459,7 @@ async function preloadNextQuestions() {
 async function startGame() {
     // A. Immediate UI setup
     document.body.classList.add('game-active'); 
-    endGame.running = false;
+    gameEnding = false;
     game.classList.remove('hidden');
     document.getElementById('start-screen').classList.add('hidden');
     endScreen.classList.add('hidden');
@@ -624,8 +625,8 @@ async function highlightCorrectAnswer() {
 }
 
 async function endGame() {
-    if (endGame.running) return;
-    endGame.running = true;
+    if (gameEnding) return;
+    gameEnding = true;
     clearInterval(timer);
   
     // --- clean up the game -------------
@@ -722,9 +723,9 @@ async function endGame() {
             );
         }
     }
-    endGame.running = false;
+    gameEnding = false;
 }
-endGame.running = false;
+gameEnding = false;
 
 if (shareBtn) {
     shareBtn.onclick = async () => {
@@ -1067,6 +1068,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
