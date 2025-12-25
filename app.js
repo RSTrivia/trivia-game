@@ -209,7 +209,7 @@ async function updateShareButtonState() {
             shareBtn.classList.add('is-disabled');
             shareBtn.style.opacity = "0.5";
             shareBtn.style.pointerEvents = "none";
-            shareBtn.style.filter = "grayscale(100%)"; // Force grey look
+            //shareBtn.style.filter = "grayscale(100%)"; // Force grey look
         }
     }
 }
@@ -990,6 +990,7 @@ if (shareBtn) {
     };
 }  
 });
+
 
 
 
