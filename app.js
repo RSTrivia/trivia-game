@@ -239,7 +239,8 @@ async function initializeAuth() {
 async function fetchDailyStatus(userId) {
     const { data, error } = await supabase
         .from('daily_attempts')
-        .select('score')
+        .select('score, message') //message
+        .select('score') //score
         .eq('user_id', userId)
         .eq('attempt_date', todayStr)
         .maybeSingle();
@@ -247,7 +248,10 @@ async function fetchDailyStatus(userId) {
     if (data) {
         localStorage.setItem('dailyPlayedDate', todayStr);
         localStorage.setItem('lastDailyScore', data.score ?? "0");
-        
+        // SYNC THE MESSAGE FROM DATABASE
+        if (data.message) {
+            localStorage.setItem('lastDailyMessage', data.message);
+        }
         if (finalScore) finalScore.textContent = data.score ?? "0";
         
         lockDailyButton();         
@@ -554,7 +558,10 @@ async function endGame() {
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
             await supabase.from('daily_attempts')
-                .update({ score: score })
+                .update({ 
+                score: score,
+                message: randomMsg 
+            })
                 .eq('user_id', session.user.id)
                 .eq('attempt_date', todayStr);
         }
@@ -786,7 +793,7 @@ if (shareBtn) {
         }
       
         // We get the message currently visible on the screen
-        let currentMessage = document.getElementById('game-over-title')?.textContent;
+        const currentMessage = localStorage.getItem('lastDailyMessage') || "Daily Challenge";
         // If the screen is empty (e.g. user refreshed), fall back to storage
         if (!currentMessage || currentMessage === "" || currentMessage === "Game Over!") {
             currentMessage = localStorage.getItem('lastDailyMessage') || "Daily Challenge";
@@ -961,6 +968,7 @@ if (shareBtn) {
     };
 }  
 });
+
 
 
 
