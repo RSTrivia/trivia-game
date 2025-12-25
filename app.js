@@ -228,19 +228,17 @@ authBtn.onclick = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     
     if (session) {
-        // 1. Clear the specific keys created in login.js
-        localStorage.removeItem('cachedLoggedIn');
-        localStorage.removeItem('cachedUsername');
-        localStorage.removeItem('lastDailyScore');
-        localStorage.removeItem('lastDailyMessage');
+        // Clear EVERYTHING manually first
+        localStorage.clear(); 
+        sessionStorage.clear();
         
-        // 2. Perform the signout
+        // Sign out and WAIT for it
         await supabase.auth.signOut(); 
         
-        // 3. Force the UI to update immediately
-        await refreshAuthUI();
-        
-        // 4. Redirect to index to ensure a fresh JS state
+        // Small delay to let the browser catch up
+        await new Promise(r => setTimeout(r, 100));
+
+        // Redirect
         window.location.replace('index.html'); 
     } else {
         window.location.href = 'login.html';
@@ -339,29 +337,30 @@ async function hasUserCompletedDaily(session) {
 async function updateShareButtonState() {
     if (!shareBtn) return;
 
+    // Use getSession to be 100% sure of current status
     const { data: { session } } = await supabase.auth.getSession();
   
-    // IF GUEST: Always disable and hide gold color. No exceptions.
+    // 1. IF GUEST: Kill it.
     if (!session) {
         shareBtn.classList.add('is-disabled');
-        shareBtn.classList.remove('is-active'); // Remove the gold color
+        shareBtn.classList.remove('is-active');
         shareBtn.style.opacity = "0.5";
         shareBtn.style.pointerEvents = "none";
         return;
     }
 
-   // IF LOGGED IN: Check if they played
+    // 2. IF LOGGED IN: Check both Storage and DB
     const lastScore = localStorage.getItem('lastDailyScore');
     const hasPlayedToday = await hasUserCompletedDaily(session);
 
-    // If we have a score OR the DB says they played
+    // If they have played, make it GOLD and CLICKABLE
     if (lastScore !== null || hasPlayedToday) {
         shareBtn.classList.remove('is-disabled');
-        shareBtn.classList.add('is-active'); 
+        shareBtn.classList.add('is-active'); // This triggers your CSS gold/yellow
         shareBtn.style.opacity = "1";
         shareBtn.style.pointerEvents = "auto";
-        
     } else {
+        // They are logged in but haven't played the daily yet
         shareBtn.classList.add('is-disabled');
         shareBtn.classList.remove('is-active');
         shareBtn.style.opacity = "0.5";
@@ -1094,6 +1093,7 @@ if (shareBtn) {
 }  
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
