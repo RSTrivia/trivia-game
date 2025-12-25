@@ -318,8 +318,7 @@ h1 {
   padding-top: 10px; /* Optional: adds a little space below the title */
 }
 
-/* ====== MUTE BUTTON EXACT #d4af37 MATCH ====== */
-#muteBtn {
+#muteBtn, #shareBtn {
   width: 32px;
   height: 32px;
   flex-shrink: 0;
@@ -333,22 +332,22 @@ h1 {
   padding: 0;
   outline: none;
   transition: filter 0.2s ease, opacity 0.2s ease;
-
-  /* Default Gold */
   filter: sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85);
   opacity: 0.9;
 }
 
-#muteBtn.is-muted {
-  /* Completely strip the gold and turn grey */
+#shareBtn { margin-right: 4px; }
+
+/* Greyed out state for both */
+#muteBtn.is-muted, #shareBtn.is-disabled {
   filter: grayscale(1) brightness(0.5) !important; 
   opacity: 0.5;
+  cursor: default; /* Shows it's not clickable */
 }
 
-#muteBtn:hover {
+#muteBtn:hover:not(.is-muted), #shareBtn:hover:not(.is-disabled) {
   opacity: 1;
 }
-
 /* Ensure the icon itself doesn't have weird spacing */
 #muteIcon {
   display: inline-block;
@@ -891,6 +890,7 @@ input.input-field:-webkit-autofill:active {
     /* Keep this at 0s so it feels like a physical click */
     transition: 0s !important;
 }
+
 
 
 
