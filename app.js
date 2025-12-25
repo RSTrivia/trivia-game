@@ -1003,32 +1003,6 @@ async function startDailyChallenge() {
     loadQuestion();
 }
 
-// ====== EVENT LISTENERS ======
-startBtn.onclick = () => {
-    isDailyMode = false;
-    startGame();
-};
-playAgainBtn.onclick = () => startGame();
-mainMenuBtn.onclick = () => {
-    preloadQueue = []; // Clear the buffer only when going back to menu
-    // Manual UI Reset instead:
-    document.getElementById('end-screen').classList.add('hidden');
-    document.getElementById('start-screen').classList.remove('hidden');
-    document.body.classList.remove('game-active');
-  // Run the sync to ensure shareBtn stays active on the start screen
-    updateShareButtonState();
-};
-
-muteBtn.onclick = () => {
-    muted = !muted;
-    localStorage.setItem('muted', muted);
-    muteBtn.querySelector('#muteIcon').textContent = muted ? '🔇' : '🔊';
-    muteBtn.classList.toggle('is-muted', muted);
-};
-
-//await syncDailyButton();
-
-
 function shuffleWithSeed(array, seed) {
     let arr = [...array];
     let m = arr.length, t, i;
@@ -1093,6 +1067,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
