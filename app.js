@@ -212,11 +212,18 @@ async function syncUsername() {
 }
 
 async function updateUIAfterAuthChange() {
-    //username and auth bth
-    await syncUsername()
-    // Daily button
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    // Sync username first
+    await syncUsername();
+    
+    // NEW: If logged in, fetch status and WAIT for it to update localStorage
+    if (session?.user) {
+        await fetchDailyStatus(session.user.id);
+    }
+    
+    // Now these will see the updated localStorage/session state
     await syncDailyButton();
-    // Share button
     await updateShareButtonState();
 }
 
@@ -263,16 +270,10 @@ async function init() {
     
     supabase.auth.onAuthStateChange(async (event, session) => {
         console.log("Auth Event:", event);
-        
-        // NEW: If we have a user, go get their score from the DB
-        if (session?.user) {
-            await fetchDailyStatus(session.user.id);
-        }
-        
+        // This single call now handles fetching status AND updating the button
         await updateUIAfterAuthChange();
     });
 }
-
 init();
 
 
@@ -300,40 +301,30 @@ async function updateShareButtonState() {
 
     const { data: { session } } = await supabase.auth.getSession();
 
-    // GUEST = disabled
     if (!session) {
-        shareBtn.style.display = "flex";
         shareBtn.classList.add('is-disabled');
         shareBtn.style.opacity = "0.5";
         shareBtn.style.pointerEvents = "none";
         return;
     }
 
-    // Logged in → show button
-    shareBtn.style.display = "flex";
-
-    // 1️⃣ Try localStorage first
+    // Check if they finished today (either in storage or via helper)
     const lastScore = localStorage.getItem('lastDailyScore');
-    if (lastScore !== null) {
-        shareBtn.classList.remove('is-disabled');
-        shareBtn.style.opacity = "1";
-        shareBtn.style.pointerEvents = "auto";
-        return;
-    }
+    const hasPlayedToday = await hasUserCompletedDaily(session);
 
-    // 2️⃣ Fallback: check database
-    const played = await hasUserCompletedDaily(session);
-    if (played) {
+    // If we have a score OR the DB says they played
+    if (lastScore !== null || hasPlayedToday) {
         shareBtn.classList.remove('is-disabled');
         shareBtn.style.opacity = "1";
         shareBtn.style.pointerEvents = "auto";
+        // Optional: Force the gold color class here if you have one
+        shareBtn.classList.add('is-active'); 
     } else {
         shareBtn.classList.add('is-disabled');
         shareBtn.style.opacity = "0.5";
         shareBtn.style.pointerEvents = "none";
     }
 }
-
 
 
 // ====== NEW: FETCH SCORE FROM DATABASE ======
@@ -1077,6 +1068,7 @@ if (shareBtn) {
 }  
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
