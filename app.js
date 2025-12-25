@@ -753,27 +753,29 @@ if (shareBtn) {
         shareBtn.style.opacity = '0';
         if (muteBtn) muteBtn.style.opacity = '0';
 
-        const canvas = await html2canvas(target, {
-        backgroundColor: '#0a0a0a', // Solid dark background for the box
-        scale: 2,
-        useCORS: true,
-        allowTaint: false,
-        onclone: (clonedDoc) => {
-        const title = clonedDoc.getElementById('main-title');
-        if (title) {
-            // html2canvas struggles with background-clip: text. 
-            // We fix the "Yellow Box" by forcing the text color and removing the clip for the capture.
-            title.style.webkitBackgroundClip = 'initial';
-            title.style.backgroundClip = 'initial';
-            title.style.webkitTextFillColor = '#f2b705'; // A solid OSRS gold
-            title.style.color = '#f2b705';
-            
-            // Re-apply the shadow/glow to ensure it looks same as site
-            title.style.textShadow = '0 0 12px rgba(212, 175, 55, 0.95), 0 0 30px rgba(212, 175, 55, 0.75)';
-        }
+      const canvas = await html2canvas(target, {
+          backgroundColor: '#0a0a0a', // Solid dark background for the box
+          scale: 2,
+          useCORS: true,
+          allowTaint: false,
+          onclone: (clonedDoc) => {
+              const title = clonedDoc.getElementById('main-title');
+              if (title) {
+                  // html2canvas struggles with background-clip: text. 
+                  // We fix the "Yellow Box" by forcing the text color and removing the clip for the capture.
+                  title.style.webkitBackgroundClip = 'initial';
+                  title.style.backgroundClip = 'initial';
+                  title.style.webkitTextFillColor = '#f2b705'; // A solid OSRS gold
+                  title.style.color = '#f2b705';
+                  
+                  // Re-apply the shadow/glow to ensure it looks same as site
+                  title.style.textShadow = '0 0 12px rgba(212, 175, 55, 0.95), 0 0 30px rgba(212, 175, 55, 0.75)';
+              }
+          }
+      });
     }
 });
-        });
+});
 
         // Restore UI visibility
         shareBtn.style.opacity = '1';
@@ -813,6 +815,7 @@ if (shareBtn) {
 };
 }
 });
+
 
 
 
