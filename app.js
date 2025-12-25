@@ -253,7 +253,6 @@ async function init() {
     
     // sync button and username once session is ready
     await syncAuthButton();
-    await syncUsername();
     await syncDailyButton();
 
     // listen to auth changes
@@ -1056,15 +1055,6 @@ if (shareBtn) {
     };
 }  
 });
-
-// Initialize auth & session listener only once
-initializeAuth();
-
-
-
-
-
-
 
 
 
