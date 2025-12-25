@@ -269,9 +269,20 @@ async function init() {
     // 1. Wait for the page to load
     await new Promise(res => document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', res) : res());
 
+    // --- ADD THIS BLOCK ---
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+        // This pulls the score from DB and saves it to localStorage/UI
+        await fetchDailyStatus(session.user.id); 
+        // Start listening for changes (optional but good for multi-device sync)
+        subscribeToDailyChanges(session.user.id);
+    }
+    // ----------------------
+  
     // 2. Sync the UI (Check if they already played)
     await syncDailyButton();
-
+    await updateShareButtonState();
+  
     // 3. Assign the click handler ONCE
     dailyBtn.onclick = async () => {
         console.log("Daily Button Clicked"); // Debugging line
@@ -353,14 +364,19 @@ async function fetchDailyStatus(userId) {
         .eq('attempt_date', todayStr)
         .maybeSingle();
 
-    if (data) {
-        localStorage.setItem('lastDailyScore', data.score ?? "0");
-        // SYNC THE MESSAGE FROM DATABASE
-        if (data.message) {
-            localStorage.setItem('lastDailyMessage', data.message);
+  if (data) {
+          localStorage.setItem('lastDailyScore', data.score ?? "0");
+          // SYNC THE MESSAGE FROM DATABASE
+          if (data.message) {
+              localStorage.setItem('lastDailyMessage', data.message);
         }
+        // CRITICAL: Update the actual HTML elements so the share capture sees them
         if (finalScore) finalScore.textContent = data.score ?? "0";
-        
+        const gameOverTitle = document.getElementById('game-over-title');
+        if (gameOverTitle && data.message) {
+            gameOverTitle.textContent = data.message;
+            gameOverTitle.classList.remove('hidden');
+        }
         lockDailyButton();
         await syncDailyButton();
         await updateShareButtonState();  // <--- THIS TRIGGERS THE GOLD COLOR
@@ -1064,6 +1080,7 @@ if (shareBtn) {
 }  
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
