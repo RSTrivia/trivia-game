@@ -848,21 +848,36 @@ if (shareBtn) {
             if (muteBtn) muteBtn.style.opacity = '1';
 
             // 5. Copy to clipboard
-            canvas.toBlob(async (blob) => {
-                if (!blob) return;
+            // 5. SMART SHARING (Mobile Share Sheet vs Desktop Clipboard)
+        canvas.toBlob(async (blob) => {
+            if (!blob) return;
+
+            const file = new File([blob], "OSRS_Daily_Score.png", { type: "image/png" });
+
+            // Check if the browser supports the Native Share API (Mobile)
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                try {
+                    await navigator.share({
+                        files: [file],
+                        title: 'OSRS Trivia Daily Score',
+                        text: `Check out my OSRS Trivia score for today! ⚔️`
+                    });
+                } catch (shareErr) {
+                    console.log("User cancelled share or mobile error:", shareErr);
+                }
+            } 
+            // Fallback for Desktop (Clipboard)
+            else {
                 try {
                     const data = [new ClipboardItem({ [blob.type]: blob })];
                     await navigator.clipboard.write(data);
                     alert("Daily Score Card copied to clipboard! ⚔️");
-                } catch (clipboardErr) {
-                    // Fallback for some mobile browsers
-                    console.error("Clipboard API failed, trying download fallback");
-                    const link = document.createElement('a');
-                    link.download = `OSRS_Daily_${new Date().toISOString().split('T')[0]}.png`;
-                    link.href = canvas.toDataURL();
-                    link.click();
+                } catch (clipErr) {
+                    console.error("Clipboard failed:", clipErr);
+                    alert("Sharing not supported on this browser. Please long-press the image to save.");
                 }
-            }, 'image/png');
+            }
+        }, 'image/png');
 
         } catch (err) {
             console.error("Capture failed:", err);
@@ -874,6 +889,7 @@ if (shareBtn) {
     };
 }
 });
+
 
 
 
