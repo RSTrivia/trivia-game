@@ -164,7 +164,6 @@ let correctBuffer, wrongBuffer;
 let muted = cachedMuted;
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 const todayStr = new Date().toISOString().split('T')[0];
-let questions = [];
 let score = 0;
 let remainingQuestions = [];
 let currentQuestion = null;
@@ -462,8 +461,8 @@ console.log("Fetching question id:", qId, "error:", error, "data:", data);
 async function startGame() {
 
   console.log("startGame called");
-  console.log("questions array:", questions);
-  console.log("questions length:", questions?.length);
+  console.log("Remaining questions:", remainingQuestions);
+  console.log("Preload queue:", preloadQueue);
     // A. Immediate UI setup
     document.body.classList.add('game-active'); 
     gameEnding = false;
@@ -1075,6 +1074,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
