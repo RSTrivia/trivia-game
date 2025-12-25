@@ -174,28 +174,36 @@ let timeLeft = 15;
 let isDailyMode = false;
 
 // ====== INITIAL UI SYNC ======
-if (userDisplay) userDisplay.querySelector('#usernameSpan').textContent = ' ' + (username || 'Guest');
+async function syncUsername() {
+    const { data: { session } } = await supabase.auth.getSession();
+    username = session?.user?.user_metadata?.username || 'Guest';
+    if (userDisplay) userDisplay.querySelector('#usernameSpan').textContent = ' ' + username;
+}
+syncUsername();
 async function syncAuthButton() {
     if (!authBtn) return;
 
     const { data: { session } } = await supabase.auth.getSession();
 
-    // Update button label
     const label = authBtn.querySelector('.btn-label');
     if (label) label.textContent = session ? 'Log Out' : 'Log In';
 
-    // Click behavior
     authBtn.onclick = async () => {
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
-            // Just sign out
+            // Log out
             await supabase.auth.signOut();
+
+            // Refresh buttons
+            await updateShareButtonState();
+            await syncDailyButton();
+            syncAuthButton(); // update label to "Log In"
         } else {
-            // Redirect to login page
             window.location.href = '/login';
         }
     };
 }
+
 
 syncAuthButton();
 if (muteBtn) {
@@ -224,9 +232,10 @@ async function updateShareButtonState() {
 
     // 🔒 GUEST = COMPLETELY HIDDEN
     if (!session) {
-        shareBtn.style.display = "none";
+        shareBtn.style.display = "flex";
         shareBtn.classList.add('is-disabled');
-        shareBtn.style.pointerEvents = "none";
+        shareBtn.style.opacity = "0.5";
+        shareBtn.style.pointerEvents = "none";    // prevent clicks
         return;
     }
 
@@ -844,7 +853,7 @@ if (shareBtn) {
         }
       
         // We get the message currently visible on the screen
-        const currentMessage = localStorage.getItem('lastDailyMessage') || "Daily Challenge";
+        let currentMessage = localStorage.getItem('lastDailyMessage') || "Daily Challenge";
         // If the screen is empty (e.g. user refreshed), fall back to storage
         if (!currentMessage || currentMessage === "" || currentMessage === "Game Over!") {
             currentMessage = localStorage.getItem('lastDailyMessage') || "Daily Challenge";
@@ -1019,6 +1028,7 @@ if (shareBtn) {
     };
 }  
 });
+
 
 
 
