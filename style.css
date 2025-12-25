@@ -339,12 +339,16 @@ h1 {
 #shareBtn { margin-right: 4px; }
 
 /* Greyed out state for both */
-#muteBtn.is-muted, #shareBtn.is-disabled {
+#muteBtn.is-muted {
+  filter: grayscale(1) brightness(0.5) !important; 
+  opacity: 0.5;
+  cursor: pointer; /* clickable */
+}
+#shareBtn.is-disabled {
   filter: grayscale(1) brightness(0.5) !important; 
   opacity: 0.5;
   cursor: default; /* Shows it's not clickable */
 }
-
 #muteBtn:hover:not(.is-muted), #shareBtn:hover:not(.is-disabled) {
   opacity: 1;
 }
@@ -890,6 +894,7 @@ input.input-field:-webkit-autofill:active {
     /* Keep this at 0s so it feels like a physical click */
     transition: 0s !important;
 }
+
 
 
 
