@@ -7,6 +7,7 @@ const cachedMuted = localStorage.getItem('muted') === 'true';
 const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
 const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
 
+const shareBtn = document.getElementById('shareBtn');
 const startBtn = document.getElementById('startBtn');
 const playAgainBtn = document.getElementById('playAgainBtn');
 const mainMenuBtn = document.getElementById('mainMenuBtn');
@@ -190,14 +191,19 @@ async function initializeAuth() {
     
     if (session) {
         subscribeToDailyChanges(session.user.id);
-        // Fetch the truth from the database (Fixes the PC -> Mobile sync)
+        // Fetch the truth from the database
         await fetchDailyStatus(session.user.id);
+    } else {
+        // If no session, ensure button is grey
+        updateShareButtonState();
     }
 
-    supabase.auth.onAuthStateChange((event, session) => {
+    supabase.auth.onAuthStateChange(async (event, session) => {
         if (event === 'SIGNED_IN' && session) {
             subscribeToDailyChanges(session.user.id);
-            fetchDailyStatus(session.user.id);
+            await fetchDailyStatus(session.user.id);
+        } else if (event === 'SIGNED_OUT') {
+            updateShareButtonState();
         }
     });
 }
@@ -212,20 +218,16 @@ async function fetchDailyStatus(userId) {
         .eq('attempt_date', todayStr)
         .maybeSingle();
 
-    // If data exists, it means the user played on SOME device today
     if (data) {
         localStorage.setItem('dailyPlayedDate', todayStr);
         localStorage.setItem('lastDailyScore', data.score ?? "0");
         
-        // Update the screen so the share image isn't blank
         if (finalScore) finalScore.textContent = data.score ?? "0";
         
-        lockDailyButton();         // Play button -> Grey
-        updateShareButtonState();  // Share button -> Gold
+        lockDailyButton();         
+        updateShareButtonState();  // <--- THIS TRIGGERS THE GOLD COLOR
     } else {
-        // If no data, they haven't played today yet
-        // Ensure Share button stays grey
-        updateShareButtonState(); 
+        updateShareButtonState();  // <--- THIS TRIGGERS THE GREY COLOR
     }
 }
 
@@ -749,31 +751,10 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 
 
-  const shareBtn = document.getElementById('shareBtn');
-
-function updateShareButtonState() {
-    // 1. Check if we are logged in
-    const isGuest = !cachedLoggedIn || cachedUsername === 'Guest';
-    
-    // 2. Check if there is a record of playing today 
-    // (This is set either by finishing a game OR by fetchDailyStatus)
-    const hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
-
-    if (!isGuest && hasPlayed) {
-        // ONLY unlock if both are true
-        shareBtn.classList.remove('is-disabled');
-        shareBtn.style.opacity = '1';
-        shareBtn.style.pointerEvents = 'auto';
-    } else {
-        // Keep it grey and unclickable
-        shareBtn.classList.add('is-disabled');
-        shareBtn.style.opacity = '0.5'; // Visual cue for disabled
-        shareBtn.style.pointerEvents = 'none';
-    }
-}
+  //const shareBtn = document.getElementById('shareBtn');
 
 // Initial check on page load
-updateShareButtonState();
+//updateShareButtonState();
 
 if (shareBtn) {
     shareBtn.onclick = async () => {
@@ -866,6 +847,7 @@ if (shareBtn) {
 }
   
 });
+
 
 
 
