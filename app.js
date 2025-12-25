@@ -550,6 +550,8 @@ async function endGame() {
         // 2. ACTIVATE the button (make it gold)
         if (shareBtn) {
             shareBtn.classList.remove('is-disabled');
+            shareBtn.style.opacity = "1";
+            shareBtn.style.pointerEvents = "auto"; // This "re-arms" the button
         }
     
         // 3. Save Score to Database
@@ -578,6 +580,12 @@ async function endGame() {
                 gzTitle.classList.remove('hidden');
             }
         } else {
+          // Standard Mode: Explicitly ensure it stays disabled/hidden
+        if (shareBtn) {
+            shareBtn.classList.add('is-disabled');
+            shareBtn.style.opacity = "0.5";
+            shareBtn.style.pointerEvents = "none";
+        }
             if (gameOverTitle) {
                 gameOverTitle.textContent = "Game Over!";
                 gameOverTitle.classList.remove('hidden');
@@ -967,6 +975,7 @@ if (shareBtn) {
     };
 }  
 });
+
 
 
 
