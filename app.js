@@ -458,9 +458,14 @@ async function preloadNextQuestions() {
 }
 
 async function startGame() {
+  if (!questions || questions.length === 0) {
+    console.error("No questions loaded!");
+    return;
+}
+
   console.log("startGame called");
- console.log("questions array:", questions);
-console.log("questions length:", questions?.length);
+  console.log("questions array:", questions);
+  console.log("questions length:", questions?.length);
     // A. Immediate UI setup
     document.body.classList.add('game-active'); 
     gameEnding = false;
@@ -1043,7 +1048,7 @@ function subscribeToDailyChanges(userId) {
 document.addEventListener('DOMContentLoaded', () => {
   (async () => {
     //syncUsername();
-    
+    await loadQuestions();
     // This function applies the flash to any button we give it
     const applyFlash = (el) => {
         el.addEventListener('touchstart', () => {
@@ -1072,6 +1077,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
