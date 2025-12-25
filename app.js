@@ -798,19 +798,31 @@ if (shareBtn) {
                 backgroundColor: '#0a0a0a', 
                 scale: 2, 
                 useCORS: true,
+                width: 450,
+                height: 600,
                 onclone: (clonedDoc) => {
                     // --- A. FORCE DIMENSIONS (Prevents Mobile Shrinking) ---
                     const clonedContainer = clonedDoc.querySelector('.container');
+                    // 1. FORCE THE VIEWPORT (The "Magic" fix for mobile)
+                    const clonedBody = clonedDoc.body;
+                    clonedBody.style.width = '450px';
+                    clonedBody.style.height = '600px';
+                    clonedBody.style.overflow = 'hidden';
+
+                    const clonedContainer = clonedDoc.querySelector('.container');
                     if (clonedContainer) {
+                        // Reset all container styles to be a fixed "card"
                         Object.assign(clonedContainer.style, {
                             width: '450px',
                             height: '600px', 
                             display: 'flex',
                             flexDirection: 'column',
-                            justifyContent: 'center', // Centers content vertically
-                            alignItems: 'center',     // Centers content horizontally
+                            justifyContent: 'center',
+                            alignItems: 'center',
                             padding: '40px',
                             margin: '0',
+                            position: 'relative',
+                            transform: 'none', // Remove mobile scaling
                             boxSizing: 'border-box'
                         });
                     }
@@ -926,6 +938,7 @@ if (shareBtn) {
     };
 }  
 });
+
 
 
 
