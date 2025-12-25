@@ -750,34 +750,33 @@ if (shareBtn) {
             const savedScore = localStorage.getItem('lastDailyScore') || "0";
             const savedMsg = localStorage.getItem('lastDailyMessage') || "Daily Challenge";
 
-            // 1. Hide real UI buttons temporarily so they don't flicker
+            // 1. UI Preparation
             shareBtn.style.opacity = '0';
             const muteBtn = document.getElementById('muteBtn');
             if (muteBtn) muteBtn.style.opacity = '0';
 
             const canvas = await html2canvas(target, {
                 backgroundColor: '#0a0a0a', 
-                scale: 2, // High resolution
+                scale: 2, 
                 useCORS: true,
                 onclone: (clonedDoc) => {
-                    // --- A. FORCE FIXED DIMENSIONS ---
+                    // --- A. FORCE DIMENSIONS (Prevents Mobile Shrinking) ---
                     const clonedContainer = clonedDoc.querySelector('.container');
                     if (clonedContainer) {
-                        clonedContainer.style.width = '400px'; 
+                        clonedContainer.style.width = '450px'; 
                         clonedContainer.style.height = 'auto';
                         clonedContainer.style.padding = '40px 20px';
                         clonedContainer.style.margin = '0';
                         clonedContainer.style.display = 'block';
                     }
 
-                    // Find elements in the clone
                     const startScreen = clonedDoc.getElementById('start-screen');
                     const endScreen = clonedDoc.getElementById('end-screen');
                     const playAgain = clonedDoc.getElementById('playAgainBtn');
                     const mainMenu = clonedDoc.getElementById('mainMenuBtn');
                     const title = clonedDoc.getElementById('main-title');
                 
-                    // --- B. SCREEN VISIBILITY ---
+                    // --- B. VISIBILITY & LAYOUT ---
                     if (startScreen) startScreen.classList.add('hidden');
                     if (endScreen) {
                         endScreen.classList.remove('hidden');
@@ -785,103 +784,102 @@ if (shareBtn) {
                         endScreen.style.flexDirection = 'column';
                         endScreen.style.alignItems = 'center';
                       
-                        // Hide the navigation buttons in the screenshot
                         if (playAgain) playAgain.style.display = 'none';
                         if (mainMenu) mainMenu.style.display = 'none';
                       
-                        // Inject saved data into the clone
+                        // Forced Text Sizes for high-res output
                         const finalScoreElem = clonedDoc.getElementById('finalScore');
                         const msgTitleElem = clonedDoc.getElementById('game-over-title');
                         
-                        if (finalScoreElem) finalScoreElem.textContent = savedScore;
+                        if (finalScoreElem) {
+                            finalScoreElem.textContent = savedScore;
+                            finalScoreElem.style.fontSize = '80px'; 
+                        }
                         if (msgTitleElem) {
                             msgTitleElem.textContent = savedMsg;
                             msgTitleElem.classList.remove('hidden');
+                            msgTitleElem.style.fontSize = '24px';
                             msgTitleElem.style.textAlign = 'center';
                         }
 
-                        // --- C. ADD DATE LOGIC ---
+                        // --- C. DATE LOGIC ---
                         const dateTag = clonedDoc.createElement('div');
                         const dateOptions = { year: 'numeric', month: 'short', day: 'numeric' };
-                        const displayDate = new Date().toLocaleDateString('en-US', dateOptions);
-                        dateTag.textContent = displayDate;
+                        dateTag.textContent = new Date().toLocaleDateString('en-US', dateOptions);
 
                         Object.assign(dateTag.style, {
                             marginTop: '30px',
-                            fontSize: '1rem',
-                            color: '#a77b0a', // Muted OSRS Bronze/Gold
+                            fontSize: '18px',
+                            color: '#a77b0a',
                             fontFamily: "'Cinzel', serif",
                             textAlign: 'center',
-                            opacity: '0.7',
+                            opacity: '0.8',
                             letterSpacing: '2px',
                             textTransform: 'uppercase'
                         });
                         endScreen.appendChild(dateTag);
                     }
                 
-                    // --- D. THE TITLE FIX (Black center + Gold Glow) ---
+                    // --- D. TITLE FIX (Locked Pixel Size) ---
                     if (title) {
-                        title.style.background = 'none';
-                        title.style.backgroundImage = 'none';
-                        title.style.webkitBackgroundClip = 'initial';
-                        title.style.backgroundClip = 'initial';
-                        title.style.color = '#000000'; 
-                        title.style.webkitTextFillColor = '#000000';
-                        title.style.fontFamily = "'Cinzel', serif";
-                        title.style.fontWeight = "700";
-                        title.style.fontSize = "3rem";
-                        title.style.textAlign = "center";
-                        title.style.textShadow = `
-                            0 0 4px rgba(0,0,0,0.8),
-                            1px 1px 0 #000,
-                            2px 2px 2px rgba(0,0,0,0.6),
-                            0 0 12px rgba(212, 175, 55, 0.95),
-                            0 0 30px rgba(212, 175, 55, 0.75),
-                            0 0 55px rgba(212, 175, 55, 0.45)
-                        `;
+                        Object.assign(title.style, {
+                            background: 'none',
+                            backgroundImage: 'none',
+                            webkitBackgroundClip: 'initial',
+                            color: '#000000',
+                            webkitTextFillColor: '#000000',
+                            fontFamily: "'Cinzel', serif",
+                            fontWeight: "700",
+                            fontSize: "48px",
+                            textAlign: "center",
+                            textShadow: `
+                                0 0 4px rgba(0,0,0,0.8),
+                                1px 1px 0 #000,
+                                2px 2px 2px rgba(0,0,0,0.6),
+                                0 0 12px rgba(212, 175, 55, 0.95),
+                                0 0 30px rgba(212, 175, 55, 0.75),
+                                0 0 55px rgba(212, 175, 55, 0.45)`
+                        });
                     }
                 }
             });
 
-            // 4. Restore real UI visibility
+            // Restore Real UI
             shareBtn.style.opacity = '1';
             if (muteBtn) muteBtn.style.opacity = '1';
 
-            // 5. Copy to clipboard
-            // 5. SMART SHARING (Mobile Share Sheet vs Desktop Clipboard)
-        canvas.toBlob(async (blob) => {
-            if (!blob) return;
+            // --- E. SMART SHARING LOGIC ---
+            canvas.toBlob(async (blob) => {
+                if (!blob) return;
+                const file = new File([blob], "OSRS_Daily_Score.png", { type: "image/png" });
 
-            const file = new File([blob], "OSRS_Daily_Score.png", { type: "image/png" });
-
-            // Check if the browser supports the Native Share API (Mobile)
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                try {
-                    await navigator.share({
-                        files: [file],
-                        title: 'OSRS Trivia Daily Score',
-                        text: `Check out my OSRS Trivia score for today! ⚔️`
-                    });
-                } catch (shareErr) {
-                    console.log("User cancelled share or mobile error:", shareErr);
+                // Try Mobile Share Sheet first
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    try {
+                        await navigator.share({
+                            files: [file],
+                            title: 'OSRS Trivia Daily Score',
+                            text: `I scored ${savedScore}/10 on today's OSRS Trivia! ⚔️`
+                        });
+                    } catch (shareErr) {
+                        console.log("Share cancelled or failed:", shareErr);
+                    }
+                } 
+                // Fallback to Clipboard (Desktop)
+                else {
+                    try {
+                        const data = [new ClipboardItem({ [blob.type]: blob })];
+                        await navigator.clipboard.write(data);
+                        alert("Daily Score Card copied to clipboard! ⚔️");
+                    } catch (clipErr) {
+                        console.error("Clipboard failed:", clipErr);
+                        alert("Sharing not supported. Please long-press the image to save.");
+                    }
                 }
-            } 
-            // Fallback for Desktop (Clipboard)
-            else {
-                try {
-                    const data = [new ClipboardItem({ [blob.type]: blob })];
-                    await navigator.clipboard.write(data);
-                    alert("Daily Score Card copied to clipboard! ⚔️");
-                } catch (clipErr) {
-                    console.error("Clipboard failed:", clipErr);
-                    alert("Sharing not supported on this browser. Please long-press the image to save.");
-                }
-            }
-        }, 'image/png');
+            }, 'image/png');
 
         } catch (err) {
             console.error("Capture failed:", err);
-            // Ensure UI is restored even if it fails
             shareBtn.style.opacity = '1';
             const muteBtn = document.getElementById('muteBtn');
             if (muteBtn) muteBtn.style.opacity = '1';
@@ -889,6 +887,7 @@ if (shareBtn) {
     };
 }
 });
+
 
 
 
