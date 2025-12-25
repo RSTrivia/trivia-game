@@ -258,9 +258,12 @@ async function syncDailyButton() {
 
 let isRefreshing = false;
 
+// ====== CORRECTED INITIALIZATION ======
 async function init() {
+    // Wait for DOM
     await new Promise(res => document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', res) : res());
 
+    // Setup Auth Listener
     supabase.auth.onAuthStateChange(async (event, session) => {
         if (isRefreshing) return;
         isRefreshing = true;
@@ -277,9 +280,10 @@ async function init() {
         isRefreshing = false;
     });
 
-    // Standard Game Button
+    // Standard Game Button - FIXED
     if (startBtn) {
         startBtn.onclick = () => {
+            console.log("Starting Standard Game..."); // Debug log
             isDailyMode = false;
             if (audioCtx.state === 'suspended') audioCtx.resume();
             loadSounds();
@@ -287,11 +291,12 @@ async function init() {
         };
     }
 
-    // Daily Game Button
+    // Daily Game Button - FIXED
     if (dailyBtn) {
         dailyBtn.onclick = async () => {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) return alert("Log in to play Daily Mode!");
+            
             const played = await hasUserCompletedDaily(session);
             if (played) return alert("You've already played today!");
 
@@ -301,9 +306,9 @@ async function init() {
         };
     }
 
+    // Run initial UI sync
     await refreshAuthUI();
-}// <--- Syntax fix: This closes the init function properly
-
+}
 // Start the app
 init();
 
@@ -1086,6 +1091,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
