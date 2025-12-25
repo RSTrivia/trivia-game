@@ -476,26 +476,10 @@ async function startGame() {
         updateScore();
 
         console.log("Fetching question IDs...");
-        //const { data: idList, error } = await supabase.rpc('get_all_question_ids');
-        //if (error) throw new Error(error.message);
-        let idList = [];
-        try {
-            const { data, error } = await supabase.rpc('get_all_question_ids');
-            if (error) throw new Error(error.message);
-            if (!data || !data.length) {
-                console.warn("No question IDs returned from RPC");
-            } else {
-                idList = data;
-            }
-        } catch (e) {
-            console.error("startGame error:", e);
-            alert("Failed to load questions. Check your database.");
-            return; // stop game safely
-        }
-        
+        const { data: idList, error } = await supabase.rpc('get_all_question_ids');
+        if (error) throw new Error(error.message);
         console.log("Fetched question IDs:", idList);
-              
-      
+            
       remainingQuestions = idList.map(item => item.id).sort(() => Math.random() - 0.5);
         console.log("Remaining questions:", remainingQuestions);
 
@@ -1079,6 +1063,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
