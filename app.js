@@ -750,76 +750,74 @@ if (shareBtn) {
         const savedScore = localStorage.getItem('lastDailyScore') || "0";
         const savedMsg = localStorage.getItem('lastDailyMessage') || "Daily Challenge";
 
-        // UI cleanup
+        // 1. Hide real UI buttons temporarily
         shareBtn.style.opacity = '0';
-        if (document.getElementById('muteBtn')) document.getElementById('muteBtn').style.opacity = '0';
+        const muteBtn = document.getElementById('muteBtn');
+        if (muteBtn) muteBtn.style.opacity = '0';
 
         const canvas = await html2canvas(target, {
-            // This ensures the container itself stays dark/black
             backgroundColor: '#0a0a0a', 
             scale: 2,
             useCORS: true,
-        onclone: (clonedDoc) => {
-            // 1. Force Screen Visibility
-            const startScreen = clonedDoc.getElementById('start-screen');
-            const endScreen = clonedDoc.getElementById('end-screen');
-            const playAgain = clonedDoc.getElementById('playAgainBtn'); // Find the button
-            const title = clonedDoc.getElementById('main-title');
-        
-            if (startScreen) startScreen.classList.add('hidden');
-            if (endScreen) {
-                endScreen.classList.remove('hidden');
-              
-            // hide the buttons    
-            if (playAgain) playAgain.style.display = 'none';
-            if (mainMenu) mainMenu.style.display = 'none';
-              
-                // Inject saved data
-                clonedDoc.getElementById('finalScore').textContent = savedScore;
-                const msgTitle = clonedDoc.getElementById('game-over-title');
-                if (msgTitle) {
-                    msgTitle.textContent = savedMsg;
-                    msgTitle.classList.remove('hidden');
+            onclone: (clonedDoc) => {
+                // Find elements in the clone
+                const startScreen = clonedDoc.getElementById('start-screen');
+                const endScreen = clonedDoc.getElementById('end-screen');
+                const playAgain = clonedDoc.getElementById('playAgainBtn');
+                const mainMenu = clonedDoc.getElementById('mainMenuBtn'); // FIXED: Defined this
+                const title = clonedDoc.getElementById('main-title');
+            
+                // 2. Force Screen Visibility for the photo
+                if (startScreen) startScreen.classList.add('hidden');
+                if (endScreen) {
+                    endScreen.classList.remove('hidden');
+                  
+                    // Hide the buttons in the screenshot
+                    if (playAgain) playAgain.style.display = 'none';
+                    if (mainMenu) mainMenu.style.display = 'none';
+                  
+                    // Inject saved data into the clone
+                    const finalScoreElem = clonedDoc.getElementById('finalScore');
+                    const msgTitleElem = clonedDoc.getElementById('game-over-title');
+                    
+                    if (finalScoreElem) finalScoreElem.textContent = savedScore;
+                    if (msgTitleElem) {
+                        msgTitleElem.textContent = savedMsg;
+                        msgTitleElem.classList.remove('hidden');
+                    }
+                }
+            
+                // 3. THE TITLE FIX (Match site exactly)
+                if (title) {
+                    title.style.background = 'none';
+                    title.style.webkitBackgroundClip = 'initial';
+                    title.style.backgroundClip = 'initial';
+                    title.style.color = '#f2b705'; 
+                    title.style.webkitTextFillColor = '#f2b705';
+                    title.style.fontFamily = "'Cinzel', serif";
+                    title.style.fontWeight = "700";
+                    title.style.fontSize = "3.2rem";
+                    title.style.letterSpacing = "2px";
+                    title.style.textTransform = "uppercase";
+                    title.style.textShadow = `
+                        0 0 4px rgba(0,0,0,0.8),
+                        1px 1px 0 #000,
+                        2px 2px 2px rgba(0,0,0,0.6),
+                        0 0 12px rgba(212, 175, 55, 0.95),
+                        0 0 30px rgba(212, 175, 55, 0.75),
+                        0 0 55px rgba(212, 175, 55, 0.45)
+                    `;
                 }
             }
-        
-            // 2. THE TITLE FIX (Bold, Caps, No Yellow Box)
-            if (title) {
-              // Strip the gradient (which causes the yellow box)
-              title.style.background = 'none';
-              title.style.webkitBackgroundClip = 'initial';
-              title.style.backgroundClip = 'initial';
-          
-              // Set the text color to the main Gold from your gradient (#f2b705)
-              // This makes the letters solid gold so they can hold your shadows
-              title.style.color = '#f2b705'; 
-              title.style.webkitTextFillColor = '#f2b705';
-              
-              // Force font properties
-              title.style.fontFamily = "'Cinzel', serif";
-              title.style.fontWeight = "700";
-              title.style.fontSize = "3.2rem";
-              title.style.letterSpacing = "2px";
-              title.style.textTransform = "uppercase"; // To match CAPSLOCK
-          
-              // 1:1 REPLICA OF YOUR CSS TEXT-SHADOW
-              title.style.textShadow = `
-                  0 0 4px rgba(0,0,0,0.8),
-                  1px 1px 0 #000,
-                  2px 2px 2px rgba(0,0,0,0.6),
-                  0 0 12px rgba(212, 175, 55, 0.95),
-                  0 0 30px rgba(212, 175, 55, 0.75),
-                  0 0 55px rgba(212, 175, 55, 0.45)
-              `;
-          }
-        }
         });
 
-        // Restore UI
+        // 4. Restore real UI visibility
         shareBtn.style.opacity = '1';
-        if (document.getElementById('muteBtn')) document.getElementById('muteBtn').style.opacity = '1';
+        if (muteBtn) muteBtn.style.opacity = '1';
 
+        // 5. Copy to clipboard
         canvas.toBlob(async (blob) => {
+            if (!blob) return;
             const data = [new ClipboardItem({ [blob.type]: blob })];
             await navigator.clipboard.write(data);
             alert("Daily Score Card copied to clipboard! ⚔️");
@@ -831,6 +829,7 @@ if (shareBtn) {
 };
 }
 });
+
 
 
 
