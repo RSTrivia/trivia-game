@@ -745,12 +745,14 @@ if (shareBtn) {
     shareBtn.onclick = async () => {
         if (shareBtn.classList.contains('is-disabled')) return;
 
+        // 1. CAPTURE DATA IMMEDIATELY (Fixes Mobile "0" score issue)
+        const currentScore = document.getElementById('finalScore')?.textContent || "0";
+        const currentMsg = document.getElementById('game-over-title')?.textContent || "Daily Challenge";
+
         try {
             const target = document.querySelector('.container');
-            const savedScore = localStorage.getItem('lastDailyScore') || "0";
-            const savedMsg = localStorage.getItem('lastDailyMessage') || "Daily Challenge";
 
-            // 1. UI Preparation
+            // UI Preparation
             shareBtn.style.opacity = '0';
             const muteBtn = document.getElementById('muteBtn');
             if (muteBtn) muteBtn.style.opacity = '0';
@@ -760,7 +762,7 @@ if (shareBtn) {
                 scale: 2, 
                 useCORS: true,
                 onclone: (clonedDoc) => {
-                    // --- A. FORCE DIMENSIONS (Prevents Mobile Shrinking) ---
+                    // --- A. FORCE DIMENSIONS ---
                     const clonedContainer = clonedDoc.querySelector('.container');
                     if (clonedContainer) {
                         clonedContainer.style.width = '450px'; 
@@ -787,18 +789,17 @@ if (shareBtn) {
                         if (playAgain) playAgain.style.display = 'none';
                         if (mainMenu) mainMenu.style.display = 'none';
                       
-                        // Forced Text Sizes for high-res output
                         const finalScoreElem = clonedDoc.getElementById('finalScore');
                         const msgTitleElem = clonedDoc.getElementById('game-over-title');
                         
                         if (finalScoreElem) {
-                            finalScoreElem.textContent = savedScore;
-                            finalScoreElem.style.fontSize = '80px'; 
+                            // Inject the live score we captured
+                            finalScoreElem.textContent = currentScore;
+                            // REMOVED fixed fontSize to keep your original CSS look
                         }
                         if (msgTitleElem) {
-                            msgTitleElem.textContent = savedMsg;
+                            msgTitleElem.textContent = currentMsg;
                             msgTitleElem.classList.remove('hidden');
-                            msgTitleElem.style.fontSize = '24px';
                             msgTitleElem.style.textAlign = 'center';
                         }
 
@@ -820,7 +821,7 @@ if (shareBtn) {
                         endScreen.appendChild(dateTag);
                     }
                 
-                    // --- D. TITLE FIX (Locked Pixel Size) ---
+                    // --- D. TITLE FIX ---
                     if (title) {
                         Object.assign(title.style, {
                             background: 'none',
@@ -830,7 +831,7 @@ if (shareBtn) {
                             webkitTextFillColor: '#000000',
                             fontFamily: "'Cinzel', serif",
                             fontWeight: "700",
-                            fontSize: "48px",
+                            fontSize: "42px", // Consistent size for the photo
                             textAlign: "center",
                             textShadow: `
                                 0 0 4px rgba(0,0,0,0.8),
@@ -853,19 +854,17 @@ if (shareBtn) {
                 if (!blob) return;
                 const file = new File([blob], "OSRS_Daily_Score.png", { type: "image/png" });
 
-                // Try Mobile Share Sheet first
                 if (navigator.canShare && navigator.canShare({ files: [file] })) {
                     try {
                         await navigator.share({
                             files: [file],
                             title: 'OSRS Trivia Daily Score',
-                            text: `I scored ${savedScore}/10 on today's OSRS Trivia! ⚔️`
+                            text: `I scored ${currentScore}/10 on today's OSRS Trivia! ⚔️`
                         });
                     } catch (shareErr) {
                         console.log("Share cancelled or failed:", shareErr);
                     }
                 } 
-                // Fallback to Clipboard (Desktop)
                 else {
                     try {
                         const data = [new ClipboardItem({ [blob.type]: blob })];
@@ -887,6 +886,7 @@ if (shareBtn) {
     };
 }
 });
+
 
 
 
