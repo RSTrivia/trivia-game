@@ -458,10 +458,6 @@ async function preloadNextQuestions() {
 }
 
 async function startGame() {
-  if (!questions || questions.length === 0) {
-    console.error("No questions loaded!");
-    return;
-}
 
   console.log("startGame called");
   console.log("questions array:", questions);
@@ -1077,6 +1073,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
