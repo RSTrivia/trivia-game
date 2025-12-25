@@ -173,65 +173,64 @@ let isDailyMode = false;
 
 // ====== INITIAL UI SYNC ======
 async function refreshAuthUI() {
-    const { data: { session }, error } = await supabase.auth.getSession();
+    const { data: { session } } = await supabase.auth.getSession();
     const span = document.querySelector('#usernameSpan');
     const label = authBtn?.querySelector('.btn-label');
 
-    // 1. CLEAR/RESET STATE BY DEFAULT
+    // 1. DEFAULT EVERYTHING TO GUEST (The "Safe" state)
     username = 'Guest';
     if (span) span.textContent = ' Guest';
     if (label) label.textContent = 'Log In';
-
-    if (!session || error) {
-        // --- GUEST STATE REINFORCEMENT ---
-        if (dailyBtn) {
-            dailyBtn.classList.add('disabled');
-            dailyBtn.classList.remove('is-active');
-            dailyBtn.style.opacity = '0.5';
-            dailyBtn.style.pointerEvents = 'none';
-        }
-        if (shareBtn) {
-            shareBtn.classList.add('is-disabled');
-            shareBtn.classList.remove('is-active');
-            shareBtn.style.opacity = "0.5";
-            shareBtn.style.pointerEvents = "none";
-        }
-        return; // Stop here for guests
+    
+    // Reset Daily Button to disabled
+    if (dailyBtn) {
+        dailyBtn.classList.add('disabled');
+        dailyBtn.classList.remove('is-active');
+        dailyBtn.style.opacity = '0.5';
+        dailyBtn.style.pointerEvents = 'none';
     }
 
-    // --- LOGGED IN STATE ---
-    if (label) label.textContent = 'Log Out';
-    
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('id', session.user.id)
-        .maybeSingle();
+    // Reset Share Button to disabled
+    if (shareBtn) {
+        shareBtn.classList.add('is-disabled');
+        shareBtn.classList.remove('is-active');
+        shareBtn.style.opacity = "0.5";
+        shareBtn.style.pointerEvents = "none";
+    }
 
-    username = profile?.username || 'Player';
-    if (span) span.textContent = ' ' + username;
-    
-    // Run all syncs for the logged-in user
-    await fetchDailyStatus(session.user.id);
-    await syncDailyButton();
-    await updateShareButtonState();
+    // 2. ONLY IF SESSION EXISTS, UPGRADE TO LOGGED IN
+    if (session && session.user) {
+        if (label) label.textContent = 'Log Out';
+        
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('username')
+            .eq('id', session.user.id)
+            .maybeSingle();
+
+        username = profile?.username || 'Player';
+        if (span) span.textContent = ' ' + username;
+
+        // Re-enable interactions
+        await fetchDailyStatus(session.user.id);
+        await syncDailyButton();
+        await updateShareButtonState();
+    }
 }
 
 authBtn.onclick = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     
     if (session) {
-        // Sign out
-        await supabase.auth.signOut(); 
+        // 1. Clear everything local first so UI can't "bounce back"
         localStorage.clear();
+        sessionStorage.clear();
         
-        // Force state reset
-        username = 'Guest';
-        isDailyMode = false;
+        // 2. Sign out of Supabase
+        await supabase.auth.signOut(); 
         
-        // Hard refresh is the safest way to clear memory, but refreshAuthUI 
-        // will now handle the visual "sticking" if you don't refresh.
-        window.location.href = 'index.html'; 
+        // 3. Immediate Redirect to a clean URL
+        window.location.replace(window.location.origin + window.location.pathname);
     } else {
         window.location.href = 'login.html';
     }
@@ -263,12 +262,16 @@ async function init() {
     await new Promise(res => document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', res) : res());
 
     // IMPORTANT: Listen for Auth Changes first
-    supabase.auth.onAuthStateChange((event, session) => {
-        console.log("Auth event:", event);
-        if (event === 'SIGNED_OUT') {
+        supabase.auth.onAuthStateChange((event, session) => {
+        console.log("Auth event:", event, "Session exists:", !!session);
+    
+        if (!session) {
+            // FORCE GUEST - No matter what the event name is
+            username = 'Guest';
             localStorage.clear();
             refreshAuthUI(); 
-        } else if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+        } else {
+            // LOGGED IN
             refreshAuthUI();
         }
     });
@@ -1073,6 +1076,7 @@ if (shareBtn) {
 }  
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
