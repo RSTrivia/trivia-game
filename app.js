@@ -1079,8 +1079,9 @@ if (shareBtn) {
         }
     };
 }  
-  }
-});
+})(); // closes the async function AND invokes it
+});   // closes DOMContentLoaded listener
+
 
 
 
