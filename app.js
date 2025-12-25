@@ -177,28 +177,26 @@ async function refreshAuthUI() {
     const span = document.querySelector('#usernameSpan');
     const label = authBtn?.querySelector('.btn-label');
 
+    // 1. CLEAR/RESET STATE BY DEFAULT
+    username = 'Guest';
+    if (span) span.textContent = ' Guest';
+    if (label) label.textContent = 'Log In';
+
     if (!session || error) {
-        // --- FORCE GUEST STATE ---
-        username = 'Guest';
-        if (span) span.textContent = ' Guest';
-        if (label) label.textContent = 'Log In';
-        
-        // Disable Daily Challenge
+        // --- GUEST STATE REINFORCEMENT ---
         if (dailyBtn) {
             dailyBtn.classList.add('disabled');
             dailyBtn.classList.remove('is-active');
-            dailyBtn.style.pointerEvents = 'none';
             dailyBtn.style.opacity = '0.5';
+            dailyBtn.style.pointerEvents = 'none';
         }
-
-        // Hide/Disable Share
         if (shareBtn) {
             shareBtn.classList.add('is-disabled');
             shareBtn.classList.remove('is-active');
             shareBtn.style.opacity = "0.5";
             shareBtn.style.pointerEvents = "none";
         }
-        return; // Exit here for guests
+        return; // Stop here for guests
     }
 
     // --- LOGGED IN STATE ---
@@ -208,11 +206,12 @@ async function refreshAuthUI() {
         .from('profiles')
         .select('username')
         .eq('id', session.user.id)
-        .maybeSingle(); // Use maybeSingle to avoid errors if profile is missing
+        .maybeSingle();
 
     username = profile?.username || 'Player';
     if (span) span.textContent = ' ' + username;
     
+    // Run all syncs for the logged-in user
     await fetchDailyStatus(session.user.id);
     await syncDailyButton();
     await updateShareButtonState();
@@ -222,18 +221,16 @@ authBtn.onclick = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     
     if (session) {
-        // 1. Sign out from Supabase
+        // Sign out
         await supabase.auth.signOut(); 
+        localStorage.clear();
         
-        // 2. Clear EVERY piece of local evidence
-        localStorage.clear(); // This is safer than removing items one by one
-        
-        // 3. Reset the global variables immediately
+        // Force state reset
         username = 'Guest';
         isDailyMode = false;
         
-        // 4. Force a hard refresh to the main menu
-        // This is the "Nuclear Option" to ensure no ghost data remains in memory
+        // Hard refresh is the safest way to clear memory, but refreshAuthUI 
+        // will now handle the visual "sticking" if you don't refresh.
         window.location.href = 'index.html'; 
     } else {
         window.location.href = 'login.html';
@@ -260,14 +257,26 @@ async function syncDailyButton() {
         dailyBtn.classList.add('disabled');
     }
 }
+
 async function init() {
     // Wait for DOM
     await new Promise(res => document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', res) : res());
 
-    // Run the master sync once on load
+    // IMPORTANT: Listen for Auth Changes first
+    supabase.auth.onAuthStateChange((event, session) => {
+        console.log("Auth event:", event);
+        if (event === 'SIGNED_OUT') {
+            localStorage.clear();
+            refreshAuthUI(); 
+        } else if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+            refreshAuthUI();
+        }
+    });
+
+    // Run the initial sync
     await refreshAuthUI();
 
-    // Setup the Daily Button click
+    // Setup Daily Button
     if (dailyBtn) {
         dailyBtn.onclick = async () => {
             const { data: { session } } = await supabase.auth.getSession();
@@ -281,18 +290,8 @@ async function init() {
             isDailyMode = true;
             startDailyChallenge();
         };
-      // Listen for Auth Changes (Sign In / Sign Out)
-    supabase.auth.onAuthStateChange((event, session) => {
-        console.log("Auth event:", event);
-        if (event === 'SIGNED_OUT') {
-            localStorage.clear();
-            refreshAuthUI(); // This will now trigger the Guest logic
-        } else if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
-            refreshAuthUI();
-        }
-    });
     }
-}
+} // <--- Syntax fix: This closes the init function properly
 
 // Start the app
 init();
@@ -1074,6 +1073,7 @@ if (shareBtn) {
 }  
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
