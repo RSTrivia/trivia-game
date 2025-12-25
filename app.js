@@ -798,8 +798,6 @@ if (shareBtn) {
                 backgroundColor: '#0a0a0a', 
                 scale: 2, 
                 useCORS: true,
-                width: 450,
-                height: 600,
                 onclone: (clonedDoc) => {
                     // --- A. FORCE DIMENSIONS (Prevents Mobile Shrinking) ---
                     const clonedContainer = clonedDoc.querySelector('.container');
@@ -820,9 +818,11 @@ if (shareBtn) {
                             alignItems: 'center',
                             padding: '40px',
                             margin: '0',
+                            border: 'none',   // Ensure no border is adding width
                             position: 'relative',
                             transform: 'none', // Remove mobile scaling
                             boxSizing: 'border-box'
+                            overflow: 'hidden' // Clip any leaking pixels
                         });
                     }
 
@@ -945,57 +945,3 @@ if (shareBtn) {
     };
 }  
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
