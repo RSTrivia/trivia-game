@@ -809,7 +809,6 @@ if (shareBtn) {
                     clonedBody.style.height = '600px';
                     clonedBody.style.overflow = 'hidden';
 
-                    const clonedContainer = clonedDoc.querySelector('.container');
                     if (clonedContainer) {
                         // Reset all container styles to be a fixed "card"
                         Object.assign(clonedContainer.style, {
@@ -842,8 +841,7 @@ if (shareBtn) {
                             gap: '20px' // Even spacing between score and message
                         });
                       // --- B. VISIBILITY & LAYOUT ---
-                      if (startScreen) startScreen.classList.add('hidden');
-        
+                       if (startScreen) startScreen.style.display = 'none'; // Use display none
                         if (playAgain) playAgain.style.display = 'none';
                         if (mainMenu) mainMenu.style.display = 'none';
                       
@@ -860,6 +858,15 @@ if (shareBtn) {
                             msgTitleElem.classList.remove('hidden');
                             msgTitleElem.style.fontSize = '24px';
                             msgTitleElem.style.textAlign = 'center';
+                          // Force visibility and styling specifically for the canvas
+                            Object.assign(msgTitleElem.style, {
+                                display: 'block', 
+                                visibility: 'visible',
+                                fontSize: '24px',
+                                textAlign: 'center',
+                                color: '#ffffff', // Ensure white text
+                                opacity: '1'
+                            });
                         }
                         // Date
                         const dateTag = clonedDoc.createElement('div');
@@ -911,7 +918,7 @@ if (shareBtn) {
                         await navigator.share({ 
                             files: [file], 
                             title: 'OSRS Trivia', 
-                            text: `I scored ${currentScore}/10 on today's OSRS Trivia! ⚔️` 
+                            text: `I scored ${currentScore}/10 on today's OSRS Trivia! ⚔️""`
                         });
                     } catch (err) {
                         console.log("Share cancelled");
@@ -938,6 +945,7 @@ if (shareBtn) {
     };
 }  
 });
+
 
 
 
