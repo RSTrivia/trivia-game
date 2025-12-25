@@ -934,7 +934,7 @@ if (shareBtn) {
                         await navigator.share({ 
                             files: [file], 
                             title: 'OSRS Trivia', 
-                            text: `I scored ${currentScore}/10 on today's OSRS Trivia! ⚔️""`
+                            text: `I scored ${currentScore}/10 on today's OSRS Trivia! ⚔️`
                         });
                     } catch (err) {
                         console.log("Share cancelled");
@@ -945,10 +945,10 @@ if (shareBtn) {
                     try {
                         const data = [new ClipboardItem({ [blob.type]: blob })];
                         await navigator.clipboard.write(data);
-                        alert("Daily Score Card copied to clipboard! ⚔️");
+                        //alert("Daily Score Card copied to clipboard! ⚔️");
                     } catch (clipErr) {
                         console.error("Clipboard failed:", clipErr);
-                        alert("Sharing not supported. Please long-press the image to save.");
+                        //alert("Sharing not supported. Please long-press the image to save.");
                     }
                 }
             }, 'image/png');
@@ -961,6 +961,7 @@ if (shareBtn) {
     };
 }  
 });
+
 
 
 
