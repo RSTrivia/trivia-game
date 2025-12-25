@@ -182,7 +182,7 @@ async function syncUsername() {
         const { data: profile, error } = await supabase
             .from('profiles')
             .select('username')
-            .eq('user_id', session.user.id)
+            .eq('id', session.user.id)
             .single();
 
         if (!error && profile?.username) newUsername = profile.username;
@@ -854,7 +854,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const { data: profile } = await supabase
                 .from('profiles')
                 .select('username')
-                .eq('user_id', session.user.id)
+                .eq('id', session.user.id)
                 .single();
             if (profile?.username) displayName = profile.username;
         }
@@ -1081,6 +1081,7 @@ if (shareBtn) {
 }  
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
