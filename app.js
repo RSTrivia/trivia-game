@@ -323,7 +323,7 @@ async function hasUserCompletedDaily(session) {
 }
 
 
-aasync function updateShareButtonState() {
+async function updateShareButtonState() {
     if (!shareBtn) return;
 
     const { data: { session } } = await supabase.auth.getSession();
@@ -1076,6 +1076,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
