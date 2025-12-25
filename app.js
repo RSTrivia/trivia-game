@@ -174,24 +174,19 @@ let timeLeft = 15;
 let isDailyMode = false;
 
 // ====== INITIAL UI SYNC ======
-async function syncUsername() {
-    const { data: { session } } = await supabase.auth.getSession();
+async function syncUsername(session) {
+    const span = document.querySelector('#usernameSpan');
+    const label = authBtn?.querySelector('.btn-label');
 
-    // If no session, reset EVERYTHING to guest immediately
     if (!session) {
+        // Force UI to Guest
         username = 'Guest';
-        if (userDisplay) {
-            const span = userDisplay.querySelector('#usernameSpan');
-            if (span) span.textContent = ' Guest';
-        }
-        if (authBtn) {
-            const label = authBtn.querySelector('.btn-label');
-            if (label) label.textContent = 'Log In';
-        }
-        return; // Stop here!
+        if (span) span.textContent = ' Guest';
+        if (label) label.textContent = 'Log In';
+        return;
     }
 
-    // If there IS a session, proceed with fetching profile
+    // Fetch Profile
     const { data: profile, error } = await supabase
         .from('profiles')
         .select('username')
@@ -200,15 +195,8 @@ async function syncUsername() {
 
     username = (!error && profile?.username) ? profile.username : 'Guest';
 
-    if (userDisplay) {
-        const span = userDisplay.querySelector('#usernameSpan');
-        if (span) span.textContent = ' ' + username;
-    }
-
-    if (authBtn) {
-        const label = authBtn.querySelector('.btn-label');
-        if (label) label.textContent = 'Log Out';
-    }
+    if (span) span.textContent = ' ' + username;
+    if (label) label.textContent = 'Log Out';
 }
 
 async function updateUIAfterAuthChange() {
@@ -231,11 +219,14 @@ authBtn.onclick = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     
     if (session) {
-        // 1. CLEAR EVERYTHING from storage
+        // 1. Log Out first
+        await supabase.auth.signOut(); 
+
+        // 2. Clear storage
         localStorage.removeItem('lastDailyScore');
         localStorage.removeItem('lastDailyMessage');
         
-        // 2. RESET THE UI TEXT (Prevents the share capture from seeing old data)
+        // 3. Reset End Screen UI
         if (finalScore) finalScore.textContent = "0";
         const gameOverTitle = document.getElementById('game-over-title');
         if (gameOverTitle) {
@@ -243,13 +234,13 @@ authBtn.onclick = async () => {
             gameOverTitle.classList.add('hidden');
         }
 
-        // 3. LOG OUT
-        await supabase.auth.signOut(); 
-
-        // 4. SYNC UI
-        await syncUsername();
+        // 4. Force UI to Guest state
+        await syncUsername(null);
         await syncDailyButton();
         await updateShareButtonState(); 
+        
+        // Optional: reload the page to ensure all state is fresh
+        // window.location.reload(); 
     } else {
         window.location.href = '/login';
     }
@@ -281,29 +272,28 @@ async function init() {
     // 1. Wait for the page to load
     await new Promise(res => document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', res) : res());
 
+    // 2. Get the session ONCE
     const { data: { session } } = await supabase.auth.getSession();
     
     if (session) {
-        // Logged in: Sync DB data to local state
+        // Logged in: Fetch DB data and sync UI
         await fetchDailyStatus(session.user.id); 
         subscribeToDailyChanges(session.user.id);
+        await syncUsername(session); // Pass session directly to avoid extra calls
     } else {
-        // NOT logged in: Explicitly wipe daily-related storage 
-        // to prevent updateShareButtonState from enabling the button for a Guest
+        // NOT logged in: Wipe data and show Guest
         localStorage.removeItem('lastDailyScore');
         localStorage.removeItem('lastDailyMessage');
+        await syncUsername(null); 
     }
 
-    // 2. Sync the UI
-    // syncUsername is crucial here to ensure the display says "Guest"
-    await syncUsername(); 
+    // 3. Final UI Sync
     await syncDailyButton();
     await updateShareButtonState();
 
-    // 3. Click handler
+    // 4. Daily Click handler
     dailyBtn.onclick = async () => {
         const { data: { session: activeSession } } = await supabase.auth.getSession();
-        
         if (audioCtx.state === 'suspended') await audioCtx.resume();
         loadSounds(); 
 
@@ -1097,6 +1087,7 @@ if (shareBtn) {
 }  
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
