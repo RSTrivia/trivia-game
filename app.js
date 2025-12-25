@@ -1048,7 +1048,7 @@ function subscribeToDailyChanges(userId) {
 document.addEventListener('DOMContentLoaded', () => {
   (async () => {
     //syncUsername();
-    await loadQuestions();
+    
     // This function applies the flash to any button we give it
     const applyFlash = (el) => {
         el.addEventListener('touchstart', () => {
@@ -1077,6 +1077,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
