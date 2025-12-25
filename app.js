@@ -843,24 +843,50 @@ if (shareBtn) {
             shareBtn.style.opacity = '1';
             if (muteBtn) muteBtn.style.opacity = '1';
 
-            canvas.toBlob(async (blob) => {
+           canvas.toBlob(async (blob) => {
                 if (!blob) return;
+                
+                // 1. Detect if the user is on a mobile device
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
                 const file = new File([blob], "OSRS_Daily_Score.png", { type: "image/png" });
-                if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    await navigator.share({ files: [file], title: 'OSRS Trivia', text: `I scored ${currentScore}/10 on today's OSRS Trivia! ⚔️` });
-                } else {
-                    const data = [new ClipboardItem({ [blob.type]: blob })];
-                    await navigator.clipboard.write(data);
-                    alert("Score Card copied! ⚔️");
+
+                // 2. Mobile Logic: Use the native Share Menu
+                if (isMobile && navigator.canShare && navigator.canShare({ files: [file] })) {
+                    try {
+                        await navigator.share({ 
+                            files: [file], 
+                            title: 'OSRS Trivia', 
+                            text: `I scored ${currentScore}/10 on today's OSRS Trivia! ⚔️` 
+                        });
+                    } catch (err) {
+                        console.log("Share cancelled");
+                    }
+                } 
+                // 3. PC Logic: Copy to clipboard directly, NO share menu
+                else {
+                    try {
+                        const data = [new ClipboardItem({ [blob.type]: blob })];
+                        await navigator.clipboard.write(data);
+                        alert("Score Card copied to clipboard! ⚔️");
+                    } catch (err) {
+                        console.error("Clipboard failed", err);
+                        alert("Failed to copy. Try right-clicking the image if it appears.");
+                    }
                 }
             }, 'image/png');
         } catch (err) {
+            console.error("Canvas error:", err);
             shareBtn.style.opacity = '1';
+            const muteBtn = document.getElementById('muteBtn');
+            if (muteBtn) muteBtn.style.opacity = '1';
         }
+    };
+}
     };
 }
   
 });
+
 
 
 
