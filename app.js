@@ -234,10 +234,13 @@ authBtn.onclick = async () => {
         // Clear storage BEFORE signing out
         localStorage.removeItem('lastDailyScore');
         localStorage.removeItem('lastDailyMessage');
-        
+        // 2. Perform the sign out
         await supabase.auth.signOut(); 
-        // Note: updateUIAfterAuthChange() will be called automatically 
-        // by the onAuthStateChange listener we set up in init()
+        // 3. FORCE UI REFRESH IMMEDIATELY
+        // This ensures the button turns grey and the username resets to "Guest"
+        await syncUsername();
+        await syncDailyButton();
+        await updateShareButtonState();
     } else {
         window.location.href = '/login';
     }
@@ -331,6 +334,7 @@ async function updateShareButtonState() {
 
     if (!session) {
         shareBtn.classList.add('is-disabled');
+        shareBtn.classList.remove('is-active'); // Remove the gold color
         shareBtn.style.opacity = "0.5";
         shareBtn.style.pointerEvents = "none";
         return;
@@ -349,6 +353,7 @@ async function updateShareButtonState() {
         shareBtn.classList.add('is-active'); 
     } else {
         shareBtn.classList.add('is-disabled');
+        shareBtn.classList.remove('is-active');
         shareBtn.style.opacity = "0.5";
         shareBtn.style.pointerEvents = "none";
     }
@@ -1080,6 +1085,7 @@ if (shareBtn) {
 }  
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
