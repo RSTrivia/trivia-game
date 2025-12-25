@@ -843,7 +843,8 @@ function subscribeToDailyChanges(userId) {
 
 // ====== MOBILE TAP FEEDBACK (THE FLASH) ======
 document.addEventListener('DOMContentLoaded', () => {
-    syncDailyButton();
+  (async () => {
+       syncDailyButton();
     //syncUsername();
       const span = document.getElementById('usernameSpan');
     if (span) {
@@ -1078,7 +1079,9 @@ if (shareBtn) {
         }
     };
 }  
+  }
 });
+
 
 
 
