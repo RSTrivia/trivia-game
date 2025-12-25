@@ -176,9 +176,31 @@ let isDailyMode = false;
 // ====== INITIAL UI SYNC ======
 async function syncUsername() {
     const { data: { session } } = await supabase.auth.getSession();
-    username = session?.user?.user_metadata?.username || 'Guest';
-    if (userDisplay) userDisplay.querySelector('#usernameSpan').textContent = ' ' + username;
+
+    if (!session) {
+        username = 'Guest';
+    } else {
+        // Fetch from profiles table
+        const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('username')
+            .eq('user_id', session.user.id)
+            .single();
+
+        if (error) {
+            console.error('Error fetching username from profiles:', error);
+            username = 'Guest';
+        } else {
+            username = profile?.username || 'Guest';
+        }
+    }
+
+    if (userDisplay) {
+        const span = userDisplay.querySelector('#usernameSpan');
+        if (span) span.textContent = ' ' + username;
+    }
 }
+
 syncUsername();
 async function syncAuthButton() {
     if (!authBtn) return;
@@ -1037,6 +1059,7 @@ if (shareBtn) {
     };
 }  
 });
+
 
 
 
