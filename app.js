@@ -433,21 +433,20 @@ function resetGame() {
 }
 
 async function preloadNextQuestions() {
-  const { data, error } = await supabase.rpc('get_question_by_id', { input_id: qId });
-console.log("Fetching question id:", qId, "error:", error, "data:", data);
     let attempts = 0;
     while (preloadQueue.length < 2 && remainingQuestions.length > 0 && attempts < 10) {
         attempts++;
         const index = Math.floor(Math.random() * remainingQuestions.length);
         const qId = remainingQuestions[index]; 
 
+        // Skip if already in current question or preloadQueue
         if ((currentQuestion && qId === currentQuestion.id) || preloadQueue.some(p => p.id === qId)) {
             continue;
         }
 
         remainingQuestions.splice(index, 1);
-        const { data, error } = await supabase.rpc('get_question_by_id', { input_id: qId });
 
+        const { data, error } = await supabase.rpc('get_question_by_id', { input_id: qId });
         if (!error && data && data[0]) {
             preloadQueue.push(Array.isArray(data) ? data[0] : data);
             if (data[0].question_image) {
@@ -1062,6 +1061,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
