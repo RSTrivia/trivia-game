@@ -802,11 +802,17 @@ if (shareBtn) {
                     // --- A. FORCE DIMENSIONS (Prevents Mobile Shrinking) ---
                     const clonedContainer = clonedDoc.querySelector('.container');
                     if (clonedContainer) {
-                        clonedContainer.style.width = '450px'; 
-                        clonedContainer.style.height = 'auto';
-                        clonedContainer.style.padding = '40px 20px';
-                        clonedContainer.style.margin = '0';
-                        clonedContainer.style.display = 'block';
+                        Object.assign(clonedContainer.style, {
+                            width: '450px',
+                            height: '600px', 
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'center', // Centers content vertically
+                            alignItems: 'center',     // Centers content horizontally
+                            padding: '40px',
+                            margin: '0',
+                            boxSizing: 'border-box'
+                        });
                     }
 
                     const startScreen = clonedDoc.getElementById('start-screen');
@@ -814,15 +820,18 @@ if (shareBtn) {
                     const playAgain = clonedDoc.getElementById('playAgainBtn');
                     const mainMenu = clonedDoc.getElementById('mainMenuBtn');
                     const title = clonedDoc.getElementById('main-title');
-                
-                    // --- B. VISIBILITY & LAYOUT ---
-                    if (startScreen) startScreen.classList.add('hidden');
                     if (endScreen) {
                         endScreen.classList.remove('hidden');
-                        endScreen.style.display = 'flex';
-                        endScreen.style.flexDirection = 'column';
-                        endScreen.style.alignItems = 'center';
-                      
+                        Object.assign(endScreen.style, {
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            width: '100%',
+                            gap: '20px' // Even spacing between score and message
+                        });
+                      // --- B. VISIBILITY & LAYOUT ---
+                      if (startScreen) startScreen.classList.add('hidden');
+        
                         if (playAgain) playAgain.style.display = 'none';
                         if (mainMenu) mainMenu.style.display = 'none';
                       
@@ -917,6 +926,7 @@ if (shareBtn) {
     };
 }  
 });
+
 
 
 
