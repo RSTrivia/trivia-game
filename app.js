@@ -790,7 +790,6 @@ if (shareBtn) {
             const target = document.querySelector('.container');
             const savedMsg = localStorage.getItem('lastDailyMessage') || "Daily Challenge";
           
-            const target = document.querySelector('.container');
             shareBtn.style.opacity = '0';
             const muteBtn = document.getElementById('muteBtn');
             if (muteBtn) muteBtn.style.opacity = '0';
@@ -918,6 +917,7 @@ if (shareBtn) {
     };
 }  
 });
+
 
 
 
