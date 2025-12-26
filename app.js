@@ -223,32 +223,25 @@ async function init() {
     handleAuthChange('INITIAL_LOAD', session);
   
     // 2. Auth Button (Log In / Log Out)
-   // ====== AUTH BUTTON LOGIC ======
     authBtn.onclick = async () => {
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session) {
-            // 1. Attempt server-side logout
+            // Attempt to tell the server we're leaving
             const { error } = await supabase.auth.signOut();
             
-            // 2. If error (like 403) OR success, we still need to clear the UI
             if (error) {
-                console.warn("Logout failed on server (403), clearing local session instead:", error.message);
-                
-                // MANUALLY wipe Supabase local storage if the server refuses
-                for (let key in localStorage) {
-                    if (key.includes('supabase.auth.token')) {
-                        localStorage.removeItem(key);
-                    }
-                }
-                // Force a reload to ensure all states are reset to "Guest"
+                console.warn("Logout server error (likely 403):", error.message);
+                // If the session is invalid, Supabase might not fire onAuthStateChange.
+                // We force a page reload to clear the memory and local storage.
                 window.location.reload(); 
             }
-            // If successful, onAuthStateChange will handle the rest.
         } else {
             window.location.href = '/login.html';
         }
     };
+    }
+
     // 3. Game Buttons
     if (startBtn) {
         startBtn.onclick = async () => {
@@ -302,22 +295,29 @@ async function init() {
 }
 
 // Replace your existing handleAuthChange with this:
-// 1. Setup Auth Listener
-    supabase.auth.onAuthStateChange(async (event, session) => {
-        console.log("Auth Event:", event);
-        
-        // If signed out or refresh failed, force handleAuthChange with null
-        if (event === 'SIGNED_OUT' || (event === 'TOKEN_REFRESHED' && !session)) {
-            handleAuthChange('LOGOUT_FORCE', null);
-            // Optional: window.location.reload(); // Hard reset if UI gets stuck
-        } else {
-            handleAuthChange(event, session);
-        }
-    });
+async function handleAuthChange(event, session) {
+    const span = document.querySelector('#usernameSpan');
+    const label = authBtn?.querySelector('.btn-label');
 
-    // 2. Initial Session Check
-    const { data: { session } } = await supabase.auth.getSession();
-    await handleAuthChange('INITIAL_LOAD', session);
+    // 1. Logged Out State
+    if (!session) {
+        username = 'Guest';
+        if (span) span.textContent = ' Guest';
+        if (label) label.textContent = 'Log In';
+
+        // Clear all session-specific UI and storage
+        localStorage.removeItem('lastDailyScore');
+        localStorage.removeItem('dailyPlayedDate');
+        
+        [dailyBtn, shareBtn].forEach(btn => {
+            if (btn) {
+                btn.classList.add('is-disabled');
+                btn.style.opacity = '0.5';
+                btn.style.pointerEvents = 'none';
+            }
+        });
+        return; // Stop here for guests
+    }
 
     // 2. Logged In State
     // Fetch profile
@@ -1121,9 +1121,6 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
-
-
-
 
 
 
