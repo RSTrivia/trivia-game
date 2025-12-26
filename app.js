@@ -828,7 +828,7 @@ async function saveNormalScore(currentUsername, finalScore) {
         //console.log("Success!");
       }
     }
-}}
+}
 
 
 // Helper to keep endGame clean
@@ -1070,14 +1070,6 @@ function playSound(buffer) {
 }
 function updateScore() { scoreDisplay.textContent = `Score: ${score}`; }
 
-async function submitLeaderboardScore(user, val) {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
-    const { data: record } = await supabase.from('scores').select('score').eq('user_id', session.user.id).single();
-    if (!record || val > record.score) {
-        await supabase.from('scores').upsert({ user_id: session.user.id, username: user, score: val }, { onConflict: 'user_id' });
-    }
-}
 
 async function startDailyChallenge() {
     const { data: { session } } = await supabase.auth.getSession();
@@ -1192,6 +1184,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
