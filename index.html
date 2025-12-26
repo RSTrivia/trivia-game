@@ -43,8 +43,11 @@ function handleAuthAction() {
     const muteIcon = document.getElementById('muteIcon');
     const muteBtn = document.getElementById('muteBtn');
     const dailyBtn = document.getElementById('dailyBtn');
+    const shareBtn = document.getElementById('shareBtn'); // Added this
     // Re-check the value inside the listener
     hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
+    // Check if there is a score saved from a previous game today
+    const hasScore = localStorage.getItem('lastDailyScore') !== null;
     
     if (span) span.textContent = ' ' + cachedUsername;
     if (authLabel) authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
@@ -54,17 +57,27 @@ function handleAuthAction() {
       if (cachedMuted) muteBtn.classList.add('is-muted');
     }
 
-    if (dailyBtn) {
-      if (cachedLoggedIn && !hasPlayed) {
-        dailyBtn.classList.add('is-active');
-        dailyBtn.classList.remove('disabled');
-      } else {
-        dailyBtn.classList.remove('is-active');
-        dailyBtn.classList.add('disabled');
-      }
+    // --- Unified Anti-Flicker Logic ---
+    if (cachedLoggedIn) {
+        // Daily Button Logic
+        if (!hasPlayed && dailyBtn) {
+            dailyBtn.classList.add('is-active');
+            dailyBtn.classList.remove('disabled');
+        }
+        
+        // Share Button Logic: Unlock if they have a score saved for today
+        if (hasScore && shareBtn) {
+            shareBtn.classList.add('is-active');
+            shareBtn.classList.remove('is-disabled');
+            shareBtn.style.opacity = '1';
+            shareBtn.style.pointerEvents = 'auto';
+        }
+    } else {
+        // Force guest state (locked)
+        if (dailyBtn) dailyBtn.classList.add('disabled');
+        if (shareBtn) shareBtn.classList.add('is-disabled');
     }
 
-    // Attach the function to the button
     if (authBtn) {
       authBtn.onclick = handleAuthAction;
     }
@@ -104,7 +117,7 @@ function handleAuthAction() {
 
       <!-- First row: User + Mute -->
       <div id="user-controls" class="row">
-        <button id="shareBtn" class="is-disabled" type="button">
+        <button id="shareBtn" class="is-disabled" type="button" style="opacity: 0.5; pointer-events: none;">
           <span id="shareIcon">🔗</span>
         </button>
         <button id="muteBtn" type="button">
@@ -169,6 +182,7 @@ function handleAuthAction() {
     
 </body>
 </html>
+
 
 
 
