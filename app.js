@@ -175,38 +175,7 @@ let isDailyMode = false;
 
 // ====== INITIAL UI SYNC ======
 // Replace your existing refreshAuthUI with this:
-async function refreshAuthUI() {
-    const { data: { session } } = await supabase.auth.getSession();
-    const span = document.querySelector('#usernameSpan');
-    const label = authBtn?.querySelector('.btn-label');
 
-    if (!session || !session.user) {
-        username = 'Guest';
-        if (span) span.textContent = ' Guest';
-        if (label) label.textContent = 'Log In';
-        [dailyBtn, shareBtn].forEach(btn => {
-            if (btn) {
-                btn.classList.add('is-disabled');
-                btn.style.pointerEvents = 'none';
-                btn.style.opacity = '0.5';
-            }
-        });
-    } else {
-        // --- CHANGE START: Fetch from profiles table ---
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('username')
-            .eq('id', session.user.id)
-            .single();
-
-        username = profile?.username || 'Player';
-        // --- CHANGE END ---
-
-        if (span) span.textContent = ' ' + username;
-        if (label) label.textContent = 'Log Out';
-        await fetchDailyStatus(session.user.id);
-    }
-}
 async function syncDailyButton() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!dailyBtn) return;
@@ -297,17 +266,23 @@ async function init() {
     };
 }
     // 4. Initial Sync
-    await refreshAuthUI();
+    //await refreshAuthUI();
 }
 
 // Replace your existing handleAuthChange with this:
 async function handleAuthChange(event, session) {
-    console.log('Auth event:', event);
     const span = document.querySelector('#usernameSpan');
     const label = authBtn?.querySelector('.btn-label');
 
-    if (session) {
-        // --- CHANGE START: Fetch from profiles table ---
+    // 1. If no session, reset UI immediately and STOP
+    if (!session) {
+        username = 'Guest';
+        if (span) span.textContent = ' Guest';
+        // ... rest of your logout logic
+        return; 
+    }
+  
+        // User is logged in - fetch profile
         const { data: profile } = await supabase
             .from('profiles')
             .select('username')
@@ -315,28 +290,25 @@ async function handleAuthChange(event, session) {
             .single();
 
         username = profile?.username || 'Player';
-        // --- CHANGE END ---
-
         if (span) span.textContent = ' ' + username;
         if (label) label.textContent = 'Log Out';
         
         await fetchDailyStatus(session.user.id);
     } else {
-      // Logged Out (Guest) State
+        // Logged Out State - DO NOT FETCH ANYTHING
         username = 'Guest';
         if (span) span.textContent = ' Guest';
         if (label) label.textContent = 'Log In';
-      // --- FIX 1: CLEAR CACHED DAILY DATA ---
+
+        // Clear all session-specific UI and storage
         localStorage.removeItem('lastDailyScore');
-        localStorage.removeItem('lastDailyMessage');
-        localStorage.removeItem('dailyPlayedDate'); // This ensures the 'date' is gone too
-        // This part handles the "Live" change if they click logout
+        localStorage.removeItem('dailyPlayedDate');
+        
         [dailyBtn, shareBtn].forEach(btn => {
             if (btn) {
                 btn.classList.add('is-disabled');
-                btn.classList.remove('is-active'); // Remove active glow
-                btn.style.pointerEvents = 'none';
                 btn.style.opacity = '0.5';
+                btn.style.pointerEvents = 'none';
             }
         });
     }
@@ -1166,6 +1138,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
