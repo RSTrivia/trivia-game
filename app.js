@@ -326,6 +326,10 @@ async function handleAuthChange(event, session) {
         username = 'Guest';
         if (span) span.textContent = ' Guest';
         if (label) label.textContent = 'Log In';
+      // --- FIX 1: CLEAR CACHED DAILY DATA ---
+        localStorage.removeItem('lastDailyScore');
+        localStorage.removeItem('lastDailyMessage');
+        localStorage.removeItem('dailyPlayedDate'); // This ensures the 'date' is gone too
         // This part handles the "Live" change if they click logout
         [dailyBtn, shareBtn].forEach(btn => {
             if (btn) {
@@ -366,11 +370,14 @@ async function updateShareButtonState() {
         return;
     }
 
+  
     // Check localStorage (just finished playing) OR DB (played earlier)
     const localScore = localStorage.getItem('lastDailyScore');
+    const savedDate = localStorage.getItem('dailyPlayedDate');
     const hasPlayedToday = await hasUserCompletedDaily(session);
-
-    if ((localScore !== null && localScore !== undefined) || hasPlayedToday) {
+    const isScoreFromToday = (localScore !== null && savedDate === todayStr);
+  
+    if (isScoreFromToday || hasPlayedToday) {
         shareBtn.classList.remove('is-disabled');
         shareBtn.classList.add('is-active'); 
         shareBtn.style.opacity = "1";
@@ -396,6 +403,7 @@ async function fetchDailyStatus(userId) {
 
     if (data) {
         localStorage.setItem('lastDailyScore', data.score ?? "0");
+        localStorage.setItem('dailyPlayedDate', todayStr); // FIX 3: Ensure date is synced
         if (data.message) localStorage.setItem('lastDailyMessage', data.message);
         
         if (finalScore) finalScore.textContent = data.score ?? "0";
@@ -404,6 +412,11 @@ async function fetchDailyStatus(userId) {
             gameOverTitle.textContent = data.message;
             gameOverTitle.classList.remove('hidden');
         }
+      else {
+        // If no data found for today, clear old local storage
+        localStorage.removeItem('lastDailyScore');
+        localStorage.removeItem('dailyPlayedDate');
+      }
     }
     
     // Always sync button states after checking DB
@@ -760,6 +773,7 @@ async function endGame() {
         // 1. SAVE the score to localStorage so the share button can find it
         localStorage.setItem('lastDailyScore', score); 
         await updateShareButtonState(); 
+        localStorage.setItem('dailyPlayedDate', todayStr); 
         localStorage.setItem('lastDailyMessage', randomMsg); // save random message
       
         // 3. Save Score to Database
@@ -1152,6 +1166,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
