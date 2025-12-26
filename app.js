@@ -384,11 +384,14 @@ async function fetchDailyStatus(userId) {
         localStorage.setItem('dailyPlayedDate', todayStr); // FIX 3: Ensure date is synced
         if (data.message) localStorage.setItem('lastDailyMessage', data.message);
         
-        if (finalScore) finalScore.textContent = data.score ?? "0";
-        const gameOverTitle = document.getElementById('game-over-title');
-        if (gameOverTitle && data.message) {
-            gameOverTitle.textContent = data.message;
-            gameOverTitle.classList.remove('hidden');
+        // --- THE FIX: Only touch the screen text if we are in Daily Mode ---
+        if (isDailyMode) {
+            if (finalScore) finalScore.textContent = data.score ?? "0";
+            const gameOverTitle = document.getElementById('game-over-title');
+            if (gameOverTitle && data.message) {
+                gameOverTitle.textContent = data.message;
+                gameOverTitle.classList.remove('hidden');
+            }
         }
       else {
         // If no data found for today, clear old local storage
@@ -720,17 +723,24 @@ async function endGame() {
         saveDailyScore(session, randomMsg); 
     } else {
         if (playAgainBtn) playAgainBtn.classList.remove('hidden');
+      // THE FIX: Clear daily-specific storage so the Share button 
+      // knows NOT to show daily info for a normal run
+      localStorage.removeItem('lastDailyScore'); 
+      localStorage.removeItem('lastDailyMessage');
         if (score > 0 && remainingQuestions.length === 0 && preloadQueue.length === 0) {
             if (gzTitle) {
-                gzTitle.textContent = "Gz!"; 
-                gzTitle.classList.remove('hidden');
+              const gzMessages = ['Gz!', 'Go touch grass', 'See you in Lumbridge'];
+              const randomMessage = gzMessages[Math.floor(Math.random() * gzMessages.length)];
+              gzTitle.textContent = randomMessage;
+              gzTitle.classList.remove('hidden');
+              gameOverTitle.classList.add('hidden');
             }
         } else if (gameOverTitle) {
             gameOverTitle.textContent = "Game Over!";
             gameOverTitle.classList.remove('hidden');
         }
     }
-
+    if (username) await submitLeaderboardScore(username, score);
     // 4. THE BIG SWAP (Final step)
     // Use a tiny timeout or requestAnimationFrame to ensure DOM updates are ready
     requestAnimationFrame(() => {
@@ -1103,6 +1113,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
