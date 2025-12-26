@@ -804,29 +804,34 @@ async function endGame() {
 
 
 async function saveNormalScore(currentUsername, finalScore) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    // 1. Get the session to get the UUID (The "Key" to bypass 403)
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
 
-    // 1. We MUST check the old score first (as your old code did)
-    const { data: existingScore } = await supabase
-      .from('scores') 
-      .select('score')
-      .eq('username', currentUsername) // Using username because you said it's unique
-      .maybeSingle();
+    const userId = session.user.id;
 
-    // 2. Only save if it's a new high score
-    if (!existingScore || finalScore > existingScore.score) {
-      const { error } = await supabase
+    // 2. Check for existing score using user_id (the most stable way)
+    const { data: record } = await supabase
         .from('scores')
-        .upsert({ 
-            username: currentUsername, 
-            score: finalScore 
-        }, { onConflict: 'username' }); // We use username as the conflict target
+        .select('score')
+        .eq('user_id', userId)
+        .maybeSingle();
 
-      if (error) console.error("Save Error:", error.message);
-      else {
-        //console.log("Success!");
-      }
+    // 3. Save only if it's a new High Score
+    if (!record || finalScore > record.score) {
+        const { error } = await supabase
+            .from('scores')
+            .upsert({ 
+                user_id: userId,        // Required for RLS / 403 fix
+                username: currentUsername, 
+                score: finalScore 
+            }, { onConflict: 'user_id' }); // Prevents duplicate rows for one user
+
+        if (error) {
+            console.error("Leaderboard Save Error:", error.message);
+        } else {
+            console.log("Personal best updated on leaderboard!");
+        }
     }
 }
 
@@ -1184,6 +1189,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
