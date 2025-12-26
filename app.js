@@ -804,38 +804,28 @@ async function endGame() {
 
 
 async function saveNormalScore(currentUsername, finalScore) {
-    try {
-        // 1. Fetch the existing record for this specific username
-        const { data: existingEntry, error: fetchError } = await supabase
-            .from('public_leaderboard')
-            .select('score')
-            .eq('username', currentUsername)
-            .maybeSingle();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
 
-        if (fetchError) throw fetchError;
+    // 1. We MUST check the old score first (as your old code did)
+    const { data: existingScore } = await supabase
+      .from('scores') 
+      .select('score')
+      .eq('username', currentUsername) // Using username because you said it's unique
+      .maybeSingle();
 
-        // 2. Logic: Only proceed if there is no previous score OR the new score is higher
-        const isFirstTime = !existingEntry;
-        const isNewRecord = existingEntry && finalScore > existingEntry.score;
+    // 2. Only save if it's a new high score
+    if (!existingScore || finalScore > existingScore.score) {
+      const { error } = await supabase
+        .from('scores')
+        .upsert({ 
+            username: currentUsername, 
+            score: finalScore 
+        }, { onConflict: 'username' }); // We use username as the conflict target
 
-        if (isFirstTime || isNewRecord) {
-           
-            const { error: upsertError } = await supabase
-                .from('public_leaderboard')
-                .upsert({ 
-                    username: currentUsername, 
-                    score: finalScore 
-                }, { onConflict: 'username' });
-
-            if (upsertError) throw upsertError;
-        } else {
-            //console.log(`Score of ${finalScore} did not beat personal best of ${existingEntry.score}.`);
-        }
-
-    } catch (err) {
-        //console.error("Leaderboard Save Error:", err.message);
+      if (error) console.error("Save Error:", error.message);
     }
-}
+}}
 
 
 // Helper to keep endGame clean
@@ -1199,6 +1189,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
