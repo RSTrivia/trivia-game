@@ -824,6 +824,9 @@ async function saveNormalScore(currentUsername, finalScore) {
         }, { onConflict: 'username' }); // We use username as the conflict target
 
       if (error) console.error("Save Error:", error.message);
+      else {
+        //console.log("Success!");
+      }
     }
 }}
 
@@ -1189,6 +1192,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
