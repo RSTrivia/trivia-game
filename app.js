@@ -453,14 +453,11 @@ async function preloadNextQuestions() {
     ) {
         attempts++;
 
-        // 1. Pick a random ID
         const index = Math.floor(Math.random() * remainingQuestions.length);
         const qId = remainingQuestions[index];
 
-        // 2. REMOVE IT IMMEDIATELY (critical to avoid infinite loops)
         remainingQuestions.splice(index, 1);
 
-        // 3. Skip duplicates safely
         if (
             (currentQuestion && qId === currentQuestion.id) ||
             preloadQueue.some(q => q.id === qId)
@@ -468,13 +465,11 @@ async function preloadNextQuestions() {
             continue;
         }
 
-        // 4. Fetch question data
         const { data, error } = await supabase.rpc(
             'get_question_by_id',
             { input_id: qId }
         );
 
-        // 5. If fetch fails, continue — never block the game
         if (error || !data || !data[0]) {
             console.warn("Failed to preload question:", qId, error);
             continue;
@@ -482,16 +477,28 @@ async function preloadNextQuestions() {
 
         const question = data[0];
 
-        // 6. Push to preload buffer
-        preloadQueue.push(question);
-
-        // 7. Warm image cache (non-blocking)
+        // --- ENHANCED IMAGE WARMING ---
         if (question.question_image) {
-            const img = new Image();
-            img.src = question.question_image;
-            // .decode() ensures the image is ready to be painted without lag
-            img.decode().catch(e => console.debug("Image warming skipped:", e));
+            try {
+                const img = new Image();
+                img.src = question.question_image;
+                
+                // We AWAIT the decode here in the background.
+                // This forces the CPU to decompress the image now, 
+                // so it's ready to paint the millisecond we set the src later.
+                await img.decode(); 
+                
+                // Optional: Store the pre-decoded object to keep it in memory
+                //question._cachedImg = img; 
+            } catch (e) {
+                console.warn("Image warming failed for:", question.id, e);
+                // If the image fails to load, we still allow the question 
+                // but it might have a tiny flicker later.
+            }
         }
+
+        // Only push to the queue AFTER the image is decoded
+        preloadQueue.push(question);
     }
 }
 
@@ -589,19 +596,17 @@ async function loadQuestion() {
             answersBox.appendChild(btn);
         });
  // H. IMAGE (Now controls WHEN the UI shows)
-    if (currentQuestion.question_image) {
-        const tempImg = new Image();
-        tempImg.onload = () => {
-            questionImage.src = currentQuestion.question_image;
-            questionImage.style.display = 'block';
-            questionImage.style.opacity = '1';
-        };
-        tempImg.src = currentQuestion.question_image;
+   if (currentQuestion.question_image) {
+      questionImage.src = currentQuestion.question_image;
+      questionImage.style.display = 'block';
+      questionImage.style.opacity = '1';
     } else {
         questionImage.style.display = 'none';
         questionImage.src = '';
     }
-    
+  
+    // START THE TIMER 
+    startTimer();
     };
    
 
@@ -1098,6 +1103,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
