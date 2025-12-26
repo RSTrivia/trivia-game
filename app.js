@@ -268,13 +268,13 @@ async function init() {
         isRefreshing = true;
 
         if (session) {
-            await refreshAuthUI();
+            //await refreshAuthUI();
             if (dailySubscription) supabase.removeChannel(dailySubscription);
             dailySubscription = subscribeToDailyChanges(session.user.id);
         } else {
             username = 'Guest';
             if (dailySubscription) supabase.removeChannel(dailySubscription);
-            await refreshAuthUI(); 
+            //await refreshAuthUI(); 
         }
         isRefreshing = false;
     });
@@ -1143,6 +1143,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
