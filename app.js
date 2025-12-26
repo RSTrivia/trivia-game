@@ -411,26 +411,24 @@ async function fetchDailyStatus(userId) {
         .maybeSingle();
 
     if (data) {
-       // Use data.message directly from the database result
-        const displayMsg = data.message || "Daily Challenge";
-        localStorage.setItem('lastDailyMessage', displayMsg);
+       // ALWAYS save to storage (for the share button)
+        localStorage.setItem('lastDailyMessage', data.message || "Daily Challenge");
         localStorage.setItem('lastDailyScore', data.score ?? "0");
-        localStorage.setItem('dailyPlayedDate', todayStr); // FIX 3: Ensure date is synced
-        if (data.message) localStorage.setItem('lastDailyMessage', data.message);
+        localStorage.setItem('dailyPlayedDate', todayStr);
         
-        if (finalScore) finalScore.textContent = data.score ?? "0";
-        const gameOverTitle = document.getElementById('game-over-title');
-        if (gameOverTitle && data.message) {
-            gameOverTitle.textContent = data.message;
-            gameOverTitle.classList.remove('hidden');
+        // ONLY update UI if we are NOT in a game AND NOT looking at an end-screen
+        const isEndScreenHidden = endScreen.classList.contains('hidden');
+        const isStartScreenVisible = !document.getElementById('start-screen').classList.contains('hidden');
+        
+        if (isStartScreenVisible && isEndScreenHidden) {
+            if (finalScore) finalScore.textContent = data.score ?? "0";
+            const gameOverTitle = document.getElementById('game-over-title');
+            if (gameOverTitle) {
+                gameOverTitle.textContent = data.message || "Daily Challenge";
+                //gameOverTitle.classList.remove('hidden');
+            }
         }
-      else {
-        // If no data found for today, clear old local storage
-        localStorage.removeItem('lastDailyScore');
-        localStorage.removeItem('dailyPlayedDate');
-      }
     }
-    
     // Always sync button states after checking DB
     await syncDailyButton();
     await updateShareButtonState();
@@ -759,15 +757,21 @@ async function endGame() {
             // We pass the current username, and the score achieved
             saveNormalScore(username, score);
         }
+      // 2. Check for Gz! (Completion) first
         if (score > 0 && remainingQuestions.length === 0 && preloadQueue.length === 0) {
             if (gzTitle) {
               const gzMessages = ['Gz!', 'Go touch grass', 'See you in Lumbridge'];
               const randomMessage = gzMessages[Math.floor(Math.random() * gzMessages.length)];
-              gzTitle.textContent = randomMessage;
-              gzTitle.classList.remove('hidden');
+               gzTitle.textContent = randomMessage;
+               gzTitle.classList.remove('hidden');
+            // Hide the game over title entirely for a Gz
+            if (gameOverTitle) {
               gameOverTitle.classList.add('hidden');
+              gameOverTitle.textContent = "";
             }
+            // 3. Otherwise, show standard Game Over
         } else if (gameOverTitle) {
+            if (gzTitle) gzTitle.classList.add('hidden'); // Hide Gz if it was there from before
             gameOverTitle.textContent = "Game Over!";
             gameOverTitle.classList.remove('hidden');
         }
@@ -1171,6 +1175,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
