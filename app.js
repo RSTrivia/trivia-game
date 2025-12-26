@@ -313,9 +313,14 @@ async function init() {
 
 
 if (muteBtn) {
-    muteBtn.querySelector('#muteIcon').textContent = cachedMuted ? '🔇' : '🔊';
-    if (cachedMuted) muteBtn.classList.add('is-muted');
+    muteBtn.onclick = () => {
+        muted = !muted;
+        localStorage.setItem('muted', muted);
+        muteBtn.querySelector('#muteIcon').textContent = muted ? '🔇' : '🔊';
+        muteBtn.classList.toggle('is-muted', muted);
+    };
 }
+
 
 async function hasUserCompletedDaily(session) {
     if (!session) return false;
@@ -475,12 +480,18 @@ async function startGame() {
         resetGame();
         updateScore();
 
-        console.log("Fetching question IDs...");
-        const { data: idList, error } = await supabase.rpc('get_all_question_ids');
-        if (error) throw new Error(error.message);
-        console.log("Fetched question IDs:", idList);
-            
-      remainingQuestions = idList.map(item => item.id).sort(() => Math.random() - 0.5);
+        console.log("Fetching question IDs (direct query)...");
+        const { data: idList, error } = await supabase
+          .from('questions')
+          .select('id');
+        
+        if (error) throw error;
+        if (!idList || idList.length === 0) {
+          throw new Error("No questions found");
+        }
+        
+        remainingQuestions = idList.map(q => q.id).sort(() => Math.random() - 0.5);
+
         console.log("Remaining questions:", remainingQuestions);
 
         await preloadNextQuestions();
@@ -1015,19 +1026,22 @@ function seededRandom(seed) {
 }
 
 function subscribeToDailyChanges(userId) {
-    supabase
+    const channel = supabase
         .channel('daily-updates')
         .on('postgres_changes', {
             event: 'INSERT',
             schema: 'public',
             table: 'daily_attempts',
             filter: `user_id=eq.${userId}`
-        }, (payload) => {
+        }, () => {
             console.log('Daily challenge sync: locking button.');
             lockDailyButton();
         })
         .subscribe();
+
+    return channel;
 }
+
 
 
 // ====== MOBILE TAP FEEDBACK (THE FLASH) ======
@@ -1063,6 +1077,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
