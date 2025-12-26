@@ -432,6 +432,7 @@ async function fetchDailyStatus(userId) {
         .maybeSingle();
 
     if (data) {
+        localStorage.setItem('lastDailyMessage', displayMsg);
         localStorage.setItem('lastDailyScore', data.score ?? "0");
         localStorage.setItem('dailyPlayedDate', todayStr); // FIX 3: Ensure date is synced
         if (data.message) localStorage.setItem('lastDailyMessage', data.message);
@@ -1189,6 +1190,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
