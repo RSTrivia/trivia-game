@@ -494,7 +494,7 @@ async function startGame() {
 
         // UI setup FIRST
         document.body.classList.add('game-active'); 
-        endGame.running = false;
+        gameEnding = false;
 
         if (!game) throw new Error("Game element not found");
         game.classList.remove('hidden');
@@ -504,8 +504,10 @@ async function startGame() {
         startScreen.classList.add('hidden');
 
         if (!endScreen) throw new Error("End screen element not found");
+      
         endScreen.classList.add('hidden');
-
+        preloadQueue = [];
+        remainingQuestions = [];
         // Reset state (but keeps preloadQueue!)
         resetGame();
         updateScore();
@@ -1137,6 +1139,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
