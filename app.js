@@ -274,28 +274,8 @@ async function handleAuthChange(event, session) {
     const span = document.querySelector('#usernameSpan');
     const label = authBtn?.querySelector('.btn-label');
 
-    // 1. If no session, reset UI immediately and STOP
+    // 1. Logged Out State
     if (!session) {
-        username = 'Guest';
-        if (span) span.textContent = ' Guest';
-        // ... rest of your logout logic
-        return; 
-    }
-  
-        // User is logged in - fetch profile
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('username')
-            .eq('id', session.user.id)
-            .single();
-
-        username = profile?.username || 'Player';
-        if (span) span.textContent = ' ' + username;
-        if (label) label.textContent = 'Log Out';
-        
-        await fetchDailyStatus(session.user.id);
-    } else {
-        // Logged Out State - DO NOT FETCH ANYTHING
         username = 'Guest';
         if (span) span.textContent = ' Guest';
         if (label) label.textContent = 'Log In';
@@ -311,7 +291,23 @@ async function handleAuthChange(event, session) {
                 btn.style.pointerEvents = 'none';
             }
         });
+        return; // Stop here for guests
     }
+
+    // 2. Logged In State
+    // Fetch profile
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', session.user.id)
+        .single();
+
+    username = profile?.username || 'Player';
+    if (span) span.textContent = ' ' + username;
+    if (label) label.textContent = 'Log Out';
+    
+    // Sync their daily status
+    await fetchDailyStatus(session.user.id);
 }
 
 async function hasUserCompletedDaily(session) {
@@ -1138,6 +1134,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
