@@ -446,7 +446,7 @@ async function preloadNextQuestions() {
     let attempts = 0;
 
     while (
-        preloadQueue.length < 2 &&
+        preloadQueue.length < 3 &&
         remainingQuestions.length > 0 &&
         attempts < 10
     ) {
@@ -488,6 +488,8 @@ async function preloadNextQuestions() {
         if (question.question_image) {
             const img = new Image();
             img.src = question.question_image;
+            // .decode() ensures the image is ready to be painted without lag
+            img.decode().catch(e => console.debug("Image warming skipped:", e));
         }
     }
 }
@@ -1106,6 +1108,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
