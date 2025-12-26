@@ -552,10 +552,6 @@ async function startGame() {
     }
 }
 
-
-
-// Start the app
-init();
 async function loadQuestion() {
     // A. IMMEDIATE CLEANUP
     questionImage.style.display = 'none';
@@ -1117,6 +1113,7 @@ function subscribeToDailyChanges(userId) {
 document.addEventListener('DOMContentLoaded', () => {
   (async () => {
     //syncUsername();
+    await init();
     
     // This function applies the flash to any button we give it
     const applyFlash = (el) => {
@@ -1146,6 +1143,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
