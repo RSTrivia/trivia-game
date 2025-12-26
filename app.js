@@ -281,13 +281,14 @@ async function init() {
 
     // Standard Game Button - FIXED
     if (startBtn) {
-        startBtn.onclick = () => {
-            console.log("Starting Standard Game..."); // Debug log
-            isDailyMode = false;
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            loadSounds();
-            startGame();
-        };
+        startBtn.onclick = async () => {
+          console.log("Starting Standard Game...");
+          isDailyMode = false;
+          if (audioCtx.state === 'suspended') await audioCtx.resume();
+          await loadSounds();
+          startGame();
+      };
+
     }
 
     // Daily Game Button - FIXED
@@ -300,13 +301,18 @@ async function init() {
             if (played) return alert("You've already played today!");
     
             if (audioCtx.state === 'suspended') await audioCtx.resume();
-            loadSounds();
+            await loadSounds();
             isDailyMode = true;
             startDailyChallenge();
         };
     }
 
-
+    if (playAgainBtn) {
+        playAgainBtn.onclick = async () => {
+        isDailyMode = false;
+        await startGame();
+    };
+}
     // Run initial UI sync
     await refreshAuthUI();
 }
@@ -1140,6 +1146,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
