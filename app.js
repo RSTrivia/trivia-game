@@ -328,7 +328,9 @@ async function init() {
 }
   
   // This will check if a user is logged in and lock the button if they aren't
-    await syncDailyButton();
+  await syncDailyButton();
+  // This will check if a user has played daily mode already and will unlock it if they did
+  await updateShareButtonState();
 }
 
 // Replace your existing handleAuthChange with this:
@@ -1190,6 +1192,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
