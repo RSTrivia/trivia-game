@@ -805,11 +805,11 @@ async function endGame() {
 
 async function saveNormalScore(userId, currentUsername, finalScore) {
     try {
-        // 1. Fetch the existing high score for this user
+        // 1. Fetch the existing record for this specific username
         const { data: existingEntry, error: fetchError } = await supabase
             .from('public_leaderboard')
             .select('score')
-            .eq('user_id', userId)
+            .eq('username', currentUsername)
             .maybeSingle();
 
         if (fetchError) throw fetchError;
@@ -823,10 +823,9 @@ async function saveNormalScore(userId, currentUsername, finalScore) {
             const { error: upsertError } = await supabase
                 .from('public_leaderboard')
                 .upsert({ 
-                    user_id: userId, 
                     username: currentUsername, 
                     score: finalScore 
-                }, { onConflict: 'user_id' });
+                }, { onConflict: 'username' });
 
             if (upsertError) throw upsertError;
         } else {
@@ -1200,6 +1199,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
