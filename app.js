@@ -851,12 +851,8 @@ if (shareBtn) {
         const currentScore = localStorage.getItem('lastDailyScore') || "0";
         const currentMessage = localStorage.getItem('lastDailyMessage') || "Daily Challenge";
        // get the saved score from our fetchDailyStatus sync
-        let currentScore = localStorage.getItem('lastDailyScore') || "0";
+        //let currentScore = localStorage.getItem('lastDailyScore') || "0";
       // If the screen is empty (e.g. user refreshed), fall back to storage
-        if (!currentMessage || currentMessage === "" || currentMessage === "Game Over!") {
-            currentMessage = localStorage.getItem('lastDailyMessage') || "Daily Challenge";
-        }
-         
 
         try {
             const target = document.querySelector('.container');
@@ -1164,6 +1160,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
