@@ -533,15 +533,12 @@ async function startGame() {
         console.log("Remaining questions:", remainingQuestions);
         console.log("Preload queue before start:", preloadQueue);
 
-        // ✅ INSTANT START (correct place)
-        if (preloadQueue.length > 0) {
-            console.log("Instant start using preloaded questions...");
-            loadQuestion();
-            return;
-        }
-
-        // Otherwise preload & start
         await preloadNextQuestions();
+
+        if (preloadQueue.length === 0) {
+            throw new Error("Failed to preload first question");
+        }
+        
         loadQuestion();
 
     } catch (err) {
@@ -563,7 +560,11 @@ async function loadQuestion() {
     answersBox.innerHTML = '';
 
     // B. HARD END: nothing left anywhere
-    if (preloadQueue.length === 0 && remainingQuestions.length === 0) {
+    if (
+    preloadQueue.length === 0 &&
+    remainingQuestions.length === 0 &&
+    currentQuestion !== null
+    ) {
         await endGame();
         return;
     }
@@ -791,7 +792,7 @@ async function endGame() {
             );
         }
     }
-    gameEnding = false;
+    //gameEnding = false;
 }
 gameEnding = false;
 
@@ -1139,6 +1140,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
