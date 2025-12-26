@@ -240,8 +240,6 @@ async function init() {
             window.location.href = '/login.html';
         }
     };
-    }
-
     // 3. Game Buttons
     if (startBtn) {
         startBtn.onclick = async () => {
@@ -1121,6 +1119,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
