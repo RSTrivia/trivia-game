@@ -261,9 +261,7 @@ let isRefreshing = false;
 
 // ====== CORRECTED INITIALIZATION ======
 async function init() {
-    // Wait for DOM
-    await new Promise(res => document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', res) : res());
-
+    
     // Setup Auth Listener
     supabase.auth.onAuthStateChange(async (event, session) => {
         if (isRefreshing) return;
@@ -297,15 +295,17 @@ async function init() {
         dailyBtn.onclick = async () => {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) return alert("Log in to play Daily Mode!");
-            
+    
             const played = await hasUserCompletedDaily(session);
             if (played) return alert("You've already played today!");
-
+    
             if (audioCtx.state === 'suspended') await audioCtx.resume();
-            loadSounds(); 
+            loadSounds();
+            isDailyMode = true;
             startDailyChallenge();
         };
     }
+
 
     // Run initial UI sync
     await refreshAuthUI();
@@ -320,6 +320,7 @@ if (muteBtn) {
         muteBtn.classList.toggle('is-muted', muted);
     };
 }
+
 
 
 async function hasUserCompletedDaily(session) {
@@ -397,13 +398,12 @@ async function fetchDailyStatus(userId) {
 
 
 function lockDailyButton() {
-    if (dailyBtn) {
-        dailyBtn.classList.remove('is-active');
-        dailyBtn.classList.add('disabled');
-        dailyBtn.style.pointerEvents = 'none'; // Lock physically
-        dailyBtn.style.opacity = '0.5';
-    }
+    if (!dailyBtn) return;
+    dailyBtn.classList.add('disabled');
+    dailyBtn.classList.remove('is-active');
+    dailyBtn.onclick = () => alert("You've already played today!");
 }
+
 
 // ====== GAME ENGINE ======
 
@@ -1077,6 +1077,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
