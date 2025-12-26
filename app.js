@@ -698,103 +698,75 @@ async function endGame() {
     if (gameEnding) return;
     gameEnding = true;
     clearInterval(timer);
-  
-    // --- clean up the game -------------
+
+    // 1. PREPARE DATA FIRST (Quietly in background)
+    const { data: { session } } = await supabase.auth.getSession();
+    const scoreKey = Math.min(Math.max(score, 0), 10);
+    const options = dailyMessages[scoreKey] || ["Game Over!"];
+    const randomMsg = options[Math.floor(Math.random() * options.length)];
+    
+    // 2. WIPE GAME UI IMMEDIATELY 
+    // This prevents seeing old questions/answers behind the transition
     questionText.textContent = ''; 
     answersBox.innerHTML = '';
     questionImage.style.display = 'none';
     questionImage.src = ''; 
-    // -----------------------------------
-  
-    // UI Transitions
-    document.body.classList.remove('game-active'); 
-    game.classList.add('hidden');
-    endScreen.classList.remove('hidden');
-    
-    // Set final score number
-    if (finalScore) finalScore.textContent = score;
 
+    // 3. POPULATE END SCREEN BEFORE SHOWING IT
+    if (finalScore) finalScore.textContent = score;
     const gameOverTitle = document.getElementById('game-over-title');
     const gzTitle = document.getElementById('gz-title');
 
-    // Reset titles to be safe
+    // Reset visibility of titles
     if (gameOverTitle) gameOverTitle.classList.add('hidden');
     if (gzTitle) gzTitle.classList.add('hidden');
 
-     const { data: { session } } = await supabase.auth.getSession();
     if (isDailyMode) {
-        // 1. Daily Mode UI
         if (playAgainBtn) playAgainBtn.classList.add('hidden');
-        
-        // 2. Select Message (Cap score at 10)
-        const scoreKey = Math.min(Math.max(score, 0), 10);
-        const options = dailyMessages[scoreKey] || ["Game Over!"];
-        const randomMsg = options[Math.floor(Math.random() * options.length)];
-        
-        // 3. Update GameOver Title with flavor text
         if (gameOverTitle) {
             gameOverTitle.textContent = randomMsg;
             gameOverTitle.classList.remove('hidden');
         }
-
-        // 4. Save Score to Database
-        if (username && username !== 'Guest') {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                await supabase.from('daily_attempts')
-                    .update({ score: score })
-                    .eq('user_id', session.user.id)
-                    .eq('attempt_date', todayStr);
-            }
-        }
-        // 1. SAVE the score to localStorage so the share button can find it
-        localStorage.setItem('lastDailyScore', score); 
-        await updateShareButtonState(); 
-        localStorage.setItem('dailyPlayedDate', todayStr); 
-        localStorage.setItem('lastDailyMessage', randomMsg); // save random message
-      
-        // 3. Save Score to Database
-        if (session) {
-            await supabase
-                .from('daily_attempts')
-                .update({
-                    score: score,
-                    message: randomMsg
-                })
-                .eq('user_id', session.user.id)
-                .eq('attempt_date', todayStr);
-        }
-    
-        // Refresh the button state to unlock it
-        await updateShareButtonState();
-        isDailyMode = false; // Reset for next non-daily game
+        
+        // Save logic (Non-blocking)
+        saveDailyScore(session, randomMsg); 
     } else {
-        // Standard Mode UI
         if (playAgainBtn) playAgainBtn.classList.remove('hidden');
-        // This ensures the button refreshes to its "Locked" state for guests/standard play
-        updateShareButtonState();
-        // Show "Gz" if they finished all questions, otherwise "Game Over"
         if (score > 0 && remainingQuestions.length === 0 && preloadQueue.length === 0) {
-            const gzMessages = ['Gz!', 'Go touch grass', 'See you in Lumbridge'];
             if (gzTitle) {
-                gzTitle.textContent = gzMessages[Math.floor(Math.random() * gzMessages.length)];
+                gzTitle.textContent = "Gz!"; 
                 gzTitle.classList.remove('hidden');
             }
-        } else {
-            if (gameOverTitle) {
-                gameOverTitle.textContent = "Game Over!";
-                gameOverTitle.classList.remove('hidden');
-            }
-        }
-
-        if (session) {
-            await submitLeaderboardScore(
-                session.user.user_metadata?.username || 'Player',
-                score
-            );
+        } else if (gameOverTitle) {
+            gameOverTitle.textContent = "Game Over!";
+            gameOverTitle.classList.remove('hidden');
         }
     }
-    //gameEnding = false;
+
+    // 4. THE BIG SWAP (Final step)
+    // Use a tiny timeout or requestAnimationFrame to ensure DOM updates are ready
+    requestAnimationFrame(() => {
+        document.body.classList.remove('game-active'); 
+        game.classList.add('hidden');
+        endScreen.classList.remove('hidden');
+        updateShareButtonState();
+        gameEnding = false;
+    });
+}
+
+// Helper to keep endGame clean
+async function saveDailyScore(session, msg) {
+    localStorage.setItem('lastDailyScore', score); 
+    localStorage.setItem('dailyPlayedDate', todayStr); 
+    localStorage.setItem('lastDailyMessage', msg);
+
+    if (session) {
+        await supabase.from('daily_attempts').update({
+            score: score,
+            message: msg
+        }).eq('user_id', session.user.id).eq('attempt_date', todayStr);
+    }
+    updateShareButtonState();
 }
 gameEnding = false;
 
@@ -1143,6 +1115,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
