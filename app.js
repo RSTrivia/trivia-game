@@ -772,6 +772,11 @@ async function endGame() {
         saveDailyScore(session, randomMsg); 
     } else {
         if (playAgainBtn) playAgainBtn.classList.remove('hidden');
+        // Trigger the high-score save
+        if (session && score > 0) {
+            // We pass the user ID, the current username, and the score achieved
+            saveNormalScore(session.user.id, username, score);
+        }
         if (score > 0 && remainingQuestions.length === 0 && preloadQueue.length === 0) {
             if (gzTitle) {
               const gzMessages = ['Gz!', 'Go touch grass', 'See you in Lumbridge'];
@@ -796,6 +801,43 @@ async function endGame() {
         gameEnding = false;
     });
 }
+
+
+async function saveNormalScore(userId, currentUsername, finalScore) {
+    try {
+        // 1. Fetch the existing high score for this user
+        const { data: existingEntry, error: fetchError } = await supabase
+            .from('public_leaderboard')
+            .select('score')
+            .eq('user_id', userId)
+            .maybeSingle();
+
+        if (fetchError) throw fetchError;
+
+        // 2. Logic: Only proceed if there is no previous score OR the new score is higher
+        const isFirstTime = !existingEntry;
+        const isNewRecord = existingEntry && finalScore > existingEntry.score;
+
+        if (isFirstTime || isNewRecord) {
+           
+            const { error: upsertError } = await supabase
+                .from('public_leaderboard')
+                .upsert({ 
+                    user_id: userId, 
+                    username: currentUsername, 
+                    score: finalScore 
+                }, { onConflict: 'user_id' });
+
+            if (upsertError) throw upsertError;
+        } else {
+            //console.log(`Score of ${finalScore} did not beat personal best of ${existingEntry.score}.`);
+        }
+
+    } catch (err) {
+        //console.error("Leaderboard Save Error:", err.message);
+    }
+}
+
 
 // Helper to keep endGame clean
 async function saveDailyScore(session, msg) {
@@ -1158,6 +1200,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
