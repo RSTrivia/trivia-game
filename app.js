@@ -774,8 +774,8 @@ async function endGame() {
         if (playAgainBtn) playAgainBtn.classList.remove('hidden');
         // Trigger the high-score save
         if (session && score > 0) {
-            // We pass the user ID, the current username, and the score achieved
-            saveNormalScore(session.user.id, username, score);
+            // We pass the current username, and the score achieved
+            saveNormalScore(username, score);
         }
         if (score > 0 && remainingQuestions.length === 0 && preloadQueue.length === 0) {
             if (gzTitle) {
@@ -803,7 +803,7 @@ async function endGame() {
 }
 
 
-async function saveNormalScore(userId, currentUsername, finalScore) {
+async function saveNormalScore(currentUsername, finalScore) {
     try {
         // 1. Fetch the existing record for this specific username
         const { data: existingEntry, error: fetchError } = await supabase
@@ -1199,6 +1199,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
