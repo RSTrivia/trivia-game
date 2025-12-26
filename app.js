@@ -228,24 +228,25 @@ async function refreshAuthUI() {
 
 authBtn.onclick = async () => {
     const { data: { session } } = await supabase.auth.getSession();
-    
-    if (session) {
-        // Clear EVERYTHING manually first
-        localStorage.clear(); 
-        sessionStorage.clear();
-        
-        // Sign out and WAIT for it
-        await supabase.auth.signOut(); 
-        
-        // Small delay to let the browser catch up
-        await new Promise(r => setTimeout(r, 100));
 
-        // Redirect
-        window.location.replace('index.html'); 
+    if (session) {
+        // 1. Clear storage
+        localStorage.clear();
+        sessionStorage.clear();
+
+        // 2. Sign out
+        await supabase.auth.signOut();
+
+        // 3. Update the UI immediately
+        await refreshAuthUI();
+
+        // 4. Optional: Redirect to index.html after UI update
+        // window.location.replace('index.html');
     } else {
         window.location.href = 'login.html';
     }
 };
+
 
 async function syncDailyButton() {
     const { data: { session } } = await supabase.auth.getSession();
@@ -1162,6 +1163,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
