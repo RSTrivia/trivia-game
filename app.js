@@ -312,7 +312,8 @@ async function init() {
         isDailyMode = false;
         await startGame();
     };
-    if (mainMenuBtn) {  
+}
+  if (mainMenuBtn) {  
         mainMenuBtn.onclick = async () => {
         preloadQueue = []; // Clear the buffer only when going back to menu
         // Manual UI Reset instead:
@@ -320,7 +321,7 @@ async function init() {
         document.getElementById('start-screen').classList.remove('hidden');
         document.body.classList.remove('game-active');
     };
-}
+  }
     // Run initial UI sync
     await refreshAuthUI();
 }
@@ -1151,6 +1152,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
