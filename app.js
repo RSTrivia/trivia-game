@@ -847,17 +847,12 @@ if (shareBtn) {
         return;
     }
         if (shareBtn.classList.contains('is-disabled')) return;
-
-        // 1. IMPROVED CAPTURE: Check screen first, then localStorage
-        let currentScore = document.getElementById('finalScore')?.textContent;
-       // If screen says 0, try to get the saved score from our fetchDailyStatus sync
-        if (!currentScore || currentScore === "0") {
-            currentScore = localStorage.getItem('lastDailyScore') || "0";
-        }
-      
-        // We get the message currently visible on the screen
-        let currentMessage = localStorage.getItem('lastDailyMessage') || "Daily Challenge";
-        // If the screen is empty (e.g. user refreshed), fall back to storage
+        // FORCE the daily values regardless of what is on screen
+        const currentScore = localStorage.getItem('lastDailyScore') || "0";
+        const currentMessage = localStorage.getItem('lastDailyMessage') || "Daily Challenge";
+       // get the saved score from our fetchDailyStatus sync
+        let currentScore = localStorage.getItem('lastDailyScore') || "0";
+      // If the screen is empty (e.g. user refreshed), fall back to storage
         if (!currentMessage || currentMessage === "" || currentMessage === "Game Over!") {
             currentMessage = localStorage.getItem('lastDailyMessage') || "Daily Challenge";
         }
@@ -865,10 +860,8 @@ if (shareBtn) {
 
         try {
             const target = document.querySelector('.container');
-            const savedMsg = localStorage.getItem('lastDailyMessage') || "Daily Challenge";
-          
-            shareBtn.style.opacity = '0';
             const muteBtn = document.getElementById('muteBtn');
+            shareBtn.style.opacity = '0';
             if (muteBtn) muteBtn.style.opacity = '0';
 
             const canvas = await html2canvas(target, {
@@ -925,10 +918,6 @@ if (shareBtn) {
                         const finalScoreElem = clonedDoc.getElementById('finalScore');
                         const msgTitleElem = clonedDoc.getElementById('game-over-title');
                         // 1. Get the message: First from the actual screen, then fallback to storage
-                        let messageToDisplay = document.getElementById('game-over-title')?.textContent;
-                        if (!messageToDisplay || messageToDisplay === "Game Over!") {
-                            messageToDisplay = localStorage.getItem('lastDailyMessage') || "Daily Challenge Completed!";
-                        }
                                               
                         if (finalScoreElem) {
                             finalScoreElem.textContent = currentScore;
@@ -1175,6 +1164,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
