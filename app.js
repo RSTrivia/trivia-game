@@ -174,6 +174,7 @@ let timeLeft = 15;
 let isDailyMode = false;
 
 // ====== INITIAL UI SYNC ======
+// Replace your existing refreshAuthUI with this:
 async function refreshAuthUI() {
     const { data: { session } } = await supabase.auth.getSession();
     const span = document.querySelector('#usernameSpan');
@@ -186,19 +187,26 @@ async function refreshAuthUI() {
         [dailyBtn, shareBtn].forEach(btn => {
             if (btn) {
                 btn.classList.add('is-disabled');
-                btn.classList.remove('is-active');
                 btn.style.pointerEvents = 'none';
                 btn.style.opacity = '0.5';
             }
         });
     } else {
-        username = session.user.user_metadata?.username || 'Player';
+        // --- CHANGE START: Fetch from profiles table ---
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('username')
+            .eq('id', session.user.id)
+            .single();
+
+        username = profile?.username || 'Player';
+        // --- CHANGE END ---
+
         if (span) span.textContent = ' ' + username;
         if (label) label.textContent = 'Log Out';
         await fetchDailyStatus(session.user.id);
     }
 }
-
 async function syncDailyButton() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!dailyBtn) return;
@@ -292,25 +300,32 @@ async function init() {
     await refreshAuthUI();
 }
 
+// Replace your existing handleAuthChange with this:
 async function handleAuthChange(event, session) {
     console.log('Auth event:', event);
     const span = document.querySelector('#usernameSpan');
     const label = authBtn?.querySelector('.btn-label');
 
     if (session) {
-        // LOGGED IN
-        username = session.user.user_metadata?.username || 'Player';
+        // --- CHANGE START: Fetch from profiles table ---
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('username')
+            .eq('id', session.user.id)
+            .single();
+
+        username = profile?.username || 'Player';
+        // --- CHANGE END ---
+
         if (span) span.textContent = ' ' + username;
         if (label) label.textContent = 'Log Out';
         
         await fetchDailyStatus(session.user.id);
     } else {
-        // LOGGED OUT
         username = 'Guest';
         if (span) span.textContent = ' Guest';
         if (label) label.textContent = 'Log In';
         
-        // Reset buttons for Guest
         [dailyBtn, shareBtn].forEach(btn => {
             if (btn) {
                 btn.classList.add('is-disabled');
@@ -1135,6 +1150,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
