@@ -206,46 +206,26 @@ let isRefreshing = false;
 
 // ====== INITIALIZATION ======
 async function init() {
-  // 1. Force a server-side check on load
-    const { data: { user }, error } = await supabase.auth.getUser();
+ 
+    // 1. Get the current session
+    const { data: { session }, error } = await supabase.auth.getSession();
 
-    if (error || !user) {
-        // If the server rejects the user, they aren't actually logged in 
-        // (even if localStorage says they are). Clean up the "Zombie" session.
-        console.warn("Session invalid or expired on server.");
-        localStorage.removeItem('supabase.auth.token'); // Specific key
-        handleAuthChange('SIGNED_OUT', null);
-    } else {
-        // Session is healthy!
-        const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+        // User is logged in on this device!
         handleAuthChange('INITIAL_LOAD', session);
+    } else {
+        // No session on this device, user is a guest
+        handleAuthChange('SIGNED_OUT', null);
     }
 
-    // 2. Auth Listener (keep this to handle live logouts)
-    supabase.auth.onAuthStateChange(async (event, session) => {
-        console.log("Auth Event:", event);
-        
-        // If Supabase says we are signed out, or if there is no session
-        // we MUST wipe everything manually to stop the "zombie" login.
-        if (event === 'SIGNED_OUT' || !session) {
-            // Wipe Supabase's specific local keys
-            Object.keys(localStorage).forEach(key => {
-                if (key.includes('supabase.auth.token')) {
-                    localStorage.removeItem(key);
-                }
-            });
-            
-            // Wipe your custom game caches
-            localStorage.removeItem('cachedLoggedIn');
-            localStorage.removeItem('cachedUsername');
-            
-            // Force the UI update
+    // 2. Listen for changes (like logging out)
+    supabase.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_OUT') {
             handleAuthChange('SIGNED_OUT', null);
-        } else {
+        } else if (session) {
             handleAuthChange(event, session);
         }
     });
-  
     // 2. Manually trigger one check for the current session on load
     const { data: { session } } = await supabase.auth.getSession();
     handleAuthChange('INITIAL_LOAD', session);
@@ -1192,6 +1172,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
