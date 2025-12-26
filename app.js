@@ -564,12 +564,12 @@ async function loadQuestion() {
 
     // B, C, D. LOGIC & BUFFER CHECKS (Same as yours)
     if (preloadQueue.length === 0 && remainingQuestions.length === 0 && currentQuestion !== null) {
-        await endGame();
+        await ();
         return;
     }
     if (preloadQueue.length === 0) await preloadNextQuestions();
     if (preloadQueue.length === 0) {
-        await endGame();
+        await ();
         return;
     }
 
@@ -640,7 +640,7 @@ async function handleTimeout() {
     if (isDailyMode) {
         setTimeout(loadQuestion, 1500);
     } else {
-        setTimeout(endGame, 1000);
+        setTimeout(, 1000);
     }
 }
 
@@ -669,7 +669,7 @@ async function checkAnswer(choiceId, btn) {
         if (isDailyMode) {
             setTimeout(loadQuestion, 1500);
         } else {
-            setTimeout(endGame, 1000);
+            setTimeout(, 1000);
         }
     }
 }
@@ -725,8 +725,7 @@ async function endGame() {
         if (playAgainBtn) playAgainBtn.classList.remove('hidden');
       // THE FIX: Clear daily-specific storage so the Share button 
       // knows NOT to show daily info for a normal run
-      localStorage.removeItem('lastDailyScore'); 
-      localStorage.removeItem('lastDailyMessage');
+
         if (score > 0 && remainingQuestions.length === 0 && preloadQueue.length === 0) {
             if (gzTitle) {
               const gzMessages = ['Gz!', 'Go touch grass', 'See you in Lumbridge'];
@@ -1113,6 +1112,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
