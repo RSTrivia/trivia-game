@@ -177,7 +177,7 @@ let isDailyMode = false;
 async function refreshAuthUI() {
     const { data: { session } } = await supabase.auth.getSession();
     const span = document.querySelector('#usernameSpan');
-    const label = authBtn?.querySelector('.btn-label');
+    const label = ?.querySelector('.btn-label');
 
     if (!session || !session.user) {
       username = 'Guest';
@@ -279,46 +279,61 @@ async function init() {
     if (isRefreshing) return;
     isRefreshing = true;
 
-    // Remove old subscriptions if any
-    if (dailySubscription) supabase.removeChannel(dailySubscription);
+    // Remove old daily subscription if exists
+    if (dailySubscription) {
+        supabase.removeChannel(dailySubscription);
+        dailySubscription = null;
+    }
 
     const span = document.querySelector('#usernameSpan');
     const label = authBtn?.querySelector('.btn-label');
 
     if (!session || !session.user) {
-        // LOGGED OUT: set Guest immediately
+        // --------------------------
+        // LOGGED OUT STATE
+        // --------------------------
         username = 'Guest';
         if (span) span.textContent = ' Guest';
         if (label) label.textContent = 'Log In';
 
         [dailyBtn, shareBtn].forEach(btn => {
-            if (btn) btn.classList.add('is-disabled');
+            if (btn) {
+                btn.classList.add('is-disabled');
+                btn.classList.remove('is-active');
+                btn.style.pointerEvents = 'none';
+                btn.style.opacity = '0.5';
+            }
         });
 
         isRefreshing = false;
         return;
     }
 
-    // LOGGED IN
+    // --------------------------
+    // LOGGED IN STATE
+    // --------------------------
     if (label) label.textContent = 'Log Out';
 
-    const { data: profile } = await supabase
+    const { data: profile, error } = await supabase
         .from('profiles')
         .select('username')
         .eq('id', session.user.id)
         .maybeSingle();
 
+    if (error) console.error("Profile fetch error:", error);
+
     username = profile?.username || 'Player';
     if (span) span.textContent = ' ' + username;
 
-    // Subscribe to daily updates
+    // Subscribe to real-time daily updates
     dailySubscription = subscribeToDailyChanges(session.user.id);
 
-    // Fetch daily status and update buttons
+    // Fetch daily status and update daily/share buttons
     await fetchDailyStatus(session.user.id);
 
     isRefreshing = false;
 });
+
 
 
     // Standard Game Button - FIXED
@@ -1194,6 +1209,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
