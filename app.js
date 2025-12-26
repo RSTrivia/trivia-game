@@ -491,47 +491,62 @@ async function preloadNextQuestions() {
 async function startGame() {
     try {
         console.log("startGame called");
-        if (preloadQueue.length > 0) {
-            console.log("Instant start using preloaded questions...");
-            loadQuestion();
-        }
 
-        // UI setup
+        // UI setup FIRST
         document.body.classList.add('game-active'); 
-        gameEnding = false;
+        endGame.running = false;
+
         if (!game) throw new Error("Game element not found");
         game.classList.remove('hidden');
+
         const startScreen = document.getElementById('start-screen');
         if (!startScreen) throw new Error("Start screen element not found");
         startScreen.classList.add('hidden');
+
         if (!endScreen) throw new Error("End screen element not found");
         endScreen.classList.add('hidden');
 
+        // Reset state (but keeps preloadQueue!)
         resetGame();
         updateScore();
 
-        console.log("Fetching question IDs (direct query)...");
+        // Fetch IDs
+        console.log("Fetching question IDs...");
         const { data: idList, error } = await supabase
-          .from('questions')
-          .select('id');
-        
+            .from('questions')
+            .select('id');
+
         if (error) throw error;
         if (!idList || idList.length === 0) {
-          throw new Error("No questions found");
+            throw new Error("No questions found");
         }
-        
-        remainingQuestions = idList.map(q => q.id).sort(() => Math.random() - 0.5);
+
+        // Remove IDs already in preloadQueue
+        const preloadedIds = preloadQueue.map(q => q.id);
+        remainingQuestions = idList
+            .map(q => q.id)
+            .filter(id => !preloadedIds.includes(id))
+            .sort(() => Math.random() - 0.5);
 
         console.log("Remaining questions:", remainingQuestions);
+        console.log("Preload queue before start:", preloadQueue);
 
+        // ✅ INSTANT START (correct place)
+        if (preloadQueue.length > 0) {
+            console.log("Instant start using preloaded questions...");
+            loadQuestion();
+            return;
+        }
+
+        // Otherwise preload & start
         await preloadNextQuestions();
-        console.log("Preload queue:", preloadQueue);
-
         loadQuestion();
+
     } catch (err) {
         console.error("startGame error:", err);
     }
 }
+
 
 
 // Start the app
@@ -1122,6 +1137,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
