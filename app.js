@@ -764,6 +764,7 @@ async function endGame() {
               const randomMessage = gzMessages[Math.floor(Math.random() * gzMessages.length)];
                gzTitle.textContent = randomMessage;
                gzTitle.classList.remove('hidden');
+            }
             // Hide the game over title entirely for a Gz
             if (gameOverTitle) {
               gameOverTitle.classList.add('hidden');
@@ -771,12 +772,11 @@ async function endGame() {
             }
             // 3. Otherwise, show standard Game Over
         } else if (gameOverTitle) {
-            if (gzTitle) gzTitle.classList.add('hidden'); // Hide Gz if it was there from before
+            //if (gzTitle) gzTitle.classList.add('hidden'); // Hide Gz if it was there from before
             gameOverTitle.textContent = "Game Over!";
             gameOverTitle.classList.remove('hidden');
         }
       }
-    }
     // 4. THE BIG SWAP (Final step)
     // Use a tiny timeout or requestAnimationFrame to ensure DOM updates are ready
     requestAnimationFrame(() => {
@@ -1160,6 +1160,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
