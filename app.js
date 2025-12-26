@@ -722,8 +722,11 @@ async function endGame() {
         if (playAgainBtn) playAgainBtn.classList.remove('hidden');
         if (score > 0 && remainingQuestions.length === 0 && preloadQueue.length === 0) {
             if (gzTitle) {
-                gzTitle.textContent = "Gz!"; 
-                gzTitle.classList.remove('hidden');
+              const gzMessages = ['Gz!', 'Go touch grass', 'See you in Lumbridge'];
+              const randomMessage = gzMessages[Math.floor(Math.random() * gzMessages.length)];
+              gzTitle.textContent = randomMessage;
+              gzTitle.classList.remove('hidden');
+              gameOverTitle.classList.add('hidden');
             }
         } else if (gameOverTitle) {
             gameOverTitle.textContent = "Game Over!";
@@ -1103,6 +1106,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
