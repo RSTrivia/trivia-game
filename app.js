@@ -5,7 +5,7 @@ const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 // ====== UI & STATE ======
 const cachedMuted = localStorage.getItem('muted') === 'true';
 let dailySubscription = null; // Track this globally to prevent duplicates
-let username = 'Guest';
+let username = '';
 let gameEnding = false;
 const shareBtn = document.getElementById('shareBtn');
 const startBtn = document.getElementById('startBtn');
@@ -311,6 +311,14 @@ async function init() {
         playAgainBtn.onclick = async () => {
         isDailyMode = false;
         await startGame();
+    };
+    if (MainMenuBtn) {  
+        mainMenuBtn.onclick = async () => {
+        preloadQueue = []; // Clear the buffer only when going back to menu
+        // Manual UI Reset instead:
+        document.getElementById('end-screen').classList.add('hidden');
+        document.getElementById('start-screen').classList.remove('hidden');
+        document.body.classList.remove('game-active');
     };
 }
     // Run initial UI sync
@@ -1143,6 +1151,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
