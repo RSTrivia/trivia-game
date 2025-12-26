@@ -180,72 +180,29 @@ async function refreshAuthUI() {
     const label = authBtn?.querySelector('.btn-label');
 
     if (!session || !session.user) {
-      username = 'Guest';
-      if (span) span.textContent = ' Guest';
-      if (label) label.textContent = 'Log In';
-  
-      [dailyBtn, shareBtn].forEach(btn => {
-          if (btn) btn.classList.add('is-disabled');
-      });
-  
-      return; // Exit early
-  }
-    // 1. Initial State: Assume Guest
-    //username = 'Guest';
-    //if (span) span.textContent = ' Guest';
-    //if (label) label.textContent = 'Log In';
-    
-    // Explicitly disable these until session is proven
-    [dailyBtn, shareBtn].forEach(btn => {
-        if (btn) {
-            btn.classList.add('is-disabled', 'disabled');
-            btn.classList.remove('is-active');
-            //btn.style.opacity = '0.5';
-            //btn.style.pointerEvents = 'none';
-        }
-    });
-
-    // 2. If Session exists, upgrade UI
-    if (session && session.user) {
-        if (label) label.textContent = 'Log Out';
-        
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('username')
-            .eq('id', session.user.id)
-            .maybeSingle();
-
-        username = profile?.username || 'Player';
-        if (span) span.textContent = ' ' + username;
-        
-        // Fetch daily status from DB and THEN update buttons
-        await fetchDailyStatus(session.user.id);
+        username = 'Guest';
+        if (span) span.textContent = ' Guest';
+        if (label) label.textContent = 'Log In';
+        [dailyBtn, shareBtn].forEach(btn => {
+            if (btn) {
+                btn.classList.add('is-disabled');
+                btn.classList.remove('is-active');
+                btn.style.pointerEvents = 'none';
+                btn.style.opacity = '0.5';
+            }
+        });
     } else {
-        localStorage.removeItem('cachedLoggedIn');
-        localStorage.removeItem('cachedUsername');
+        username = session.user.user_metadata?.username || 'Player';
+        if (span) span.textContent = ' ' + username;
+        if (label) label.textContent = 'Log Out';
+        await fetchDailyStatus(session.user.id);
     }
 }
 
-authBtn.onclick = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-
-    if (session) {
-        // 1. Clear storage
-        localStorage.clear();
-        sessionStorage.clear();
-
-        // 2. Sign out
-        await supabase.auth.signOut();
-
-        // 3. Update the UI immediately
-        await refreshAuthUI();
-
-        // 4. Optional: Redirect to index.html after UI update
-        // window.location.replace('index.html');
-    } else {
-        window.location.href = 'login.html';
-    }
-};
+supabase.auth.onAuthStateChange(async (event, session) => {
+    console.log('Auth state changed:', event, session);
+    await refreshAuthUI();
+});
 
 
 async function syncDailyButton() {
@@ -1209,6 +1166,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
