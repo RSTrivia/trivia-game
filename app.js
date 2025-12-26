@@ -439,32 +439,62 @@ function resetGame() {
 
 async function preloadNextQuestions() {
     let attempts = 0;
-    while (preloadQueue.length < 2 && remainingQuestions.length > 0 && attempts < 10) {
-        attempts++;
-        const index = Math.floor(Math.random() * remainingQuestions.length);
-        const qId = remainingQuestions[index]; 
 
-        // Skip if already in current question or preloadQueue
-        if ((currentQuestion && qId === currentQuestion.id) || preloadQueue.some(p => p.id === qId)) {
+    while (
+        preloadQueue.length < 2 &&
+        remainingQuestions.length > 0 &&
+        attempts < 10
+    ) {
+        attempts++;
+
+        // 1. Pick a random ID
+        const index = Math.floor(Math.random() * remainingQuestions.length);
+        const qId = remainingQuestions[index];
+
+        // 2. REMOVE IT IMMEDIATELY (critical to avoid infinite loops)
+        remainingQuestions.splice(index, 1);
+
+        // 3. Skip duplicates safely
+        if (
+            (currentQuestion && qId === currentQuestion.id) ||
+            preloadQueue.some(q => q.id === qId)
+        ) {
             continue;
         }
 
-        remainingQuestions.splice(index, 1);
+        // 4. Fetch question data
+        const { data, error } = await supabase.rpc(
+            'get_question_by_id',
+            { input_id: qId }
+        );
 
-        const { data, error } = await supabase.rpc('get_question_by_id', { input_id: qId });
-        if (!error && data && data[0]) {
-            preloadQueue.push(Array.isArray(data) ? data[0] : data);
-            if (data[0].question_image) {
-                const img = new Image();
-                img.src = data[0].question_image;
-            }
+        // 5. If fetch fails, continue — never block the game
+        if (error || !data || !data[0]) {
+            console.warn("Failed to preload question:", qId, error);
+            continue;
+        }
+
+        const question = data[0];
+
+        // 6. Push to preload buffer
+        preloadQueue.push(question);
+
+        // 7. Warm image cache (non-blocking)
+        if (question.question_image) {
+            const img = new Image();
+            img.src = question.question_image;
         }
     }
 }
 
+
 async function startGame() {
     try {
         console.log("startGame called");
+        if (preloadQueue.length > 0) {
+            console.log("Instant start using preloaded questions...");
+            loadQuestion();
+        }
 
         // UI setup
         document.body.classList.add('game-active'); 
@@ -507,59 +537,74 @@ async function startGame() {
 // Start the app
 init();
 async function loadQuestion() {
-    // A. IMMEDIATE CLEANUP: Hide and clear before doing anything else
+    // A. IMMEDIATE CLEANUP
     questionImage.style.display = 'none';
-    questionImage.style.opacity = '0'; // Extra safety
-    questionImage.src = ''; 
-  
+    questionImage.style.opacity = '0';
+    questionImage.src = '';
+
     questionText.textContent = '';
     answersBox.innerHTML = '';
 
+    // B. HARD END: nothing left anywhere
     if (preloadQueue.length === 0 && remainingQuestions.length === 0) {
         await endGame();
         return;
     }
-    
-    if (preloadQueue.length === 0) await preloadNextQuestions();
 
+    // C. REFILL BUFFER IF NEEDED (this was missing)
+    if (preloadQueue.length === 0) {
+        await preloadNextQuestions();
+    }
+
+    // D. SAFETY CHECK (after refill attempt)
+    if (preloadQueue.length === 0) {
+        console.warn("No questions could be preloaded — ending game");
+        await endGame();
+        return;
+    }
+
+    // E. PULL QUESTION
     currentQuestion = preloadQueue.shift();
-    preloadNextQuestions(); 
 
-    // B. SET TEXT
+    // F. BACKGROUND PRELOAD NEXT
+    preloadNextQuestions();
+
+    // G. SET QUESTION TEXT
     questionText.textContent = currentQuestion.question;
 
-   // 2. DETACHED LOADING: Load the image in a background object
+    // H. IMAGE (detached load)
     if (currentQuestion.question_image) {
         const tempImg = new Image();
         tempImg.onload = () => {
-            // ONLY execute this when the image is 100% ready in the cache
             questionImage.src = currentQuestion.question_image;
             questionImage.style.display = 'block';
             questionImage.style.opacity = '1';
         };
-        // Trigger the background load
         tempImg.src = currentQuestion.question_image;
     }
 
-    // D. RENDER ANSWERS
-    let answers = [
+    // I. RENDER ANSWERS
+    const answers = [
         { text: currentQuestion.answer_a, id: 1 },
         { text: currentQuestion.answer_b, id: 2 },
         { text: currentQuestion.answer_c, id: 3 },
         { text: currentQuestion.answer_d, id: 4 }
-    ].filter(a => a.text).sort(() => Math.random() - 0.5);
-    
-    answers.forEach((ans) => {
+    ]
+        .filter(a => a.text)
+        .sort(() => Math.random() - 0.5);
+
+    answers.forEach(ans => {
         const btn = document.createElement('button');
         btn.textContent = ans.text;
         btn.classList.add('answer-btn');
-        btn.dataset.answerId = ans.id; 
+        btn.dataset.answerId = ans.id;
         btn.onclick = () => checkAnswer(ans.id, btn);
         answersBox.appendChild(btn);
     });
 
     startTimer();
 }
+
 
 function startTimer() {
     clearInterval(timer);
@@ -1077,6 +1122,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
