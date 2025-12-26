@@ -165,7 +165,8 @@ let muted = cachedMuted;
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 const todayStr = new Date().toISOString().split('T')[0];
 let score = 0;
-let remainingQuestions = [];
+let masterQuestionPool = []; // This holds ALL 510 IDs from Supabase
+let remainingQuestions = []; // This holds what's left for the CURRENT SESSION
 let currentQuestion = null;
 let currentQuestionIndex = 0;
 let preloadQueue = []; 
@@ -497,55 +498,45 @@ async function preloadNextQuestions() {
 
 async function startGame() {
     try {
-        console.log("startGame called");
-
-        // UI setup FIRST
-        document.body.classList.add('game-active'); 
+        document.body.classList.add('game-active');
         gameEnding = false;
-
-        if (!game) throw new Error("Game element not found");
         game.classList.remove('hidden');
-
-        const startScreen = document.getElementById('start-screen');
-        if (!startScreen) throw new Error("Start screen element not found");
-        startScreen.classList.add('hidden');
-
-        if (!endScreen) throw new Error("End screen element not found");
-      
+        document.getElementById('start-screen').classList.add('hidden');
         endScreen.classList.add('hidden');
-        preloadQueue = [];
-        remainingQuestions = [];
-        // Reset state (but keeps preloadQueue!)
-        resetGame();
-        updateScore();
 
-        // Fetch IDs
-        console.log("Fetching question IDs...");
-        const { data: idList, error } = await supabase
-            .from('questions')
-            .select('id');
-
-        if (error) throw error;
-        if (!idList || idList.length === 0) {
-            throw new Error("No questions found");
-        }
-
-        // Remove IDs already in preloadQueue
-        const preloadedIds = preloadQueue.map(q => q.id);
-        remainingQuestions = idList
-            .map(q => q.id)
-            .filter(id => !preloadedIds.includes(id))
-            .sort(() => Math.random() - 0.5);
-
-        console.log("Remaining questions:", remainingQuestions);
-        console.log("Preload queue before start:", preloadQueue);
-
-        await preloadNextQuestions();
-
-        if (preloadQueue.length === 0) {
-            throw new Error("Failed to preload first question");
-        }
+        // --- THE POOL FIX ---
         
+        // Step A: If we've NEVER fetched questions (first load), get all 510 IDs
+        if (masterQuestionPool.length === 0) {
+            const { data: idList, error } = await supabase.from('questions').select('id');
+            if (error) throw error;
+            masterQuestionPool = idList.map(q => q.id);
+        }
+
+        // Step B: Every time a NEW GAME starts, we refill remainingQuestions from the pool
+        // This ensures Game 2 starts with a full deck of 510 again.
+        remainingQuestions = [...masterQuestionPool].sort(() => Math.random() - 0.5);
+
+        // Step C: If we have leftovers in the preloadQueue from a previous game,
+        // remove those specific IDs from our new remainingQuestions list 
+        // so they don't appear twice in the same game.
+        const bufferedIds = preloadQueue.map(q => q.id);
+        remainingQuestions = remainingQuestions.filter(id => !bufferedIds.includes(id));
+
+        // Standard Reset
+        clearInterval(timer);
+        score = 0;
+        currentQuestion = null;
+        updateScore();
+        
+        // UI Clean
+        questionText.textContent = '';
+        answersBox.innerHTML = '';
+        questionImage.style.display = 'none';
+        questionImage.src = '';
+
+        // Start preloading (if buffer is < 3)
+        await preloadNextQuestions();
         loadQuestion();
 
     } catch (err) {
@@ -1107,6 +1098,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
