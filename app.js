@@ -206,17 +206,45 @@ let isRefreshing = false;
 
 // ====== INITIALIZATION ======
 async function init() {
-    // 1. Setup Auth Listener
-    supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Auth Event:", event); // Debugging: See what Supabase is saying
-      
-      if (event === 'SIGNED_OUT' || (event === 'TOKEN_REFRESHED' && !session)) {
-          // Force the UI back to Guest mode
-          handleAuthChange('LOGOUT_FORCE', null);
-      } else {
-          handleAuthChange(event, session);
-      }
-  });
+  // 1. Force a server-side check on load
+    const { data: { user }, error } = await supabase.auth.getUser();
+
+    if (error || !user) {
+        // If the server rejects the user, they aren't actually logged in 
+        // (even if localStorage says they are). Clean up the "Zombie" session.
+        console.warn("Session invalid or expired on server.");
+        localStorage.removeItem('supabase.auth.token'); // Specific key
+        handleAuthChange('SIGNED_OUT', null);
+    } else {
+        // Session is healthy!
+        const { data: { session } } = await supabase.auth.getSession();
+        handleAuthChange('INITIAL_LOAD', session);
+    }
+
+    // 2. Auth Listener (keep this to handle live logouts)
+    supabase.auth.onAuthStateChange(async (event, session) => {
+        console.log("Auth Event:", event);
+        
+        // If Supabase says we are signed out, or if there is no session
+        // we MUST wipe everything manually to stop the "zombie" login.
+        if (event === 'SIGNED_OUT' || !session) {
+            // Wipe Supabase's specific local keys
+            Object.keys(localStorage).forEach(key => {
+                if (key.includes('supabase.auth.token')) {
+                    localStorage.removeItem(key);
+                }
+            });
+            
+            // Wipe your custom game caches
+            localStorage.removeItem('cachedLoggedIn');
+            localStorage.removeItem('cachedUsername');
+            
+            // Force the UI update
+            handleAuthChange('SIGNED_OUT', null);
+        } else {
+            handleAuthChange(event, session);
+        }
+    });
   
     // 2. Manually trigger one check for the current session on load
     const { data: { session } } = await supabase.auth.getSession();
@@ -227,29 +255,13 @@ async function init() {
     const { data: { session } } = await supabase.auth.getSession();
     
     if (session) {
-        // 1. Attempt server-side logout
+        // Try to tell the server we are leaving
         const { error } = await supabase.auth.signOut();
         
-        // 2. THE BUG FIX: If we get an error (like 403), the session is already invalid.
-        // We MUST force a local cleanup anyway.
-        if (error) {
-            console.warn("Logout error (likely stale session):", error.message);
-            
-            // Wipe Supabase keys from LocalStorage manually
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if (key && key.includes('supabase.auth.token')) {
-                    localStorage.removeItem(key);
-                }
-            }
-            
-            // Wipe your custom game caches
-            localStorage.removeItem('cachedLoggedIn');
-            localStorage.removeItem('cachedUsername');
-            
-            // Hard reload to reset the entire app state to 'Guest'
-            window.location.reload(); 
-        }
+        // REGARDLESS of error (like 403), we wipe the local device
+        // This ensures the user can "Log In" again to get a fresh token
+        localStorage.clear(); 
+        window.location.reload(); 
     } else {
         window.location.href = '/login.html';
     }
@@ -1146,6 +1158,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
