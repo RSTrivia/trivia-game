@@ -179,10 +179,21 @@ async function refreshAuthUI() {
     const span = document.querySelector('#usernameSpan');
     const label = authBtn?.querySelector('.btn-label');
 
+    if (!session || !session.user) {
+      username = 'Guest';
+      if (span) span.textContent = ' Guest';
+      if (label) label.textContent = 'Log In';
+  
+      [dailyBtn, shareBtn].forEach(btn => {
+          if (btn) btn.classList.add('is-disabled');
+      });
+  
+      return; // Exit early
+  }
     // 1. Initial State: Assume Guest
-    username = 'Guest';
-    if (span) span.textContent = ' Guest';
-    if (label) label.textContent = 'Log In';
+    //username = 'Guest';
+    //if (span) span.textContent = ' Guest';
+    //if (label) label.textContent = 'Log In';
     
     // Explicitly disable these until session is proven
     [dailyBtn, shareBtn].forEach(btn => {
@@ -264,20 +275,19 @@ async function init() {
     
     // Setup Auth Listener
     supabase.auth.onAuthStateChange(async (event, session) => {
-        if (isRefreshing) return;
-        isRefreshing = true;
+    if (isRefreshing) return;
+    isRefreshing = true;
 
-        if (session) {
-            //await refreshAuthUI();
-            if (dailySubscription) supabase.removeChannel(dailySubscription);
-            dailySubscription = subscribeToDailyChanges(session.user.id);
-        } else {
-            username = 'Guest';
-            if (dailySubscription) supabase.removeChannel(dailySubscription);
-            //await refreshAuthUI(); 
-        }
-        isRefreshing = false;
-    });
+    if (dailySubscription) supabase.removeChannel(dailySubscription);
+
+    if (session && session.user) {
+        dailySubscription = subscribeToDailyChanges(session.user.id);
+    }
+
+    //await refreshAuthUI(); // <-- refresh UI AFTER subscriptions
+    isRefreshing = false;
+});
+
 
     // Standard Game Button - FIXED
     if (startBtn) {
@@ -1152,6 +1162,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
