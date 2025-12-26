@@ -556,74 +556,65 @@ async function loadQuestion() {
     questionImage.style.display = 'none';
     questionImage.style.opacity = '0';
     questionImage.src = '';
-
     questionText.textContent = '';
     answersBox.innerHTML = '';
 
-    // B. HARD END: nothing left anywhere
-    if (
-    preloadQueue.length === 0 &&
-    remainingQuestions.length === 0 &&
-    currentQuestion !== null
-    ) {
+    // B, C, D. LOGIC & BUFFER CHECKS (Same as yours)
+    if (preloadQueue.length === 0 && remainingQuestions.length === 0 && currentQuestion !== null) {
+        await endGame();
+        return;
+    }
+    if (preloadQueue.length === 0) await preloadNextQuestions();
+    if (preloadQueue.length === 0) {
         await endGame();
         return;
     }
 
-    // C. REFILL BUFFER IF NEEDED (this was missing)
-    if (preloadQueue.length === 0) {
-        await preloadNextQuestions();
-    }
-
-    // D. SAFETY CHECK (after refill attempt)
-    if (preloadQueue.length === 0) {
-        console.warn("No questions could be preloaded — ending game");
-        await endGame();
-        return;
-    }
-
-    // E. PULL QUESTION
+    // E. PULL QUESTION & F. BACKGROUND PRELOAD
     currentQuestion = preloadQueue.shift();
-
-    // F. BACKGROUND PRELOAD NEXT
     preloadNextQuestions();
 
-    // G. SET QUESTION TEXT
-    questionText.textContent = currentQuestion.question;
+    // --- MINIMAL CHANGE START: Define the display logic ---
+    const showUI = () => {
+        // G. SET QUESTION TEXT
+        questionText.textContent = currentQuestion.question;
 
-    // H. IMAGE (detached load)
+        // I. RENDER ANSWERS
+        const answers = [
+            { text: currentQuestion.answer_a, id: 1 },
+            { text: currentQuestion.answer_b, id: 2 },
+            { text: currentQuestion.answer_c, id: 3 },
+            { text: currentQuestion.answer_d, id: 4 }
+        ].filter(a => a.text).sort(() => Math.random() - 0.5);
+
+        answers.forEach(ans => {
+            const btn = document.createElement('button');
+            btn.textContent = ans.text;
+            btn.classList.add('answer-btn');
+            btn.dataset.answerId = ans.id;
+            btn.onclick = () => checkAnswer(ans.id, btn);
+            answersBox.appendChild(btn);
+        });
+
+        startTimer();
+    };
+    // --- MINIMAL CHANGE END ---
+
+    // H. IMAGE (Now controls WHEN the UI shows)
     if (currentQuestion.question_image) {
         const tempImg = new Image();
         tempImg.onload = () => {
             questionImage.src = currentQuestion.question_image;
             questionImage.style.display = 'block';
             questionImage.style.opacity = '1';
+            showUI(); // Show text/buttons only when image is ready
         };
+        tempImg.onerror = showUI; // Show anyway if image fails
         tempImg.src = currentQuestion.question_image;
+    } else {
+        showUI(); // No image, show text/buttons immediately
     }
-
-    // I. RENDER ANSWERS
-    const answers = [
-        { text: currentQuestion.answer_a, id: 1 },
-        { text: currentQuestion.answer_b, id: 2 },
-        { text: currentQuestion.answer_c, id: 3 },
-        { text: currentQuestion.answer_d, id: 4 }
-    ]
-        .filter(a => a.text)
-        .sort(() => Math.random() - 0.5);
-
-    answers.forEach(ans => {
-        const btn = document.createElement('button');
-        btn.textContent = ans.text;
-        btn.classList.add('answer-btn');
-        btn.dataset.answerId = ans.id;
-        btn.onclick = () => checkAnswer(ans.id, btn);
-        answersBox.appendChild(btn);
-    });
-
-    startTimer();
 }
-
 
 function startTimer() {
     clearInterval(timer);
@@ -1115,6 +1106,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
