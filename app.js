@@ -411,6 +411,8 @@ async function fetchDailyStatus(userId) {
         .maybeSingle();
 
     if (data) {
+        // FIX: Define the message first or use data.message directly
+        const messageToStore = data.message || "Daily Challenge";
         localStorage.setItem('lastDailyMessage', displayMsg);
         localStorage.setItem('lastDailyScore', data.score ?? "0");
         localStorage.setItem('dailyPlayedDate', todayStr); // FIX 3: Ensure date is synced
@@ -1169,6 +1171,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
