@@ -322,13 +322,15 @@ async function handleAuthChange(event, session) {
         
         await fetchDailyStatus(session.user.id);
     } else {
+      // Logged Out (Guest) State
         username = 'Guest';
         if (span) span.textContent = ' Guest';
         if (label) label.textContent = 'Log In';
-        
+        // This part handles the "Live" change if they click logout
         [dailyBtn, shareBtn].forEach(btn => {
             if (btn) {
                 btn.classList.add('is-disabled');
+                btn.classList.remove('is-active'); // Remove active glow
                 btn.style.pointerEvents = 'none';
                 btn.style.opacity = '0.5';
             }
@@ -1150,6 +1152,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
