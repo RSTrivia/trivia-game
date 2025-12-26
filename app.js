@@ -238,7 +238,7 @@ authBtn.onclick = async () => {
         await supabase.auth.signOut();
 
         // 3. Update the UI immediately
-        await refreshAuthUI();
+        //await refreshAuthUI();
 
         // 4. Optional: Redirect to index.html after UI update
         // window.location.replace('index.html');
@@ -279,13 +279,44 @@ async function init() {
     if (isRefreshing) return;
     isRefreshing = true;
 
+    // Remove old subscriptions if any
     if (dailySubscription) supabase.removeChannel(dailySubscription);
 
-    if (session && session.user) {
-        dailySubscription = subscribeToDailyChanges(session.user.id);
+    const span = document.querySelector('#usernameSpan');
+    const label = authBtn?.querySelector('.btn-label');
+
+    if (!session || !session.user) {
+        // LOGGED OUT: set Guest immediately
+        username = 'Guest';
+        if (span) span.textContent = ' Guest';
+        if (label) label.textContent = 'Log In';
+
+        [dailyBtn, shareBtn].forEach(btn => {
+            if (btn) btn.classList.add('is-disabled');
+        });
+
+        isRefreshing = false;
+        return;
     }
 
-    //await refreshAuthUI(); // <-- refresh UI AFTER subscriptions
+    // LOGGED IN
+    if (label) label.textContent = 'Log Out';
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', session.user.id)
+        .maybeSingle();
+
+    username = profile?.username || 'Player';
+    if (span) span.textContent = ' ' + username;
+
+    // Subscribe to daily updates
+    dailySubscription = subscribeToDailyChanges(session.user.id);
+
+    // Fetch daily status and update buttons
+    await fetchDailyStatus(session.user.id);
+
     isRefreshing = false;
 });
 
@@ -1163,6 +1194,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
