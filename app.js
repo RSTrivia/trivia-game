@@ -226,10 +226,7 @@ async function init() {
             handleAuthChange(event, session);
         }
     });
-    // 2. Manually trigger one check for the current session on load
-    const { data: { session } } = await supabase.auth.getSession();
-    handleAuthChange('INITIAL_LOAD', session);
-  
+    
     // 2. Auth Button (Log In / Log Out)
     authBtn.onclick = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -1172,6 +1169,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
