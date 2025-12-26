@@ -177,7 +177,7 @@ let isDailyMode = false;
 async function refreshAuthUI() {
     const { data: { session } } = await supabase.auth.getSession();
     const span = document.querySelector('#usernameSpan');
-    const label = ?.querySelector('.btn-label');
+    const label = authBtn?.querySelector('.btn-label');
 
     if (!session || !session.user) {
       username = 'Guest';
@@ -238,7 +238,7 @@ authBtn.onclick = async () => {
         await supabase.auth.signOut();
 
         // 3. Update the UI immediately
-        //await refreshAuthUI();
+        await refreshAuthUI();
 
         // 4. Optional: Redirect to index.html after UI update
         // window.location.replace('index.html');
@@ -1209,6 +1209,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
