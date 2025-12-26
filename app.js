@@ -208,23 +208,38 @@ let isRefreshing = false;
 async function init() {
     // 1. Setup Auth Listener
     supabase.auth.onAuthStateChange((event, session) => {
-        handleAuthChange(event, session);
-    });
+      console.log("Auth Event:", event); // Debugging: See what Supabase is saying
+      
+      if (event === 'SIGNED_OUT' || (event === 'TOKEN_REFRESHED' && !session)) {
+          // Force the UI back to Guest mode
+          handleAuthChange('LOGOUT_FORCE', null);
+      } else {
+          handleAuthChange(event, session);
+      }
+  });
   
     // 2. Manually trigger one check for the current session on load
     const { data: { session } } = await supabase.auth.getSession();
     handleAuthChange('INITIAL_LOAD', session);
   
     // 2. Auth Button (Log In / Log Out)
-    if (authBtn) {
-        authBtn.onclick = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                await supabase.auth.signOut();
-            } else {
-                window.location.href = '/login.html'; 
+    authBtn.onclick = async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session) {
+            // Attempt to tell the server we're leaving
+            const { error } = await supabase.auth.signOut();
+            
+            if (error) {
+                console.warn("Logout server error (likely 403):", error.message);
+                // If the session is invalid, Supabase might not fire onAuthStateChange.
+                // We force a page reload to clear the memory and local storage.
+                window.location.reload(); 
             }
-        };
+        } else {
+            window.location.href = '/login.html';
+        }
+    };
     }
 
     // 3. Game Buttons
@@ -1106,6 +1121,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
