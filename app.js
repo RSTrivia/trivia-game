@@ -199,12 +199,6 @@ async function refreshAuthUI() {
     }
 }
 
-supabase.auth.onAuthStateChange(async (event, session) => {
-    console.log('Auth state changed:', event, session);
-    await refreshAuthUI();
-});
-
-
 async function syncDailyButton() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!dailyBtn) return;
@@ -228,100 +222,50 @@ async function syncDailyButton() {
 
 let isRefreshing = false;
 
-// ====== CORRECTED INITIALIZATION ======
+// ====== INITIALIZATION ======
 async function init() {
-    
-    // Setup Auth Listener
-    supabase.auth.onAuthStateChange(async (event, session) => {
-    if (isRefreshing) return;
-    isRefreshing = true;
+    // 1. Setup Auth Listener
+    supabase.auth.onAuthStateChange((event, session) => {
+        handleAuthChange(event, session);
+    });
 
-    // Remove old daily subscription if exists
-    if (dailySubscription) {
-        supabase.removeChannel(dailySubscription);
-        dailySubscription = null;
-    }
-
-    const span = document.querySelector('#usernameSpan');
-    const label = authBtn?.querySelector('.btn-label');
-
-    if (!session || !session.user) {
-        // --------------------------
-        // LOGGED OUT STATE
-        // --------------------------
-        username = 'Guest';
-        if (span) span.textContent = ' Guest';
-        if (label) label.textContent = 'Log In';
-
-        [dailyBtn, shareBtn].forEach(btn => {
-            if (btn) {
-                btn.classList.add('is-disabled');
-                btn.classList.remove('is-active');
-                btn.style.pointerEvents = 'none';
-                btn.style.opacity = '0.5';
+    // 2. Auth Button (Log In / Log Out)
+    if (authBtn) {
+        authBtn.onclick = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                await supabase.auth.signOut();
+            } else {
+                window.location.href = '/login.html'; 
             }
-        });
-
-        isRefreshing = false;
-        return;
+        };
     }
 
-    // --------------------------
-    // LOGGED IN STATE
-    // --------------------------
-    if (label) label.textContent = 'Log Out';
-
-    const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('id', session.user.id)
-        .maybeSingle();
-
-    if (error) console.error("Profile fetch error:", error);
-
-    username = profile?.username || 'Player';
-    if (span) span.textContent = ' ' + username;
-
-    // Subscribe to real-time daily updates
-    dailySubscription = subscribeToDailyChanges(session.user.id);
-
-    // Fetch daily status and update daily/share buttons
-    await fetchDailyStatus(session.user.id);
-
-    isRefreshing = false;
-});
-
-
-
-    // Standard Game Button - FIXED
+    // 3. Game Buttons
     if (startBtn) {
         startBtn.onclick = async () => {
-          console.log("Starting Standard Game...");
-          isDailyMode = false;
-          if (audioCtx.state === 'suspended') await audioCtx.resume();
-          await loadSounds();
-          startGame();
-      };
-
+            isDailyMode = false;
+            if (audioCtx.state === 'suspended') await audioCtx.resume();
+            await loadSounds();
+            startGame();
+        };
     }
 
-    // Daily Game Button - FIXED
     if (dailyBtn) {
         dailyBtn.onclick = async () => {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) return alert("Log in to play Daily Mode!");
-    
+            
             const played = await hasUserCompletedDaily(session);
             if (played) return alert("You've already played today!");
-    
+            
             if (audioCtx.state === 'suspended') await audioCtx.resume();
             await loadSounds();
             isDailyMode = true;
-            startDailyChallenge();
+            startDailyChallenge(); 
         };
     }
-
-    if (playAgainBtn) {
+        if (playAgainBtn) {
         playAgainBtn.onclick = async () => {
         isDailyMode = false;
         await startGame();
@@ -336,12 +280,7 @@ async function init() {
         document.body.classList.remove('game-active');
     };
   }
-    // Run initial UI sync
-    await refreshAuthUI();
-}
-
-
-if (muteBtn) {
+  if (muteBtn) {
     muteBtn.onclick = () => {
         muted = !muted;
         localStorage.setItem('muted', muted);
@@ -349,8 +288,38 @@ if (muteBtn) {
         muteBtn.classList.toggle('is-muted', muted);
     };
 }
+    // 4. Initial Sync
+    await refreshAuthUI();
+}
 
+async function handleAuthChange(event, session) {
+    console.log('Auth event:', event);
+    const span = document.querySelector('#usernameSpan');
+    const label = authBtn?.querySelector('.btn-label');
 
+    if (session) {
+        // LOGGED IN
+        username = session.user.user_metadata?.username || 'Player';
+        if (span) span.textContent = ' ' + username;
+        if (label) label.textContent = 'Log Out';
+        
+        await fetchDailyStatus(session.user.id);
+    } else {
+        // LOGGED OUT
+        username = 'Guest';
+        if (span) span.textContent = ' Guest';
+        if (label) label.textContent = 'Log In';
+        
+        // Reset buttons for Guest
+        [dailyBtn, shareBtn].forEach(btn => {
+            if (btn) {
+                btn.classList.add('is-disabled');
+                btn.style.pointerEvents = 'none';
+                btn.style.opacity = '0.5';
+            }
+        });
+    }
+}
 
 async function hasUserCompletedDaily(session) {
     if (!session) return false;
@@ -1166,6 +1135,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
