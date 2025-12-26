@@ -224,22 +224,36 @@ async function init() {
   
     // 2. Auth Button (Log In / Log Out)
     authBtn.onclick = async () => {
-        const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (session) {
+        // 1. Attempt server-side logout
+        const { error } = await supabase.auth.signOut();
         
-        if (session) {
-            // Attempt to tell the server we're leaving
-            const { error } = await supabase.auth.signOut();
+        // 2. THE BUG FIX: If we get an error (like 403), the session is already invalid.
+        // We MUST force a local cleanup anyway.
+        if (error) {
+            console.warn("Logout error (likely stale session):", error.message);
             
-            if (error) {
-                console.warn("Logout server error (likely 403):", error.message);
-                // If the session is invalid, Supabase might not fire onAuthStateChange.
-                // We force a page reload to clear the memory and local storage.
-                window.location.reload(); 
+            // Wipe Supabase keys from LocalStorage manually
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.includes('supabase.auth.token')) {
+                    localStorage.removeItem(key);
+                }
             }
-        } else {
-            window.location.href = '/login.html';
+            
+            // Wipe your custom game caches
+            localStorage.removeItem('cachedLoggedIn');
+            localStorage.removeItem('cachedUsername');
+            
+            // Hard reload to reset the entire app state to 'Guest'
+            window.location.reload(); 
         }
-    };
+    } else {
+        window.location.href = '/login.html';
+    }
+};
 
     // 3. Game Buttons
     if (startBtn) {
@@ -253,17 +267,29 @@ async function init() {
 
     if (dailyBtn) {
         dailyBtn.onclick = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) return alert("Log in to play Daily Mode!");
-            
-            const played = await hasUserCompletedDaily(session);
-            if (played) return alert("You've already played today!");
-            
-            if (audioCtx.state === 'suspended') await audioCtx.resume();
-            await loadSounds();
-            isDailyMode = true;
-            startDailyChallenge(); 
-        };
+    // 1. Get session AND check for potential errors
+    const { data: { session }, error } = await supabase.auth.getSession();
+    
+    // 2. If there's an error or no session, the 'key' is broken
+    if (error || !session) {
+        console.error("Auth error:", error);
+        alert("Your session has expired. Please log in again to save your score.");
+        
+        // Cleanup the bugged local state
+        localStorage.removeItem('supabase.auth.token'); 
+        window.location.href = '/login.html';
+        return;
+    }
+
+    // 4. Proceed with game logic
+    const played = await hasUserCompletedDaily(session);
+    if (played) return alert("You've already played today!");
+    
+    if (audioCtx.state === 'suspended') await audioCtx.resume();
+    await loadSounds();
+    isDailyMode = true;
+    startDailyChallenge(); 
+};
     }
         if (playAgainBtn) {
         playAgainBtn.onclick = async () => {
@@ -1120,6 +1146,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
