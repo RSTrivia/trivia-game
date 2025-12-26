@@ -690,81 +690,86 @@ async function endGame() {
     gameEnding = true;
     clearInterval(timer);
 
-    // 1. PREPARE DATA FIRST (Quietly in background)
     const { data: { session } } = await supabase.auth.getSession();
-    const scoreKey = Math.min(Math.max(score, 0), 10);
-    const options = dailyMessages[scoreKey] || ["Game Over!"];
-    const randomMsg = options[Math.floor(Math.random() * options.length)];
     
-    // 2. WIPE GAME UI IMMEDIATELY 
-    // This prevents seeing old questions/answers behind the transition
+    // UI Cleanup
     questionText.textContent = ''; 
     answersBox.innerHTML = '';
     questionImage.style.display = 'none';
     questionImage.src = ''; 
 
-    // 3. POPULATE END SCREEN BEFORE SHOWING IT
     if (finalScore) finalScore.textContent = score;
     const gameOverTitle = document.getElementById('game-over-title');
     const gzTitle = document.getElementById('gz-title');
 
-    // Reset visibility of titles
     if (gameOverTitle) gameOverTitle.classList.add('hidden');
     if (gzTitle) gzTitle.classList.add('hidden');
 
     if (isDailyMode) {
+        // --- DAILY MODE LOGIC ---
         if (playAgainBtn) playAgainBtn.classList.add('hidden');
+        
+        const scoreKey = Math.min(Math.max(score, 0), 10);
+        const options = dailyMessages[scoreKey] || ["Game Over!"];
+        const randomMsg = options[Math.floor(Math.random() * options.length)];
+
         if (gameOverTitle) {
             gameOverTitle.textContent = randomMsg;
             gameOverTitle.classList.remove('hidden');
         }
         
-        // Save logic (Non-blocking)
-        saveDailyScore(session, randomMsg); 
+        // Save the daily score to DB and LocalStorage
+        await saveDailyScore(session, randomMsg); 
     } else {
+        // --- STANDARD MODE LOGIC ---
         if (playAgainBtn) playAgainBtn.classList.remove('hidden');
-      // THE FIX: Clear daily-specific storage so the Share button 
-      // knows NOT to show daily info for a normal run
+        
+        // IMPORTANT: We do NOT remove 'lastDailyScore' here anymore.
+        // This keeps your Daily Score persistent on the share screen.
 
         if (score > 0 && remainingQuestions.length === 0 && preloadQueue.length === 0) {
             if (gzTitle) {
-              const gzMessages = ['Gz!', 'Go touch grass', 'See you in Lumbridge'];
-              const randomMessage = gzMessages[Math.floor(Math.random() * gzMessages.length)];
-              gzTitle.textContent = randomMessage;
-              gzTitle.classList.remove('hidden');
-              gameOverTitle.classList.add('hidden');
-            }
+                 const gzMessages = ['Gz!', 'Go touch grass', 'See you in Lumbridge'];
+                  const randomMessage = gzMessages[Math.floor(Math.random() * gzMessages.length)];
+                  gzTitle.textContent = randomMessage;
+                  gzTitle.classList.remove('hidden');
+                  gameOverTitle.classList.add('hidden');
         } else if (gameOverTitle) {
             gameOverTitle.textContent = "Game Over!";
             gameOverTitle.classList.remove('hidden');
         }
     }
-    if (username) await submitLeaderboardScore(username, score);
-    // 4. THE BIG SWAP (Final step)
-    // Use a tiny timeout or requestAnimationFrame to ensure DOM updates are ready
+
+    if (username && username !== 'Guest') {
+        await submitLeaderboardScore(username, score);
+    }
+
     requestAnimationFrame(() => {
         document.body.classList.remove('game-active'); 
         game.classList.add('hidden');
         endScreen.classList.remove('hidden');
-        updateShareButtonState();
+        // This will now correctly show the Daily Score even if you just finished a Standard game
+        updateShareButtonState(); 
         gameEnding = false;
     });
 }
 
-// Helper to keep endGame clean
 async function saveDailyScore(session, msg) {
+    // Only update these if we are actually finishing a DAILY game
     localStorage.setItem('lastDailyScore', score); 
     localStorage.setItem('dailyPlayedDate', todayStr); 
     localStorage.setItem('lastDailyMessage', msg);
 
     if (session) {
-        await supabase.from('daily_attempts').update({
+        await supabase.from('daily_attempts').upsert({
+            user_id: session.user.id,
+            attempt_date: todayStr,
             score: score,
             message: msg
-        }).eq('user_id', session.user.id).eq('attempt_date', todayStr);
+        });
     }
-    updateShareButtonState();
 }
+
 gameEnding = false;
 
 if (shareBtn) {
@@ -1112,6 +1117,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
