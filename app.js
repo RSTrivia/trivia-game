@@ -179,9 +179,13 @@ let isDailyMode = false;
 async function syncDailyButton() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!dailyBtn) return;
-
+  
+    // Explicitly lock if no one is logged in
     if (!session) {
         lockDailyButton();
+      // Add visual guest feedback
+        dailyBtn.style.opacity = '0.5';
+        dailyBtn.style.pointerEvents = 'none';
         return;
     }
 
@@ -269,8 +273,9 @@ async function init() {
         muteBtn.classList.toggle('is-muted', muted);
     };
 }
-    // 4. Initial Sync
-    //await refreshAuthUI();
+  
+  // This will check if a user is logged in and lock the button if they aren't
+    await syncDailyButton();
 }
 
 // Replace your existing handleAuthChange with this:
@@ -1138,6 +1143,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
