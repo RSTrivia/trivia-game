@@ -775,8 +775,8 @@ async function endGame() {
             gameOverTitle.textContent = "Game Over!";
             gameOverTitle.classList.remove('hidden');
         }
+      }
     }
-
     // 4. THE BIG SWAP (Final step)
     // Use a tiny timeout or requestAnimationFrame to ensure DOM updates are ready
     requestAnimationFrame(() => {
@@ -1175,6 +1175,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
