@@ -312,7 +312,7 @@ async function init() {
         isDailyMode = false;
         await startGame();
     };
-    if (MainMenuBtn) {  
+    if (mainMenuBtn) {  
         mainMenuBtn.onclick = async () => {
         preloadQueue = []; // Clear the buffer only when going back to menu
         // Manual UI Reset instead:
@@ -1151,6 +1151,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
