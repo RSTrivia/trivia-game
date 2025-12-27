@@ -931,6 +931,11 @@ input.input-field:-webkit-autofill:active {
     animation: xp-float-ne 1.2s ease-out forwards;
 }
 
+/* The White Plus Sign */
+.xp-drop span:first-child {
+    color: #f5f5f5 !important;
+}
+
 .xp-number {
   color: #00ff00 !important; /* OSRS Green */
   /*color: #3d8c40 !important;*/
@@ -950,6 +955,7 @@ input.input-field:-webkit-autofill:active {
         transform: translateY(-60px); /* Floats straight up */
     }
 }
+
 
 
 
