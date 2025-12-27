@@ -900,56 +900,43 @@ input.input-field:-webkit-autofill:active {
 
 /*                            new for xp drops                                              */
 
-.xp-drop {
-    position: absolute;
-    right: 20px;       /* Distance from the right edge */
-    top: 60px;         /* Distance from the top edge */
-    color: #ffffff;    /* White "+" sign */
-    font-weight: bold;
-    font-size: 26px;
-    font-family: 'Cinzel', serif;
-    text-shadow: 2px 2px 0px #000;
-    pointer-events: none;
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    animation: xp-float-ne 1.2s ease-out forwards;
-}
-
-/* Specific XP color - OSRS Green */
-/* Ensure the game area is the anchor for the drop */
+/* Ensure the game div is the absolute anchor */
 #game {
-    position: relative; 
+    position: relative !important; 
+    overflow: visible !important; /* Allows the XP to float out of the top slightly */
 }
 
 .xp-drop {
-    position: absolute;
-    /* Forces it to the top right of the #game div */
-    right: 15px;       
-    top: 15px;         
+    position: absolute !important;
+    /* Explicitly lock to North East */
+    top: 0 !important;
+    right: 10px !important;
+    
+    /* Look & Feel */
     color: #ffffff;    
     font-weight: bold;
     font-size: 28px;
     font-family: 'Cinzel', serif;
     text-shadow: 2px 2px 0px #000;
     pointer-events: none;
-    z-index: 1000;
+    z-index: 9999; /* Ensure it's above everything */
+    
     display: flex;
     align-items: center;
     gap: 4px;
-    /* Ensure it starts visible and floats upward */
+    
+    /* Animation */
     animation: xp-float-ne 1.2s ease-out forwards;
 }
 
 .xp-number {
-    color: #00ff00; /* OSRS Green */
+    color: #00ff00 !important; /* OSRS Green */
 }
 
 @keyframes xp-float-ne {
     0% {
         opacity: 0;
-        transform: translateY(10px);
+        transform: translateY(20px);
     }
     20% {
         opacity: 1;
@@ -957,10 +944,9 @@ input.input-field:-webkit-autofill:active {
     }
     100% {
         opacity: 0;
-        transform: translateY(-50px); /* Moves up and disappears */
+        transform: translateY(-60px); /* Floats straight up */
     }
 }
-
 
 
 
