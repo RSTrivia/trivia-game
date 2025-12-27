@@ -1009,10 +1009,24 @@ input.input-field:-webkit-autofill:active {
 
 
 
+/*                               user info, level                                         */
 
+.user-info-row {
+  font-size: 1.2rem;       /* Matches your #userDisplay font-size */
+  color: #d4af37;           /* The exact gold from your Player:Shir style */
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  font-family: Arial, sans-serif; /* Ensuring consistency with your script */
+}
 
+/* Optional: Slight adjustment to make the XP look clean in brackets */
+#xpBracket {
+  font-weight: normal;
+}
 
-
+/*                               user info, level                                         */
 
 
 
