@@ -1132,7 +1132,7 @@ function playSound(buffer, loop = false) {
     source.loop = loop; // Enable looping for the 3-second alarm
   
     const gain = audioCtx.createGain();
-    gain.gain.value = 0.4;
+    gain.gain.value = 0.5;
   
     source.connect(gain).connect(audioCtx.destination);
     source.start(0); // Add the 0 for older mobile browser compatibility
@@ -1254,6 +1254,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
