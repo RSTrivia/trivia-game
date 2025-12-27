@@ -841,15 +841,18 @@ async function endGame() {
 
 // new for xp drops 
 function triggerXpDrop(amount) {
-    const gameContainer = document.getElementById('game');
+    const gameContainer = document.getElementById('game'); 
+    if (!gameContainer) return;
+
     const xpDrop = document.createElement('div');
-    
     xpDrop.className = 'xp-drop';
-    xpDrop.innerHTML = `<span style="color: white; margin-right: 4px;">+</span>${amount}`;
+    
+    // The + is white, the number is green
+    xpDrop.innerHTML = `<span>+</span><span class="xp-number">${amount}</span>`;
     
     gameContainer.appendChild(xpDrop);
 
-    // Remove the element after animation ends to keep the DOM clean
+    // Remove from DOM after animation finishes
     setTimeout(() => {
         xpDrop.remove();
     }, 1200);
@@ -1282,6 +1285,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
