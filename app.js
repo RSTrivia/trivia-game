@@ -785,7 +785,7 @@ async function checkAnswer(choiceId, btn) {
                 setTimeout(() => {
                   playSound(levelUpBuffer), 
                   showNotification("LEVEL UP!", "#ffde00"); // Gold for level
-                }, 100);
+                }, 200);
             }
 
             updateLevelUI(); // Refresh the Player/Level row
@@ -1445,6 +1445,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
