@@ -1021,21 +1021,24 @@ input.input-field:-webkit-autofill:active {
 /*                             for notifications in text                                       */
 
 #game-notifications {
-    position: absolute; /* Floating, not pushing */
+    position: absolute; 
+    /* Adjust this number! 
+       A negative number like -30px pulls it HIGHER (into the gap).
+       A positive number like 20px pushes it LOWER (over the buttons). */
+    top: -35px;   
+    
     left: 0;
     right: 0;
-    top: 75px;         /* Adjust this number to hit the exact center of your "gap" */
     display: flex;
     justify-content: center;
-    align-items: center;
     pointer-events: none;
-    z-index: 10;       /* Sit above the background but behind XP drops if needed */
+    z-index: 999;
 }
 
 .notif-text {
     font-family: 'Verdana', sans-serif;
     font-weight: 900;
-    font-size: 18px;   /* Slightly smaller for mobile friendliness */
+    font-size: 18px; /* Slightly smaller to ensure it fits the gap */
     color: #ffde00;
     text-shadow: 2px 2px 0px #000;
     white-space: nowrap;
@@ -1053,6 +1056,7 @@ input.input-field:-webkit-autofill:active {
 }
 
 /*                             for notifications in text                                       */
+
 
 
 
