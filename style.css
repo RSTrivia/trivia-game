@@ -932,7 +932,8 @@ input.input-field:-webkit-autofill:active {
 }
 
 .xp-number {
-    color: #00ff00 !important; /* OSRS Green */
+    /*color: #00ff00 !important;  OSRS Green */
+  color: #3d8c40 !important;
 }
 
 @keyframes xp-float-ne {
@@ -949,6 +950,7 @@ input.input-field:-webkit-autofill:active {
         transform: translateY(-60px); /* Floats straight up */
     }
 }
+
 
 
 
