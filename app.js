@@ -854,38 +854,26 @@ function createParticle(parent, xPosPercent, colors) {
     const p = document.createElement('div');
     p.className = 'firework-particle';
     
-    // 1. Get where the game box is on the screen right now
+    // Get viewport coordinates
     const rect = parent.getBoundingClientRect();
     
-    // 2. Calculate the "Global" screen coordinates
-    // We add window.scrollX/Y to ensure it stays accurate if the page is scrolled
-    const startX = rect.left + window.scrollX + (xPosPercent / 100) * rect.width;
-    const startY = rect.top + window.scrollY + (rect.height / 2);
+    // REMOVED window.scrollX/Y because CSS is 'position: fixed'
+    const startX = rect.left + (xPosPercent / 100) * rect.width;
+    const startY = rect.top + (rect.height / 2);
 
     const destX = (Math.random() - 0.5) * 200; 
     const destY = (Math.random() - 0.5) * 200;
     const color = colors[Math.floor(Math.random() * colors.length)];
     
     p.style.setProperty('--p-color', color);
-    
-    // 3. Set the start position to the absolute screen coordinates
     p.style.setProperty('--startX', `${startX}px`);
     p.style.setProperty('--startY', `${startY}px`);
     p.style.setProperty('--x', `${destX}px`);
     p.style.setProperty('--y', `${destY}px`);
 
-    // 4. THE FIX: Attach to body, NOT the game container
     document.body.appendChild(p);
-    // NEW: Remove EXACTLY when the CSS animation finishes
-    p.onanimationend = () => {
-        p.remove();
-    };
-    // Safety fallback (in case animation fails to trigger)
-    setTimeout(() => {
-        if (p && p.parentNode) {
-            p.remove();
-        }
-    }, 1000); 
+    
+    p.onanimationend = () => p.remove();
 }
 
 async function highlightCorrectAnswer() {
@@ -1424,6 +1412,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
