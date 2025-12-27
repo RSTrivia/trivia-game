@@ -851,13 +851,17 @@ function triggerFireworks() {
 function createParticle(parent, xPos, colors) {
     const p = document.createElement('div');
     p.className = 'firework-particle';
-    p.style.left = xPos;
-    p.style.top = '70%'; // Starts them slightly lower, near the level display
+    
+    // Position them more toward the center-middle so they don't stretch the box
+    p.style.left = xPos === '5%' ? '15%' : '85%'; 
+    p.style.top = '50%'; 
+    
     p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
     
-    // Reduce the explosion radius if they are still hitting the edges too hard
-    const x = (Math.random() - 0.5) * 150; // Reduced from 250
-    const y = (Math.random() - 0.5) * 150; // Reduced from 250
+    // Reduce the distance they fly (the --x and --y)
+    const x = (Math.random() - 0.5) * 150; // Smaller explosion
+    const y = (Math.random() - 0.5) * 150; 
+    
     p.style.setProperty('--x', `${x}px`);
     p.style.setProperty('--y', `${y}px`);
     
@@ -1394,6 +1398,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
