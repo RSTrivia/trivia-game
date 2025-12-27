@@ -909,42 +909,40 @@ input.input-field:-webkit-autofill:active {
 /* Ensure the game div is the absolute anchor */
 .xp-drop {
     position: absolute !important;
-    top: 60px !important;    /* Start a bit lower so it has room to float up */
-    right: 20px !important;  /* Anchor to North East corner */
-    left: auto !important;   
-    
-    /* Overrides the #game > * width: 100% rule */
-    width: auto !important;  
-    
+    /* This starts it high (North) */
+    top: 10px !important; 
+    right: 10px !important;
+    left: auto !important;
+    width: auto !important; /* Prevents it from stretching to the left side */
+
     color: #ffffff;    
     font-weight: 900 !important;
-    font-size: 24px !important;
+    font-size: 22px !important;
     font-family: 'Verdana', sans-serif !important;
     text-shadow: 2px 2px 0px #000;
-    z-index: 99999 !important; 
+    z-index: 99999 !important;
     pointer-events: none;
     display: flex;
     align-items: center;
     gap: 2px;
-    
-    /* Direction: Upward float */
-    animation: xp-float-upward 1.2s ease-out forwards;
+    animation: xp-float-up 1.2s ease-out forwards;
 }
 
 .xp-number { color: #00ff00 !important; }
 
-@keyframes xp-float-upward {
+@keyframes xp-float-up {
     0% { 
         opacity: 0; 
-        transform: translateY(20px); /* Start slightly below the 'top' position */
+        transform: translateY(10px); 
     }
     20% { 
         opacity: 1; 
-        transform: translateY(0);    /* Pop into full view */
+        transform: translateY(0); 
     }
+    /* This short distance keeps it "North" and tidy */
     100% { 
         opacity: 0; 
-        transform: translateY(-100px); /* Float UP (negative value) */
+        transform: translateY(-30px); 
     }
 }
 /*                                                                                     */
@@ -1004,6 +1002,7 @@ input.input-field:-webkit-autofill:active {
     100% { transform: translate(calc(var(--startX) + var(--x)), calc(var(--startY) + var(--y))) scale(0); opacity: 0; }
 }
 /*                               fireworks for level up                                       */
+
 
 
 
