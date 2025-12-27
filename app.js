@@ -5,6 +5,9 @@ const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 // ====== UI & STATE ======
 const cachedMuted = localStorage.getItem('muted') === 'true';
 let dailySubscription = null; // Track this globally to prevent duplicates
+let streak = 0;              // Tracking for normal game bonus
+let dailyQuestionCount = 0;   // Tracking for daily bonus
+let currentProfileXp = 0;    // Store the player's current XP locally
 let syncChannel;
 let username = 'Guest';
 let gameEnding = false;
@@ -341,6 +344,7 @@ async function handleAuthChange(event, session) {
     // 1. Logged Out State
     if (!session) {
         username = 'Guest';
+        currentProfileXp = 0; // Reset this for guests!
         if (span) span.textContent = ' Guest';
         if (label) label.textContent = 'Log In';
 
@@ -362,11 +366,12 @@ async function handleAuthChange(event, session) {
     // Fetch profile
     const { data: profile } = await supabase
         .from('profiles')
-        .select('username')
+        .select('username, xp')
         .eq('id', session.user.id)
         .single();
 
     username = profile?.username || 'Player';
+    currentProfileXp = profile?.xp || 0; // Set the global variable
     if (span) span.textContent = ' ' + username;
     if (label) label.textContent = 'Log Out';
     
@@ -593,6 +598,8 @@ async function startGame() {
         // Standard Reset
         clearInterval(timer);
         score = 0;
+        streak = 0;              // Reset streak
+        dailyQuestionCount = 0;  // Reset daily count
         currentQuestion = null;
         updateScore();
         
@@ -737,22 +744,71 @@ async function checkAnswer(choiceId, btn) {
     if (isCorrect) {
         playSound(correctBuffer);
         btn.classList.add('correct');
-        // --- TRIGGER XP DROP HERE ---
-        triggerXpDrop(15); // You can change '15' to whatever XP value you like
+        // 1. Get the session
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session) { 
+            let gained = isDailyMode ? 50 : 5;
+                    
+                    // Bonus Logic
+                    if (isDailyMode && dailyQuestionCount === 10) gained += 100;
+                    if (!isDailyMode && streak === 10) {
+                        gained += 30;
+                        streak = 0; 
+                    }
+            
+                    // Update Local & DB
+                    currentProfileXp += gained;
+                    triggerXpDrop(gained); 
+            
+                    // Update Supabase
+                    await supabase.from('profiles')
+                        .update({ xp: currentProfileXp })
+                        .eq('id', session.user.id);
+        }
+        // Update Local State & UI
         score++;
         updateScore();
+      
+        // Update Database (Non-blocking)
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+        supabase.from('profiles')
+            .update({ xp: currentProfileXp })
+            .eq('id', session.user.id)
+            .then(({ error }) => {
+                if (error) console.error("XP Sync Error:", error);
+                });
+        }
+            
         setTimeout(loadQuestion, 1000);
     } else {
         playSound(wrongBuffer);
+        streak = 0; // Reset streak on wrong answer in normal mode
         btn.classList.add('wrong');
         await highlightCorrectAnswer();
         if (isDailyMode) {
-            setTimeout(loadQuestion, 1500);
+            setTimeout(loadQ    `s`uestion, 1500);
         } else {
             setTimeout(endGame, 1000);
         }
     }
 }
+
+
+function getLevel(xp) {
+    if (!xp || xp <= 0) return 1;
+    const maxXp = 100000;
+    const maxLevel = 99;
+
+    for (let L = 1; L <= maxLevel; L++) {
+        // This formula creates an OSRS-style curve fitting 100k
+        let threshold = Math.floor(Math.pow((L - 1) / (maxLevel - 1), 2.2) * maxXp);
+        if (xp < threshold) return L - 1;
+    }
+    return maxLevel;
+}
+
 
 async function highlightCorrectAnswer() {
     const { data: correctId } = await supabase.rpc('reveal_correct_answer', { 
@@ -1285,6 +1341,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
