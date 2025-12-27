@@ -161,7 +161,8 @@ const dailyMessages = {
   ]
 };
 
-let correctBuffer, wrongBuffer;
+let correctBuffer, wrongBuffer, tickBuffer;
+let activeTickSource = null; // To track the running sound
 let muted = cachedMuted;
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 const todayStr = new Date().toISOString().split('T')[0];
@@ -464,7 +465,8 @@ function lockDailyButton() {
 function resetGame() {
     // 1. Stop any active logic
     clearInterval(timer);
-    
+    stopTickSound(); 
+  
     // 2. Reset numerical state
     score = 0;
     currentQuestion = null;
@@ -663,21 +665,41 @@ async function loadQuestion() {
 
 function startTimer() {
     clearInterval(timer);
+    if (activeTickSource) { activeTickSource.stop(); activeTickSource = null; } // Cleanup
+  
     timeLeft = 15;
     timeDisplay.textContent = timeLeft;
     timeWrap.classList.remove('red-timer');
+  
     timer = setInterval(() => {
         timeLeft--;
         timeDisplay.textContent = timeLeft;
+        // When the UI shows 3, start the loop
+        if (timeLeft === 3 && !activeTickSource) {
+            activeTickSource = playSound(tickBuffer, true); 
+        }
         if (timeLeft <= 5) timeWrap.classList.add('red-timer');
         if (timeLeft <= 0) {
             clearInterval(timer);
+            stopTickSound(); // Stop sound when time hits zero
             handleTimeout();
         }
     }, 1000);
 }
 
+function stopTickSound() {
+    if (activeTickSource) {
+        try {
+            activeTickSource.stop();
+        } catch (e) {
+            // Handle cases where it already stopped
+        }
+        activeTickSource = null;
+    }
+}
+
 async function handleTimeout() {
+    stopTickSound(); // <--- ADD THIS FIRST
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
     playSound(wrongBuffer);
     await highlightCorrectAnswer();
@@ -690,6 +712,7 @@ async function handleTimeout() {
 }
 
 async function checkAnswer(choiceId, btn) {
+    stopTickSound(); // CUT THE SOUND IMMEDIATELY
     if (timeLeft <= 0) return;
     clearInterval(timer);
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
@@ -1086,6 +1109,7 @@ if (shareBtn) {
 async function loadSounds() {
     if (!correctBuffer) correctBuffer = await loadAudio('./sounds/correct.mp3');
     if (!wrongBuffer) wrongBuffer = await loadAudio('./sounds/wrong.mp3');
+    if (!tickBuffer) tickBuffer = await loadAudio('./sounds/tick.mp3');
 }
 
 async function loadAudio(url) {
@@ -1094,7 +1118,7 @@ async function loadAudio(url) {
     return audioCtx.decodeAudioData(buf);
 }
 
-function playSound(buffer) {
+function playSound(buffer, loop = false) {
     if (!buffer || muted) return;
     
     // 🔥 On mobile, we must resume inside the play call too 
@@ -1105,10 +1129,14 @@ function playSound(buffer) {
 
     const source = audioCtx.createBufferSource();
     source.buffer = buffer;
+    source.loop = loop; // Enable looping for the 3-second alarm
+  
     const gain = audioCtx.createGain();
-    gain.gain.value = 0.5;
+    gain.gain.value = 0.4;
+  
     source.connect(gain).connect(audioCtx.destination);
     source.start(0); // Add the 0 for older mobile browser compatibility
+    return source; // Return this so we can call .stop()
 }
 function updateScore() { scoreDisplay.textContent = `Score: ${score}`; }
 
@@ -1226,6 +1254,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
