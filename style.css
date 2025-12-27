@@ -1022,10 +1022,8 @@ input.input-field:-webkit-autofill:active {
 
 #game-notifications {
     position: absolute; 
-    /* Adjust this number! 
-       A negative number like -30px pulls it HIGHER (into the gap).
-       A positive number like 20px pushes it LOWER (over the buttons). */
-    top: -35px;   
+    /* Increased from -35px to -15px to move it DOWN slightly */
+    top: -15px;   
     
     left: 0;
     right: 0;
@@ -1038,24 +1036,27 @@ input.input-field:-webkit-autofill:active {
 .notif-text {
     font-family: 'Verdana', sans-serif;
     font-weight: 900;
-    font-size: 18px; /* Slightly smaller to ensure it fits the gap */
+    font-size: 18px; 
     color: #ffde00;
     text-shadow: 2px 2px 0px #000;
     white-space: nowrap;
-    animation: notif-shake-pop 1.5s ease-out forwards;
+    
+    /* We keep the shake, but let's make the float-up distance 
+       smaller so it doesn't fly into your Level text */
+    animation: notif-shake-pop 1.2s ease-out forwards;
 }
 
-/* Updated animation to be less "jumpy" for mobile */
 @keyframes notif-shake-pop {
     0% { opacity: 0; transform: scale(0.5); }
     15% { opacity: 1; transform: scale(1.1) rotate(-2deg); }
     25% { transform: scale(1.1) rotate(2deg); }
     35% { transform: scale(1) rotate(0deg); }
-    80% { opacity: 1; }
-    100% { opacity: 0; transform: translateY(-10px); }
+    80% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-5px); } /* Smaller float up */
 }
 
 /*                             for notifications in text                                       */
+
 
 
 
