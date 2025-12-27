@@ -904,7 +904,7 @@ input.input-field:-webkit-autofill:active {
 /* Ensure the game div is the absolute anchor */
 #game {
     position: relative !important; 
-    overflow: hidden !important; /* Allows the XP to float out of the top slightly */
+    overflow: visible !important; /* Allows the XP to float out of the top slightly */
 }
 
 .xp-drop {
@@ -986,12 +986,15 @@ input.input-field:-webkit-autofill:active {
 /* Firework Particle Styling */
 .firework-particle {
     position: absolute;
+    /* Add these two lines: */
+    top: 0; 
+    left: 0;
+    
     width: 6px;
     height: 6px;
     border-radius: 50%;
     pointer-events: none;
     z-index: 9999;
-    /* This connects to the function in your JS */
     animation: explode 1s ease-out forwards;
 }
 
@@ -1009,6 +1012,7 @@ input.input-field:-webkit-autofill:active {
 }
 
 /*                               fireworks for level up                                       */
+
 
 
 
