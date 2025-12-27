@@ -852,34 +852,33 @@ function createParticle(parent, xPos, colors) {
     const p = document.createElement('div');
     p.className = 'firework-particle';
     
-    // Get current dimensions
+    // Get the exact current size of the game box
     const rect = parent.getBoundingClientRect();
-    const centerX = xPos === '5%' ? 40 : rect.width - 40;
-    const centerY = rect.height / 2;
+    
+    // Calculate the "Start" position (the sides of the box)
+    // If xPos is 5%, we start near the left. If 95%, near the right.
+    const startX = xPos === '5%' ? 30 : rect.width - 30;
+    const startY = rect.height / 2;
 
     p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
     
-    // Random explosion vectors
+    // Random explosion distance (where the particle will fly to)
     const destX = (Math.random() - 0.5) * 150; 
     const destY = (Math.random() - 0.5) * 150;
     
+    // Set variables for the CSS @keyframes explode
     p.style.setProperty('--x', `${destX}px`);
     p.style.setProperty('--y', `${destY}px`);
 
-    // We set the initial position using translate so it's 'floating' 
-    // from the very first frame.
-    p.style.transform = `translate(${centerX}px, ${centerY}px)`;
+    // This is the "Magic Fix": 
+    // We combine the Start Position and the Animation in one transform.
+    p.style.transform = `translate(${startX}px, ${startY}px)`;
     
     parent.appendChild(p);
     
-    // Clean up
-    setTimeout(() => {
-        if (p.parentNode === parent) {
-            parent.removeChild(p);
-        }
-    }, 1000);
+    // Cleanup to prevent memory leaks
+    setTimeout(() => p.remove(), 1000);
 }
-
 
 
 async function highlightCorrectAnswer() {
@@ -1411,6 +1410,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
