@@ -910,7 +910,7 @@ input.input-field:-webkit-autofill:active {
 .xp-drop {
     position: absolute !important;
     top: 0 !important;
-    right: 10px !important;
+    left: 10px !important;
     color: #ffffff;    
     font-weight: 900 !important;
     font-size: 22px !important;
@@ -988,6 +988,7 @@ input.input-field:-webkit-autofill:active {
     100% { transform: translate(calc(var(--startX) + var(--x)), calc(var(--startY) + var(--y))) scale(0); opacity: 0; }
 }
 /*                               fireworks for level up                                       */
+
 
 
 
