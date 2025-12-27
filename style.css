@@ -1038,10 +1038,11 @@ input.input-field:-webkit-autofill:active {
     font-weight: 900;
     font-size: 16px;
     color: #ffde00;
-    text-shadow: 2px 2px 0px #000;
+    /*text-shadow: 2px 2px 0px #000;*/
     white-space: nowrap;
     /* Reduced duration for a snappier feel */
     animation: notif-steady-pop 1.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    text-shadow: 2px 2px 0px #000, 0 0 5px currentColor;
 }
 
 @keyframes notif-steady-pop {
@@ -1066,6 +1067,7 @@ input.input-field:-webkit-autofill:active {
     }
 }
 /*                             for notifications in text                                       */
+
 
 
 
