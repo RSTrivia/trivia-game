@@ -1018,12 +1018,38 @@ input.input-field:-webkit-autofill:active {
 
 
 
+/*                             for notifications in text                                       */
 
+#game-notifications {
+    height: 40px; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+    margin-bottom: 5px;
+}
 
+.notif-text {
+    font-family: 'Verdana', sans-serif;
+    font-weight: 900;
+    font-size: 24px;
+    color: #ffde00;
+    text-shadow: 2px 2px 0px #000, 0 0 8px rgba(255, 222, 0, 0.6);
+    /* Pop in, Shake, then Fade out */
+    animation: notif-shake-pop 1.5s ease-out forwards;
+}
 
+@keyframes notif-shake-pop {
+    0% { opacity: 0; transform: scale(0.5); }
+    15% { opacity: 1; transform: scale(1.2) rotate(-3deg); }
+    20% { transform: scale(1.2) rotate(3deg); }
+    25% { transform: scale(1.2) rotate(-3deg); }
+    30% { transform: scale(1) rotate(0deg); }
+    80% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-20px); }
+}
 
-
-
+/*                             for notifications in text                                       */
 
 
 
