@@ -974,9 +974,13 @@ input.input-field:-webkit-autofill:active {
 /* Optional: Slight adjustment to make the XP look clean in brackets */
 #xpBracket {
   font-weight: normal;
+  color: #888; /* This keeps the (XP) part grey while Level: 7 stays gold */
+  margin-left: 5px;
+  font-size: 0.85em; /* Makes the XP slightly smaller than the Level text */
 }
 
 /*                               user info, level                                         */
+
 
 
 
