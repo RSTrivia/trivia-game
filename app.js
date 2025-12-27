@@ -273,7 +273,7 @@ async function init() {
 
     // 4. Proceed with game logic
     const played = await hasUserCompletedDaily(session);
-    if (played) return alert("You've already played today!");
+    //if (played) return alert("You've already played today!");
           
     // 1. Send the signal to other tabs
     if (syncChannel) {
@@ -453,7 +453,9 @@ function lockDailyButton() {
     if (!dailyBtn) return;
     dailyBtn.classList.add('disabled');
     dailyBtn.classList.remove('is-active');
-    dailyBtn.onclick = () => alert("You've already played today!");
+    dailyBtn.style.opacity = '0.5';
+    dailyBtn.style.pointerEvents = 'none'; // Makes it ignore all clicks/touches
+    //dailyBtn.onclick = () => alert("You've already played today!");
 }
 
 
@@ -1207,6 +1209,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
