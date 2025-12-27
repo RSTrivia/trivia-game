@@ -484,6 +484,8 @@ function resetGame() {
     // 1. Stop any active logic
     clearInterval(timer);
     stopTickSound(); 
+    // Wipe any existing firework particles that didn't get removed
+    document.querySelectorAll('.firework-particle').forEach(p => p.remove());
   
     // 2. Reset numerical state
     score = 0;
@@ -853,8 +855,6 @@ function createParticle(parent, xPosPercent, colors) {
     p.className = 'firework-particle';
     
     const rect = parent.getBoundingClientRect();
-    
-    // We calculate the exact pixel starting point relative to the top-left of #game
     const startX = (xPosPercent / 100) * rect.width;
     const startY = rect.height / 2;
 
@@ -869,11 +869,14 @@ function createParticle(parent, xPosPercent, colors) {
     p.style.setProperty('--y', `${destY}px`);
 
     parent.appendChild(p);
-    
-    // Clean up to prevent DOM bloat
+
+    // This removes the element from the DOM after 1 second
+    // This prevents the "stacking" that causes shrinking
     setTimeout(() => {
-        if (p.parentNode === parent) p.remove();
-    }, 1000);
+        if (p && p.parentNode) {
+            p.remove();
+        }
+    }, 1000); 
 }
 
 async function highlightCorrectAnswer() {
@@ -1405,6 +1408,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
