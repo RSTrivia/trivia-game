@@ -918,14 +918,38 @@ input.input-field:-webkit-autofill:active {
 }
 
 /* Specific XP color - OSRS Green */
+/* Ensure the game area is the anchor for the drop */
+#game {
+    position: relative; 
+}
+
+.xp-drop {
+    position: absolute;
+    /* Forces it to the top right of the #game div */
+    right: 15px;       
+    top: 15px;         
+    color: #ffffff;    
+    font-weight: bold;
+    font-size: 28px;
+    font-family: 'Cinzel', serif;
+    text-shadow: 2px 2px 0px #000;
+    pointer-events: none;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    /* Ensure it starts visible and floats upward */
+    animation: xp-float-ne 1.2s ease-out forwards;
+}
+
 .xp-number {
-    color: #00ff00; 
+    color: #00ff00; /* OSRS Green */
 }
 
 @keyframes xp-float-ne {
     0% {
         opacity: 0;
-        transform: translateY(20px); /* Start slightly lower */
+        transform: translateY(10px);
     }
     20% {
         opacity: 1;
@@ -933,11 +957,9 @@ input.input-field:-webkit-autofill:active {
     }
     100% {
         opacity: 0;
-        transform: translateY(-40px); /* Float upward */
+        transform: translateY(-50px); /* Moves up and disappears */
     }
 }
-
-
 
 
 
