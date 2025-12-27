@@ -28,11 +28,11 @@ const dailyBtn = document.getElementById('dailyBtn');
 const dailyMessages = {
   0: [
     "Ouch. Zero XP gained today.",
-    "Lumbridge is calling your name.",
+    "You've been defeated. Try again tomorrow!",
     "Sit.",
     "You've been slapped by the Sandwich Lady.",
     "Back to Tutorial Island for you.",
-    "You've been defeated. Try again tomorrow!",
+    "It can only go higher from here.",
     "Buying brain for 10k?",
     "Your hitpoints reached 0. Oh dear.",
     "You're splashing on a seagull in Port Sarim.",
@@ -44,7 +44,7 @@ const dailyMessages = {
     "You hit a 1! Better than a splat.",
     "Thumbs down log out.",
     "It's a start!",
-    "It can only go higher from here.",
+    "Lumbridge is calling your name.",
     "Well, you didn't go home empty-handed!",
     "The RNG gods are laughing at you.",
     "Logging out in shame.",
@@ -1264,6 +1264,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
