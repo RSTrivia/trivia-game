@@ -853,25 +853,22 @@ function createParticle(parent, xPosPercent, colors) {
     p.className = 'firework-particle';
     
     const rect = parent.getBoundingClientRect();
-    
-    // Calculate exact pixel starting points
     const startX = (parseFloat(xPosPercent) / 100) * rect.width;
     const startY = rect.height / 2;
 
-    // Random explosion vectors
     const destX = (Math.random() - 0.5) * 200; 
     const destY = (Math.random() - 0.5) * 200;
 
-    // Assign variables to the parent particle div
-    p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    // We set --p-color so the ::after element can see it
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    p.style.setProperty('--p-color', color);
+    
     p.style.setProperty('--startX', `${startX}px`);
     p.style.setProperty('--startY', `${startY}px`);
     p.style.setProperty('--x', `${destX}px`);
     p.style.setProperty('--y', `${destY}px`);
 
     parent.appendChild(p);
-    
-    // Cleanup
     setTimeout(() => p.remove(), 1000);
 }
 
@@ -1404,6 +1401,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
