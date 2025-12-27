@@ -573,6 +573,7 @@ async function preloadNextQuestions() {
 
 async function startGame() {
     try {
+        setTimeout(triggerFireworks, 1000);
         document.body.classList.add('game-active');
         gameEnding = false;
         game.classList.remove('hidden');
@@ -1400,6 +1401,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
