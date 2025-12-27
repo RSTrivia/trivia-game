@@ -914,16 +914,17 @@ input.input-field:-webkit-autofill:active {
     
     /* Look & Feel */
     color: #ffffff;    
-    font-weight: bold;
-    font-size: 28px;
-    font-family: 'Cinzel', serif;
+    font-weight: 900; /*bold */
+    font-size: 22px; /* 28px*/
+    font-family: 'Verdana', sans-serif !important; /* 'Cinzel', serif;*/
+    letter-spacing: -1px; /* new */
     text-shadow: 2px 2px 0px #000;
     pointer-events: none;
     z-index: 9999; /* Ensure it's above everything */
     
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 2px; /* 4 */
     
     /* Animation */
     animation: xp-float-ne 1.2s ease-out forwards;
@@ -947,6 +948,7 @@ input.input-field:-webkit-autofill:active {
         transform: translateY(-60px); /* Floats straight up */
     }
 }
+
 
 
 
