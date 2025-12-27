@@ -988,15 +988,17 @@ input.input-field:-webkit-autofill:active {
 
 /* Update your particle block */
 .firework-particle {
-    position: absolute !important; /* Force absolute */
+    position: absolute !important;
     top: 0;
     left: 0;
     width: 0;
     height: 0;
     pointer-events: none;
     z-index: 9999;
-    /* This line prevents the particle from pushing buttons: */
-    flex-shrink: 0; 
+    /* Forces Flexbox to ignore this element's dimensions */
+    flex: 0 0 0 !important; 
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 .firework-particle::after {
@@ -1040,6 +1042,7 @@ input.input-field:-webkit-autofill:active {
 
 
 /*                               fireworks for level up                                       */
+
 
 
 
