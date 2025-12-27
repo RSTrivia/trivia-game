@@ -986,16 +986,15 @@ input.input-field:-webkit-autofill:active {
 /* Firework Particle Styling */
 .firework-particle {
     position: absolute;
-    /* Add these two lines: */
-    top: 0; 
-    left: 0;
-    
+    top: 0; /* Important: prevents pushing the bottom of the box */
+    left: 0; /* Important: prevents horizontal scrolling */
     width: 6px;
     height: 6px;
     border-radius: 50%;
     pointer-events: none;
-    z-index: 9999;
-    animation: explode 1s ease-out forwards;
+    z-index: 999;
+    /* This tells the browser: 'Ignore this element for layout math' */
+    contain: strict; 
 }
 
 /* The movement animation */
@@ -1012,6 +1011,7 @@ input.input-field:-webkit-autofill:active {
 }
 
 /*                               fireworks for level up                                       */
+
 
 
 
