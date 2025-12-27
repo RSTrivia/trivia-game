@@ -848,38 +848,32 @@ function triggerFireworks() {
     }
 }
 
-function createParticle(parent, xPos, colors) {
+function createParticle(parent, xPosPercent, colors) {
     const p = document.createElement('div');
     p.className = 'firework-particle';
     
-    // Get the exact current size of the game box
     const rect = parent.getBoundingClientRect();
     
-    // Calculate the "Start" position (the sides of the box)
-    // If xPos is 5%, we start near the left. If 95%, near the right.
-    const startX = xPos === '5%' ? 30 : rect.width - 30;
+    // Calculate exact pixel starting points
+    const startX = (parseFloat(xPosPercent) / 100) * rect.width;
     const startY = rect.height / 2;
 
+    // Random explosion vectors
+    const destX = (Math.random() - 0.5) * 200; 
+    const destY = (Math.random() - 0.5) * 200;
+
+    // Assign variables to the parent particle div
     p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-    
-    // Random explosion distance (where the particle will fly to)
-    const destX = (Math.random() - 0.5) * 150; 
-    const destY = (Math.random() - 0.5) * 150;
-    
-    // Set variables for the CSS @keyframes explode
+    p.style.setProperty('--startX', `${startX}px`);
+    p.style.setProperty('--startY', `${startY}px`);
     p.style.setProperty('--x', `${destX}px`);
     p.style.setProperty('--y', `${destY}px`);
 
-    // This is the "Magic Fix": 
-    // We combine the Start Position and the Animation in one transform.
-    p.style.transform = `translate(${startX}px, ${startY}px)`;
-    
     parent.appendChild(p);
     
-    // Cleanup to prevent memory leaks
+    // Cleanup
     setTimeout(() => p.remove(), 1000);
 }
-
 
 async function highlightCorrectAnswer() {
     const { data: correctId } = await supabase.rpc('reveal_correct_answer', { 
@@ -1410,6 +1404,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
