@@ -997,6 +997,15 @@ input.input-field:-webkit-autofill:active {
     contain: strict; 
 }
 
+/* Add this to ensure the layout ignores the particles */
+#game {
+    position: relative !important;
+    overflow: visible !important;
+    /* If your #game uses flex, it will try to make space for the dots. 
+       This ensures they are treated as 'floating' objects. */
+    display: block; 
+}
+
 /* The movement animation */
 @keyframes explode {
     0% { 
@@ -1011,6 +1020,7 @@ input.input-field:-webkit-autofill:active {
 }
 
 /*                               fireworks for level up                                       */
+
 
 
 
