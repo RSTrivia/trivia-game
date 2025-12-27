@@ -986,27 +986,27 @@ input.input-field:-webkit-autofill:active {
 /* Firework Particle Styling */
 /* ====== FIREWORKS FIX: PREVENT STRETCHING ====== */
 
+/* Update your particle block */
 .firework-particle {
-    position: absolute;
+    position: absolute !important; /* Force absolute */
     top: 0;
     left: 0;
     width: 0;
     height: 0;
     pointer-events: none;
-    z-index: 9999; /* Ensure it's on top of questions */
+    z-index: 9999;
+    /* This line prevents the particle from pushing buttons: */
+    flex-shrink: 0; 
 }
 
 .firework-particle::after {
     content: '';
     position: absolute;
-    width: 8px; /* Slightly bigger for visibility */
-    height: 8px;
+    width: 6px; 
+    height: 6px;
     border-radius: 50%;
-    /* Prioritize the variable, then inherit, then gold */
     background-color: var(--p-color, #d4af37); 
-    box-shadow: 0 0 4px var(--p-color); /* Added a slight glow */
-    top: -4px;
-    left: -4px;
+    box-shadow: 0 0 4px var(--p-color);
     animation: explode 1s ease-out forwards;
 }
 
@@ -1016,7 +1016,6 @@ input.input-field:-webkit-autofill:active {
         opacity: 1; 
     }
     100% { 
-        /* Move from center to the random X/Y destination */
         transform: translate(calc(var(--startX) + var(--x)), calc(var(--startY) + var(--y))) scale(0); 
         opacity: 0; 
     }
@@ -1031,6 +1030,7 @@ input.input-field:-webkit-autofill:active {
   align-items: center;
   padding: 20px;
   border-radius: 10px;
+  justify-content: flex-start;
 }
 
 /* Only show as flex when the .hidden class is NOT present */
@@ -1040,6 +1040,7 @@ input.input-field:-webkit-autofill:active {
 
 
 /*                               fireworks for level up                                       */
+
 
 
 
