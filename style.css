@@ -907,14 +907,13 @@ input.input-field:-webkit-autofill:active {
 /*                            new for xp drops                                              */
 
 /* Ensure the game div is the absolute anchor */
-/* Ensure the game div is the absolute anchor */
 .xp-drop {
     position: absolute !important;
-    top: 20px !important;    /* Starting position near top */
-    right: 20px !important;  /* Anchor to North East */
-    left: auto !important;   /* Explicitly disable left-side snapping */
+    top: 60px !important;    /* Start a bit lower so it has room to float up */
+    right: 20px !important;  /* Anchor to North East corner */
+    left: auto !important;   
     
-    /* CRITICAL FIX: Prevent the child 100% width rule from stretching the XP */
+    /* Overrides the #game > * width: 100% rule */
     width: auto !important;  
     
     color: #ffffff;    
@@ -927,24 +926,25 @@ input.input-field:-webkit-autofill:active {
     display: flex;
     align-items: center;
     gap: 2px;
-    animation: xp-float-down 1.2s ease-out forwards;
+    
+    /* Direction: Upward float */
+    animation: xp-float-upward 1.2s ease-out forwards;
 }
 
 .xp-number { color: #00ff00 !important; }
 
-/* 2. Top-to-Bottom Animation */
-@keyframes xp-float-down {
+@keyframes xp-float-upward {
     0% { 
         opacity: 0; 
-        transform: translateY(-20px); /* Start slightly higher than 'top' */
+        transform: translateY(20px); /* Start slightly below the 'top' position */
     }
     20% { 
         opacity: 1; 
-        transform: translateY(0);     /* Drop to 'top' position */
+        transform: translateY(0);    /* Pop into full view */
     }
     100% { 
         opacity: 0; 
-        transform: translateY(60px);  /* Fall downwards (positive value) */
+        transform: translateY(-100px); /* Float UP (negative value) */
     }
 }
 /*                                                                                     */
@@ -1004,6 +1004,7 @@ input.input-field:-webkit-autofill:active {
     100% { transform: translate(calc(var(--startX) + var(--x)), calc(var(--startY) + var(--y))) scale(0); opacity: 0; }
 }
 /*                               fireworks for level up                                       */
+
 
 
 
