@@ -959,56 +959,6 @@ input.input-field:-webkit-autofill:active {
 
 
 
-
-
-
-
-/*                           level up notification                                     */
-
-
-.level-up-notification {
-    position: absolute;
-    top: 40%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(0, 0, 0, 0.85);
-    border: 2px solid #ceab35;
-    padding: 20px;
-    text-align: center;
-    z-index: 1000;
-    pointer-events: none;
-    animation: lvlPop 0.5s ease-out;
-    min-width: 250px;
-}
-
-.lvl-text {
-    color: #efefef;
-    font-size: 1.2rem;
-    font-weight: bold;
-}
-
-.lvl-subtext {
-    color: #efefef;
-    font-size: 0.9rem;
-    margin: 5px 0;
-}
-
-.lvl-number {
-    color: #ffde00; /* OSRS Gold */
-    font-size: 1.4rem;
-    font-weight: bold;
-    text-shadow: 2px 2px 0px #000;
-}
-
-@keyframes lvlPop {
-    0% { transform: translate(-50%, -40%) scale(0.8); opacity: 0; }
-    100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-}
-
-/*                                                                                     */
-
-
-
 /*                               user info, level                                         */
 
 .user-info-row {
@@ -1027,6 +977,7 @@ input.input-field:-webkit-autofill:active {
 }
 
 /*                               user info, level                                         */
+
 
 
 
