@@ -921,9 +921,10 @@ input.input-field:-webkit-autofill:active {
     font-family: 'Verdana', Geneva, sans-serif !important; /* 'Cinzel', serif;*/
     letter-spacing: -1px; /* new */
     text-shadow: 2px 2px 0px #000;
-    pointer-events: none;
     z-index: 9999; /* Ensure it's above everything */
-    
+    pointer-events: none; /* Makes them "ghosts" to clicks */
+    flex: none !important; /* Forces Flexbox to ignore them for layout */
+    contain: strict;       /* Optimization: tells browser not to look inside for layout changes */
     display: flex;
     align-items: center;
     gap: 2px; /* 4 */
@@ -997,7 +998,9 @@ input.input-field:-webkit-autofill:active {
     padding: 0 !important;
     pointer-events: none;
     z-index: 9999;
-    /* We no longer need flex:none or float because it's not in a flexbox! */
+    pointer-events: none; /* Makes them "ghosts" to clicks */
+    flex: none !important; /* Forces Flexbox to ignore them for layout */
+    contain: strict;       /* Optimization: tells browser not to look inside for layout changes */
 }
 
 .firework-particle::after {
@@ -1025,7 +1028,6 @@ input.input-field:-webkit-autofill:active {
 /* Update the #game block to allow flex centering but hide when needed */
 #game {
   position: relative !important;
-  overflow: hidden !important; 
   display: none; /* Default to hidden */
   flex-direction: column;
   align-items: center;
@@ -1041,6 +1043,7 @@ input.input-field:-webkit-autofill:active {
 
 
 /*                               fireworks for level up                                       */
+
 
 
 
