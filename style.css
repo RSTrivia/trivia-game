@@ -917,7 +917,7 @@ input.input-field:-webkit-autofill:active {
     font-weight: 900 !important;; /*bold */
     font-size: 22px !important;; /* 28px*/
     font-style: normal !important;
-    font-family: 'Verdana', sans-serif !important; /* 'Cinzel', serif;*/
+    font-family: 'Verdana', Geneva, sans-serif !important; /* 'Cinzel', serif;*/
     letter-spacing: -1px; /* new */
     text-shadow: 2px 2px 0px #000;
     pointer-events: none;
@@ -949,6 +949,7 @@ input.input-field:-webkit-autofill:active {
         transform: translateY(-60px); /* Floats straight up */
     }
 }
+
 
 
 
