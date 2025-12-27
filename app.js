@@ -885,6 +885,14 @@ if (shareBtn) {
         updateShareButtonState(); // Force it to stay grey
         return;
     }
+      // 1. CAPTURE CURRENT STATE (To restore later)
+      const originalScore = finalScore.textContent;
+      const originalMsg = document.getElementById('game-over-title').textContent;
+
+      // 2. INJECT DAILY DATA (Just for the photo)
+      const dailyScore = localStorage.getItem('lastDailyScore') || "0";
+      const dailyMsg = localStorage.getItem('lastDailyMessage') || "Daily Challenge";
+      
         if (shareBtn.classList.contains('is-disabled')) return;
         // FORCE the daily values regardless of what is on screen
         const currentScore = localStorage.getItem('lastDailyScore') || "0";
@@ -1061,7 +1069,16 @@ if (shareBtn) {
             shareBtn.style.opacity = '1';
             const muteBtn = document.getElementById('muteBtn');
             if (muteBtn) muteBtn.style.opacity = '1';
-        }
+        } finally {
+        // 3. RESTORE ORIGINAL STATE 
+        // So the user doesn't see their score change on the actual screen
+        finalScore.textContent = originalScore;
+        document.getElementById('game-over-title').textContent = originalMsg;
+        
+        shareBtn.style.opacity = '1';
+        if (muteBtn) muteBtn.style.opacity = '1';
+    }
+      
     };
 }  
 
@@ -1209,6 +1226,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
