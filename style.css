@@ -1022,13 +1022,13 @@ input.input-field:-webkit-autofill:active {
 
 #game-notifications {
     position: absolute; 
-    /* Increased from -35px to -15px to move it DOWN slightly */
-    top: -15px;   
-    
+    top: -25px; /* Adjust this to fit two small lines of text */
     left: 0;
     right: 0;
     display: flex;
-    justify-content: center;
+    flex-direction: column; /* Stacks them vertically */
+    align-items: center;
+    gap: 2px;               /* Space between the two messages */
     pointer-events: none;
     z-index: 999;
 }
@@ -1036,26 +1036,20 @@ input.input-field:-webkit-autofill:active {
 .notif-text {
     font-family: 'Verdana', sans-serif;
     font-weight: 900;
-    font-size: 18px; 
-    color: #ffde00;
+    font-size: 16px; /* Slightly smaller so two can fit in the gap */
     text-shadow: 2px 2px 0px #000;
     white-space: nowrap;
-    
-    /* We keep the shake, but let's make the float-up distance 
-       smaller so it doesn't fly into your Level text */
-    animation: notif-shake-pop 1.2s ease-out forwards;
+    animation: notif-shake-pop 1.5s ease-out forwards;
 }
 
 @keyframes notif-shake-pop {
     0% { opacity: 0; transform: scale(0.5); }
-    15% { opacity: 1; transform: scale(1.1) rotate(-2deg); }
-    25% { transform: scale(1.1) rotate(2deg); }
-    35% { transform: scale(1) rotate(0deg); }
-    80% { opacity: 1; transform: translateY(0); }
-    100% { opacity: 0; transform: translateY(-5px); } /* Smaller float up */
+    15% { opacity: 1; transform: scale(1.1); }
+    80% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-10px); }
 }
-
 /*                             for notifications in text                                       */
+
 
 
 
