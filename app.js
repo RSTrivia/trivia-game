@@ -876,7 +876,11 @@ function createParticle(parent, xPosPercent, colors) {
 
     // 4. THE FIX: Attach to body, NOT the game container
     document.body.appendChild(p);
-
+    // NEW: Remove EXACTLY when the CSS animation finishes
+    p.onanimationend = () => {
+        p.remove();
+    };
+    // Safety fallback (in case animation fails to trigger)
     setTimeout(() => {
         if (p && p.parentNode) {
             p.remove();
@@ -976,14 +980,21 @@ function triggerXpDrop(amount) {
 
     const xpDrop = document.createElement('div');
     xpDrop.className = 'xp-drop';
+    // We add a specific style here to ensure Flexbox ignores it
+    xpDrop.style.position = 'absolute'; 
     xpDrop.innerHTML = `<span>+</span><span class="xp-number">${amount}</span>`;
     
     gameContainer.appendChild(xpDrop);
 
-    // Remove the element after the animation finishes (1.2s matches your CSS)
-    setTimeout(() => {
+    // This ensures that as soon as the 1.2s animation is done, it is GONE from the DOM
+    xpDrop.onanimationend = () => {
         xpDrop.remove();
-    }, 1200);
+    };
+
+    // Fallback cleanup
+    setTimeout(() => {
+        if (xpDrop.parentNode) xpDrop.remove();
+    }, 1500);
 }
 
 function setupRealtimeSync(userId) {
@@ -1413,6 +1424,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
