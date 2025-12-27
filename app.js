@@ -854,24 +854,29 @@ function createParticle(parent, xPosPercent, colors) {
     const p = document.createElement('div');
     p.className = 'firework-particle';
     
+    // 1. Get where the game box is on the screen right now
     const rect = parent.getBoundingClientRect();
-    const startX = (xPosPercent / 100) * rect.width;
-    const startY = rect.height / 2;
+    
+    // 2. Calculate the "Global" screen coordinates
+    // We add window.scrollX/Y to ensure it stays accurate if the page is scrolled
+    const startX = rect.left + window.scrollX + (xPosPercent / 100) * rect.width;
+    const startY = rect.top + window.scrollY + (rect.height / 2);
 
     const destX = (Math.random() - 0.5) * 200; 
     const destY = (Math.random() - 0.5) * 200;
     const color = colors[Math.floor(Math.random() * colors.length)];
     
     p.style.setProperty('--p-color', color);
+    
+    // 3. Set the start position to the absolute screen coordinates
     p.style.setProperty('--startX', `${startX}px`);
     p.style.setProperty('--startY', `${startY}px`);
     p.style.setProperty('--x', `${destX}px`);
     p.style.setProperty('--y', `${destY}px`);
 
-    parent.appendChild(p);
+    // 4. THE FIX: Attach to body, NOT the game container
+    document.body.appendChild(p);
 
-    // This removes the element from the DOM after 1 second
-    // This prevents the "stacking" that causes shrinking
     setTimeout(() => {
         if (p && p.parentNode) {
             p.remove();
@@ -1408,6 +1413,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
