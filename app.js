@@ -697,7 +697,8 @@ function startTimer() {
         timeLeft--;
         timeDisplay.textContent = timeLeft;
         // When the UI shows 3, start the loop
-        if (timeLeft === 5 && !activeTickSource) {
+        // This ensures that even if a frame is dropped, the sound starts
+        if (timeLeft <= 5 && timeLeft > 0 && !activeTickSource) {
             activeTickSource = playSound(tickBuffer, true); 
         }
         if (timeLeft <= 5) timeWrap.classList.add('red-timer');
@@ -1445,6 +1446,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
