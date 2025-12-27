@@ -164,7 +164,7 @@ const dailyMessages = {
   ]
 };
 
-let correctBuffer, wrongBuffer, tickBuffer;
+let correctBuffer, wrongBuffer, tickBuffer, levelUpBuffer, bonusBuffer;
 let activeTickSource = null; // To track the running sound
 let muted = cachedMuted;
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -754,24 +754,34 @@ async function checkAnswer(choiceId, btn) {
         
         if (session) { 
             let gained = isDailyMode ? 50 : 5;
+            let isBonusEarned = false; // Track for sound
             if (isDailyMode) {
                     dailyQuestionCount++; // Only track daily count in daily mode
-                    if (dailyQuestionCount === 10) gained += 100;
+                    if (dailyQuestionCount === 10) {
+                      gained += 100;
+                      isBonusEarned = true; // Daily bonus!
+                    }
                 } else {
                     streak++; // Only track streak in normal mode
                     if (streak === 10) {
                         gained += 30;
                         streak = 0; 
+                        isBonusEarned = true; // Normal bonus!
                     }
             }
 
-
+            // --- PLAY BONUS SOUND ---
+            if (isBonusEarned) {
+                playSound(bonusBuffer);
+            }
             const oldLevel = getLevel(currentProfileXp);
             currentProfileXp += gained; // Add the XP to local state
             const newLevel = getLevel(currentProfileXp);
 
             if (newLevel > oldLevel) {
                 triggerFireworks(); 
+                // Play level up sound after the correct sound
+                setTimeout(() => playSound(levelUpBuffer), 100);
             }
 
             updateLevelUI(); // Refresh the Player/Level row
@@ -1268,6 +1278,8 @@ async function loadSounds() {
     if (!correctBuffer) correctBuffer = await loadAudio('./sounds/correct.mp3');
     if (!wrongBuffer) wrongBuffer = await loadAudio('./sounds/wrong.mp3');
     if (!tickBuffer) tickBuffer = await loadAudio('./sounds/tick.mp3');
+    if (!levelUpBuffer) levelUpBuffer = await loadAudio('./sounds/level.mp3');
+    if (!bonusBuffer)   bonusBuffer = await loadAudio('./sounds/bonus.mp3');
 }
 
 async function loadAudio(url) {
@@ -1290,7 +1302,7 @@ function playSound(buffer, loop = false) {
     source.loop = loop; // Enable looping for the 3-second alarm
   
     const gain = audioCtx.createGain();
-    gain.gain.value = 0.5;
+    gain.gain.value = 0.6;
   
     source.connect(gain).connect(audioCtx.destination);
     source.start(0); // Add the 0 for older mobile browser compatibility
@@ -1412,6 +1424,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
