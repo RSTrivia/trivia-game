@@ -1041,31 +1041,32 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
     white-space: nowrap;
     /* Reduced duration for a snappier feel */
-    animation: notif-steady-pop 1.2s ease-out forwards;
+    animation: notif-steady-pop 1.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 @keyframes notif-steady-pop {
     0% { 
         opacity: 0; 
-        transform: scale(0.9); /* Start slightly smaller */
+        transform: scale(0.9); 
     }
     15% { 
         opacity: 1; 
-        transform: scale(1.05); /* Very subtle pop */
+        transform: scale(1.02); /* Very minimal pop */
     }
-    25% { 
-        transform: scale(1);    /* Settle at normal size immediately */
+    30% { 
+        transform: scale(1); 
     }
-    80% { 
-        opacity: 1; 
-        transform: translateY(0); 
+    /* Long, smooth fade starts here */
+    50% {
+        opacity: 1;
     }
     100% { 
         opacity: 0; 
-        transform: translateY(-3px); /* Barely moves upward at the end */
+        transform: translateY(-5px); /* Gentle drift */
     }
 }
 /*                             for notifications in text                                       */
+
 
 
 
