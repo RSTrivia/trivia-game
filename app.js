@@ -763,7 +763,7 @@ async function checkAnswer(choiceId, btn) {
                     }
                 } else {
                     streak++; // Only track streak in normal mode
-                    if (streak === 10) { // change this back to 10
+                    if (streak === 3) { // change this back to 10
                         gained += 30;
                         streak = 0; 
                         isBonusEarned = true; // Normal bonus!
@@ -773,6 +773,7 @@ async function checkAnswer(choiceId, btn) {
             // --- PLAY BONUS SOUND ---
             if (isBonusEarned) {
                 playSound(bonusBuffer);
+                showNotification("BONUS XP!", "#00ffff"); // Cyan for bonus
             }
             const oldLevel = getLevel(currentProfileXp);
             currentProfileXp += gained; // Add the XP to local state
@@ -781,7 +782,10 @@ async function checkAnswer(choiceId, btn) {
             if (newLevel > oldLevel) {
                 triggerFireworks(); 
                 // Play level up sound after the correct sound
-                setTimeout(() => playSound(levelUpBuffer), 100);
+                setTimeout(() => {
+                  playSound(levelUpBuffer), 
+                  showNotification("LEVEL UP!", "#ffde00"); // Gold for level
+                }, 100);
             }
 
             updateLevelUI(); // Refresh the Player/Level row
@@ -858,6 +862,23 @@ function triggerFireworks() {
         createParticle(container, 10, colors);  // 10% from left
         createParticle(container, 90, colors);  // 90% from left (right side)
     }
+}
+
+function showNotification(message, color = '#ffde00') {
+    const container = document.getElementById('game-notifications');
+    if (!container) return;
+
+    const notif = document.createElement('div');
+    notif.className = 'notif-text';
+    notif.textContent = message;
+    notif.style.color = color;
+
+    // Clear any existing notification so they don't stack
+    container.innerHTML = '';
+    container.appendChild(notif);
+
+    // Remove from DOM after animation finishes
+    notif.onanimationend = () => notif.remove();
 }
 
 function createParticle(parent, xPosPercent, colors) {
@@ -1424,6 +1445,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
