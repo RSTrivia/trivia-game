@@ -907,15 +907,19 @@ input.input-field:-webkit-autofill:active {
 /*                            new for xp drops                                              */
 
 /* Ensure the game div is the absolute anchor */
+/* Ensure the game div is the absolute anchor */
 .xp-drop {
     position: absolute !important;
-    top: 10px !important;    /* Starting position */
-    right: 10px !important;  /* Anchor to North East */
-    /* No 'left' property here - this is the key! */
+    top: 20px !important;    /* Starting position near top */
+    right: 20px !important;  /* Anchor to North East */
+    left: auto !important;   /* Explicitly disable left-side snapping */
+    
+    /* CRITICAL FIX: Prevent the child 100% width rule from stretching the XP */
+    width: auto !important;  
     
     color: #ffffff;    
     font-weight: 900 !important;
-    font-size: 22px !important;
+    font-size: 24px !important;
     font-family: 'Verdana', sans-serif !important;
     text-shadow: 2px 2px 0px #000;
     z-index: 99999 !important; 
@@ -923,26 +927,26 @@ input.input-field:-webkit-autofill:active {
     display: flex;
     align-items: center;
     gap: 2px;
-    animation: xp-float-up 1.2s ease-out forwards;
+    animation: xp-float-down 1.2s ease-out forwards;
 }
 
 .xp-number { color: #00ff00 !important; }
 
-@keyframes xp-float-up {
+/* 2. Top-to-Bottom Animation */
+@keyframes xp-float-down {
     0% { 
         opacity: 0; 
-        transform: translateY(20px); 
+        transform: translateY(-20px); /* Start slightly higher than 'top' */
     }
     20% { 
         opacity: 1; 
-        transform: translateY(0); 
+        transform: translateY(0);     /* Drop to 'top' position */
     }
     100% { 
         opacity: 0; 
-        transform: translateY(-80px); /* Back to the higher float since overflow is fixed */
+        transform: translateY(60px);  /* Fall downwards (positive value) */
     }
 }
-
 /*                                                                                     */
 
 
@@ -1000,6 +1004,7 @@ input.input-field:-webkit-autofill:active {
     100% { transform: translate(calc(var(--startX) + var(--x)), calc(var(--startY) + var(--y))) scale(0); opacity: 0; }
 }
 /*                               fireworks for level up                                       */
+
 
 
 
