@@ -5,6 +5,7 @@ const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 // ====== UI & STATE ======
 const cachedMuted = localStorage.getItem('muted') === 'true';
 let dailySubscription = null; // Track this globally to prevent duplicates
+let syncChannel;
 let username = 'Guest';
 let gameEnding = false;
 const shareBtn = document.getElementById('shareBtn');
@@ -273,7 +274,18 @@ async function init() {
     // 4. Proceed with game logic
     const played = await hasUserCompletedDaily(session);
     if (played) return alert("You've already played today!");
-    
+          
+    // 1. Send the signal to other tabs
+    if (syncChannel) {
+        syncChannel.send({
+            type: 'broadcast',
+            event: 'lock-daily',
+            payload: { userId: session.user.id }
+        });
+    }
+    // 2. Lock the button locally
+    lockDailyButton();     
+          
     if (audioCtx.state === 'suspended') await audioCtx.resume();
     await loadSounds();
     isDailyMode = true;
@@ -349,6 +361,8 @@ async function handleAuthChange(event, session) {
     
     // Sync their daily status
     await fetchDailyStatus(session.user.id);
+    // Establish the live sync
+    syncChannel = setupRealtimeSync(session.user.id);
 }
 
 async function hasUserCompletedDaily(session) {
@@ -788,6 +802,20 @@ async function endGame() {
     });
 }
 
+function setupRealtimeSync(userId) {
+    const channel = supabase.channel('daily-sync-room');
+
+    channel
+        .on('broadcast', { event: 'lock-daily' }, (payload) => {
+            if (payload.userId === userId) {
+                console.log("Received lock signal from another device.");
+                lockDailyButton();
+            }
+        })
+        .subscribe();
+
+    return channel;
+}
 
 async function saveNormalScore(currentUsername, finalScore) {
     // 1. Get the session to get the UUID (The "Key" to bypass 403)
@@ -1170,6 +1198,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
