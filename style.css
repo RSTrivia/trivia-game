@@ -902,31 +902,40 @@ input.input-field:-webkit-autofill:active {
 
 .xp-drop {
     position: absolute;
-    left: 50%;
-    top: 40%;
-    transform: translateX(-50%);
-    color: #00ff00; /* Classic XP Green */
+    right: 20px;       /* Distance from the right edge */
+    top: 60px;         /* Distance from the top edge */
+    color: #ffffff;    /* White "+" sign */
     font-weight: bold;
-    font-size: 24px;
-    font-family: 'Cinzel', serif; /* Or a pixel font if you have one */
+    font-size: 26px;
+    font-family: 'Cinzel', serif;
     text-shadow: 2px 2px 0px #000;
     pointer-events: none;
     z-index: 1000;
-    animation: xp-float 1.2s ease-out forwards;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    animation: xp-float-ne 1.2s ease-out forwards;
 }
 
-@keyframes xp-float {
+/* Specific XP color - OSRS Green */
+.xp-number {
+    color: #00ff00; 
+}
+
+@keyframes xp-float-ne {
     0% {
+        opacity: 0;
+        transform: translateY(20px); /* Start slightly lower */
+    }
+    20% {
         opacity: 1;
-        transform: translate(-50%, 0);
+        transform: translateY(0);
     }
     100% {
         opacity: 0;
-        transform: translate(-50%, -100px);
+        transform: translateY(-40px); /* Float upward */
     }
 }
-
-
 
 
 
