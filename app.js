@@ -749,22 +749,24 @@ async function checkAnswer(choiceId, btn) {
         
         if (session) { 
             let gained = isDailyMode ? 50 : 5;
-                    
-                    // Bonus Logic
-                    if (isDailyMode && dailyQuestionCount === 10) gained += 100;
-                    if (!isDailyMode && streak === 10) {
+            if (isDailyMode) {
+                    dailyQuestionCount++; // Only track daily count in daily mode
+                    if (dailyQuestionCount === 10) gained += 100;
+                } else {
+                    streak++; // Only track streak in normal mode
+                    if (streak === 10) {
                         gained += 30;
                         streak = 0; 
                     }
+                }
+              // Update Local & DB
+              currentProfileXp += gained;
+              triggerXpDrop(gained); 
             
-                    // Update Local & DB
-                    currentProfileXp += gained;
-                    triggerXpDrop(gained); 
-            
-                    // Update Supabase
-                    await supabase.from('profiles')
-                        .update({ xp: currentProfileXp })
-                        .eq('id', session.user.id);
+              // Update Supabase
+              await supabase.from('profiles')
+              .update({ xp: currentProfileXp })
+              .eq('id', session.user.id);
         }
         // Update Local State & UI
         score++;
@@ -1329,6 +1331,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
