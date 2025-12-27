@@ -737,6 +737,8 @@ async function checkAnswer(choiceId, btn) {
     if (isCorrect) {
         playSound(correctBuffer);
         btn.classList.add('correct');
+        // --- TRIGGER XP DROP HERE ---
+        triggerXpDrop(15); // You can change '15' to whatever XP value you like
         score++;
         updateScore();
         setTimeout(loadQuestion, 1000);
@@ -835,6 +837,22 @@ async function endGame() {
         updateShareButtonState();
         gameEnding = false;
     });
+}
+
+// new for xp drops 
+function triggerXpDrop(amount) {
+    const gameContainer = document.getElementById('game');
+    const xpDrop = document.createElement('div');
+    
+    xpDrop.className = 'xp-drop';
+    xpDrop.innerHTML = `<span style="color: white; margin-right: 4px;">+</span>${amount}`;
+    
+    gameContainer.appendChild(xpDrop);
+
+    // Remove the element after animation ends to keep the DOM clean
+    setTimeout(() => {
+        xpDrop.remove();
+    }, 1200);
 }
 
 function setupRealtimeSync(userId) {
@@ -1264,6 +1282,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
