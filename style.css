@@ -898,8 +898,33 @@ input.input-field:-webkit-autofill:active {
 
 
 
+/*                            new for xp drops                                              */
 
+.xp-drop {
+    position: absolute;
+    left: 50%;
+    top: 40%;
+    transform: translateX(-50%);
+    color: #00ff00; /* Classic XP Green */
+    font-weight: bold;
+    font-size: 24px;
+    font-family: 'Cinzel', serif; /* Or a pixel font if you have one */
+    text-shadow: 2px 2px 0px #000;
+    pointer-events: none;
+    z-index: 1000;
+    animation: xp-float 1.2s ease-out forwards;
+}
 
+@keyframes xp-float {
+    0% {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -100px);
+    }
+}
 
 
 
