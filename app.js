@@ -321,7 +321,7 @@ async function init() {
         } 
         // If user unmutes, check if we ARE in the final 3 seconds
         // AND make sure it's not already playing
-        if (timeLeft <= 3 && timeLeft > 0 && !activeTickSource) {
+        if (timeLeft <= 5 && timeLeft > 0 && !activeTickSource) {
             activeTickSource = playSound(tickBuffer, true);
         }
     };
@@ -685,7 +685,7 @@ function startTimer() {
         timeLeft--;
         timeDisplay.textContent = timeLeft;
         // When the UI shows 3, start the loop
-        if (timeLeft === 3 && !activeTickSource) {
+        if (timeLeft === 5 && !activeTickSource) {
             activeTickSource = playSound(tickBuffer, true); 
         }
         if (timeLeft <= 5) timeWrap.classList.add('red-timer');
@@ -1264,6 +1264,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
