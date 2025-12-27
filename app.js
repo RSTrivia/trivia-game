@@ -803,16 +803,25 @@ async function endGame() {
 }
 
 function setupRealtimeSync(userId) {
-    const channel = supabase.channel('daily-sync-room');
+    // Unique channel per user means only YOUR devices talk to each other
+    const channel = supabase.channel(`user-sync-${userId}`, {
+        config: {
+            broadcast: { self: false } // Don't trigger the lock on the device that sent it
+        }
+    });
 
     channel
         .on('broadcast', { event: 'lock-daily' }, (payload) => {
-            if (payload.userId === userId) {
-                console.log("Received lock signal from another device.");
-                lockDailyButton();
-            }
+            console.log("Broadcast received! Locking daily button.");
+            lockDailyButton();
+            // Also sync the score/message data so the "Share" button appears
+            fetchDailyStatus(userId);
         })
-        .subscribe();
+        .subscribe((status) => {
+            if (status === 'SUBSCRIBED') {
+                console.log("Realtime connection established.");
+            }
+        });
 
     return channel;
 }
@@ -1198,6 +1207,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
