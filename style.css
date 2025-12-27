@@ -904,7 +904,7 @@ input.input-field:-webkit-autofill:active {
 /* Ensure the game div is the absolute anchor */
 #game {
     position: relative !important; 
-    overflow: visible !important; /* Allows the XP to float out of the top slightly */
+    overflow: hidden !important; /* Allows the XP to float out of the top slightly */
 }
 
 .xp-drop {
@@ -1009,6 +1009,7 @@ input.input-field:-webkit-autofill:active {
 }
 
 /*                               fireworks for level up                                       */
+
 
 
 
