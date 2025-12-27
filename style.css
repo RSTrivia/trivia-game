@@ -993,12 +993,15 @@ input.input-field:-webkit-autofill:active {
     left: 0;
     width: 0;
     height: 0;
-    pointer-events: none;
-    z-index: 9999;
-    /* Forces Flexbox to ignore this element's dimensions */
-    flex: 0 0 0 !important; 
     margin: 0 !important;
     padding: 0 !important;
+    pointer-events: none;
+    z-index: 9999;
+    
+    /* This is the magic line: it tells Flexbox to ignore this element entirely */
+    display: block !important; 
+    flex: none !important;
+    float: left; 
 }
 
 .firework-particle::after {
@@ -1042,6 +1045,7 @@ input.input-field:-webkit-autofill:active {
 
 
 /*                               fireworks for level up                                       */
+
 
 
 
