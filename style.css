@@ -909,28 +909,40 @@ input.input-field:-webkit-autofill:active {
 /* Ensure the game div is the absolute anchor */
 .xp-drop {
     position: absolute !important;
-    top: 0 !important;
-    left: 10px !important;
+    top: 10px !important;    /* Starting position */
+    right: 10px !important;  /* Anchor to North East */
+    /* No 'left' property here - this is the key! */
+    
     color: #ffffff;    
     font-weight: 900 !important;
     font-size: 22px !important;
     font-family: 'Verdana', sans-serif !important;
     text-shadow: 2px 2px 0px #000;
-    z-index: 99999 !important; /* High enough to beat all other game elements */
+    z-index: 99999 !important; 
     pointer-events: none;
     display: flex;
     align-items: center;
     gap: 2px;
-    animation: xp-float-ne 1.2s ease-out forwards;
+    animation: xp-float-up 1.2s ease-out forwards;
 }
 
 .xp-number { color: #00ff00 !important; }
 
-@keyframes xp-float-ne {
-    0% { opacity: 0; transform: translateY(20px); }
-    20% { opacity: 1; transform: translateY(0); }
-    100% { opacity: 0; transform: translateY(-80px); }
+@keyframes xp-float-up {
+    0% { 
+        opacity: 0; 
+        transform: translateY(20px); 
+    }
+    20% { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+    100% { 
+        opacity: 0; 
+        transform: translateY(-80px); /* Back to the higher float since overflow is fixed */
+    }
 }
+
 /*                                                                                     */
 
 
@@ -988,6 +1000,7 @@ input.input-field:-webkit-autofill:active {
     100% { transform: translate(calc(var(--startX) + var(--x)), calc(var(--startY) + var(--y))) scale(0); opacity: 0; }
 }
 /*                               fireworks for level up                                       */
+
 
 
 
