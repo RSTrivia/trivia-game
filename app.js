@@ -773,7 +773,7 @@ async function checkAnswer(choiceId, btn) {
             // --- PLAY BONUS SOUND ---
             if (isBonusEarned) {
                 playSound(bonusBuffer);
-                showNotification("BONUS XP!", "#00ffff"); // Cyan for bonus
+                showNotification("BONUS XP!", "#a335ee"); // Cyan for bonus
             }
             const oldLevel = getLevel(currentProfileXp);
             currentProfileXp += gained; // Add the XP to local state
@@ -1445,6 +1445,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
