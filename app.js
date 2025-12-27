@@ -758,9 +758,19 @@ async function checkAnswer(choiceId, btn) {
                         gained += 30;
                         streak = 0; 
                     }
-                }
+            }
+
+            // --- LEVEL UP LOGIC START ---
+            const oldLevel = getLevel(currentProfileXp);
+            currentProfileXp += gained;
+            const newLevel = getLevel(currentProfileXp);
+
+            if (newLevel > oldLevel) {
+                // This triggers the visual celebration
+                triggerLevelUp(newLevel); 
+            }
+            // --- LEVEL UP LOGIC END ---
               // Update Local & DB
-              currentProfileXp += gained;
               triggerXpDrop(gained); 
             
               // Update Supabase
@@ -785,18 +795,41 @@ async function checkAnswer(choiceId, btn) {
     }
 }
 
+function triggerLevelUp(level) {
+    const gameContainer = document.getElementById('game');
+    if (!gameContainer) return;
+
+    const lvlUp = document.createElement('div');
+    lvlUp.className = 'level-up-notification';
+    lvlUp.innerHTML = `
+        <div class="lvl-text">Congratulations!</div>
+        <div class="lvl-subtext">You just advanced a level!</div>
+        <div class="lvl-number">You are now Level ${level}</div>
+    `;
+
+    gameContainer.appendChild(lvlUp);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+        lvlUp.style.opacity = '0';
+        setTimeout(() => lvlUp.remove(), 500);
+    }, 3000);
+}
 
 function getLevel(xp) {
     if (!xp || xp <= 0) return 1;
-    const maxXp = 100000;
-    const maxLevel = 99;
+    if (xp >= 100000) return 99;
 
-    for (let L = 1; L <= maxLevel; L++) {
-        // This formula creates an OSRS-style curve fitting 100k
-        let threshold = Math.floor(Math.pow((L - 1) / (maxLevel - 1), 2.2) * maxXp);
+    // This formula is tuned so that Level 92 hits at exactly 50,000 XP
+    // and Level 99 hits at 100,000 XP.
+    // We use a power function: Level = constant * XP^(1/power)
+    
+    // Reverse check for the table:
+    for (let L = 1; L <= 99; L++) {
+        let threshold = Math.floor(Math.pow((L - 1) / 98, 3.1) * 100000);
         if (xp < threshold) return L - 1;
     }
-    return maxLevel;
+    return 99;
 }
 
 
@@ -1331,6 +1364,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
