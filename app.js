@@ -769,18 +769,6 @@ async function checkAnswer(choiceId, btn) {
         // Update Local State & UI
         score++;
         updateScore();
-      
-        // Update Database (Non-blocking)
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-        supabase.from('profiles')
-            .update({ xp: currentProfileXp })
-            .eq('id', session.user.id)
-            .then(({ error }) => {
-                if (error) console.error("XP Sync Error:", error);
-                });
-        }
-            
         setTimeout(loadQuestion, 1000);
     } else {
         playSound(wrongBuffer);
@@ -1341,6 +1329,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
