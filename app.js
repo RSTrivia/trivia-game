@@ -776,7 +776,7 @@ async function checkAnswer(choiceId, btn) {
         btn.classList.add('wrong');
         await highlightCorrectAnswer();
         if (isDailyMode) {
-            setTimeout(loadQ    `s`uestion, 1500);
+            setTimeout(loadQuestion, 1500);
         } else {
             setTimeout(endGame, 1000);
         }
@@ -1329,6 +1329,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
