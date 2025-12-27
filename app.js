@@ -896,6 +896,16 @@ if (shareBtn) {
                     const playAgain = clonedDoc.getElementById('playAgainBtn');
                     const mainMenu = clonedDoc.getElementById('mainMenuBtn');
                     const title = clonedDoc.getElementById('main-title');
+                  // --- NEW: SCREEN VISIBILITY FIX ---
+                  const gameScreen = clonedDoc.getElementById('game');
+                  //const startScreenRef = clonedDoc.getElementById('start-screen');
+                  
+                  // 1. Force the Game and Start screens to HIDE in the picture
+                  if (gameScreen) gameScreen.style.display = 'none';
+                  //if (startScreenRef) startScreenRef.style.display = 'none';
+                  
+                  // 2. Force the End Screen to SHOW in the picture
+                  // ----------------------------------
                     if (endScreen) {
                         endScreen.classList.remove('hidden');
                         Object.assign(endScreen.style, {
@@ -1160,6 +1170,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
