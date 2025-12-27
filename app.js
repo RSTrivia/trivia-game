@@ -852,27 +852,20 @@ function createParticle(parent, xPosPercent, colors) {
     const p = document.createElement('div');
     p.className = 'firework-particle';
     
+    // This part is key for Flexbox containers
     const rect = parent.getBoundingClientRect();
-    // Calculate the pixel center of the burst
-    const centerX = (xPosPercent / 100) * rect.width;
-    const centerY = rect.height / 2;
+    const startX = (xPosPercent / 100) * rect.width;
+    const startY = rect.height / 2; // Centers the burst vertically
 
-    // Random explosion direction
-    const destX = (Math.random() - 0.5) * 250; 
-    const destY = (Math.random() - 0.5) * 250;
-
+    const destX = (Math.random() - 0.5) * 200; 
+    const destY = (Math.random() - 0.5) * 200;
     const color = colors[Math.floor(Math.random() * colors.length)];
     
-    // Set the specific variables the CSS expects
     p.style.setProperty('--p-color', color);
-    p.style.setProperty('--startX', `${centerX}px`);
-    p.style.setProperty('--startY', `${centerY}px`);
+    p.style.setProperty('--startX', `${startX}px`);
+    p.style.setProperty('--startY', `${startY}px`);
     p.style.setProperty('--x', `${destX}px`);
     p.style.setProperty('--y', `${destY}px`);
-    
-    // Important: also set background color on the parent div 
-    // to ensure the 'inherit' in CSS has a fallback
-    p.style.backgroundColor = color;
 
     parent.appendChild(p);
     setTimeout(() => p.remove(), 1000);
@@ -1407,6 +1400,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
