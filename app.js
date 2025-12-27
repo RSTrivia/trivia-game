@@ -573,7 +573,6 @@ async function preloadNextQuestions() {
 
 async function startGame() {
     try {
-        setTimeout(triggerFireworks, 1000);
         document.body.classList.add('game-active');
         gameEnding = false;
         game.classList.remove('hidden');
@@ -853,10 +852,11 @@ function createParticle(parent, xPosPercent, colors) {
     const p = document.createElement('div');
     p.className = 'firework-particle';
     
-    // This part is key for Flexbox containers
     const rect = parent.getBoundingClientRect();
+    
+    // We calculate the exact pixel starting point relative to the top-left of #game
     const startX = (xPosPercent / 100) * rect.width;
-    const startY = rect.height / 2; // Centers the burst vertically
+    const startY = rect.height / 2;
 
     const destX = (Math.random() - 0.5) * 200; 
     const destY = (Math.random() - 0.5) * 200;
@@ -869,7 +869,11 @@ function createParticle(parent, xPosPercent, colors) {
     p.style.setProperty('--y', `${destY}px`);
 
     parent.appendChild(p);
-    setTimeout(() => p.remove(), 1000);
+    
+    // Clean up to prevent DOM bloat
+    setTimeout(() => {
+        if (p.parentNode === parent) p.remove();
+    }, 1000);
 }
 
 async function highlightCorrectAnswer() {
@@ -1401,6 +1405,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
