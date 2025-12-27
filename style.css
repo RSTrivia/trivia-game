@@ -220,7 +220,8 @@ a {
 
 /* ====== GAME SCREEN ===== */
 #game {
-  position: relative;
+  position: relative; /* Essential for particles to stay inside */
+  overflow: hidden;
   padding: 20px;
   border-radius: 10px;
 }
@@ -1008,6 +1009,7 @@ input.input-field:-webkit-autofill:active {
 }
 
 /*                               fireworks for level up                                       */
+
 
 
 
