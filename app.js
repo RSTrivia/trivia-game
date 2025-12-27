@@ -841,10 +841,10 @@ function triggerFireworks() {
     const container = document.getElementById('game');
     const colors = ['#ffde00', '#ffffff', '#00ff00', '#d4af37'];
     
-    // Create particles on both sides of the question area
+    // Spawn 30 particles on the left and 30 on the right
     for (let i = 0; i < 30; i++) {
-        createParticle(container, '5%', colors);  // Left side
-        createParticle(container, '95%', colors); // Right side
+        createParticle(container, 10, colors);  // 10% from left
+        createParticle(container, 90, colors);  // 90% from left (right side)
     }
 }
 
@@ -853,20 +853,26 @@ function createParticle(parent, xPosPercent, colors) {
     p.className = 'firework-particle';
     
     const rect = parent.getBoundingClientRect();
-    const startX = (parseFloat(xPosPercent) / 100) * rect.width;
-    const startY = rect.height / 2;
+    // Calculate the pixel center of the burst
+    const centerX = (xPosPercent / 100) * rect.width;
+    const centerY = rect.height / 2;
 
-    const destX = (Math.random() - 0.5) * 200; 
-    const destY = (Math.random() - 0.5) * 200;
+    // Random explosion direction
+    const destX = (Math.random() - 0.5) * 250; 
+    const destY = (Math.random() - 0.5) * 250;
 
-    // We set --p-color so the ::after element can see it
     const color = colors[Math.floor(Math.random() * colors.length)];
-    p.style.setProperty('--p-color', color);
     
-    p.style.setProperty('--startX', `${startX}px`);
-    p.style.setProperty('--startY', `${startY}px`);
+    // Set the specific variables the CSS expects
+    p.style.setProperty('--p-color', color);
+    p.style.setProperty('--startX', `${centerX}px`);
+    p.style.setProperty('--startY', `${centerY}px`);
     p.style.setProperty('--x', `${destX}px`);
     p.style.setProperty('--y', `${destY}px`);
+    
+    // Important: also set background color on the parent div 
+    // to ensure the 'inherit' in CSS has a fallback
+    p.style.backgroundColor = color;
 
     parent.appendChild(p);
     setTimeout(() => p.remove(), 1000);
@@ -1401,6 +1407,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
