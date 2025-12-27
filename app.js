@@ -852,22 +852,27 @@ function createParticle(parent, xPos, colors) {
     const p = document.createElement('div');
     p.className = 'firework-particle';
     
-    // Position them more toward the center-middle so they don't stretch the box
-    p.style.left = xPos === '5%' ? '15%' : '85%'; 
-    p.style.top = '50%'; 
-    
+    // Set the starting point
+    const startX = xPos === '5%' ? 30 : parent.offsetWidth - 30;
+    const startY = parent.offsetHeight / 2;
+
     p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
     
-    // Reduce the distance they fly (the --x and --y)
-    const x = (Math.random() - 0.5) * 150; // Smaller explosion
-    const y = (Math.random() - 0.5) * 150; 
+    // Random explosion distance
+    const destX = (Math.random() - 0.5) * 120; 
+    const destY = (Math.random() - 0.5) * 120;
     
-    p.style.setProperty('--x', `${x}px`);
-    p.style.setProperty('--y', `${y}px`);
+    // Set variables for the CSS animation
+    p.style.setProperty('--x', `${destX}px`);
+    p.style.setProperty('--y', `${destY}px`);
+
+    // Use transform to place the particle without affecting layout
+    p.style.transform = `translate(${startX}px, ${startY}px)`;
     
     parent.appendChild(p);
     setTimeout(() => p.remove(), 1000);
 }
+
 
 async function highlightCorrectAnswer() {
     const { data: correctId } = await supabase.rpc('reveal_correct_answer', { 
@@ -1398,6 +1403,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
