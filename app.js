@@ -359,6 +359,8 @@ async function handleAuthChange(event, session) {
                 btn.style.pointerEvents = 'none';
             }
         });
+      
+        updateLevelUI()
         return; // Stop here for guests
     }
 
@@ -379,6 +381,7 @@ async function handleAuthChange(event, session) {
     await fetchDailyStatus(session.user.id);
     // Establish the live sync
     syncChannel = setupRealtimeSync(session.user.id);
+    updateLevelUI();
 }
 
 async function hasUserCompletedDaily(session) {
@@ -760,23 +763,22 @@ async function checkAnswer(choiceId, btn) {
                     }
             }
 
-            // --- LEVEL UP LOGIC START ---
+
             const oldLevel = getLevel(currentProfileXp);
-            currentProfileXp += gained;
+            currentProfileXp += gained; // Add the XP to local state
             const newLevel = getLevel(currentProfileXp);
 
             if (newLevel > oldLevel) {
-                // This triggers the visual celebration
-                triggerLevelUp(newLevel); 
+                triggerFireworks(); 
             }
-            // --- LEVEL UP LOGIC END ---
-              // Update Local & DB
-              triggerXpDrop(gained); 
+
+            updateLevelUI(); // Refresh the Player/Level row
+            triggerXpDrop(gained);
             
-              // Update Supabase
-              await supabase.from('profiles')
-              .update({ xp: currentProfileXp })
-              .eq('id', session.user.id);
+            // Update Supabase
+            await supabase.from('profiles')
+            .update({ xp: currentProfileXp })
+            .eq('id', session.user.id);
         }
         // Update Local State & UI
         score++;
@@ -795,25 +797,15 @@ async function checkAnswer(choiceId, btn) {
     }
 }
 
-function triggerLevelUp(level) {
-    const gameContainer = document.getElementById('game');
-    if (!gameContainer) return;
-
-    const lvlUp = document.createElement('div');
-    lvlUp.className = 'level-up-notification';
-    lvlUp.innerHTML = `
-        <div class="lvl-text">Congratulations!</div>
-        <div class="lvl-subtext">You just advanced a level!</div>
-        <div class="lvl-number">You are now Level ${level}</div>
-    `;
-
-    gameContainer.appendChild(lvlUp);
-
-    // Remove after 3 seconds
-    setTimeout(() => {
-        lvlUp.style.opacity = '0';
-        setTimeout(() => lvlUp.remove(), 500);
-    }, 3000);
+function updateLevelUI() {
+    const lvlNum = document.getElementById('levelNumber');
+    const xpBracket = document.getElementById('xpBracket');
+    
+    if (lvlNum && xpBracket) {
+        const currentLvl = getLevel(currentProfileXp);
+        lvlNum.textContent = currentLvl;
+        xpBracket.textContent = `(${currentProfileXp.toLocaleString()} XP)`;
+    }
 }
 
 function getLevel(xp) {
@@ -832,6 +824,46 @@ function getLevel(xp) {
     return 99;
 }
 
+
+function checkLevelUp(gainedXp) {
+    const oldLevel = getLevel(currentProfileXp);
+    currentProfileXp += gainedXp;
+    const newLevel = getLevel(currentProfileXp);
+
+    if (newLevel > oldLevel) {
+        triggerFireworks(); // Visual celebration
+    }
+    
+    updateLevelUI(); // Update the labels and XP brackets
+}
+
+function triggerFireworks() {
+    const container = document.getElementById('game');
+    const colors = ['#ffde00', '#ffffff', '#00ff00', '#d4af37'];
+    
+    // Create particles on both sides of the question area
+    for (let i = 0; i < 30; i++) {
+        createParticle(container, '5%', colors);  // Left side
+        createParticle(container, '95%', colors); // Right side
+    }
+}
+
+function createParticle(parent, xPos, colors) {
+    const p = document.createElement('div');
+    p.className = 'firework-particle';
+    p.style.left = xPos;
+    p.style.top = '50%';
+    p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    
+    // Random explosion direction
+    const x = (Math.random() - 0.5) * 250;
+    const y = (Math.random() - 0.5) * 250;
+    p.style.setProperty('--x', `${x}px`);
+    p.style.setProperty('--y', `${y}px`);
+    
+    parent.appendChild(p);
+    setTimeout(() => p.remove(), 1000);
+}
 
 async function highlightCorrectAnswer() {
     const { data: correctId } = await supabase.rpc('reveal_correct_answer', { 
@@ -925,13 +957,11 @@ function triggerXpDrop(amount) {
 
     const xpDrop = document.createElement('div');
     xpDrop.className = 'xp-drop';
-    
-    // The + is white, the number is green
     xpDrop.innerHTML = `<span>+</span><span class="xp-number">${amount}</span>`;
     
     gameContainer.appendChild(xpDrop);
 
-    // Remove from DOM after animation finishes
+    // Remove the element after the animation finishes (1.2s matches your CSS)
     setTimeout(() => {
         xpDrop.remove();
     }, 1200);
@@ -1364,6 +1394,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
