@@ -988,38 +988,43 @@ input.input-field:-webkit-autofill:active {
 
 .firework-particle {
     position: absolute;
-    /* Pin to top-left so it doesn't push the bottom or right edges */
     top: 0;
     left: 0;
-    /* Force zero layout footprint */
     width: 0;
     height: 0;
     pointer-events: none;
     z-index: 999;
 }
 
-/* This is the actual visible dot */
 .firework-particle::after {
     content: '';
     position: absolute;
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background-color: inherit; /* Pulls from the JS-assigned color */
-    /* Center the dot on the 0,0 coordinate */
+    /* Change background-color to use a variable assigned by JS */
+    background-color: var(--p-color, #fff); 
     top: -3px;
     left: -3px;
     animation: explode 1s ease-out forwards;
 }
 
+/* Update the #game block to allow flex centering but hide when needed */
 #game {
-    position: relative !important;
-    /* 'hidden' is safer than 'visible' if you want to be 100% sure 
-       nothing ever pops outside the border radius */
-    overflow: hidden !important; 
-    /* Ensure no flexbox weirdness */
-    display: block !important;
+  position: relative !important;
+  overflow: hidden !important; 
+  display: none; /* Default to hidden */
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  border-radius: 10px;
 }
+
+/* Only show as flex when the .hidden class is NOT present */
+#game:not(.hidden) {
+  display: flex !important;
+}
+
 
 @keyframes explode {
     0% { 
@@ -1033,6 +1038,7 @@ input.input-field:-webkit-autofill:active {
 }
 
 /*                               fireworks for level up                                       */
+
 
 
 
