@@ -874,7 +874,7 @@ function showNotification(message, color = '#ffde00') {
     notif.style.color = color;
 
     // Clear any existing notification so they don't stack
-    container.innerHTML = '';
+    //container.innerHTML = '';
     container.appendChild(notif);
 
     // Remove from DOM after animation finishes
@@ -1445,6 +1445,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
