@@ -984,42 +984,56 @@ input.input-field:-webkit-autofill:active {
 
 /*                               fireworks for level up                                         */
 /* Firework Particle Styling */
+/* ====== FIREWORKS FIX: PREVENT STRETCHING ====== */
+
 .firework-particle {
     position: absolute;
-    top: 0; /* Important: prevents pushing the bottom of the box */
-    left: 0; /* Important: prevents horizontal scrolling */
+    /* Pin to top-left so it doesn't push the bottom or right edges */
+    top: 0;
+    left: 0;
+    /* Force zero layout footprint */
+    width: 0;
+    height: 0;
+    pointer-events: none;
+    z-index: 999;
+}
+
+/* This is the actual visible dot */
+.firework-particle::after {
+    content: '';
+    position: absolute;
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    pointer-events: none;
-    z-index: 999;
-    /* This tells the browser: 'Ignore this element for layout math' */
-    contain: strict; 
+    background-color: inherit; /* Pulls from the JS-assigned color */
+    /* Center the dot on the 0,0 coordinate */
+    top: -3px;
+    left: -3px;
+    animation: explode 1s ease-out forwards;
 }
 
-/* Add this to ensure the layout ignores the particles */
 #game {
     position: relative !important;
-    overflow: visible !important;
-    /* If your #game uses flex, it will try to make space for the dots. 
-       This ensures they are treated as 'floating' objects. */
-    display: block; 
+    /* 'hidden' is safer than 'visible' if you want to be 100% sure 
+       nothing ever pops outside the border radius */
+    overflow: hidden !important; 
+    /* Ensure no flexbox weirdness */
+    display: block !important;
 }
 
-/* The movement animation */
 @keyframes explode {
     0% { 
-        transform: translate(0, 0) scale(1); 
+        transform: translate(var(--startX), var(--startY)) scale(1); 
         opacity: 1; 
     }
     100% { 
-        /* JS sets these --x and --y variables randomly */
-        transform: translate(var(--x), var(--y)) scale(0); 
+        transform: translate(calc(var(--startX) + var(--x)), calc(var(--startY) + var(--y))) scale(0); 
         opacity: 0; 
     }
 }
 
 /*                               fireworks for level up                                       */
+
 
 
 
