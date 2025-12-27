@@ -314,6 +314,16 @@ async function init() {
         localStorage.setItem('muted', muted);
         muteBtn.querySelector('#muteIcon').textContent = muted ? '🔇' : '🔊';
         muteBtn.classList.toggle('is-muted', muted);
+     
+        // If we just muted, stop the ticking sound immediately
+        if (muted) {
+            stopTickSound();
+        } 
+        // If user unmutes, check if we ARE in the final 3 seconds
+        // AND make sure it's not already playing
+        if (timeLeft <= 3 && timeLeft > 0 && !activeTickSource) {
+            activeTickSource = playSound(tickBuffer, true);
+        }
     };
 }
   
@@ -1254,6 +1264,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
