@@ -803,7 +803,7 @@ try {
           choice: choiceId
       });
   
-      if (error) return console.error("RPC Error:", error);
+      if (error) throw error; // This sends the error straight to your catch block below
   
       if (isCorrect) {
           playSound(correctBuffer);
@@ -1544,6 +1544,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
