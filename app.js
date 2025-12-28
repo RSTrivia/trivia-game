@@ -819,18 +819,18 @@ function getLevel(xp) {
     if (!xp || xp <= 0) return 1;
     if (xp >= 100000) return 99;
 
-    // This formula is tuned so that Level 92 hits at exactly 50,000 XP
-    // and Level 99 hits at 100,000 XP.
-    // We use a power function: Level = constant * XP^(1/power)
-    
-    // Reverse check for the table:
+    // To make Level 92 hit at exactly 50,000 XP (which is 0.5 of 100k):
+    // (91/98)^p = 0.5  =>  p ≈ 9.28
+    const exponent = 9.28;
+
     for (let L = 1; L <= 99; L++) {
-        let threshold = Math.floor(Math.pow((L - 1) / 98, 3.1) * 100000);
-        if (xp < threshold) return L - 1;
+        let threshold = Math.floor(Math.pow((L - 1) / 98, exponent) * 100000);
+        if (xp < threshold) {
+            return L - 1;
+        }
     }
     return 99;
 }
-
 
 function checkLevelUp(gainedXp) {
     const oldLevel = getLevel(currentProfileXp);
@@ -1448,6 +1448,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
