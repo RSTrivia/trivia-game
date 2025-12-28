@@ -1122,7 +1122,32 @@ input.input-field:-webkit-autofill:active {
 
 
 
+/* ====== MOBILE XP DROP ADJUSTMENT ====== */
+@media (max-width: 480px) {
+    .xp-drop {
+        /* Reduce font size slightly for mobile if desired, or keep at 22px */
+        font-size: 18px !important; 
+        /* Trigger the shorter mobile animation */
+        animation: xp-float-mobile 1.2s ease-out forwards !important;
+    }
 
+    @keyframes xp-float-mobile {
+        0% {
+            opacity: 0;
+            transform: translateY(10px); /* Start closer to the source */
+        }
+        20% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        100% {
+            opacity: 0;
+            /* REDUCED DISTANCE: Changed from -60px to -30px */
+            transform: translateY(-30px); 
+        }
+    }
+}
+/* ====== MOBILE XP DROP ADJUSTMENT ====== */
 
 
 
