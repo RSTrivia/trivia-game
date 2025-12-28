@@ -819,12 +819,13 @@ function getLevel(xp) {
     if (!xp || xp <= 0) return 1;
     if (xp >= 100000) return 99;
 
-    // To make Level 92 hit at exactly 50,000 XP (which is 0.5 of 100k):
-    // (91/98)^p = 0.5  =>  p ≈ 9.28
-    const exponent = 9.28;
+    // Adjusted exponent to ensure 50,000 falls within the Level 92 range
+    const exponent = 9.45; 
 
     for (let L = 1; L <= 99; L++) {
+        // This calculates the XP required to reach Level L
         let threshold = Math.floor(Math.pow((L - 1) / 98, exponent) * 100000);
+        
         if (xp < threshold) {
             return L - 1;
         }
@@ -1448,6 +1449,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
