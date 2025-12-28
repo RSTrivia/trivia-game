@@ -627,6 +627,7 @@ async function startGame() {
 
     } catch (err) {
         console.error("startGame error:", err);
+        gameEnding = false;
     }
 }
 
@@ -763,85 +764,96 @@ async function handleTimeout() {
 }
 
 async function checkAnswer(choiceId, btn) {
-    if (gameEnding || !document.body.classList.contains('game-active')) return;// Don't allow clicks if the game is transitioning to end screen
-    stopTickSound(); // CUT THE SOUND IMMEDIATELY
-    //if (timeLeft <= 0) return;
+    // If this returns, the game is 'locked'
+    if (gameEnding || !document.body.classList.contains('game-active')) {
+        console.warn("Click ignored: gameEnding is", gameEnding, "active is", document.body.classList.contains('game-active'));
+        return;
+    }
+  
+    // Stop timer and sounds
     clearInterval(timer);
+    stopTickSound();
+
   // Disable buttons immediately to prevent double-clicks
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
-
-    const { data: isCorrect, error } = await supabase.rpc('check_my_answer', {
-        input_id: currentQuestion.id,
-        choice: choiceId
-    });
-
-    if (error) return console.error("RPC Error:", error);
-
-    if (isCorrect) {
-        playSound(correctBuffer);
-        btn.classList.add('correct');
-        // 1. Get the session
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session) { 
-            let gained = isDailyMode ? 50 : 5;
-            let isBonusEarned = false; // Track for sound
-            if (isDailyMode) {
-                    dailyQuestionCount++; // Only track daily count in daily mode
-                    if (dailyQuestionCount === 10) {
-                      gained += 100;
-                      isBonusEarned = true; // Daily bonus!
-                    }
-                } else {
-                    streak++; // Only track streak in normal mode
-                    if (streak === 1) { // change this back to 10
-                        gained += 30;
-                        streak = 0; 
-                        isBonusEarned = true; // Normal bonus!
-                    }
-            }
-
-            // --- PLAY BONUS SOUND ---
-            if (isBonusEarned) {
-                playSound(bonusBuffer);
-                showNotification("BONUS XP!", "#a335ee"); // Cyan for bonus
-            }
-            const oldLevel = getLevel(currentProfileXp);
-            currentProfileXp += gained; // Add the XP to local state
-            const newLevel = getLevel(currentProfileXp);
-
-            if (newLevel > oldLevel) {
-                triggerFireworks(); 
-                // Play level up sound after the correct sound
-                setTimeout(() => {
-                  playSound(levelUpBuffer), 
-                  showNotification("LEVEL UP!", "#ffde00"); // Gold for level
-                }, 200);
-            }
-
-            updateLevelUI(); // Refresh the Player/Level row
-            triggerXpDrop(gained);
-            
-            // Update Supabase
-            await supabase.from('profiles')
-            .update({ xp: currentProfileXp })
-            .eq('id', session.user.id);
-        }
-        // Update Local State & UI
-        score++;
-        updateScore();
-        setTimeout(loadQuestion, 1000);
-    } else {
-        playSound(wrongBuffer);
-        streak = 0; // Reset streak on wrong answer in normal mode
-        btn.classList.add('wrong');
-        await highlightCorrectAnswer();
-        if (isDailyMode) {
-            setTimeout(loadQuestion, 1500);
-        } else {
-            setTimeout(endGame, 1000);
-        }
-    }
+try {
+      const { data: isCorrect, error } = await supabase.rpc('check_my_answer', {
+          input_id: currentQuestion.id,
+          choice: choiceId
+      });
+  
+      if (error) return console.error("RPC Error:", error);
+  
+      if (isCorrect) {
+          playSound(correctBuffer);
+          btn.classList.add('correct');
+          // 1. Get the session
+          const { data: { session } } = await supabase.auth.getSession();
+          
+          if (session) { 
+              let gained = isDailyMode ? 50 : 5;
+              let isBonusEarned = false; // Track for sound
+              if (isDailyMode) {
+                      dailyQuestionCount++; // Only track daily count in daily mode
+                      if (dailyQuestionCount === 10) {
+                        gained += 100;
+                        isBonusEarned = true; // Daily bonus!
+                      }
+                  } else {
+                      streak++; // Only track streak in normal mode
+                      if (streak === 1) { // change this back to 10
+                          gained += 30;
+                          streak = 0; 
+                          isBonusEarned = true; // Normal bonus!
+                      }
+              }
+  
+              // --- PLAY BONUS SOUND ---
+              if (isBonusEarned) {
+                  playSound(bonusBuffer);
+                  showNotification("BONUS XP!", "#a335ee"); // Cyan for bonus
+              }
+              const oldLevel = getLevel(currentProfileXp);
+              currentProfileXp += gained; // Add the XP to local state
+              const newLevel = getLevel(currentProfileXp);
+  
+              if (newLevel > oldLevel) {
+                  triggerFireworks(); 
+                  // Play level up sound after the correct sound
+                  setTimeout(() => {
+                    playSound(levelUpBuffer), 
+                    showNotification("LEVEL UP!", "#ffde00"); // Gold for level
+                  }, 200);
+              }
+  
+              updateLevelUI(); // Refresh the Player/Level row
+              triggerXpDrop(gained);
+              
+              // Update Supabase
+              await supabase.from('profiles')
+              .update({ xp: currentProfileXp })
+              .eq('id', session.user.id);
+          }
+          // Update Local State & UI
+          score++;
+          updateScore();
+          setTimeout(loadQuestion, 1000);
+      } else {
+          playSound(wrongBuffer);
+          streak = 0; // Reset streak on wrong answer in normal mode
+          btn.classList.add('wrong');
+          await highlightCorrectAnswer();
+          if (isDailyMode) {
+              setTimeout(loadQuestion, 1500);
+          } else {
+              setTimeout(endGame, 1000);
+          }
+      }
+  catch (err) {
+  console.error("Check Answer Error:", err);
+  // Safety: Re-enable buttons if the database fails so the game isn't stuck
+  allBtns.forEach(b => b.disabled = false);
+  }
 }
 
 function updateLevelUI() {
@@ -1508,6 +1520,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
