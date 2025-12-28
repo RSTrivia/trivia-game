@@ -216,11 +216,11 @@ async function init() {
     const { data: { session }, error } = await supabase.auth.getSession();
   
      // 2. Listen for changes (like logging out)
-    supabase.auth.onAuthStateChange((event, session) => {
-        if (event === 'SIGNED_OUT') {
+    supabase.auth.onAuthStateChange(async (event, newSession) => {
+        if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+            await handleAuthChange(event, newSession);
+        } else if (event === 'SIGNED_OUT') {
             handleAuthChange('SIGNED_OUT', null);
-        } else if (session) {
-            handleAuthChange(event, session);
         }
     });
   
@@ -1446,6 +1446,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
