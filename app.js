@@ -772,15 +772,8 @@ async function checkAnswer(choiceId, btn) {
                         isBonusEarned = true; // Normal bonus!
                     }
             }
-
-            // --- PLAY BONUS SOUND ---
-            if (isBonusEarned) {
-                //playSound(bonusBuffer);
-                showNotification("BONUS XP!",bonusBuffer,"#a335ee"); // Cyan for bonus
-            }
             const oldLevel = getLevel(currentProfileXp);
-            currentProfileXp += gained; // Add the XP to local state
-            const newLevel = getLevel(currentProfileXp);
+            const newLevel = getLevel(currentProfileXp+gained);
 
             if (newLevel > oldLevel) {
                 triggerFireworks(); 
@@ -789,7 +782,14 @@ async function checkAnswer(choiceId, btn) {
                   showNotification("LEVEL UP!",levelUpBuffer,"#ffde00"); // Gold for level
                 }, 200);
             }
-
+          
+            // --- PLAY BONUS SOUND ---
+            if (isBonusEarned) {
+                //playSound(bonusBuffer);
+                showNotification("BONUS XP!",bonusBuffer,"#a335ee"); // Cyan for bonus
+            }
+           
+            currentProfileXp += gained; // Add the XP to local state
             updateLevelUI(); // Refresh the Player/Level row
             triggerXpDrop(gained);
             
@@ -1473,6 +1473,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
