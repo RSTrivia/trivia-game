@@ -325,7 +325,7 @@ async function init() {
 }
   
   // This will check if a user is logged in and lock the button if they aren't
-  await syncDailyButton();
+  //await syncDailyButton();
   // This will check if a user has played daily mode already and will unlock it if they did
   await updateShareButtonState();
 }
@@ -358,23 +358,24 @@ async function handleAuthChange(event, session) {
         return; // Stop here for guests
     }
 
-    // 2. Logged In State
-    // Fetch profile
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('username, xp')
-        .eq('id', session.user.id)
-        .single();
+   // LOGGED IN: Fetch profile and daily status AT THE SAME TIME
+    // This prevents multiple layout repaints
+    const [profileRes, statusRes] = await Promise.all([
+        supabase.from('profiles').select('username, xp').eq('id', session.user.id).single(),
+        fetchDailyStatus(session.user.id) 
+    ]);
 
+    const profile = profileRes.data;
     username = profile?.username || 'Player';
-    currentProfileXp = profile?.xp || 0; // Set the global variable
+    currentProfileXp = profile?.xp || 0; 
+
     if (span) span.textContent = ' ' + username;
     if (label) label.textContent = 'Log Out';
     
-    // Sync their daily status
-    await fetchDailyStatus(session.user.id);
-    // Establish the live sync
+    // Establishing the live sync
     syncChannel = setupRealtimeSync(session.user.id);
+
+    // NOW update the Level UI once all data is ready
     updateLevelUI();
 }
 
@@ -1443,6 +1444,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
