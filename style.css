@@ -816,30 +816,30 @@ input.input-field:-webkit-autofill:active {
     padding-top: 5px !important;
   }
   /* ====== FIX POSITIONING FOR MOBILE ====== */
-  #user-controls {
-    justify-content: center;
-    /* 1. Move everything LEFT: padding-right shoves the group West */
-    padding-right: 50px; 
-    padding-left: 0 !important; /* Clear the previous push */
+ #user-controls {
+    justify-content: center; /* Center the whole group first */
+    padding-left: 0 !important;
+    padding-right: 0 !important;
     margin-bottom: 15px !important;
+    width: 100%;
   }
   
   #shareBtn, #muteBtn {
     position: relative;
-    /* 2. Adjust icons West/East relative to the text */
-    left: -20px !important; 
+    /* 1. Adjust this slightly to move icons West (smaller number = safer) */
+    left: -5px; 
     top: 6px;
   }
 
-  /* 3. REDUCE gap between Mic and Share */
+  /* 2. REDUCE gap between Mic and Share */
   #shareBtn {
-    margin-right: -2px !important; /* Negative margin brings them closer together */
+    margin-right: -4px !important; 
   }
 
-  /* 4. INCREASE gap between Text and Mic */
+  /* 3. INCREASE gap between Text and Mic */
   #userDisplay {
-    /* Larger negative margin here pulls the text away from the icons */
-    margin-left: 15px !important; 
+    /* This creates the wide gap you want without pushing buttons off-screen */
+    margin-left: 25px !important; 
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -1119,6 +1119,7 @@ input.input-field:-webkit-autofill:active {
     }
 }
 /*                             for notifications in text                                       */
+
 
 
 
