@@ -335,7 +335,27 @@ async function init() {
         }
     };
 }
-  
+// leaderboards for score and xp
+if (scoreTab && xpTab) {
+    scoreTab.onclick = () => {
+        if (currentMode === 'score') return;
+        currentMode = 'score';
+        scoreTab.classList.add('active');
+        xpTab.classList.remove('active');
+        fetchLeaderboard();
+    };
+
+    xpTab.onclick = () => {
+        if (currentMode === 'xp') return;
+        currentMode = 'xp';
+        xpTab.classList.add('active');
+        scoreTab.classList.remove('active');
+        fetchLeaderboard();
+    };
+}
+
+  // Trigger initial fetch
+  await fetchLeaderboard();
   // This will check if a user is logged in and lock the button if they aren't
   await syncDailyButton();
   // This will check if a user has played daily mode already and will unlock it if they did
@@ -1461,26 +1481,28 @@ function updateLeaderboard(data) {
 }
 
 async function fetchLeaderboard() {
-  let query;
-  
-  if (currentMode === 'score') {
-    // Fetch from scores table
-    query = supabase.from('scores').select('username, val:score').order('score', { ascending: false });
-  } else {
-    // Fetch from profiles table
-    query = supabase.from('profiles').select('username, val:xp').order('xp', { ascending: false });
-  }
+    let query;
+    if (currentMode === 'score') {
+        query = supabase.from('scores').select('username, val:score').order('score', { ascending: false });
+    } else {
+        // Use 'xp' for values, but ensure we order correctly
+        query = supabase.from('profiles').select('username, val:xp').order('xp', { ascending: false });
+    }
 
-  const { data, error } = await query.limit(10);
+    const { data, error } = await query.limit(10);
 
-  if (error) {
-    console.error('Supabase Error:', error.message);
-    return;
-  }
+    if (error) {
+        console.error('Leaderboard Fetch Error:', error.message);
+        return;
+    }
 
-  if (data) {
-    updateLeaderboard(data);
-  }
+    // Map data to ensure no nulls break the UI
+    const sanitizedData = data.map(entry => ({
+        username: entry.username || 'Anonymous',
+        val: entry.val || 0
+    }));
+
+    updateLeaderboard(sanitizedData);
 }
 
 // ====== MOBILE TAP FEEDBACK (THE FLASH) ======
@@ -1514,22 +1536,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
-// Tab Click Events
-scoreTab.onclick = () => {
-  if (currentMode === 'score') return;
-  currentMode = 'score';
-  scoreTab.classList.add('active');
-  xpTab.classList.remove('active');
-  fetchLeaderboard();
-};
-
-xpTab.onclick = () => {
-  if (currentMode === 'xp') return;
-  currentMode = 'xp';
-  xpTab.classList.add('active');
-  scoreTab.classList.remove('active');
-  fetchLeaderboard();
-};
 
 // Realtime Sync for both tables
 supabase
@@ -1542,8 +1548,8 @@ supabase
   })
   .subscribe();
 
-// Run on load
-fetchLeaderboard();
+
+
 
 
 
