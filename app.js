@@ -876,7 +876,38 @@ function showNotification(message, soundToPlay, color = "#ffde00") {
     processQueue();
 }
 
-processQueue
+function processQueue() {
+    if (isShowingNotification || notificationQueue.length === 0) return;
+
+    isShowingNotification = true;
+    const container = document.getElementById('game-notifications');
+    const item = notificationQueue.shift();
+
+    // FIXED: Use your existing playSound function for AudioBuffers
+    if (item.sound) {
+        playSound(item.sound); 
+    }
+
+    const notif = document.createElement('div');
+    notif.className = 'notif-text';
+    notif.innerText = item.text;
+    
+    // APPLY THE COLOR DYNAMICALLY
+    notif.style.color = item.color;
+    notif.style.textShadow = `2px 2px 0px #000, 0 0 8px ${item.color}`;
+
+    container.appendChild(notif);
+
+    // Remove notification after 1.25 seconds
+    setTimeout(() => {
+        notif.classList.add('fade-out'); // Optional: add a fade out class
+        setTimeout(() => {
+            notif.remove();
+            isShowingNotification = false;
+            processQueue();
+        }, 300); // Wait for fade animation
+    }, 1250); 
+}
 
 function createParticle(parent, xPosPercent, colors) {
     const p = document.createElement('div');
@@ -1442,6 +1473,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
