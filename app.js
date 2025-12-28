@@ -813,14 +813,16 @@ function updateLevelUI() {
     const lvlNum = document.getElementById('levelNumber');
     const xpBracket = document.getElementById('xpBracket');
   
-    // If XP is null, it means we are still fetching from Supabase
-    if (currentProfileXp === null) return;
+    if (currentProfileXp === null || !lvlNum || !xpBracket) return;
   
-    if (lvlNum && xpBracket) {
-        const currentLvl = getLevel(currentProfileXp);
-        lvlNum.textContent = currentLvl;
-        xpBracket.textContent = `(${currentProfileXp.toLocaleString()} XP)`;
-    }
+    const currentLvl = getLevel(currentProfileXp);
+    
+    // Only update if the text is actually different to prevent micro-flickers
+    const newLvlText = String(currentLvl);
+    const newXpText = `(${currentProfileXp.toLocaleString()} XP)`;
+
+    if (lvlNum.textContent !== newLvlText) lvlNum.textContent = newLvlText;
+    if (xpBracket.textContent !== newXpText) xpBracket.textContent = newXpText;
 }
 
 function getLevel(xp) {
@@ -1444,6 +1446,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
