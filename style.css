@@ -1145,8 +1145,35 @@ input.input-field:-webkit-autofill:active {
 
 
 
+/* ====== tab for leaderboards xp====== */
+/* Tab Navigation */
+.tab-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    width: 100%;
+}
 
+.tab-btn {
+    flex: 1;
+    background: rgba(40, 40, 40, 0.8);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    color: #888;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'Cinzel', serif;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
 
+.tab-btn.active {
+    background: rgba(212, 175, 55, 0.2);
+    border-color: #ffdd44;
+    color: #ffdd44;
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+}
+/* ====== tab for leaderboards xp====== */
 
 
 
