@@ -1075,7 +1075,7 @@ input.input-field:-webkit-autofill:active {
 /* ====== LEVEL UP NOTIFICATION (STATIC FADE) ====== */
 #game-notifications {
     position: absolute; 
-    top: 10px; 
+    top: 0px; 
     left: 0;
     right: 0;
     display: flex;
@@ -1142,6 +1142,7 @@ input.input-field:-webkit-autofill:active {
     }
 }
 /* ====== MOBILE XP DROP ADJUSTMENT ====== */
+
 
 
 
