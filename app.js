@@ -919,6 +919,7 @@ async function endGame() {
     if (gameEnding) return;
     gameEnding = true;
     clearInterval(timer);
+    stopTickSound();
 
     // 1. PREPARE DATA FIRST (Quietly in background)
     const { data: { session } } = await supabase.auth.getSession();
@@ -987,6 +988,7 @@ async function endGame() {
         updateShareButtonState();
         gameEnding = false;
     });
+    
 }
 
 // new for xp drops 
@@ -1454,6 +1456,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
