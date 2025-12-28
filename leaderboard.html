@@ -137,6 +137,28 @@ function updateLeaderboard(data) {
   });
 }
   
+// 3. Dynamic Fetch (Handles both Score and XP)
+async function fetchLeaderboard() {
+  let query;
+  
+  if (currentMode === 'score') {
+    // Select from scores table
+    query = supabase.from('scores').select('username, val:score').order('score', { ascending: false });
+  } else {
+    // Select from profiles table for XP
+    query = supabase.from('profiles').select('username, val:xp').order('xp', { ascending: false });
+  }
+
+  const { data, error } = await query.limit(10);
+
+  if (error) {
+    console.error('Fetch Error:', error.message);
+    return;
+  }
+
+  updateLeaderboard(data);
+}
+  
 supabase
   .channel('public-leaderboard-changes')
   .on('postgres_changes', { event: '*', schema: 'public', table: 'scores' }, (payload) => {
@@ -151,6 +173,8 @@ supabase
   }
   await fetchLeaderboard();
 })();
+  // 6. Initial Load
+fetchLeaderboard();
 </script>
 
   <script>
@@ -163,6 +187,7 @@ supabase
 </script>
 </body>
 </html>
+
 
 
 
