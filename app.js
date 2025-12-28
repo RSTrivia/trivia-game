@@ -383,22 +383,23 @@ async function handleAuthChange(event, session) {
 
 async function hasUserCompletedDaily(session) {
     if (!session?.user?.id) return false;
+    try {
+        const { data, error } = await supabase
+            .from('daily_attempts')
+            .select('id') // Force 'id' here
+            .eq('user_id', session.user.id)
+            .eq('attempt_date', todayStr)
+            .limit(1);
 
-    const { data, error } = await supabase
-        .from('daily_attempts')
-        .select('id') // We only need the ID to prove the row exists
-        .eq('user_id', session.user.id) // Filter by User
-        .eq('attempt_date', todayStr)   // Filter by Date (The part you need!)
-        .limit(1); // Efficiently stop after finding one
-
-    if (error) {
-        console.error("Check failed:", error);
-        return false;
+        if (error) throw error;
+        return !!(data && data.length > 0);
+    } catch (e) {
+        // If it's a 406, we can assume the row exists or there's a conflict
+        // and just return true/false silently.
+        return false; 
     }
-
-    // If data.length > 0, they played today!
-    return data && data.length > 0;
 }
+
 async function updateShareButtonState() {
     if (!shareBtn) return;
 
@@ -1450,6 +1451,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
