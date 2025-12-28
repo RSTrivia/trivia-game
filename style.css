@@ -833,7 +833,7 @@ input.input-field:-webkit-autofill:active {
 
   /* 2. REDUCE gap between Mic and Share */
   #shareBtn {
-    margin-right: -4px !important; 
+    margin-right: -6px !important; 
   }
 
   /* 3. INCREASE gap between Text and Mic */
@@ -1119,6 +1119,7 @@ input.input-field:-webkit-autofill:active {
     }
 }
 /*                             for notifications in text                                       */
+
 
 
 
