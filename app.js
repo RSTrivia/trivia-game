@@ -441,7 +441,10 @@ async function fetchDailyStatus(userId) {
         .eq('user_id', userId)
         .eq('attempt_date', todayStr)
         .limit(1);
-
+  if (error) {
+        console.error("Status fetch error:", error);
+        return; 
+    }
     if (data && data.length > 0) {
         const attempt = data[0];
        // ALWAYS save to storage (for the share button)
@@ -1451,6 +1454,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
