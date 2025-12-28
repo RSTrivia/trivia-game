@@ -383,25 +383,22 @@ async function handleAuthChange(event, session) {
 
 async function hasUserCompletedDaily(session) {
     if (!session?.user?.id) return false;
-    
-    // Check LocalStorage FIRST - This is the "Shield" against the 406 error
-    const localUserId = localStorage.getItem('lastDailyUserId');
-    const savedDate = localStorage.getItem('dailyPlayedDate');
-    if (localUserId === session.user.id && savedDate === todayStr) {
-        return true; 
-    }
 
     const { data, error } = await supabase
         .from('daily_attempts')
-        .select('id') 
-        .eq('user_id', session.user.id)
-        .eq('attempt_date', todayStr)
-        .limit(1);
+        .select('id') // We only need the ID to prove the row exists
+        .eq('user_id', session.user.id) // Filter by User
+        .eq('attempt_date', todayStr)   // Filter by Date (The part you need!)
+        .limit(1); // Efficiently stop after finding one
 
-    if (error) return false;
-    return !!(data && data.length > 0);
+    if (error) {
+        console.error("Check failed:", error);
+        return false;
+    }
+
+    // If data.length > 0, they played today!
+    return data && data.length > 0;
 }
-
 async function updateShareButtonState() {
     if (!shareBtn) return;
 
@@ -1419,25 +1416,6 @@ function seededRandom(seed) {
     return x - Math.floor(x);
 }
 
-function subscribeToDailyChanges(userId) {
-    const channel = supabase
-        .channel('daily-updates')
-        .on('postgres_changes', {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'daily_attempts',
-            filter: `user_id=eq.${userId}`
-        }, () => {
-            console.log('Daily challenge sync: locking button.');
-            lockDailyButton();
-        })
-        .subscribe();
-
-    return channel;
-}
-
-
-
 // ====== MOBILE TAP FEEDBACK (THE FLASH) ======
 document.addEventListener('DOMContentLoaded', () => {
   (async () => {
@@ -1472,6 +1450,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
