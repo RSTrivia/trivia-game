@@ -358,44 +358,57 @@ async function handleAuthChange(event, session) {
         return; // Stop here for guests
     }
 
-   // LOGGED IN: Fetch profile and daily status AT THE SAME TIME
-    // This prevents multiple layout repaints
-    const [profileRes, statusRes] = await Promise.all([
-        supabase.from('profiles').select('username, xp').eq('id', session.user.id).single(),
-        fetchDailyStatus(session.user.id) 
-    ]);
+   // Set username immediately from the session metadata if available 
+    // to reduce flicker before the database responds
+    if (span) span.textContent = ' ' + (session.user.user_metadata?.username || 'Player');
 
-    const profile = profileRes.data;
-    username = profile?.username || 'Player';
-    currentProfileXp = profile?.xp || 0; 
+    try {
+        // Wrap the DB calls in a Promise.all with a fallback
+        const [profileRes, statusRes] = await Promise.allSettled([
+            supabase.from('profiles').select('username, xp').eq('id', session.user.id).single(),
+            fetchDailyStatus(session.user.id)
+        ]);
 
-    if (span) span.textContent = ' ' + username;
-    if (label) label.textContent = 'Log Out';
-    
-    // Establishing the live sync
-    syncChannel = setupRealtimeSync(session.user.id);
-
-    // NOW update the Level UI once all data is ready
-    updateLevelUI();
+        if (profileRes.status === 'fulfilled' && profileRes.value.data) {
+            const profile = profileRes.value.data;
+            username = profile.username || 'Player';
+            currentProfileXp = profile.xp || 0;
+        }
+    } catch (err) {
+        console.error("Auth sync failed:", err);
+    } finally {
+        // ALWAYS update UI, even if the network request failed
+        if (span) span.textContent = ' ' + username;
+        if (label) label.textContent = 'Log Out';
+        syncChannel = setupRealtimeSync(session.user.id);
+        updateLevelUI();
+    }
 }
 
 async function hasUserCompletedDaily(session) {
-    if (!session) return false;
+    if (!session?.user?.id) return false;
 
-    const { data, error } = await supabase
-        .from('daily_attempts')
-        .select('id')
-        .eq('user_id', session.user.id)
-        .eq('attempt_date', todayStr)
-        .limit(1);
-if (error) {
-        console.error("Supabase Error:", error.message);
+    try {
+        const { data, error } = await supabase
+            .from('daily_attempts')
+            .select('id') // Keep this consistent everywhere
+            .eq('user_id', session.user.id)
+            .eq('attempt_date', todayStr)
+            // Use .abortSignal if you want to be fancy, but .limit(1) is usually enough
+            .limit(1);
+
+        if (error) {
+            // If we get a 406 or RLS error, we treat it as "not played" 
+            // to prevent the app from crashing.
+            console.warn("Daily check non-critical error:", error.message);
+            return false;
+        }
+
+        return !!(data && data.length > 0);
+    } catch (e) {
         return false;
     }
-    // data will be [] if no row exists, or [{id: ...}] if it does.
-    return !!(data && data.length > 0);
 }
-
 
 async function updateShareButtonState() {
     if (!shareBtn) return;
@@ -1454,6 +1467,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
