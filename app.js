@@ -758,8 +758,7 @@ async function handleTimeout() {
 
     setTimeout(() => {
         // SAFETY: If the user hit "Main Menu" or "Reset" during this 1s wait, STOP.
-        if (!document.body.classList.contains('game-active') || 
-            (currentQuestion && currentQuestion.id !== timeoutQId)) {
+        if (!document.body.classList.contains('game-active')) {
             gameEnding = false;
             return;
         }
@@ -1536,6 +1535,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
