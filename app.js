@@ -1038,39 +1038,44 @@ function setupRealtimeSync(userId) {
 }
 
 async function saveNormalScore(currentUsername, finalScore) {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
-
-    const userId = session.user.id;
-
-    // Fixed: Use .limit(1) to avoid the 406 "Not Acceptable" error
-    const { data: records, error: fetchError } = await supabase
-        .from('scores')
-        .select('score')
-        .eq('user_id', userId)
-        .limit(1);
-
-    if (fetchError) {
-        console.error("Error checking high score:", fetchError);
-        return;
-    }
-
-    const record = records && records.length > 0 ? records[0] : null;
-
-    if (!record || finalScore > record.score) {
-        const { error } = await supabase
+    try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+    
+        const userId = session.user.id;
+    
+        // Fixed: Use .limit(1) to avoid the 406 "Not Acceptable" error
+        const { data: records, error: fetchError } = await supabase
             .from('scores')
-            .upsert({ 
-                user_id: userId, 
-                username: currentUsername, 
-                score: finalScore 
-            }, { onConflict: 'user_id' });
-
-        if (error) {
-            console.error("Leaderboard Save Error:", error.message);
-        } else {
-            console.log("Personal best updated on leaderboard!");
+            .select('score')
+            .eq('user_id', userId)
+            .limit(1);
+    
+        if (fetchError) {
+            console.error("Error checking high score:", fetchError);
+            return;
         }
+    
+        const record = records && records.length > 0 ? records[0] : null;
+    
+        if (!record || finalScore > record.score) {
+            const { error } = await supabase
+                .from('scores')
+                .upsert({ 
+                    user_id: userId, 
+                    username: currentUsername, 
+                    score: finalScore 
+                }, { onConflict: 'user_id' });
+    
+            if (error) {
+                console.error("Leaderboard Save Error:", error.message);
+            } else {
+                console.log("Personal best updated on leaderboard!");
+            }
+        }
+      } catch (err) {
+        // We catch the error so the game doesn't crash/hang
+        console.error("Leaderboard Save Failed (Quietly):", err.message);
     }
 }
 
@@ -1456,6 +1461,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
