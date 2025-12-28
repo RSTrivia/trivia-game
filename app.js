@@ -774,111 +774,98 @@ async function handleTimeout() {
     }, 1000);
 }
 
+// 2. CLEANED CHECKANSWER
 async function checkAnswer(choiceId, btn) {
-    // 1. LOGGING: This will tell us EXACTLY why a click is ignored in the console
-    if (gameEnding || !document.body.classList.contains('game-active')) {
-        console.warn(`Click Blocked! Reason: gameEnding=${gameEnding}, active=${document.body.classList.contains('game-active')}`);
-        return;
-    }
+    if (gameEnding || !document.body.classList.contains('game-active')) return;
   
-    // Stop timer and sounds
     clearInterval(timer);
     stopTickSound();
 
-  // Define the variable properly here
     const allBtns = document.querySelectorAll('.answer-btn');
 
-    //document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
-try {
-      // Disable buttons immediately to prevent double-clicks
-      allBtns.forEach(b => b.disabled = true);
-      // SAFETY: If currentQuestion was wiped during a tab-out, don't crash
-      if (!currentQuestion) throw new Error("No Question");
-     // 3. SET A TIMEOUT RACER (Optional but powerful)
-      // If the database doesn't respond in 4 seconds, we force an error
-        const dbPromise = supabase.rpc('check_my_answer', {
+    try {
+        allBtns.forEach(b => b.disabled = true);
+        
+        if (!currentQuestion) throw new Error("No Question");
+
+        // ONLY ONE CALL TO SUPABASE HERE
+        const { data: isCorrect, error } = await supabase.rpc('check_my_answer', {
             input_id: currentQuestion.id,
             choice: choiceId
         });
-      const { data: isCorrect, error } = await supabase.rpc('check_my_answer', {
-          input_id: currentQuestion.id,
-          choice: choiceId
-      });
-  
-      if (error) throw error; // This sends the error straight to your catch block below
-  
-      if (isCorrect) {
-          playSound(correctBuffer);
-          btn.classList.add('correct');
-          // 1. Get the session
-          const { data: { session } } = await supabase.auth.getSession();
-          
-          if (session) { 
-              let gained = isDailyMode ? 50 : 5;
-              let isBonusEarned = false; // Track for sound
-              if (isDailyMode) {
-                      dailyQuestionCount++; // Only track daily count in daily mode
-                      if (dailyQuestionCount === 10) {
-                        gained += 100;
-                        isBonusEarned = true; // Daily bonus!
-                      }
-                  } else {
-                      streak++; // Only track streak in normal mode
-                      if (streak === 1) { // change this back to 10
-                          gained += 30;
-                          streak = 0; 
-                          isBonusEarned = true; // Normal bonus!
-                      }
-              }
-  
-              // --- PLAY BONUS SOUND ---
-              if (isBonusEarned) {
-                  playSound(bonusBuffer);
-                  showNotification("BONUS XP!", "#a335ee"); // Cyan for bonus
-              }
-              const oldLevel = getLevel(currentProfileXp);
-              currentProfileXp += gained; // Add the XP to local state
-              const newLevel = getLevel(currentProfileXp);
-  
-              if (newLevel > oldLevel) {
-                  triggerFireworks(); 
-                  // Play level up sound after the correct sound
-                  setTimeout(() => {
-                    playSound(levelUpBuffer), 
-                    showNotification("LEVEL UP!", "#ffde00"); // Gold for level
-                  }, 200);
-              }
-  
-              updateLevelUI(); // Refresh the Player/Level row
-              triggerXpDrop(gained);
-              
-              // Update Supabase
-              await supabase.from('profiles')
-              .update({ xp: currentProfileXp })
-              .eq('id', session.user.id);
-          }
-          // Update Local State & UI
-          score++;
-          updateScore();
-          setTimeout(loadQuestion, 1000);
-      } else {
-          playSound(wrongBuffer);
-          streak = 0; // Reset streak on wrong answer in normal mode
-          btn.classList.add('wrong');
-          highlightCorrectAnswer();
-          if (isDailyMode) {
-              setTimeout(loadQuestion, 1500);
-          } else {
-              setTimeout(endGame, 1000);
-          }
-      }
-} catch (err) {
-  console.error("Check Answer Error:", err);
-  // Safety: Re-enable buttons if the database fails so the game isn't stuck
- // THE RECOVERY: If anything fails, give the user their buttons back!
-  allBtns.forEach(b => b.disabled = false);
-  gameEnding = false; 
-  startTimer();
+
+        if (error) throw error; 
+
+        if (isCorrect) {
+            playSound(correctBuffer);
+            btn.classList.add('correct');
+            
+            // Get session
+            const { data: { session } } = await supabase.auth.getSession();
+            
+            if (session) { 
+                let gained = isDailyMode ? 50 : 5;
+                let isBonusEarned = false;
+
+                if (isDailyMode) {
+                    dailyQuestionCount++;
+                    if (dailyQuestionCount === 10) { gained += 100; isBonusEarned = true; }
+                } else {
+                    streak++;
+                    if (streak === 1) { // Change to 10 for production
+                        gained += 30; streak = 0; isBonusEarned = true;
+                    }
+                }
+
+                if (isBonusEarned) {
+                    playSound(bonusBuffer);
+                    showNotification("BONUS XP!", "#a335ee");
+                }
+
+                const oldLevel = getLevel(currentProfileXp);
+                currentProfileXp += gained;
+                const newLevel = getLevel(currentProfileXp);
+
+                if (newLevel > oldLevel) {
+                    triggerFireworks(); 
+                    setTimeout(() => {
+                        playSound(levelUpBuffer);
+                        showNotification("LEVEL UP!", "#ffde00");
+                    }, 200);
+                }
+
+                updateLevelUI();
+                triggerXpDrop(gained);
+                
+                // NON-BLOCKING UPDATE: Don't 'await' this.
+                // This lets the game move to the next question even if the DB is slow.
+                supabase.from('profiles').update({ xp: currentProfileXp }).eq('id', session.user.id);
+            }
+
+            score++;
+            updateScore();
+            setTimeout(loadQuestion, 1000);
+
+        } else {
+            playSound(wrongBuffer);
+            streak = 0; 
+            btn.classList.add('wrong');
+            
+            // Call the sync version (no await needed)
+            highlightCorrectAnswer();
+            
+            if (isDailyMode) {
+                setTimeout(loadQuestion, 1500);
+            } else {
+                setTimeout(endGame, 1000);
+            }
+        }
+    } catch (err) {
+        console.error("Check Answer Error:", err);
+        // THE EMERGENCY RELEASE: Give buttons back if it crashes
+        allBtns.forEach(b => b.disabled = false);
+        gameEnding = false; 
+        startTimer();
     }
 }
 
@@ -989,16 +976,19 @@ function createParticle(parent, xPosPercent, colors) {
 
 // Optimized version (if currentQuestion already has the ID)
 function highlightCorrectAnswer() {
-    if (!currentQuestion || !currentQuestion.correct_answer) return;
+    if (!currentQuestion) return;
 
-    const correctId = String(currentQuestion.correct_answer); 
+    // Use the ID already inside your currentQuestion object
+    const correctId = currentQuestion.correct_answer; 
+    
     document.querySelectorAll('.answer-btn').forEach(btn => {
-        // Compare as strings to avoid type-mismatch bugs
-        if (String(btn.dataset.answerId) === correctId) {
+        // Use String() comparison to avoid type mismatch (1 vs "1")
+        if (String(btn.dataset.answerId) === String(correctId)) {
             btn.classList.add('correct');
         }
     });
 }
+
 async function endGame(force = false) {
    // If gameEnding is true AND we aren't forcing it, then return.
     if (gameEnding && !force) return;
@@ -1547,6 +1537,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
