@@ -742,23 +742,28 @@ async function handleTimeout() {
     clearInterval(timer); // Safety stop
     stopTickSound(); // <--- ADD THIS FIRST
   
+    // Capture a reference to the current question ID
+    const timeoutQuestionId = currentQuestion?.id;
+  
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
     playSound(wrongBuffer);
     highlightCorrectAnswer();
     
-    setTimeout(() => {
-        if (!document.body.classList.contains('game-active')) {
-            gameEnding = false;
-            return;
+   setTimeout(() => {
+    // 2. SAFETY CHECK: 
+        // If the user started a NEW game while this timeout was waiting,
+        // the currentQuestion.id will be different. If so, STOP HERE.
+        if (!document.body.classList.contains('game-active') || 
+            (currentQuestion && currentQuestion.id !== timeoutQuestionId)) {
+            console.log("Old timeout blocked - new game detected.");
+            return; 
         }
-    
+
         if (isDailyMode) {
-            gameEnding = false; // Lower shield to allow next question
+            gameEnding = false; 
             loadQuestion();
         } else {
-            // IMPORTANT: We don't reset gameEnding here because 
-            // we want endGame to finish the job.
-            endGame(true); // Pass a flag to override the shield
+            endGame(true);
         }
     }, 1000);
 }
@@ -773,6 +778,10 @@ async function checkAnswer(choiceId, btn) {
     // Stop timer and sounds
     clearInterval(timer);
     stopTickSound();
+
+  // Define the variable properly here
+    const allBtns = document.querySelectorAll('.answer-btn');
+    allBtns.forEach(b => b.disabled = true);
 
   // Disable buttons immediately to prevent double-clicks
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
@@ -1520,6 +1529,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
