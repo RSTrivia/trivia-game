@@ -7,7 +7,7 @@ const cachedMuted = localStorage.getItem('muted') === 'true';
 let dailySubscription = null; // Track this globally to prevent duplicates
 let streak = 0;              // Tracking for normal game bonus
 let dailyQuestionCount = 0;   // Tracking for daily bonus
-let currentProfileXp = 0;    // Store the player's current XP locally
+let currentProfileXp = null;    // Store the player's current XP locally
 let syncChannel;
 let username = 'Guest';
 let gameEnding = false;
@@ -215,22 +215,19 @@ async function init() {
     // 1. Get the current session
     const { data: { session }, error } = await supabase.auth.getSession();
   
-     // 2. Listen for changes (like logging out)
+    // 2. Get the current session
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    // 3. Handle the initial state (Signed In OR Guest)
+    await handleAuthChange(session ? 'INITIAL_LOAD' : 'SIGNED_OUT', session);
+    
+    // 4. Listen for future changes
     supabase.auth.onAuthStateChange(async (event, newSession) => {
-        if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+        // This handles Logins/Logouts after the page has loaded
+        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
             await handleAuthChange(event, newSession);
-        } else if (event === 'SIGNED_OUT') {
-            handleAuthChange('SIGNED_OUT', null);
         }
     });
-  
-    if (session) {
-        // User is logged in on this device!
-        await handleAuthChange('INITIAL_LOAD', session);
-    } else {
-        // No session on this device, user is a guest
-        await handleAuthChange('SIGNED_OUT', null);
-    }
 
     // 2. Auth Button (Log In / Log Out)
     authBtn.onclick = async () => {
@@ -817,7 +814,10 @@ async function checkAnswer(choiceId, btn) {
 function updateLevelUI() {
     const lvlNum = document.getElementById('levelNumber');
     const xpBracket = document.getElementById('xpBracket');
-    
+  
+    // If XP is null, it means we are still fetching from Supabase
+    if (currentProfileXp === null) return;
+  
     if (lvlNum && xpBracket) {
         const currentLvl = getLevel(currentProfileXp);
         lvlNum.textContent = currentLvl;
@@ -1446,6 +1446,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
