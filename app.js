@@ -865,7 +865,7 @@ try {
           playSound(wrongBuffer);
           streak = 0; // Reset streak on wrong answer in normal mode
           btn.classList.add('wrong');
-          await highlightCorrectAnswer();
+          highlightCorrectAnswer();
           if (isDailyMode) {
               setTimeout(loadQuestion, 1500);
           } else {
@@ -987,17 +987,18 @@ function createParticle(parent, xPosPercent, colors) {
     p.onanimationend = () => p.remove();
 }
 
-async function highlightCorrectAnswer() {
-    const { data: correctId } = await supabase.rpc('reveal_correct_answer', { 
-        input_id: currentQuestion.id 
-    });
+// Optimized version (if currentQuestion already has the ID)
+function highlightCorrectAnswerSync() {
+    if (!currentQuestion || !currentQuestion.correct_answer) return;
+
+    const correctId = String(currentQuestion.correct_answer); 
     document.querySelectorAll('.answer-btn').forEach(btn => {
-        if (parseInt(btn.dataset.answerId) === correctId) {
+        // Compare as strings to avoid type-mismatch bugs
+        if (String(btn.dataset.answerId) === correctId) {
             btn.classList.add('correct');
         }
     });
 }
-
 async function endGame(force = false) {
    // If gameEnding is true AND we aren't forcing it, then return.
     if (gameEnding && !force) return;
@@ -1546,6 +1547,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
