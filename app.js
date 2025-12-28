@@ -1094,6 +1094,9 @@ if (shareBtn) {
         updateShareButtonState(); // Force it to stay grey
         return;
     }
+      if (game) game.classList.add('hidden'); // Hide the question/answers
+      document.body.classList.remove('game-active'); // Remove game styling
+      
       // 1. CAPTURE CURRENT STATE (To restore later)
       const originalScore = finalScore.textContent;
       const originalMsg = document.getElementById('game-over-title').textContent;
@@ -1446,6 +1449,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
