@@ -736,27 +736,27 @@ async function handleTimeout() {
   // If the shield is already up, don't run this twice
   if (gameEnding) return; // Prevent double trigger
     gameEnding = true;      // Set the shield
-  
+    clearInterval(timer); // Safety stop
     stopTickSound(); // <--- ADD THIS FIRST
+  
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
     playSound(wrongBuffer);
     highlightCorrectAnswer();
     
-setTimeout(() => {
-        // CRITICAL CHECK: If the user already clicked "Play Again", 
-        // document.body won't have 'game-active' yet (or resetGame ran).
-        // If we don't check this, handleTimeout will force endGame() 
-        // on a game that just started.
-        if (!document.body.classList.contains('game-active')) return;
-
-        if (isDailyMode) {
-            gameEnding = false; // Lower shield for next question
-            loadQuestion();
-        } else {
-            // Note: endGame() sets gameEnding = true inside it
-            endGame(); 
-        }
-    }, 1000);
+    setTimeout(() => {
+            // If the user clicked "Main Menu" or "Play Again" during this 1s delay, stop.
+            if (!document.body.classList.contains('game-active')) {
+                gameEnding = false;
+                return;
+            }
+    
+            if (isDailyMode) {
+                gameEnding = false; // Lower shield to allow next question
+                loadQuestion();
+            } else {
+                endGame(); // This will handle hiding the game screen
+            }
+        }, 1000);
 }
 
 async function checkAnswer(choiceId, btn) {
@@ -1503,6 +1503,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
