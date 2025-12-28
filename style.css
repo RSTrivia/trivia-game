@@ -1134,7 +1134,7 @@ input.input-field:-webkit-autofill:active {
     @keyframes xp-float-mobile {
         0% {
             opacity: 0;
-            transform: translateY(20px); /* Start closer to the source */
+            transform: translateY(30px); /* Start closer to the source */
         }
         20% {
             opacity: 1;
@@ -1148,6 +1148,7 @@ input.input-field:-webkit-autofill:active {
     }
 }
 /* ====== MOBILE XP DROP ADJUSTMENT ====== */
+
 
 
 
