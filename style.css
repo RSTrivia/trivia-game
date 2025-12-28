@@ -1127,14 +1127,14 @@ input.input-field:-webkit-autofill:active {
     .xp-drop {
         /* Reduce font size slightly for mobile if desired, or keep at 22px */
         font-size: 18px !important; 
-        animation: xp-float-mobile 1.2s ease-out forwards !important;
+        animation: xp-float-mobile 0.9s ease-out forwards !important;
     }
 
     @keyframes xp-float-mobile {
         0% {
             opacity: 0;
           /* 1. START LOWER: Increase this number to start further down */
-            transform: translateY(40px); 
+            transform: translateY(30px); 
         }
         20% {
             opacity: 1;
@@ -1149,6 +1149,7 @@ input.input-field:-webkit-autofill:active {
     }
 }
 /* ====== MOBILE XP DROP ADJUSTMENT ====== */
+
 
 
 
