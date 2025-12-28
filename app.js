@@ -352,10 +352,11 @@ if (scoreTab && xpTab) {
         scoreTab.classList.remove('active');
         fetchLeaderboard();
     };
-}
-
   // Trigger initial fetch
   await fetchLeaderboard();
+}
+
+  
   // This will check if a user is logged in and lock the button if they aren't
   await syncDailyButton();
   // This will check if a user has played daily mode already and will unlock it if they did
@@ -1547,6 +1548,7 @@ supabase
     if (currentMode === 'xp') fetchLeaderboard();
   })
   .subscribe();
+
 
 
 
