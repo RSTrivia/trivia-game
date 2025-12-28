@@ -1148,7 +1148,7 @@ input.input-field:-webkit-autofill:active {
 /* ====== tab for leaderboards xp====== */
 /* Tab Navigation */
 /* Thinner Tab Styling */
-.tabs {
+.leaderboard-tabs {
   display: flex;
   width: 100%;
   gap: 0; /* Removed gap for a tighter look */
@@ -1182,6 +1182,7 @@ input.input-field:-webkit-autofill:active {
   font-weight: bold;
 }
 /* ====== tab for leaderboards xp====== */
+
 
 
 
