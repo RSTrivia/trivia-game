@@ -483,14 +483,14 @@ function resetGame() {
    // 1. Kill the actual interval
     clearInterval(timer);
     timer = null; 
-    
-  // 2. Kill the logic tracking
-    startTime = null; 
+    startTime = null
+      ;
+  // 2. Kill the shield
     gameEnding = false;
+  
     stopTickSound(); 
     // Wipe any existing firework particles that didn't get removed
     document.querySelectorAll('.firework-particle').forEach(p => p.remove());
-   
     // 2. Reset numerical state
     score = 0;
     currentQuestion = null;
@@ -735,22 +735,34 @@ function stopTickSound() {
 }
 
 async function handleTimeout() {
+  // If the shield is already up, don't run this twice
+  if (gameEnding) return; // Prevent double trigger
+    gameEnding = true;      // Set the shield
+  
     stopTickSound(); // <--- ADD THIS FIRST
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
     playSound(wrongBuffer);
     highlightCorrectAnswer();
     
 setTimeout(() => {
+        // CRITICAL CHECK: If the user already clicked "Play Again", 
+        // document.body won't have 'game-active' yet (or resetGame ran).
+        // If we don't check this, handleTimeout will force endGame() 
+        // on a game that just started.
+        if (!document.body.classList.contains('game-active')) return;
+
         if (isDailyMode) {
+            gameEnding = false; // Lower shield for next question
             loadQuestion();
         } else {
-            endGame(); // This will now hide the game window and show the end screen
+            // Note: endGame() sets gameEnding = true inside it
+            endGame(); 
         }
     }, 1000);
 }
 
 async function checkAnswer(choiceId, btn) {
-    if (gameEnding) return; // Don't allow clicks if the game is transitioning to end screen
+    if (gameEnding || !document.body.classList.contains('game-active')) return;// Don't allow clicks if the game is transitioning to end screen
     stopTickSound(); // CUT THE SOUND IMMEDIATELY
     //if (timeLeft <= 0) return;
     clearInterval(timer);
@@ -1493,6 +1505,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
