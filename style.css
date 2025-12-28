@@ -1127,14 +1127,15 @@ input.input-field:-webkit-autofill:active {
     .xp-drop {
         /* Reduce font size slightly for mobile if desired, or keep at 22px */
         font-size: 18px !important; 
-        /* Trigger the shorter mobile animation */
+        /* 1. START LOWER: Increase this number to start further down */
         animation: xp-float-mobile 0.8s ease-out forwards !important;
     }
 
     @keyframes xp-float-mobile {
         0% {
             opacity: 0;
-            transform: translateY(30px); /* Start closer to the source */
+          /* 2. THE PEAK: This is the 'resting' point during the fade */
+            transform: translateY(30px); 
         }
         20% {
             opacity: 1;
@@ -1142,12 +1143,13 @@ input.input-field:-webkit-autofill:active {
         }
         100% {
             opacity: 0;
-            /* REDUCED DISTANCE: Changed from -60px to -30px */
-            transform: translateY(-30px); 
+             /* 3. FINISH POINT: Where it disappears */
+            transform: translateY(-35px); 
         }
     }
 }
 /* ====== MOBILE XP DROP ADJUSTMENT ====== */
+
 
 
 
