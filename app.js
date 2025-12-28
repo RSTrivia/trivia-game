@@ -415,7 +415,7 @@ async function updateShareButtonState() {
 
     const { data: { session } } = await supabase.auth.getSession();
   
-    // Guest = Always disabled
+    // 1. If no session, clear everything and lock the button
     if (!session) {
         shareBtn.classList.add('is-disabled');
         shareBtn.classList.remove('is-active');
@@ -424,14 +424,34 @@ async function updateShareButtonState() {
         return;
     }
 
-  
-    // Check localStorage (just finished playing) OR DB (played earlier)
+    // 2. Grab local data
     const localScore = localStorage.getItem('lastDailyScore');
     const savedDate = localStorage.getItem('dailyPlayedDate');
-    const hasPlayedToday = await hasUserCompletedDaily(session);
-    const isScoreFromToday = (localScore !== null && savedDate === todayStr);
+    const localUserId = localStorage.getItem('lastDailyUserId');
   
-    if (isScoreFromToday || hasPlayedToday) {
+    // 3. VALIDATION: Does the local data belong to THIS specific user for TODAY?
+    const isLocalDataValid = (
+        localScore !== null && 
+        savedDate === todayStr && 
+        localUserId === session.user.id
+    );
+
+    let hasPlayed = isLocalDataValid;
+
+    // 4. SHORT-CIRCUIT: Only call the DB if local data isn't valid/present
+    if (!hasPlayed) {
+        hasPlayed = await hasUserCompletedDaily(session);
+        
+        // If the DB says they played, update local storage so the next 
+        // refresh doesn't trigger another network request (prevents 406)
+        if (hasPlayed) {
+            localStorage.setItem('dailyPlayedDate', todayStr);
+            localStorage.setItem('lastDailyUserId', session.user.id);
+        }
+    }
+  
+    // 5. Apply UI changes
+    if (hasPlayed) {
         shareBtn.classList.remove('is-disabled');
         shareBtn.classList.add('is-active'); 
         shareBtn.style.opacity = "1";
@@ -464,6 +484,7 @@ async function fetchDailyStatus(userId) {
         localStorage.setItem('lastDailyMessage', attempt.message || "Daily Challenge");
         localStorage.setItem('lastDailyScore', attempt.score ?? "0");
         localStorage.setItem('dailyPlayedDate', todayStr);
+        localStorage.setItem('lastDailyUserId', session.user.id);
         
         // ONLY update UI if we are NOT in a game AND NOT looking at an end-screen
         const isEndScreenHidden = endScreen.classList.contains('hidden');
@@ -1063,28 +1084,33 @@ function setupRealtimeSync(userId) {
 }
 
 async function saveNormalScore(currentUsername, finalScore) {
-    // 1. Get the session to get the UUID (The "Key" to bypass 403)
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
 
     const userId = session.user.id;
 
-    // 2. Check for existing score using user_id (the most stable way)
-    const { data: record } = await supabase
+    // Fixed: Use .limit(1) to avoid the 406 "Not Acceptable" error
+    const { data: records, error: fetchError } = await supabase
         .from('scores')
         .select('score')
         .eq('user_id', userId)
-        .maybeSingle();
+        .limit(1);
 
-    // 3. Save only if it's a new High Score
+    if (fetchError) {
+        console.error("Error checking high score:", fetchError);
+        return;
+    }
+
+    const record = records && records.length > 0 ? records[0] : null;
+
     if (!record || finalScore > record.score) {
         const { error } = await supabase
             .from('scores')
             .upsert({ 
-                user_id: userId,        // Required for RLS / 403 fix
+                user_id: userId, 
                 username: currentUsername, 
                 score: finalScore 
-            }, { onConflict: 'user_id' }); // Prevents duplicate rows for one user
+            }, { onConflict: 'user_id' });
 
         if (error) {
             console.error("Leaderboard Save Error:", error.message);
@@ -1102,6 +1128,9 @@ async function saveDailyScore(session, msg) {
     localStorage.setItem('lastDailyMessage', msg);
 
     if (session) {
+        // Tag the local storage with the user ID so Guest accounts can't see it
+        localStorage.setItem('lastDailyUserId', session.user.id);
+
         await supabase.from('daily_attempts').update({
             score: score,
             message: msg
@@ -1467,6 +1496,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
