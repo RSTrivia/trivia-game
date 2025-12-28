@@ -290,16 +290,19 @@ async function init() {
           playAgainBtn.onclick = async () => {
           resetGame(); // KILL OLD STATE FIRST
           isDailyMode = false;
-          await startGame();
+          // Small delay to let the DOM settle before starting logic
+          requestAnimationFrame(async () => {
+              await startGame();
+        });
       };
   }
   if (mainMenuBtn) {  
         mainMenuBtn.onclick = async () => {
+        resetGame(); 
         preloadQueue = []; // Clear the buffer only when going back to menu
         // Manual UI Reset instead:
         document.getElementById('end-screen').classList.add('hidden');
         document.getElementById('start-screen').classList.remove('hidden');
-        document.body.classList.remove('game-active');
     };
   }
   if (muteBtn) {
@@ -490,6 +493,8 @@ function resetGame() {
     // Wipe any existing firework particles that didn't get removed
     document.querySelectorAll('.firework-particle').forEach(p => p.remove());
     // 2. Reset numerical state
+    game.classList.add('hidden');
+    endScreen.classList.add('hidden');
     score = 0;
     currentQuestion = null;
     // NOTE: We do NOT reset preloadQueue here. 
@@ -506,13 +511,10 @@ function resetGame() {
 
     // 5. Reset Timer Visuals
     timeLeft = 15;
-    timeDisplay.textContent = timeLeft;
+    if (scoreDisplay) scoreDisplay.textContent = `Score: 0`;
+    if (timeDisplay) timeDisplay.textContent = timeLeft;
     timeWrap.classList.remove('red-timer');
     
-    // 6. Reset Score Visual
-    if (scoreDisplay) {
-        scoreDisplay.textContent = `Score: 0`;
-    }
   // Ensure the body class is clean
     document.body.classList.remove('game-active');
 }
@@ -1506,6 +1508,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
