@@ -819,16 +819,21 @@ function getLevel(xp) {
     if (!xp || xp <= 0) return 1;
     if (xp >= 100000) return 99;
 
-    // Adjusted exponent to ensure 50,000 falls within the Level 92 range
-    const exponent = 9.45; 
-
+    // We use a multi-stage approach for better "feel"
+    // Level 1-91 uses a gentler curve
+    // Level 92-99 uses the steep OSRS-style curve
+    
     for (let L = 1; L <= 99; L++) {
-        // This calculates the XP required to reach Level L
-        let threshold = Math.floor(Math.pow((L - 1) / 98, exponent) * 100000);
-        
-        if (xp < threshold) {
-            return L - 1;
+        let threshold;
+        if (L <= 92) {
+            // Gentler curve: Level 50 will be around 11k XP
+            threshold = Math.floor(Math.pow((L - 1) / 91, 2.5) * 50000);
+        } else {
+            // Steeper curve: From 50k to 100k
+            threshold = 50000 + Math.floor(Math.pow((L - 92) / 7, 1.5) * 50000);
         }
+
+        if (xp < threshold) return L - 1;
     }
     return 99;
 }
@@ -1449,6 +1454,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
