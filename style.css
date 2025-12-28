@@ -349,7 +349,7 @@ h1 {
 #shareBtn, #muteBtn {
   position: relative; 
   /* This pushes them left without taking them out of the vertical flow */
-  left: -110px; 
+  left: -90px; 
   /* This moves them "South" (down) slightly to align with the gap between lines */
   top: 7px;    
 }
@@ -558,7 +558,7 @@ input.input-field:-webkit-autofill:active {
   align-items: flex-start; /*center;*/
   /*justify-content: center;  center the text horizontally */
   flex-direction: column;
-  margin-left: -100px;
+  margin-left: -90px;
 }
 
 /* ====== ROW LAYOUT FIX ===== */
@@ -1084,6 +1084,7 @@ input.input-field:-webkit-autofill:active {
     }
 }
 /*                             for notifications in text                                       */
+
 
 
 
