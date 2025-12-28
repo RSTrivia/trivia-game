@@ -825,9 +825,12 @@ input.input-field:-webkit-autofill:active {
   
   /* Optional: If the icons are still too far left compared to the name on mobile */
   #shareBtn, #muteBtn {
-    left: -2px !important; /* Reduces the "West" push so it stays inside the container */
+    left: -5px !important; /* Reduces the "West" push so it stays inside the container */
   }
-
+/* Adjust the text offset for mobile so it doesn't look squished */
+  #userDisplay {
+    margin-left: -10px !important; 
+  }
  /* ====== FIX POSITIONING FOR MOBILE ====== */
 }
 
@@ -1102,6 +1105,7 @@ input.input-field:-webkit-autofill:active {
     }
 }
 /*                             for notifications in text                                       */
+
 
 
 
