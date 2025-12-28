@@ -772,28 +772,27 @@ async function checkAnswer(choiceId, btn) {
                         isBonusEarned = true; // Normal bonus!
                     }
             }
+            // 2. PREDICT LEVEL CHANGE
             const oldLevel = getLevel(currentProfileXp);
-            const newLevel = getLevel(currentProfileXp+gained);
+            const newLevel = getLevel(currentProfileXp + gained);
 
+            // 3. TRIGGER LEVEL UP FIRST (This puts it at the front of the queue)
             if (newLevel > oldLevel) {
                 triggerFireworks(); 
-                // Play level up sound after the correct sound
-                setTimeout(() => {
-                  showNotification("LEVEL UP!",levelUpBuffer,"#ffde00"); // Gold for level
-                }, 200);
+                // We call this first so it processes first
+                showNotification("LEVEL UP!", levelUpBuffer, "#ffde00"); //gold
             }
           
-            // --- PLAY BONUS SOUND ---
+            // 4. TRIGGER BONUS SECOND (This goes behind Level Up in the queue)
             if (isBonusEarned) {
-                //playSound(bonusBuffer);
-                showNotification("BONUS XP!",bonusBuffer,"#a335ee"); // Cyan for bonus
+                showNotification("BONUS XP!", bonusBuffer, "#a335ee"); //cyan
             }
-           
+          
+            // 5. UPDATE DATA
             currentProfileXp += gained; // Add the XP to local state
             updateLevelUI(); // Refresh the Player/Level row
             triggerXpDrop(gained);
             
-            // Update Supabase
             await supabase.from('profiles')
             .update({ xp: currentProfileXp })
             .eq('id', session.user.id);
@@ -1473,6 +1472,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
