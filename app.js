@@ -214,14 +214,11 @@ async function init() {
  
     // 1. Get the current session
     const { data: { session }, error } = await supabase.auth.getSession();
-  
-    // 2. Get the current session
-    const { data: { session } } = await supabase.auth.getSession();
     
-    // 3. Handle the initial state (Signed In OR Guest)
+    // 2. Handle the initial state (Signed In OR Guest)
     await handleAuthChange(session ? 'INITIAL_LOAD' : 'SIGNED_OUT', session);
     
-    // 4. Listen for future changes
+    // 3. Listen for future changes
     supabase.auth.onAuthStateChange(async (event, newSession) => {
         // This handles Logins/Logouts after the page has loaded
         if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
@@ -1446,6 +1443,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
