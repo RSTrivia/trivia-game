@@ -341,7 +341,6 @@ async function init() {
         }
     }
 });
-});
   // This will check if a user is logged in and lock the button if they aren't
   //await syncDailyButton();
   // This will check if a user has played daily mode already and will unlock it if they did
@@ -870,7 +869,12 @@ try {
 } catch (err) {
   console.error("Check Answer Error:", err);
   // Safety: Re-enable buttons if the database fails so the game isn't stuck
+  const allBtns = document.querySelectorAll('.answer-btn');
   allBtns.forEach(b => b.disabled = false);
+  // If we are still in the game, resume the timer so it's not stuck
+    if (document.body.classList.contains('game-active')) {
+        startTimer();
+    }
   }
 }
 
@@ -1538,6 +1542,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
