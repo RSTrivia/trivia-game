@@ -1461,49 +1461,39 @@ function subscribeToDailyChanges(userId) {
     return channel;
 }
 
-// This function clears the list and puts in new data
+// 2. Logic to update the UI rows
 function updateLeaderboard(data) {
   leaderboardRows.forEach((row, i) => {
-    const entry = data[i] || { username: '', val: '' };
+    const entry = data[i] || { username: '---', val: '' };
     const userTxt = row.querySelector('.user-txt');
     const scoreSpan = row.querySelector('.score-part');
 
-    // If it's XP mode, let's show the level in parentheses next to the name
-    if (currentMode === 'xp' && entry.username) {
-        const level = getLevel(entry.val); // Uses your existing formula
-        userTxt.innerHTML = `${entry.username} <span style="color: #ffde00; font-size: 0.8em;">(Lvl ${level})</span>`;
-    } else {
-        userTxt.textContent = entry.username || '---';
-    }
-    
-    const displayVal = entry.val !== undefined ? entry.val.toLocaleString() : '';
-    scoreSpan.textContent = displayVal;
+    // Use 'val' because we rename the column in the fetch query below
+    userTxt.textContent = entry.username || '---';
+    scoreSpan.textContent = entry.val !== undefined ? entry.val.toLocaleString() : '';
   });
 }
 
+// 3. Dynamic Fetch (Handles both Score and XP)
 async function fetchLeaderboard() {
-    let query;
-    if (currentMode === 'score') {
-        query = supabase.from('scores').select('username, val:score').order('score', { ascending: false });
-    } else {
-        // Use 'xp' for values, but ensure we order correctly
-        query = supabase.from('profiles').select('username, val:xp').order('xp', { ascending: false });
-    }
+  let query;
+  
+  if (currentMode === 'score') {
+    // Select from scores table
+    query = supabase.from('scores').select('username, val:score').order('score', { ascending: false });
+  } else {
+    // Select from profiles table for XP
+    query = supabase.from('profiles').select('username, val:xp').order('xp', { ascending: false });
+  }
 
-    const { data, error } = await query.limit(10);
+  const { data, error } = await query.limit(10);
 
-    if (error) {
-        console.error('Leaderboard Fetch Error:', error.message);
-        return;
-    }
+  if (error) {
+    console.error('Fetch Error:', error.message);
+    return;
+  }
 
-    // Map data to ensure no nulls break the UI
-    const sanitizedData = data.map(entry => ({
-        username: entry.username || 'Anonymous',
-        val: entry.val || 0
-    }));
-
-    updateLeaderboard(sanitizedData);
+  updateLeaderboard(data);
 }
 
 // ====== MOBILE TAP FEEDBACK (THE FLASH) ======
@@ -1548,6 +1538,7 @@ supabase
     if (currentMode === 'xp') fetchLeaderboard();
   })
   .subscribe();
+
 
 
 
