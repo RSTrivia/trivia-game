@@ -356,7 +356,7 @@ h1 {
 
 /* 3. Adjust the gap between the two buttons */
 #shareBtn {
-  margin-right: 8px;
+  margin-right: 6px;
 }
 
 /* Greyed out state for both */
@@ -1084,6 +1084,7 @@ input.input-field:-webkit-autofill:active {
     }
 }
 /*                             for notifications in text                                       */
+
 
 
 
