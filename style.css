@@ -827,7 +827,7 @@ input.input-field:-webkit-autofill:active {
   #shareBtn, #muteBtn {
     position: relative;
     /* 1. Adjust this slightly to move icons West (smaller number = safer) */
-    left: -5px; 
+    left: -10px; 
     /*top: 3px;*/
   }
 
@@ -1119,6 +1119,7 @@ input.input-field:-webkit-autofill:active {
     }
 }
 /*                             for notifications in text                                       */
+
 
 
 
