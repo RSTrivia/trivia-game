@@ -1340,15 +1340,38 @@ async function startDailyChallenge() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return alert("Log in to play Daily Mode!");
 
-    // 1. Burn the attempt
+    // 1. CHECK THE SHIELD FIRST
+    const localUserId = localStorage.getItem('lastDailyUserId');
+    const savedDate = localStorage.getItem('dailyPlayedDate');
+    
+    if (localUserId === session.user.id && savedDate === todayStr) {
+        alert("You've already played today!");
+        lockDailyButton();
+        return;
+    }
+
+    // 2. Double check DB before inserting to prevent the 406/409 error
+    const played = await hasUserCompletedDaily(session);
+    if (played) {
+        // Sync local storage so we don't have to hit the DB again
+        localStorage.setItem('dailyPlayedDate', todayStr);
+        localStorage.setItem('lastDailyUserId', session.user.id);
+        alert("You've already played today!");
+        lockDailyButton();
+        return;
+    }
+
+    // 3. Burn the attempt (Only happens if checks above pass)
     const { error: burnError } = await supabase
         .from('daily_attempts')
         .insert({ user_id: session.user.id, attempt_date: todayStr });
 
-    if (burnError) return alert("You've already played today!");
+    if (burnError) {
+        console.error("Burn error:", burnError);
+        return alert("You've already played today!");
+    }
     
-    lockDailyButton(); 
-
+    lockDailyButton();
     // 2. Load Questions
     const { data: allQuestions } = await supabase.from('questions').select('id').order('id', { ascending: true });
     if (!allQuestions || allQuestions.length < 10) return alert("Error loading questions.");
@@ -1449,6 +1472,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
