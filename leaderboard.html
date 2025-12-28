@@ -122,59 +122,96 @@
 <script src="config.js"></script>
 <script type="module">
 import { supabase } from './supabase.js';
+
 const leaderboardRows = document.querySelectorAll('#leaderboard li');
-  
-// 2. Logic to update the UI rows
+const scoreTab = document.getElementById('scoreTab');
+const xpTab = document.getElementById('xpTab');
+
+let currentMode = 'score'; // Default mode
+
 function updateLeaderboard(data) {
   leaderboardRows.forEach((row, i) => {
-    const entry = data[i] || { username: '---', val: '' };
+    // We use 'val' as a generic key for both score and xp
+    const entry = data[i] || { username: '', val: '' };
     const userTxt = row.querySelector('.user-txt');
     const scoreSpan = row.querySelector('.score-part');
 
-    // Use 'val' because we rename the column in the fetch query below
-    userTxt.textContent = entry.username || '---';
-    scoreSpan.textContent = entry.val !== undefined ? entry.val.toLocaleString() : '';
+    userTxt.textContent = entry.username || '';
+    
+    // Format numbers with commas (e.g., 1,000)
+    const displayVal = entry.username && entry.val !== undefined ? entry.val.toLocaleString() : '';
+    scoreSpan.textContent = displayVal;
   });
 }
-  
-// 3. Dynamic Fetch (Handles both Score and XP)
+
 async function fetchLeaderboard() {
   let query;
   
   if (currentMode === 'score') {
-    // Select from scores table
+    // Use 'val' as an alias for score
     query = supabase.from('scores').select('username, val:score').order('score', { ascending: false });
   } else {
-    // Select from profiles table for XP
+    // Use 'val' as an alias for xp
     query = supabase.from('profiles').select('username, val:xp').order('xp', { ascending: false });
   }
 
   const { data, error } = await query.limit(10);
 
   if (error) {
-    console.error('Fetch Error:', error.message);
+    console.error('Supabase Error:', error.message);
     return;
   }
 
-  updateLeaderboard(data);
+  if (data) {
+    // Save to mode-specific cache
+    localStorage.setItem(`leaderboard_${currentMode}`, JSON.stringify(data));
+    updateLeaderboard(data);
+  }
 }
+
+// Tab Click Handlers
+scoreTab.onclick = () => {
+  if (currentMode === 'score') return;
+  currentMode = 'score';
+  scoreTab.classList.add('active');
+  xpTab.classList.remove('active');
   
+  // Load cache immediately for speed, then fetch fresh
+  const cached = localStorage.getItem('leaderboard_score');
+  if (cached) updateLeaderboard(JSON.parse(cached));
+  fetchLeaderboard();
+};
+
+xpTab.onclick = () => {
+  if (currentMode === 'xp') return;
+  currentMode = 'xp';
+  xpTab.classList.add('active');
+  scoreTab.classList.remove('active');
+  
+  const cached = localStorage.getItem('leaderboard_xp');
+  if (cached) updateLeaderboard(JSON.parse(cached));
+  fetchLeaderboard();
+};
+
+// Realtime Sync for both tables
 supabase
   .channel('public-leaderboard-changes')
-  .on('postgres_changes', { event: '*', schema: 'public', table: 'scores' }, (payload) => {
-      fetchLeaderboard(); 
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'scores' }, () => {
+      if (currentMode === 'score') fetchLeaderboard();
+  })
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
+      if (currentMode === 'xp') fetchLeaderboard();
   })
   .subscribe();
 
+// Initial Run
 (async () => {
-  const cachedString = localStorage.getItem('leaderboard');
+  const cachedString = localStorage.getItem(`leaderboard_${currentMode}`);
   if (cachedString) {
     updateLeaderboard(JSON.parse(cachedString));
   }
   await fetchLeaderboard();
 })();
-  // 6. Initial Load
-fetchLeaderboard();
 </script>
 
   <script>
@@ -187,13 +224,5 @@ fetchLeaderboard();
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
 
 
