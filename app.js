@@ -13,6 +13,10 @@ let username = 'Guest';
 let gameEnding = false;
 let notificationQueue = [];
 let isShowingNotification = false;
+let currentMode = 'score'; // 'score' or 'xp'
+const leaderboardRows = document.querySelectorAll('#leaderboard li');
+const scoreTab = document.getElementById('scoreTab');
+const xpTab = document.getElementById('xpTab');
 const shareBtn = document.getElementById('shareBtn');
 const startBtn = document.getElementById('startBtn');
 const playAgainBtn = document.getElementById('playAgainBtn');
@@ -1436,7 +1440,48 @@ function subscribeToDailyChanges(userId) {
     return channel;
 }
 
+// This function clears the list and puts in new data
+function updateLeaderboard(data) {
+  leaderboardRows.forEach((row, i) => {
+    const entry = data[i] || { username: '', val: '' };
+    const userTxt = row.querySelector('.user-txt');
+    const scoreSpan = row.querySelector('.score-part');
 
+    // If it's XP mode, let's show the level in parentheses next to the name
+    if (currentMode === 'xp' && entry.username) {
+        const level = getLevel(entry.val); // Uses your existing formula
+        userTxt.innerHTML = `${entry.username} <span style="color: #ffde00; font-size: 0.8em;">(Lvl ${level})</span>`;
+    } else {
+        userTxt.textContent = entry.username || '---';
+    }
+    
+    const displayVal = entry.val !== undefined ? entry.val.toLocaleString() : '';
+    scoreSpan.textContent = displayVal;
+  });
+}
+
+async function fetchLeaderboard() {
+  let query;
+  
+  if (currentMode === 'score') {
+    // Fetch from scores table
+    query = supabase.from('scores').select('username, val:score').order('score', { ascending: false });
+  } else {
+    // Fetch from profiles table
+    query = supabase.from('profiles').select('username, val:xp').order('xp', { ascending: false });
+  }
+
+  const { data, error } = await query.limit(10);
+
+  if (error) {
+    console.error('Supabase Error:', error.message);
+    return;
+  }
+
+  if (data) {
+    updateLeaderboard(data);
+  }
+}
 
 // ====== MOBILE TAP FEEDBACK (THE FLASH) ======
 document.addEventListener('DOMContentLoaded', () => {
@@ -1464,17 +1509,41 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. Apply to all buttons currently on the screen
     const staticButtons = document.querySelectorAll('.btn, .btn-small, #authBtn, #muteBtn');
     staticButtons.forEach(applyFlash);
-
-
-  //const shareBtn = document.getElementById('shareBtn');
-
-// Initial check on page load
-//updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
 
 
+// 6. EVENT LISTENERS (The code you asked about)
+// Tab Click Events
+scoreTab.onclick = () => {
+  if (currentMode === 'score') return;
+  currentMode = 'score';
+  scoreTab.classList.add('active');
+  xpTab.classList.remove('active');
+  fetchLeaderboard();
+};
 
+xpTab.onclick = () => {
+  if (currentMode === 'xp') return;
+  currentMode = 'xp';
+  xpTab.classList.add('active');
+  scoreTab.classList.remove('active');
+  fetchLeaderboard();
+};
+
+// Realtime Sync for both tables
+supabase
+  .channel('leaderboard-sync')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'scores' }, () => {
+    if (currentMode === 'score') fetchLeaderboard();
+  })
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
+    if (currentMode === 'xp') fetchLeaderboard();
+  })
+  .subscribe();
+
+// Run on load
+fetchLeaderboard();
 
 
 
