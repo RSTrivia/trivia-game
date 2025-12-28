@@ -214,16 +214,8 @@ async function init() {
  
     // 1. Get the current session
     const { data: { session }, error } = await supabase.auth.getSession();
-
-    if (session) {
-        // User is logged in on this device!
-        handleAuthChange('INITIAL_LOAD', session);
-    } else {
-        // No session on this device, user is a guest
-        handleAuthChange('SIGNED_OUT', null);
-    }
-
-    // 2. Listen for changes (like logging out)
+  
+     // 2. Listen for changes (like logging out)
     supabase.auth.onAuthStateChange((event, session) => {
         if (event === 'SIGNED_OUT') {
             handleAuthChange('SIGNED_OUT', null);
@@ -231,7 +223,15 @@ async function init() {
             handleAuthChange(event, session);
         }
     });
-    
+  
+    if (session) {
+        // User is logged in on this device!
+        await handleAuthChange('INITIAL_LOAD', session);
+    } else {
+        // No session on this device, user is a guest
+        await handleAuthChange('SIGNED_OUT', null);
+    }
+
     // 2. Auth Button (Log In / Log Out)
     authBtn.onclick = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -1446,6 +1446,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
