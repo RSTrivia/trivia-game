@@ -321,13 +321,11 @@ async function init() {
     };
 }
   document.addEventListener('visibilitychange', () => {
-       // Only trigger if the tab is visible, the game is active, AND we aren't already ending
-    if (!document.hidden && document.body.classList.contains('game-active') && !gameEnding) {
+    // Only trigger if we are coming BACK to the tab and a game is actually running
+    if (!document.hidden && document.body.classList.contains('game-active')) {
         const elapsed = Date.now() - startTime;
-        if (elapsed >= timerDuration) {
-            gameEnding = true; // Set the shield immediately
-            clearInterval(timer);
-            stopTickSound();
+        // If time ran out while we were away, force the timeout
+        if (elapsed >= timerDuration && !gameEnding) {
             handleTimeout(); 
         }
     }
@@ -1505,6 +1503,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
