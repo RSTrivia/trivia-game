@@ -335,79 +335,71 @@ async function handleAuthChange(event, session) {
     const span = document.querySelector('#usernameSpan');
     const label = authBtn?.querySelector('.btn-label');
 
-    // 1. Logged Out State
     if (!session) {
         username = 'Guest';
-        currentProfileXp = 0; // Reset this for guests!
+        currentProfileXp = 0;
         if (span) span.textContent = ' Guest';
         if (label) label.textContent = 'Log In';
-
-        // Clear all session-specific UI and storage
-        localStorage.removeItem('lastDailyScore');
-        localStorage.removeItem('dailyPlayedDate');
-        
-        [dailyBtn, shareBtn].forEach(btn => {
-            if (btn) {
-                btn.classList.add('is-disabled');
-                btn.style.opacity = '0.5';
-                btn.style.pointerEvents = 'none';
-            }
-        });
-      
-        updateLevelUI()
-        return; // Stop here for guests
+        localStorage.clear(); // Wipe storage on logout
+        updateLevelUI();
+        updateShareButtonState(); // This will handle the guest locking logic
+        return;
     }
 
-   // Set username immediately from the session metadata if available 
-    // to reduce flicker before the database responds
-    if (span) span.textContent = ' ' + (session.user.user_metadata?.username || 'Player');
-
-    try {
-        // Wrap the DB calls in a Promise.all with a fallback
-        const [profileRes, statusRes] = await Promise.allSettled([
-            supabase.from('profiles').select('username, xp').eq('id', session.user.id).single(),
-            fetchDailyStatus(session.user.id)
+   try {
+        // FETCH EVERYTHING AT ONCE
+        const [profileRes, dailyRes] = await Promise.all([
+            supabase.from('profiles').select('username, xp').eq('id', session.user.id).maybeSingle(),
+            supabase.from('daily_attempts').select('score, message').eq('user_id', session.user.id).eq('attempt_date', todayStr).limit(1)
         ]);
 
-        if (profileRes.status === 'fulfilled' && profileRes.value.data) {
-            const profile = profileRes.value.data;
-            username = profile.username || 'Player';
-            currentProfileXp = profile.xp || 0;
+        // HANDLE PROFILE (Name & XP)
+        if (profileRes.data) {
+            username = profileRes.data.username || 'Player';
+            currentProfileXp = profileRes.data.xp || 0;
         }
-    } catch (err) {
-        console.error("Auth sync failed:", err);
-    } finally {
-        // ALWAYS update UI, even if the network request failed
-        if (span) span.textContent = ' ' + username;
-        if (label) label.textContent = 'Log Out';
-        syncChannel = setupRealtimeSync(session.user.id);
+
+        // HANDLE DAILY STATUS (The old fetchDailyStatus logic)
+        if (dailyRes.data && dailyRes.data.length > 0) {
+            const attempt = dailyRes.data[0];
+            localStorage.setItem('lastDailyScore', attempt.score);
+            localStorage.setItem('dailyPlayedDate', todayStr);
+            localStorage.setItem('lastDailyUserId', session.user.id);
+            localStorage.setItem('lastDailyMessage', attempt.message);
+            
+            // Sync the end-screen text just in case they refresh while on it
+            if (finalScore) finalScore.textContent = attempt.score;
+        }
+
+        // FINALLY UPDATE UI
         updateLevelUI();
+        syncDailyButton();
+        updateShareButtonState();
+
+    } catch (err) {
+        console.error("Auth sync error:", err);
     }
 }
 
 async function hasUserCompletedDaily(session) {
     if (!session?.user?.id) return false;
-
-    try {
-        const { data, error } = await supabase
-            .from('daily_attempts')
-            .select('id') // Keep this consistent everywhere
-            .eq('user_id', session.user.id)
-            .eq('attempt_date', todayStr)
-            // Use .abortSignal if you want to be fancy, but .limit(1) is usually enough
-            .limit(1);
-
-        if (error) {
-            // If we get a 406 or RLS error, we treat it as "not played" 
-            // to prevent the app from crashing.
-            console.warn("Daily check non-critical error:", error.message);
-            return false;
-        }
-
-        return !!(data && data.length > 0);
-    } catch (e) {
-        return false;
+    
+    // Check LocalStorage FIRST - This is the "Shield" against the 406 error
+    const localUserId = localStorage.getItem('lastDailyUserId');
+    const savedDate = localStorage.getItem('dailyPlayedDate');
+    if (localUserId === session.user.id && savedDate === todayStr) {
+        return true; 
     }
+
+    const { data, error } = await supabase
+        .from('daily_attempts')
+        .select('id') 
+        .eq('user_id', session.user.id)
+        .eq('attempt_date', todayStr)
+        .limit(1);
+
+    if (error) return false;
+    return !!(data && data.length > 0);
 }
 
 async function updateShareButtonState() {
@@ -467,43 +459,6 @@ async function updateShareButtonState() {
 
 // ====== NEW: FETCH SCORE FROM DATABASE ======
 // Ensure fetchDailyStatus calls the button update at the end
-async function fetchDailyStatus(userId) {
-    const { data, error } = await supabase
-        .from('daily_attempts')
-        .select('score, message')
-        .eq('user_id', userId)
-        .eq('attempt_date', todayStr)
-        .limit(1);
-  if (error) {
-        console.error("Status fetch error:", error);
-        return; 
-    }
-    if (data && data.length > 0) {
-        const attempt = data[0];
-       // ALWAYS save to storage (for the share button)
-        localStorage.setItem('lastDailyMessage', attempt.message || "Daily Challenge");
-        localStorage.setItem('lastDailyScore', attempt.score ?? "0");
-        localStorage.setItem('dailyPlayedDate', todayStr);
-        localStorage.setItem('lastDailyUserId', session.user.id);
-        
-        // ONLY update UI if we are NOT in a game AND NOT looking at an end-screen
-        const isEndScreenHidden = endScreen.classList.contains('hidden');
-        const isStartScreenVisible = !document.getElementById('start-screen').classList.contains('hidden');
-        
-        if (isStartScreenVisible && isEndScreenHidden) {
-            if (finalScore) finalScore.textContent = attempt.score ?? "0";
-            const gameOverTitle = document.getElementById('game-over-title');
-            if (gameOverTitle) {
-                gameOverTitle.textContent = attempt.message || "Daily Challenge";
-                //gameOverTitle.classList.remove('hidden');
-            }
-        }
-    }
-    // Always sync button states after checking DB
-    await syncDailyButton();
-    await updateShareButtonState();
-}
-
 
 function lockDailyButton() {
     if (!dailyBtn) return;
@@ -1071,8 +1026,6 @@ function setupRealtimeSync(userId) {
         .on('broadcast', { event: 'lock-daily' }, (payload) => {
             console.log("Broadcast received! Locking daily button.");
             lockDailyButton();
-            // Also sync the score/message data so the "Share" button appears
-            fetchDailyStatus(userId);
         })
         .subscribe((status) => {
             if (status === 'SUBSCRIBED') {
@@ -1496,6 +1449,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
