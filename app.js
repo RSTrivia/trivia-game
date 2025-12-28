@@ -4,6 +4,8 @@ const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
 // ====== UI & STATE ======
 const cachedMuted = localStorage.getItem('muted') === 'true';
+let startTime;
+let timerDuration = 15000; // 15 seconds in milliseconds
 let dailySubscription = null; // Track this globally to prevent duplicates
 let streak = 0;              // Tracking for normal game bonus
 let dailyQuestionCount = 0;   // Tracking for daily bonus
@@ -317,7 +319,17 @@ async function init() {
         }
     };
 }
-  
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && document.body.classList.contains('game-active')) {
+        // User just tabbed back in. Check if the timer should have finished.
+        const elapsed = Date.now() - startTime;
+        if (elapsed >= timerDuration) {
+            clearInterval(timer);
+            stopTickSound();
+            handleTimeout(); 
+        }
+    }
+});
   // This will check if a user is logged in and lock the button if they aren't
   //await syncDailyButton();
   // This will check if a user has played daily mode already and will unlock it if they did
@@ -667,32 +679,36 @@ async function loadQuestion() {
     };
    
 
-   
-
-
 function startTimer() {
     clearInterval(timer);
-    if (activeTickSource) { activeTickSource.stop(); activeTickSource = null; } // Cleanup
-  
+    if (activeTickSource) { activeTickSource.stop(); activeTickSource = null; }
+
+    startTime = Date.now(); // Record exactly when the question started
     timeLeft = 15;
     timeDisplay.textContent = timeLeft;
     timeWrap.classList.remove('red-timer');
-  
+
     timer = setInterval(() => {
-        timeLeft--;
+        const elapsed = Date.now() - startTime;
+        const remaining = Math.max(0, 15 - Math.floor(elapsed / 1000));
+        
+        timeLeft = remaining;
         timeDisplay.textContent = timeLeft;
-        // When the UI shows 3, start the loop
-        // This ensures that even if a frame is dropped, the sound starts
+
+        // Sound logic
         if (timeLeft <= 5 && timeLeft > 0 && !activeTickSource) {
-            activeTickSource = playSound(tickBuffer, true); 
+            activeTickSource = playSound(tickBuffer, true);
         }
+        
         if (timeLeft <= 5) timeWrap.classList.add('red-timer');
-        if (timeLeft <= 0) {
+
+        // Check if time is up
+        if (elapsed >= timerDuration) {
             clearInterval(timer);
-            stopTickSound(); // Stop sound when time hits zero
-            handleTimeout();
+            stopTickSound();
+            handleTimeout(); // This will now trigger even if they just tabbed back in!
         }
-    }, 1000);
+    }, 100); // Check every 100ms for high accuracy
 }
 
 function stopTickSound() {
@@ -710,13 +726,15 @@ async function handleTimeout() {
     stopTickSound(); // <--- ADD THIS FIRST
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
     playSound(wrongBuffer);
-    await highlightCorrectAnswer();
+    highlightCorrectAnswer();
     
-    if (isDailyMode) {
-        setTimeout(loadQuestion, 1500);
-    } else {
-        setTimeout(endGame, 1000);
-    }
+setTimeout(() => {
+        if (isDailyMode) {
+            loadQuestion();
+        } else {
+            endGame(); // This will now hide the game window and show the end screen
+        }
+    }, 1000);
 }
 
 async function checkAnswer(choiceId, btn) {
@@ -1461,6 +1479,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
