@@ -321,10 +321,11 @@ async function init() {
     };
 }
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden && document.body.classList.contains('game-active')) {
-        // User just tabbed back in. Check if the timer should have finished.
+       // Only trigger if the tab is visible, the game is active, AND we aren't already ending
+    if (!document.hidden && document.body.classList.contains('game-active') && !gameEnding) {
         const elapsed = Date.now() - startTime;
         if (elapsed >= timerDuration) {
+            gameEnding = true; // Set the shield immediately
             clearInterval(timer);
             stopTickSound();
             handleTimeout(); 
@@ -580,8 +581,9 @@ async function preloadNextQuestions() {
 
 async function startGame() {
     try {
-        document.body.classList.add('game-active');
         gameEnding = false;
+        document.body.classList.add('game-active');
+        timeLeft = 15;      // Reset the variable so checkAnswer doesn't block
         game.classList.remove('hidden');
         document.getElementById('start-screen').classList.add('hidden');
         endScreen.classList.add('hidden');
@@ -748,9 +750,11 @@ setTimeout(() => {
 }
 
 async function checkAnswer(choiceId, btn) {
+    if (gameEnding) return; // Don't allow clicks if the game is transitioning to end screen
     stopTickSound(); // CUT THE SOUND IMMEDIATELY
-    if (timeLeft <= 0) return;
+    //if (timeLeft <= 0) return;
     clearInterval(timer);
+  // Disable buttons immediately to prevent double-clicks
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
 
     const { data: isCorrect, error } = await supabase.rpc('check_my_answer', {
@@ -1489,6 +1493,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
