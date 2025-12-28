@@ -325,19 +325,13 @@ async function init() {
 }
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden && document.body.classList.contains('game-active')) {
-        // Calculate exactly how much time has passed since the question started
         const elapsed = Date.now() - startTime;
         
-        // Use 15000ms (15 seconds) to match your game logic
+        // Use 15000 for 15 seconds. 
+        // We add a check: if we are ALREADY in the process of ending, don't call it again.
         if (elapsed >= 15000 && !gameEnding) {
-            console.log("Tabbed back: Time expired while away. Ending turn.");
+            console.log("Tab-in: Time expired. Forcing timeout.");
             handleTimeout(); 
-        } else {
-            // OPTIONAL: If time ISN'T up, the timer might have drifted 
-            // because browsers throttle background tabs.
-            // You can force a UI sync here:
-            timeLeft = Math.max(0, 15 - Math.floor(elapsed / 1000));
-            timeDisplay.textContent = timeLeft;
         }
     }
 });
@@ -777,9 +771,9 @@ async function handleTimeout() {
 }
 
 async function checkAnswer(choiceId, btn) {
-    // If this returns, the game is 'locked'
+    // 1. LOGGING: This will tell us EXACTLY why a click is ignored in the console
     if (gameEnding || !document.body.classList.contains('game-active')) {
-        console.warn("Click ignored: gameEnding is", gameEnding, "active is", document.body.classList.contains('game-active'));
+        console.warn(`Click Blocked! Reason: gameEnding=${gameEnding}, active=${document.body.classList.contains('game-active')}`);
         return;
     }
   
@@ -794,6 +788,12 @@ async function checkAnswer(choiceId, btn) {
   // Disable buttons immediately to prevent double-clicks
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
 try {
+      // SAFETY: If currentQuestion was wiped during a tab-out, don't crash
+        if (!currentQuestion) {
+            console.error("No current question found!");
+            resetGame();
+            return;
+      }
       const { data: isCorrect, error } = await supabase.rpc('check_my_answer', {
           input_id: currentQuestion.id,
           choice: choiceId
@@ -869,11 +869,10 @@ try {
 } catch (err) {
   console.error("Check Answer Error:", err);
   // Safety: Re-enable buttons if the database fails so the game isn't stuck
-  const allBtns = document.querySelectorAll('.answer-btn');
+ // THE RECOVERY: If anything fails, give the user their buttons back!
   allBtns.forEach(b => b.disabled = false);
-  // If we are still in the game, resume the timer so it's not stuck
-    if (document.body.classList.contains('game-active')) {
-        startTimer();
+  gameEnding = false; 
+  startTimer();
     }
   }
 }
@@ -1542,6 +1541,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
