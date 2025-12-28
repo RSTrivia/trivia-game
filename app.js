@@ -382,7 +382,7 @@ async function handleAuthChange(event, session) {
 async function hasUserCompletedDaily(session) {
     if (!session) return false;
 
-    const { data } = await supabase
+    const { data, error } = await supabase
         .from('daily_attempts')
         .select('id')
         .eq('user_id', session.user.id)
@@ -1451,6 +1451,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
