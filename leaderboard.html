@@ -199,9 +199,11 @@ xpTab.onclick = () => {
 // Realtime Sync for both tables
 supabase
   .channel('public-leaderboard-changes')
+  // Listen for changes in the 'scores' table
   .on('postgres_changes', { event: '*', schema: 'public', table: 'scores' }, () => {
       if (currentMode === 'score') fetchLeaderboard();
   })
+  // listen for changes in the 'profiles' table (XP)
   .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
       if (currentMode === 'xp') fetchLeaderboard();
   })
@@ -227,6 +229,7 @@ supabase
 </script>
 </body>
 </html>
+
 
 
 
