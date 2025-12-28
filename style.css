@@ -1127,28 +1127,29 @@ input.input-field:-webkit-autofill:active {
     .xp-drop {
         /* Reduce font size slightly for mobile if desired, or keep at 22px */
         font-size: 18px !important; 
-        /* 1. START LOWER: Increase this number to start further down */
-        animation: xp-float-mobile 0.8s ease-out forwards !important;
+        animation: xp-float-mobile 1.2s ease-out forwards !important;
     }
 
     @keyframes xp-float-mobile {
         0% {
             opacity: 0;
-          /* 2. THE PEAK: This is the 'resting' point during the fade */
-            transform: translateY(30px); 
+          /* 1. START LOWER: Increase this number to start further down */
+            transform: translateY(40px); 
         }
         20% {
             opacity: 1;
+          /* 2. THE PEAK: This is the 'resting' point during the fade */
             transform: translateY(0);
         }
         100% {
             opacity: 0;
              /* 3. FINISH POINT: Where it disappears */
-            transform: translateY(-35px); 
+            transform: translateY(-20px); 
         }
     }
 }
 /* ====== MOBILE XP DROP ADJUSTMENT ====== */
+
 
 
 
