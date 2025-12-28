@@ -349,14 +349,14 @@ h1 {
 #shareBtn, #muteBtn {
   position: relative; 
   /* This pushes them left without taking them out of the vertical flow */
-  left: -60px; 
+  left: -130px; 
   /* This moves them "South" (down) slightly to align with the gap between lines */
-  top: 6px;    
+  top: 7px;    
 }
 
 /* 3. Adjust the gap between the two buttons */
 #shareBtn {
-  margin-right: 5px;
+  margin-right: 8px;
 }
 
 /* Greyed out state for both */
@@ -558,7 +558,7 @@ input.input-field:-webkit-autofill:active {
   align-items: flex-start; /*center;*/
   /*justify-content: center;  center the text horizontally */
   flex-direction: column;
-  margin-left: -70px;
+  margin-left: -130px;
 }
 
 /* ====== ROW LAYOUT FIX ===== */
@@ -1084,6 +1084,7 @@ input.input-field:-webkit-autofill:active {
     }
 }
 /*                             for notifications in text                                       */
+
 
 
 
