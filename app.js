@@ -988,7 +988,7 @@ function createParticle(parent, xPosPercent, colors) {
 }
 
 // Optimized version (if currentQuestion already has the ID)
-function highlightCorrectAnswerSync() {
+function highlightCorrectAnswer() {
     if (!currentQuestion || !currentQuestion.correct_answer) return;
 
     const correctId = String(currentQuestion.correct_answer); 
@@ -1547,6 +1547,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
