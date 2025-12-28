@@ -558,7 +558,7 @@ input.input-field:-webkit-autofill:active {
   align-items: flex-start; /*center;*/
   /*justify-content: center;  center the text horizontally */
   flex-direction: column;
-  margin-left: -130px;
+  margin-left: -100px;
 }
 
 /* ====== ROW LAYOUT FIX ===== */
@@ -1084,6 +1084,7 @@ input.input-field:-webkit-autofill:active {
     }
 }
 /*                             for notifications in text                                       */
+
 
 
 
