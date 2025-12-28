@@ -329,8 +329,7 @@ h1 {
 #muteBtn, #shareBtn {
   width: 32px;
   height: 32px;
-  position: absolute;/* new */
-  transform: translateY(-50%);/* new */
+  position: relative;/* new */
   flex-shrink: 0;
   display: flex;
   justify-content: center;
@@ -346,10 +345,13 @@ h1 {
   opacity: 0.9;
 }
 
-#shareBtn { left: 10px; }
-/* Position the Mute button right next to the Share button */
-#muteBtn {
-  left: 50px;              /* Adjust this to control the gap between the two buttons */
+/* 2. Move ONLY the buttons to the left without affecting the text's center */
+#shareBtn, #muteBtn {
+  position: relative; 
+  /* This pushes them left without taking them out of the vertical flow */
+  left: -60px; 
+  /* This moves them "South" (down) slightly to align with the gap between lines */
+  top: 6px;    
 }
 /* Greyed out state for both */
 #muteBtn.is-muted {
@@ -1075,6 +1077,7 @@ input.input-field:-webkit-autofill:active {
     }
 }
 /*                             for notifications in text                                       */
+
 
 
 
