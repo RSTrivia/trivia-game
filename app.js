@@ -11,6 +11,8 @@ let currentProfileXp = 0;    // Store the player's current XP locally
 let syncChannel;
 let username = 'Guest';
 let gameEnding = false;
+let notificationQueue = [];
+let isShowingNotification = false;
 const shareBtn = document.getElementById('shareBtn');
 const startBtn = document.getElementById('startBtn');
 const playAgainBtn = document.getElementById('playAgainBtn');
@@ -774,7 +776,7 @@ async function checkAnswer(choiceId, btn) {
             // --- PLAY BONUS SOUND ---
             if (isBonusEarned) {
                 playSound(bonusBuffer);
-                showNotification("BONUS XP!", "#a335ee"); // Cyan for bonus
+                //showNotification("BONUS XP!", "#a335ee"); // Cyan for bonus
             }
             const oldLevel = getLevel(currentProfileXp);
             currentProfileXp += gained; // Add the XP to local state
@@ -784,8 +786,7 @@ async function checkAnswer(choiceId, btn) {
                 triggerFireworks(); 
                 // Play level up sound after the correct sound
                 setTimeout(() => {
-                  playSound(levelUpBuffer), 
-                  showNotification("LEVEL UP!", "#ffde00"); // Gold for level
+                  showNotification("LEVEL UP!", levelUpBuffer, "#ffde00"); // Gold for level
                 }, 200);
             }
 
@@ -865,21 +866,44 @@ function triggerFireworks() {
     }
 }
 
-function showNotification(message, color = '#ffde00') {
+// Call this function for Level Ups, Bonuses, or Achievements
+function showNotification(message, soundToPlay, color = "#ffde00") {
+    notificationQueue.push({ 
+        text: message, 
+        sound: soundToPlay,
+        color: color // Default is Gold if no color is provided
+    });
+    processQueue();
+}
+
+function processQueue() {
+    if (isShowingNotification || notificationQueue.length === 0) return;
+
+    isShowingNotification = true;
     const container = document.getElementById('game-notifications');
-    if (!container) return;
+    const item = notificationQueue.shift();
+
+    if (item.sound) {
+        item.sound.currentTime = 0;
+        item.sound.play();
+    }
 
     const notif = document.createElement('div');
     notif.className = 'notif-text';
-    notif.textContent = message;
-    notif.style.color = color;
+    notif.innerText = item.text;
+    
+    // APPLY THE COLOR DYNAMICALLY
+    notif.style.color = item.color;
+    // This updates the glow to match the text color
+    notif.style.textShadow = `2px 2px 0px #000, 0 0 8px ${item.color}`;
 
-    // Clear any existing notification so they don't stack
-    //container.innerHTML = '';
     container.appendChild(notif);
 
-    // Remove from DOM after animation finishes
-    notif.onanimationend = () => notif.remove();
+    setTimeout(() => {
+        notif.remove();
+        isShowingNotification = false;
+        processQueue();
+    }, 1250); 
 }
 
 function createParticle(parent, xPosPercent, colors) {
@@ -1446,6 +1470,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
