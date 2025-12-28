@@ -351,7 +351,7 @@ h1 {
   /* This pushes them left without taking them out of the vertical flow */
   left: -80px; 
   /* This moves them "South" (down) slightly to align with the gap between lines */
-  top: 2px;    
+  /*top: 2px;   */ 
 }
 
 /* 3. Adjust the gap between the two buttons */
@@ -1084,6 +1084,7 @@ input.input-field:-webkit-autofill:active {
     }
 }
 /*                             for notifications in text                                       */
+
 
 
 
