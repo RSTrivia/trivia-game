@@ -876,6 +876,7 @@ try {
     }
   }
 }
+}
 
 function updateLevelUI() {
     const lvlNum = document.getElementById('levelNumber');
@@ -1541,6 +1542,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
