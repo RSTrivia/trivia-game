@@ -1158,7 +1158,7 @@ if (shareBtn) {
                   //const startScreenRef = clonedDoc.getElementById('start-screen');
                   
                   // 1. Force the Game and Start screens to HIDE in the picture
-                  if (gameScreen) gameScreen.style.display = 'none';
+                  if (gameScreen) gameScreen.style.setProperty('display', 'none', 'important');
                   //if (startScreenRef) startScreenRef.style.display = 'none';
                   
                   // 2. Force the End Screen to SHOW in the picture
@@ -1284,11 +1284,7 @@ if (shareBtn) {
         // So the user doesn't see their score change on the actual screen
         finalScore.textContent = originalScore;
         document.getElementById('game-over-title').textContent = originalMsg;
-        // Hide the empty game container from the user's view
-        // so they only see the end-screen results.
-        if (game) game.classList.add('hidden'); // Hide the question/answers
-        document.body.classList.remove('game-active'); // Remove game styling
-          
+     
         // 3. Restore button visibility
         shareBtn.style.opacity = '1';
         if (muteBtn) muteBtn.style.opacity = '1';
@@ -1452,6 +1448,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
