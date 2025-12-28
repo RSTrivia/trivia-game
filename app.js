@@ -484,8 +484,8 @@ function resetGame() {
    // 1. Kill the actual interval
     clearInterval(timer);
     timer = null; 
-    startTime = null
-      ;
+    startTime = null;
+  
   // 2. Kill the shield
     gameEnding = false;
   
@@ -1508,6 +1508,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
