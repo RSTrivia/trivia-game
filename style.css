@@ -1147,39 +1147,41 @@ input.input-field:-webkit-autofill:active {
 
 /* ====== tab for leaderboards xp====== */
 /* Tab Navigation */
-/* Tab Styling */
+/* Thinner Tab Styling */
 .tabs {
   display: flex;
   width: 100%;
-  gap: 5px;
-  margin-bottom: 15px;
+  gap: 0; /* Removed gap for a tighter look */
+  margin-bottom: 10px; /* Less space between tabs and list */
 }
 
 .tab-btn {
   flex: 1;
-  background: rgba(30, 30, 30, 0.8);
-  border: 1px solid rgba(212, 175, 55, 0.3);
-  color: #888;
-  padding: 12px;
+  background: rgba(20, 20, 20, 0.9);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  color: #777;
+  
+  /* Thinner padding and smaller font */
+  padding: 6px 0; 
+  font-size: 0.75rem; 
+  
   font-family: 'Cinzel', serif;
-  font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  border-radius: 5px 5px 0 0; /* Rounded top corners like chrome */
+  border-radius: 4px 4px 0 0;
+  text-transform: uppercase; /* Makes small text easier to read */
+  letter-spacing: 1px;
 }
 
 .tab-btn.active {
-  background: rgba(212, 175, 55, 0.2);
+  background: rgba(212, 175, 55, 0.15);
   color: #ffdd44;
   border-color: #ffdd44;
-  border-bottom: 2px solid #ffdd44;
-}
-
-.tab-btn:hover:not(.active) {
-  background: rgba(50, 50, 50, 0.8);
-  color: #ccc;
+  border-bottom: 1px solid transparent; /* Blends into the top of the list */
+  font-weight: bold;
 }
 /* ====== tab for leaderboards xp====== */
+
 
 
 
