@@ -1173,7 +1173,6 @@ async function saveDailyScore(session, msg) {
     }
     updateShareButtonState();
 }
-gameEnding = false;
 
 if (shareBtn) {
     shareBtn.onclick = async () => {
@@ -1537,6 +1536,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
