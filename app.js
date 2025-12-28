@@ -440,12 +440,13 @@ async function fetchDailyStatus(userId) {
         .select('score, message')
         .eq('user_id', userId)
         .eq('attempt_date', todayStr)
-        .maybeSingle();
+        .limit(1);
 
-    if (data) {
+    if (data && data.length > 0) {
+        const attempt = data[0];
        // ALWAYS save to storage (for the share button)
-        localStorage.setItem('lastDailyMessage', data.message || "Daily Challenge");
-        localStorage.setItem('lastDailyScore', data.score ?? "0");
+        localStorage.setItem('lastDailyMessage', attempt.message || "Daily Challenge");
+        localStorage.setItem('lastDailyScore', attempt.score ?? "0");
         localStorage.setItem('dailyPlayedDate', todayStr);
         
         // ONLY update UI if we are NOT in a game AND NOT looking at an end-screen
@@ -453,10 +454,10 @@ async function fetchDailyStatus(userId) {
         const isStartScreenVisible = !document.getElementById('start-screen').classList.contains('hidden');
         
         if (isStartScreenVisible && isEndScreenHidden) {
-            if (finalScore) finalScore.textContent = data.score ?? "0";
+            if (finalScore) finalScore.textContent = attempt.score ?? "0";
             const gameOverTitle = document.getElementById('game-over-title');
             if (gameOverTitle) {
-                gameOverTitle.textContent = data.message || "Daily Challenge";
+                gameOverTitle.textContent = attempt.message || "Daily Challenge";
                 //gameOverTitle.classList.remove('hidden');
             }
         }
@@ -1450,6 +1451,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
