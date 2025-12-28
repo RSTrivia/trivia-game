@@ -1147,33 +1147,40 @@ input.input-field:-webkit-autofill:active {
 
 /* ====== tab for leaderboards xp====== */
 /* Tab Navigation */
-.tab-container {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-    width: 100%;
+/* Tab Styling */
+.tabs {
+  display: flex;
+  width: 100%;
+  gap: 5px;
+  margin-bottom: 15px;
 }
 
 .tab-btn {
-    flex: 1;
-    background: rgba(40, 40, 40, 0.8);
-    border: 1px solid rgba(212, 175, 55, 0.3);
-    color: #888;
-    padding: 10px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-family: 'Cinzel', serif;
-    font-size: 0.9rem;
-    transition: all 0.3s ease;
+  flex: 1;
+  background: rgba(30, 30, 30, 0.8);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  color: #888;
+  padding: 12px;
+  font-family: 'Cinzel', serif;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 5px 5px 0 0; /* Rounded top corners like chrome */
 }
 
 .tab-btn.active {
-    background: rgba(212, 175, 55, 0.2);
-    border-color: #ffdd44;
-    color: #ffdd44;
-    box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+  background: rgba(212, 175, 55, 0.2);
+  color: #ffdd44;
+  border-color: #ffdd44;
+  border-bottom: 2px solid #ffdd44;
+}
+
+.tab-btn:hover:not(.active) {
+  background: rgba(50, 50, 50, 0.8);
+  color: #ccc;
 }
 /* ====== tab for leaderboards xp====== */
+
 
 
 
