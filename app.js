@@ -1034,7 +1034,7 @@ function setupRealtimeSync(userId) {
         })
         .subscribe((status) => {
             if (status === 'SUBSCRIBED') {
-                console.log("Realtime connection established.");
+                //console.log("Realtime connection established.");
             }
         });
 
@@ -1446,6 +1446,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
