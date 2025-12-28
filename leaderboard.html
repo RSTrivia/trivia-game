@@ -148,11 +148,15 @@ async function fetchLeaderboard() {
   let query;
   
   if (currentMode === 'score') {
-    // Use 'val' as an alias for score
-    query = supabase.from('scores').select('username, val:score').order('score', { ascending: false });
+    query = supabase.from('scores')
+      .select('username, val:score')
+      .order('score', { ascending: false });
   } else {
-    // Use 'val' as an alias for xp
-    query = supabase.from('profiles').select('username, val:xp').order('xp', { ascending: false });
+    // 🔥 Added .gt('xp', 0) to hide 0 XP users
+    query = supabase.from('profiles')
+      .select('username, val:xp')
+      .gt('xp', 0) 
+      .order('xp', { ascending: false });
   }
 
   const { data, error } = await query.limit(10);
@@ -163,12 +167,11 @@ async function fetchLeaderboard() {
   }
 
   if (data) {
-    // Save to mode-specific cache
     localStorage.setItem(`leaderboard_${currentMode}`, JSON.stringify(data));
     updateLeaderboard(data);
   }
 }
-
+  
 // Tab Click Handlers
 scoreTab.onclick = () => {
   if (currentMode === 'score') return;
@@ -224,5 +227,6 @@ supabase
 </script>
 </body>
 </html>
+
 
 
