@@ -787,17 +787,19 @@ async function checkAnswer(choiceId, btn) {
 
   // Define the variable properly here
     const allBtns = document.querySelectorAll('.answer-btn');
-    allBtns.forEach(b => b.disabled = true);
 
-  // Disable buttons immediately to prevent double-clicks
-    document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
+    //document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
 try {
+      // Disable buttons immediately to prevent double-clicks
+      allBtns.forEach(b => b.disabled = true);
       // SAFETY: If currentQuestion was wiped during a tab-out, don't crash
-        if (!currentQuestion) {
-            console.error("No current question found!");
-            resetGame();
-            return;
-      }
+      if (!currentQuestion) throw new Error("No Question");
+     // 3. SET A TIMEOUT RACER (Optional but powerful)
+      // If the database doesn't respond in 4 seconds, we force an error
+        const dbPromise = supabase.rpc('check_my_answer', {
+            input_id: currentQuestion.id,
+            choice: choiceId
+        });
       const { data: isCorrect, error } = await supabase.rpc('check_my_answer', {
           input_id: currentQuestion.id,
           choice: choiceId
@@ -1544,6 +1546,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
