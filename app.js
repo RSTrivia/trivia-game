@@ -185,25 +185,19 @@ let isDailyMode = false;
 async function syncDailyButton() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!dailyBtn) return;
-  
-    // Explicitly lock if no one is logged in
-    if (!session) {
+    if (!session) { lockDailyButton(); return; }
+
+    const localUserId = localStorage.getItem('lastDailyUserId');
+    const savedDate = localStorage.getItem('dailyPlayedDate');
+
+    // Just check the Shield. No new DB calls here!
+    if (localUserId === session.user.id && savedDate === todayStr) {
         lockDailyButton();
-      // Add visual guest feedback
-        dailyBtn.style.opacity = '0.5';
-        dailyBtn.style.pointerEvents = 'none';
-        return;
-    }
-
-    const played = await hasUserCompletedDaily(session);
-
-    if (!played) {
+    } else {
         dailyBtn.classList.add('is-active');
         dailyBtn.classList.remove('disabled');
-        dailyBtn.style.pointerEvents = 'auto'; // UNLOCK physically
-        dailyBtn.style.opacity = '1';          // Ensure it looks clickable
-    } else {
-      lockDailyButton();
+        dailyBtn.style.pointerEvents = 'auto';
+        dailyBtn.style.opacity = '1';
     }
 }
 
@@ -327,7 +321,7 @@ async function init() {
   // This will check if a user is logged in and lock the button if they aren't
   //await syncDailyButton();
   // This will check if a user has played daily mode already and will unlock it if they did
-  await updateShareButtonState();
+  //await updateShareButtonState();
 }
 
 // Replace your existing handleAuthChange with this:
@@ -349,9 +343,10 @@ async function handleAuthChange(event, session) {
    try {
         // FETCH EVERYTHING AT ONCE
         const [profileRes, dailyRes] = await Promise.all([
-            supabase.from('profiles').select('username, xp').eq('id', session.user.id).maybeSingle(),
-            supabase.from('daily_attempts').select('score, message').eq('user_id', session.user.id).eq('attempt_date', todayStr).limit(1)
-        ]);
+        supabase.from('profiles').select('username, xp').eq('id', session.user.id).maybeSingle(),
+        // ADD 'id' to this select:
+        supabase.from('daily_attempts').select('id, score, message').eq('user_id', session.user.id).eq('attempt_date', todayStr).limit(1)
+    ]);
 
         // HANDLE PROFILE (Name & XP)
         if (profileRes.data) {
@@ -1451,6 +1446,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
