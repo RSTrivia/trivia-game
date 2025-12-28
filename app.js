@@ -1033,7 +1033,7 @@ async function endGame(force = false) {
         game.classList.add('hidden');
         endScreen.classList.remove('hidden');
         updateShareButtonState();
-        gameEnding = false;
+        //gameEnding = false;
     });
     
 }
@@ -1508,6 +1508,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
