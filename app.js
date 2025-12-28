@@ -738,34 +738,38 @@ function stopTickSound() {
 }
 
 async function handleTimeout() {
-  // If the shield is already up, don't run this twice
-  if (gameEnding) return; // Prevent double trigger
-    gameEnding = true;      // Set the shield
-    clearInterval(timer); // Safety stop
-    stopTickSound(); // <--- ADD THIS FIRST
+    // 1. Double-trigger shield
+    if (gameEnding) return; 
+    gameEnding = true;
+
+    clearInterval(timer);
+    stopTickSound();
   
-    // Capture a reference to the current question ID
-    const timeoutQuestionId = currentQuestion?.id;
-  
-    document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
+    // 2. Disable buttons so player can't click after time is up
+    const currentBtns = document.querySelectorAll('.answer-btn');
+    currentBtns.forEach(b => b.disabled = true);
+
+    // 3. Visual feedback
     playSound(wrongBuffer);
-    highlightCorrectAnswer();
+    await highlightCorrectAnswer();
     
-   setTimeout(() => {
-    // 2. SAFETY CHECK: 
-        // If the user started a NEW game while this timeout was waiting,
-        // the currentQuestion.id will be different. If so, STOP HERE.
+    // 4. Record the current question ID to prevent "ghost" transitions
+    const timeoutQId = currentQuestion?.id;
+
+    setTimeout(() => {
+        // SAFETY: If the user hit "Main Menu" or "Reset" during this 1s wait, STOP.
         if (!document.body.classList.contains('game-active') || 
-            (currentQuestion && currentQuestion.id !== timeoutQuestionId)) {
-            console.log("Old timeout blocked - new game detected.");
-            return; 
+            (currentQuestion && currentQuestion.id !== timeoutQId)) {
+            gameEnding = false;
+            return;
         }
 
         if (isDailyMode) {
-            gameEnding = false; 
+            gameEnding = false; // Lower shield to allow next question
             loadQuestion();
         } else {
-            endGame(true);
+            // Force endGame even if shield is up
+            endGame(true); 
         }
     }, 1000);
 }
@@ -1540,6 +1544,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
