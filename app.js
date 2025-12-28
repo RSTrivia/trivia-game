@@ -749,7 +749,7 @@ async function checkAnswer(choiceId, btn) {
                     }
                 } else {
                     streak++; // Only track streak in normal mode
-                    if (streak === 10) { // change this back to 10
+                    if (streak === 1) { // change this back to 10
                         gained += 30;
                         streak = 0; 
                         isBonusEarned = true; // Normal bonus!
@@ -1454,6 +1454,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
