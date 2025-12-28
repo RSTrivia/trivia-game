@@ -816,21 +816,35 @@ input.input-field:-webkit-autofill:active {
     padding-top: 5px !important;
   }
   /* ====== FIX POSITIONING FOR MOBILE ====== */
-  /* This moves the whole row (Buttons + Name) to the right on Mobile */
   #user-controls {
-    justify-content: center; /* Keep it centered as the base */
-    padding-left: 30px;      /* Pushes the entire row toward the East (right) */
+    justify-content: center;
+    /* 1. Move everything LEFT: padding-right shoves the group West */
+    padding-right: 50px; 
+    padding-left: 0 !important; /* Clear the previous push */
     margin-bottom: 15px !important;
   }
   
-  /* Optional: If the icons are still too far left compared to the name on mobile */
   #shareBtn, #muteBtn {
-    left: -5px !important; /* Reduces the "West" push so it stays inside the container */
+    position: relative;
+    /* 2. Adjust icons West/East relative to the text */
+    left: -20px !important; 
+    top: 6px;
   }
-/* Adjust the text offset for mobile so it doesn't look squished */
+
+  /* 3. REDUCE gap between Mic and Share */
+  #shareBtn {
+    margin-right: -2px !important; /* Negative margin brings them closer together */
+  }
+
+  /* 4. INCREASE gap between Text and Mic */
   #userDisplay {
-    margin-left: -10px !important; 
+    /* Larger negative margin here pulls the text away from the icons */
+    margin-left: 15px !important; 
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
   }
+}
  /* ====== FIX POSITIONING FOR MOBILE ====== */
 }
 
@@ -1105,6 +1119,7 @@ input.input-field:-webkit-autofill:active {
     }
 }
 /*                             for notifications in text                                       */
+
 
 
 
