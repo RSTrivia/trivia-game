@@ -1117,7 +1117,7 @@ input.input-field:-webkit-autofill:active {
     #game-notifications {
         /* Pushes the notification down. 
            Increase to 10px or 20px if you want it even lower. */
-        top: 2px !important; 
+        top: 1px !important; 
     }
     
     .notif-text {
@@ -1194,6 +1194,7 @@ input.input-field:-webkit-autofill:active {
   font-weight: bold;
 }
 /* ====== tab for leaderboards xp====== */
+
 
 
 
