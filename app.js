@@ -324,14 +324,23 @@ async function init() {
     };
 }
   document.addEventListener('visibilitychange', () => {
-    // Only trigger if we are coming BACK to the tab and a game is actually running
     if (!document.hidden && document.body.classList.contains('game-active')) {
+        // Calculate exactly how much time has passed since the question started
         const elapsed = Date.now() - startTime;
-        // If time ran out while we were away, force the timeout
-        if (elapsed >= timerDuration && !gameEnding) {
+        
+        // Use 15000ms (15 seconds) to match your game logic
+        if (elapsed >= 15000 && !gameEnding) {
+            console.log("Tabbed back: Time expired while away. Ending turn.");
             handleTimeout(); 
+        } else {
+            // OPTIONAL: If time ISN'T up, the timer might have drifted 
+            // because browsers throttle background tabs.
+            // You can force a UI sync here:
+            timeLeft = Math.max(0, 15 - Math.floor(elapsed / 1000));
+            timeDisplay.textContent = timeLeft;
         }
     }
+});
 });
   // This will check if a user is logged in and lock the button if they aren't
   //await syncDailyButton();
@@ -1529,6 +1538,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
