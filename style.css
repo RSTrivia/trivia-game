@@ -1094,7 +1094,7 @@ input.input-field:-webkit-autofill:active {
     white-space: nowrap;
     text-shadow: 2px 2px 0px #000, 0 0 5px currentColor;
     /* We use a simple fade animation now */
-    animation: notif-fade-only 1.8s ease-in-out forwards;
+    animation: notif-fade-only 1.2s ease-in-out forwards;
 }
 
 @keyframes notif-fade-only {
@@ -1142,6 +1142,7 @@ input.input-field:-webkit-autofill:active {
     }
 }
 /* ====== MOBILE XP DROP ADJUSTMENT ====== */
+
 
 
 
