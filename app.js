@@ -849,7 +849,7 @@ try {
               setTimeout(endGame, 1000);
           }
       }
-  catch (err) {
+} catch (err) {
   console.error("Check Answer Error:", err);
   // Safety: Re-enable buttons if the database fails so the game isn't stuck
   allBtns.forEach(b => b.disabled = false);
@@ -1520,6 +1520,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
