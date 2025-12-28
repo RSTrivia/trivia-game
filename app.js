@@ -874,8 +874,6 @@ try {
   gameEnding = false; 
   startTimer();
     }
-  }
-}
 }
 
 function updateLevelUI() {
@@ -1542,6 +1540,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
