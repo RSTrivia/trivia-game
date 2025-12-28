@@ -124,7 +124,19 @@
 import { supabase } from './supabase.js';
 const leaderboardRows = document.querySelectorAll('#leaderboard li');
   
+// 2. Logic to update the UI rows
+function updateLeaderboard(data) {
+  leaderboardRows.forEach((row, i) => {
+    const entry = data[i] || { username: '---', val: '' };
+    const userTxt = row.querySelector('.user-txt');
+    const scoreSpan = row.querySelector('.score-part');
 
+    // Use 'val' because we rename the column in the fetch query below
+    userTxt.textContent = entry.username || '---';
+    scoreSpan.textContent = entry.val !== undefined ? entry.val.toLocaleString() : '';
+  });
+}
+  
 supabase
   .channel('public-leaderboard-changes')
   .on('postgres_changes', { event: '*', schema: 'public', table: 'scores' }, (payload) => {
@@ -151,6 +163,7 @@ supabase
 </script>
 </body>
 </html>
+
 
 
 
