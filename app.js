@@ -387,9 +387,13 @@ async function hasUserCompletedDaily(session) {
         .select('id')
         .eq('user_id', session.user.id)
         .eq('attempt_date', todayStr)
-        .maybeSingle();
-
-    return !!data;
+        .limit(1);
+if (error) {
+        console.error("Supabase Error:", error.message);
+        return false;
+    }
+    // data will be [] if no row exists, or [{id: ...}] if it does.
+    return !!(data && data.length > 0);
 }
 
 
@@ -1446,6 +1450,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
