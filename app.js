@@ -775,8 +775,8 @@ async function checkAnswer(choiceId, btn) {
 
             // --- PLAY BONUS SOUND ---
             if (isBonusEarned) {
-                playSound(bonusBuffer);
-                //showNotification("BONUS XP!", "#a335ee"); // Cyan for bonus
+                //playSound(bonusBuffer);
+                showNotification("BONUS XP!",bonusBuffer,"#a335ee"); // Cyan for bonus
             }
             const oldLevel = getLevel(currentProfileXp);
             currentProfileXp += gained; // Add the XP to local state
@@ -786,7 +786,7 @@ async function checkAnswer(choiceId, btn) {
                 triggerFireworks(); 
                 // Play level up sound after the correct sound
                 setTimeout(() => {
-                  showNotification("LEVEL UP!", levelUpBuffer, "#ffde00"); // Gold for level
+                  showNotification("LEVEL UP!",levelUpBuffer,"#ffde00"); // Gold for level
                 }, 200);
             }
 
@@ -876,35 +876,7 @@ function showNotification(message, soundToPlay, color = "#ffde00") {
     processQueue();
 }
 
-function processQueue() {
-    if (isShowingNotification || notificationQueue.length === 0) return;
-
-    isShowingNotification = true;
-    const container = document.getElementById('game-notifications');
-    const item = notificationQueue.shift();
-
-    if (item.sound) {
-        item.sound.currentTime = 0;
-        item.sound.play();
-    }
-
-    const notif = document.createElement('div');
-    notif.className = 'notif-text';
-    notif.innerText = item.text;
-    
-    // APPLY THE COLOR DYNAMICALLY
-    notif.style.color = item.color;
-    // This updates the glow to match the text color
-    notif.style.textShadow = `2px 2px 0px #000, 0 0 8px ${item.color}`;
-
-    container.appendChild(notif);
-
-    setTimeout(() => {
-        notif.remove();
-        isShowingNotification = false;
-        processQueue();
-    }, 1250); 
-}
+processQueue
 
 function createParticle(parent, xPosPercent, colors) {
     const p = document.createElement('div');
@@ -1470,6 +1442,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
