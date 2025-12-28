@@ -1128,7 +1128,7 @@ input.input-field:-webkit-autofill:active {
         /* Reduce font size slightly for mobile if desired, or keep at 22px */
         font-size: 18px !important; 
         /* Trigger the shorter mobile animation */
-        animation: xp-float-mobile 1.2s ease-out forwards !important;
+        animation: xp-float-mobile 0.8s ease-out forwards !important;
     }
 
     @keyframes xp-float-mobile {
@@ -1148,6 +1148,7 @@ input.input-field:-webkit-autofill:active {
     }
 }
 /* ====== MOBILE XP DROP ADJUSTMENT ====== */
+
 
 
 
