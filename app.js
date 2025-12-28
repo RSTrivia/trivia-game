@@ -4,12 +4,10 @@ const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
 // ====== UI & STATE ======
 const cachedMuted = localStorage.getItem('muted') === 'true';
-let startTime;
-let timerDuration = 15000; // 15 seconds in milliseconds
 let dailySubscription = null; // Track this globally to prevent duplicates
 let streak = 0;              // Tracking for normal game bonus
 let dailyQuestionCount = 0;   // Tracking for daily bonus
-let currentProfileXp = null;    // Store the player's current XP locally
+let currentProfileXp = 0;    // Store the player's current XP locally
 let syncChannel;
 let username = 'Guest';
 let gameEnding = false;
@@ -187,19 +185,25 @@ let isDailyMode = false;
 async function syncDailyButton() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!dailyBtn) return;
-    if (!session) { lockDailyButton(); return; }
-
-    const localUserId = localStorage.getItem('lastDailyUserId');
-    const savedDate = localStorage.getItem('dailyPlayedDate');
-
-    // Just check the Shield. No new DB calls here!
-    if (localUserId === session.user.id && savedDate === todayStr) {
+  
+    // Explicitly lock if no one is logged in
+    if (!session) {
         lockDailyButton();
-    } else {
+      // Add visual guest feedback
+        dailyBtn.style.opacity = '0.5';
+        dailyBtn.style.pointerEvents = 'none';
+        return;
+    }
+
+    const played = await hasUserCompletedDaily(session);
+
+    if (!played) {
         dailyBtn.classList.add('is-active');
         dailyBtn.classList.remove('disabled');
-        dailyBtn.style.pointerEvents = 'auto';
-        dailyBtn.style.opacity = '1';
+        dailyBtn.style.pointerEvents = 'auto'; // UNLOCK physically
+        dailyBtn.style.opacity = '1';          // Ensure it looks clickable
+    } else {
+      lockDailyButton();
     }
 }
 
@@ -210,18 +214,24 @@ async function init() {
  
     // 1. Get the current session
     const { data: { session }, error } = await supabase.auth.getSession();
-    
-    // 2. Handle the initial state (Signed In OR Guest)
-    await handleAuthChange(session ? 'INITIAL_LOAD' : 'SIGNED_OUT', session);
-    
-    // 3. Listen for future changes
-    supabase.auth.onAuthStateChange(async (event, newSession) => {
-        // This handles Logins/Logouts after the page has loaded
-        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
-            await handleAuthChange(event, newSession);
+
+    if (session) {
+        // User is logged in on this device!
+        handleAuthChange('INITIAL_LOAD', session);
+    } else {
+        // No session on this device, user is a guest
+        handleAuthChange('SIGNED_OUT', null);
+    }
+
+    // 2. Listen for changes (like logging out)
+    supabase.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_OUT') {
+            handleAuthChange('SIGNED_OUT', null);
+        } else if (session) {
+            handleAuthChange(event, session);
         }
     });
-
+    
     // 2. Auth Button (Log In / Log Out)
     authBtn.onclick = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -287,22 +297,18 @@ async function init() {
 };
     }
         if (playAgainBtn) {
-          playAgainBtn.onclick = async () => {
-          resetGame(); // KILL OLD STATE FIRST
-          isDailyMode = false;
-          // Small delay to let the DOM settle before starting logic
-          requestAnimationFrame(async () => {
-              await startGame();
-        });
-      };
-  }
+        playAgainBtn.onclick = async () => {
+        isDailyMode = false;
+        await startGame();
+    };
+}
   if (mainMenuBtn) {  
         mainMenuBtn.onclick = async () => {
-        resetGame(); 
         preloadQueue = []; // Clear the buffer only when going back to menu
         // Manual UI Reset instead:
         document.getElementById('end-screen').classList.add('hidden');
         document.getElementById('start-screen').classList.remove('hidden');
+        document.body.classList.remove('game-active');
     };
   }
   if (muteBtn) {
@@ -323,22 +329,11 @@ async function init() {
         }
     };
 }
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden && document.body.classList.contains('game-active')) {
-        const elapsed = Date.now() - startTime;
-        
-        // Use 15000 for 15 seconds. 
-        // We add a check: if we are ALREADY in the process of ending, don't call it again.
-        if (elapsed >= 15000 && !gameEnding) {
-            console.log("Tab-in: Time expired. Forcing timeout.");
-            handleTimeout(); 
-        }
-    }
-});
+  
   // This will check if a user is logged in and lock the button if they aren't
-  //await syncDailyButton();
+  await syncDailyButton();
   // This will check if a user has played daily mode already and will unlock it if they did
-  //await updateShareButtonState();
+  await updateShareButtonState();
 }
 
 // Replace your existing handleAuthChange with this:
@@ -346,78 +341,69 @@ async function handleAuthChange(event, session) {
     const span = document.querySelector('#usernameSpan');
     const label = authBtn?.querySelector('.btn-label');
 
+    // 1. Logged Out State
     if (!session) {
         username = 'Guest';
-        currentProfileXp = 0;
+        currentProfileXp = 0; // Reset this for guests!
         if (span) span.textContent = ' Guest';
         if (label) label.textContent = 'Log In';
-        localStorage.clear(); // Wipe storage on logout
-        updateLevelUI();
-        updateShareButtonState(); // This will handle the guest locking logic
-        return;
+
+        // Clear all session-specific UI and storage
+        localStorage.removeItem('lastDailyScore');
+        localStorage.removeItem('dailyPlayedDate');
+        
+        [dailyBtn, shareBtn].forEach(btn => {
+            if (btn) {
+                btn.classList.add('is-disabled');
+                btn.style.opacity = '0.5';
+                btn.style.pointerEvents = 'none';
+            }
+        });
+      
+        updateLevelUI()
+        return; // Stop here for guests
     }
 
-   try {
-        // FETCH EVERYTHING AT ONCE
-        const [profileRes, dailyRes] = await Promise.all([
-        supabase.from('profiles').select('username, xp').eq('id', session.user.id).maybeSingle(),
-        // ADD 'id' to this select:
-        supabase.from('daily_attempts').select('id, score, message').eq('user_id', session.user.id).eq('attempt_date', todayStr).limit(1)
-    ]);
+    // 2. Logged In State
+    // Fetch profile
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('username, xp')
+        .eq('id', session.user.id)
+        .single();
 
-        // HANDLE PROFILE (Name & XP)
-        if (profileRes.data) {
-            username = profileRes.data.username || 'Player';
-            currentProfileXp = profileRes.data.xp || 0;
-        }
-
-        // HANDLE DAILY STATUS (The old fetchDailyStatus logic)
-        if (dailyRes.data && dailyRes.data.length > 0) {
-            const attempt = dailyRes.data[0];
-            localStorage.setItem('lastDailyScore', attempt.score);
-            localStorage.setItem('dailyPlayedDate', todayStr);
-            localStorage.setItem('lastDailyUserId', session.user.id);
-            localStorage.setItem('lastDailyMessage', attempt.message);
-            
-            // Sync the end-screen text just in case they refresh while on it
-            if (finalScore) finalScore.textContent = attempt.score;
-        }
-
-        // FINALLY UPDATE UI
-        updateLevelUI();
-        syncDailyButton();
-        updateShareButtonState();
-
-    } catch (err) {
-        console.error("Auth sync error:", err);
-    }
+    username = profile?.username || 'Player';
+    currentProfileXp = profile?.xp || 0; // Set the global variable
+    if (span) span.textContent = ' ' + username;
+    if (label) label.textContent = 'Log Out';
+    
+    // Sync their daily status
+    await fetchDailyStatus(session.user.id);
+    // Establish the live sync
+    syncChannel = setupRealtimeSync(session.user.id);
+    updateLevelUI();
 }
 
 async function hasUserCompletedDaily(session) {
-    if (!session?.user?.id) return false;
-    try {
-        const { data, error } = await supabase
-            .from('daily_attempts')
-            .select('id') // Force 'id' here
-            .eq('user_id', session.user.id)
-            .eq('attempt_date', todayStr)
-            .limit(1);
+    if (!session) return false;
 
-        if (error) throw error;
-        return !!(data && data.length > 0);
-    } catch (e) {
-        // If it's a 406, we can assume the row exists or there's a conflict
-        // and just return true/false silently.
-        return false; 
-    }
+    const { data } = await supabase
+        .from('daily_attempts')
+        .select('id')
+        .eq('user_id', session.user.id)
+        .eq('attempt_date', todayStr)
+        .maybeSingle();
+
+    return !!data;
 }
+
 
 async function updateShareButtonState() {
     if (!shareBtn) return;
 
     const { data: { session } } = await supabase.auth.getSession();
   
-    // 1. If no session, clear everything and lock the button
+    // Guest = Always disabled
     if (!session) {
         shareBtn.classList.add('is-disabled');
         shareBtn.classList.remove('is-active');
@@ -426,34 +412,14 @@ async function updateShareButtonState() {
         return;
     }
 
-    // 2. Grab local data
+  
+    // Check localStorage (just finished playing) OR DB (played earlier)
     const localScore = localStorage.getItem('lastDailyScore');
     const savedDate = localStorage.getItem('dailyPlayedDate');
-    const localUserId = localStorage.getItem('lastDailyUserId');
+    const hasPlayedToday = await hasUserCompletedDaily(session);
+    const isScoreFromToday = (localScore !== null && savedDate === todayStr);
   
-    // 3. VALIDATION: Does the local data belong to THIS specific user for TODAY?
-    const isLocalDataValid = (
-        localScore !== null && 
-        savedDate === todayStr && 
-        localUserId === session.user.id
-    );
-
-    let hasPlayed = isLocalDataValid;
-
-    // 4. SHORT-CIRCUIT: Only call the DB if local data isn't valid/present
-    if (!hasPlayed) {
-        hasPlayed = await hasUserCompletedDaily(session);
-        
-        // If the DB says they played, update local storage so the next 
-        // refresh doesn't trigger another network request (prevents 406)
-        if (hasPlayed) {
-            localStorage.setItem('dailyPlayedDate', todayStr);
-            localStorage.setItem('lastDailyUserId', session.user.id);
-        }
-    }
-  
-    // 5. Apply UI changes
-    if (hasPlayed) {
+    if (isScoreFromToday || hasPlayedToday) {
         shareBtn.classList.remove('is-disabled');
         shareBtn.classList.add('is-active'); 
         shareBtn.style.opacity = "1";
@@ -469,6 +435,38 @@ async function updateShareButtonState() {
 
 // ====== NEW: FETCH SCORE FROM DATABASE ======
 // Ensure fetchDailyStatus calls the button update at the end
+async function fetchDailyStatus(userId) {
+    const { data, error } = await supabase
+        .from('daily_attempts')
+        .select('score, message')
+        .eq('user_id', userId)
+        .eq('attempt_date', todayStr)
+        .maybeSingle();
+
+    if (data) {
+       // ALWAYS save to storage (for the share button)
+        localStorage.setItem('lastDailyMessage', data.message || "Daily Challenge");
+        localStorage.setItem('lastDailyScore', data.score ?? "0");
+        localStorage.setItem('dailyPlayedDate', todayStr);
+        
+        // ONLY update UI if we are NOT in a game AND NOT looking at an end-screen
+        const isEndScreenHidden = endScreen.classList.contains('hidden');
+        const isStartScreenVisible = !document.getElementById('start-screen').classList.contains('hidden');
+        
+        if (isStartScreenVisible && isEndScreenHidden) {
+            if (finalScore) finalScore.textContent = data.score ?? "0";
+            const gameOverTitle = document.getElementById('game-over-title');
+            if (gameOverTitle) {
+                gameOverTitle.textContent = data.message || "Daily Challenge";
+                //gameOverTitle.classList.remove('hidden');
+            }
+        }
+    }
+    // Always sync button states after checking DB
+    await syncDailyButton();
+    await updateShareButtonState();
+}
+
 
 function lockDailyButton() {
     if (!dailyBtn) return;
@@ -483,20 +481,13 @@ function lockDailyButton() {
 // ====== GAME ENGINE ======
 
 function resetGame() {
-   // 1. Kill the actual interval
+    // 1. Stop any active logic
     clearInterval(timer);
-    timer = null; 
-    startTime = null;
-  
-  // 2. Kill the shield
-    gameEnding = false;
-  
     stopTickSound(); 
     // Wipe any existing firework particles that didn't get removed
     document.querySelectorAll('.firework-particle').forEach(p => p.remove());
+  
     // 2. Reset numerical state
-    game.classList.add('hidden');
-    endScreen.classList.add('hidden');
     score = 0;
     currentQuestion = null;
     // NOTE: We do NOT reset preloadQueue here. 
@@ -513,12 +504,13 @@ function resetGame() {
 
     // 5. Reset Timer Visuals
     timeLeft = 15;
-    if (scoreDisplay) scoreDisplay.textContent = `Score: 0`;
-    if (timeDisplay) timeDisplay.textContent = timeLeft;
+    timeDisplay.textContent = timeLeft;
     timeWrap.classList.remove('red-timer');
     
-  // Ensure the body class is clean
-    document.body.classList.remove('game-active');
+    // 6. Reset Score Visual
+    if (scoreDisplay) {
+        scoreDisplay.textContent = `Score: 0`;
+    }
 }
 
 async function preloadNextQuestions() {
@@ -583,9 +575,8 @@ async function preloadNextQuestions() {
 
 async function startGame() {
     try {
-        gameEnding = false;
         document.body.classList.add('game-active');
-        timeLeft = 15;      // Reset the variable so checkAnswer doesn't block
+        gameEnding = false;
         game.classList.remove('hidden');
         document.getElementById('start-screen').classList.add('hidden');
         endScreen.classList.add('hidden');
@@ -629,13 +620,10 @@ async function startGame() {
 
     } catch (err) {
         console.error("startGame error:", err);
-        gameEnding = false;
     }
 }
 
 async function loadQuestion() {
-    // IF we are in the middle of ending the game, STOP.
-    if (gameEnding) return;
     // A. IMMEDIATE CLEANUP
     questionImage.style.display = 'none';
     questionImage.style.opacity = '0';
@@ -694,36 +682,32 @@ async function loadQuestion() {
     };
    
 
+   
+
+
 function startTimer() {
     clearInterval(timer);
-    if (activeTickSource) { activeTickSource.stop(); activeTickSource = null; }
-
-    startTime = Date.now(); // Record exactly when the question started
+    if (activeTickSource) { activeTickSource.stop(); activeTickSource = null; } // Cleanup
+  
     timeLeft = 15;
     timeDisplay.textContent = timeLeft;
     timeWrap.classList.remove('red-timer');
-
+  
     timer = setInterval(() => {
-        const elapsed = Date.now() - startTime;
-        const remaining = Math.max(0, 15 - Math.floor(elapsed / 1000));
-        
-        timeLeft = remaining;
+        timeLeft--;
         timeDisplay.textContent = timeLeft;
-
-        // Sound logic
+        // When the UI shows 3, start the loop
+        // This ensures that even if a frame is dropped, the sound starts
         if (timeLeft <= 5 && timeLeft > 0 && !activeTickSource) {
-            activeTickSource = playSound(tickBuffer, true);
+            activeTickSource = playSound(tickBuffer, true); 
         }
-        
         if (timeLeft <= 5) timeWrap.classList.add('red-timer');
-
-        // Check if time is up
-        if (elapsed >= timerDuration) {
+        if (timeLeft <= 0) {
             clearInterval(timer);
-            stopTickSound();
-            handleTimeout(); // This will now trigger even if they just tabbed back in!
+            stopTickSound(); // Stop sound when time hits zero
+            handleTimeout();
         }
-    }, 100); // Check every 100ms for high accuracy
+    }, 1000);
 }
 
 function stopTickSound() {
@@ -738,174 +722,125 @@ function stopTickSound() {
 }
 
 async function handleTimeout() {
-    // 1. Double-trigger shield
-    if (gameEnding) return; 
-    gameEnding = true;
-
-    clearInterval(timer);
-    stopTickSound();
-  
-    // 2. Disable buttons so player can't click after time is up
-    const currentBtns = document.querySelectorAll('.answer-btn');
-    currentBtns.forEach(b => b.disabled = true);
-
-    // 3. Visual feedback
+    stopTickSound(); // <--- ADD THIS FIRST
+    document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
     playSound(wrongBuffer);
     await highlightCorrectAnswer();
     
-    // 4. Record the current question ID to prevent "ghost" transitions
-    const timeoutQId = currentQuestion?.id;
-
-    setTimeout(() => {
-        // SAFETY: If the user hit "Main Menu" or "Reset" during this 1s wait, STOP.
-        if (!document.body.classList.contains('game-active')) {
-            gameEnding = false;
-            return;
-        }
-
-        if (isDailyMode) {
-            gameEnding = false; // Lower shield to allow next question
-            loadQuestion();
-        } else {
-            // Force endGame even if shield is up
-            endGame(true); 
-        }
-    }, 1000);
+    if (isDailyMode) {
+        setTimeout(loadQuestion, 1500);
+    } else {
+        setTimeout(endGame, 1000);
+    }
 }
 
-// 2. CLEANED CHECKANSWER
 async function checkAnswer(choiceId, btn) {
-    if (gameEnding || !document.body.classList.contains('game-active')) return;
-  
+    stopTickSound(); // CUT THE SOUND IMMEDIATELY
+    if (timeLeft <= 0) return;
     clearInterval(timer);
-    stopTickSound();
+    document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
 
-    const allBtns = document.querySelectorAll('.answer-btn');
+    const { data: isCorrect, error } = await supabase.rpc('check_my_answer', {
+        input_id: currentQuestion.id,
+        choice: choiceId
+    });
 
-    try {
-        allBtns.forEach(b => b.disabled = true);
+    if (error) return console.error("RPC Error:", error);
+
+    if (isCorrect) {
+        playSound(correctBuffer);
+        btn.classList.add('correct');
+        // 1. Get the session
+        const { data: { session } } = await supabase.auth.getSession();
         
-        if (!currentQuestion) throw new Error("No Question");
-
-        // ONLY ONE CALL TO SUPABASE HERE
-        const { data: isCorrect, error } = await supabase.rpc('check_my_answer', {
-            input_id: currentQuestion.id,
-            choice: choiceId
-        });
-
-        if (error) throw error; 
-
-        if (isCorrect) {
-            playSound(correctBuffer);
-            btn.classList.add('correct');
-            
-            // Get session
-            const { data: { session } } = await supabase.auth.getSession();
-            
-            if (session) { 
-                let gained = isDailyMode ? 50 : 5;
-                let isBonusEarned = false;
-
-                if (isDailyMode) {
-                    dailyQuestionCount++;
-                    if (dailyQuestionCount === 10) { gained += 100; isBonusEarned = true; }
-                } else {
-                    streak++;
-                    if (streak === 1) { // Change to 10 for production
-                        gained += 30; streak = 0; isBonusEarned = true;
-                    }
-                }
-
-                if (isBonusEarned) {
-                    playSound(bonusBuffer);
-                    showNotification("BONUS XP!", "#a335ee");
-                }
-
-                const oldLevel = getLevel(currentProfileXp);
-                currentProfileXp += gained;
-                const newLevel = getLevel(currentProfileXp);
-
-                if (newLevel > oldLevel) {
-                    triggerFireworks(); 
-                    setTimeout(() => {
-                        playSound(levelUpBuffer);
-                        showNotification("LEVEL UP!", "#ffde00");
-                    }, 200);
-                }
-
-                updateLevelUI();
-                triggerXpDrop(gained);
-                
-                // NON-BLOCKING UPDATE: Don't 'await' this.
-                // This lets the game move to the next question even if the DB is slow.
-                supabase.from('profiles').update({ xp: currentProfileXp }).eq('id', session.user.id);
-            }
-
-            score++;
-            updateScore();
-            setTimeout(loadQuestion, 1000);
-
-        } else {
-            playSound(wrongBuffer);
-            streak = 0; 
-            btn.classList.add('wrong');
-            
-            // Call the sync version (no await needed)
-            highlightCorrectAnswer();
-            
+        if (session) { 
+            let gained = isDailyMode ? 50 : 5;
+            let isBonusEarned = false; // Track for sound
             if (isDailyMode) {
-                setTimeout(loadQuestion, 1500);
-            } else {
-                setTimeout(endGame, 1000);
+                    dailyQuestionCount++; // Only track daily count in daily mode
+                    if (dailyQuestionCount === 10) {
+                      gained += 100;
+                      isBonusEarned = true; // Daily bonus!
+                    }
+                } else {
+                    streak++; // Only track streak in normal mode
+                    if (streak === 3) { // change this back to 10
+                        gained += 30;
+                        streak = 0; 
+                        isBonusEarned = true; // Normal bonus!
+                    }
             }
+
+            // --- PLAY BONUS SOUND ---
+            if (isBonusEarned) {
+                playSound(bonusBuffer);
+                showNotification("BONUS XP!", "#a335ee"); // Cyan for bonus
+            }
+            const oldLevel = getLevel(currentProfileXp);
+            currentProfileXp += gained; // Add the XP to local state
+            const newLevel = getLevel(currentProfileXp);
+
+            if (newLevel > oldLevel) {
+                triggerFireworks(); 
+                // Play level up sound after the correct sound
+                setTimeout(() => {
+                  playSound(levelUpBuffer), 
+                  showNotification("LEVEL UP!", "#ffde00"); // Gold for level
+                }, 200);
+            }
+
+            updateLevelUI(); // Refresh the Player/Level row
+            triggerXpDrop(gained);
+            
+            // Update Supabase
+            await supabase.from('profiles')
+            .update({ xp: currentProfileXp })
+            .eq('id', session.user.id);
         }
-    } catch (err) {
-        console.error("Check Answer Error:", err);
-        // THE EMERGENCY RELEASE: Give buttons back if it crashes
-        allBtns.forEach(b => b.disabled = false);
-        gameEnding = false; 
-        startTimer();
+        // Update Local State & UI
+        score++;
+        updateScore();
+        setTimeout(loadQuestion, 1000);
+    } else {
+        playSound(wrongBuffer);
+        streak = 0; // Reset streak on wrong answer in normal mode
+        btn.classList.add('wrong');
+        await highlightCorrectAnswer();
+        if (isDailyMode) {
+            setTimeout(loadQuestion, 1500);
+        } else {
+            setTimeout(endGame, 1000);
+        }
     }
 }
 
 function updateLevelUI() {
     const lvlNum = document.getElementById('levelNumber');
     const xpBracket = document.getElementById('xpBracket');
-  
-    if (currentProfileXp === null || !lvlNum || !xpBracket) return;
-  
-    const currentLvl = getLevel(currentProfileXp);
     
-    // Only update if the text is actually different to prevent micro-flickers
-    const newLvlText = String(currentLvl);
-    const newXpText = `(${currentProfileXp.toLocaleString()} XP)`;
-
-    if (lvlNum.textContent !== newLvlText) lvlNum.textContent = newLvlText;
-    if (xpBracket.textContent !== newXpText) xpBracket.textContent = newXpText;
+    if (lvlNum && xpBracket) {
+        const currentLvl = getLevel(currentProfileXp);
+        lvlNum.textContent = currentLvl;
+        xpBracket.textContent = `(${currentProfileXp.toLocaleString()} XP)`;
+    }
 }
 
 function getLevel(xp) {
     if (!xp || xp <= 0) return 1;
     if (xp >= 100000) return 99;
 
-    // We use a multi-stage approach for better "feel"
-    // Level 1-91 uses a gentler curve
-    // Level 92-99 uses the steep OSRS-style curve
+    // This formula is tuned so that Level 92 hits at exactly 50,000 XP
+    // and Level 99 hits at 100,000 XP.
+    // We use a power function: Level = constant * XP^(1/power)
     
+    // Reverse check for the table:
     for (let L = 1; L <= 99; L++) {
-        let threshold;
-        if (L <= 92) {
-            // Gentler curve: Level 50 will be around 11k XP
-            threshold = Math.floor(Math.pow((L - 1) / 91, 2.5) * 50000);
-        } else {
-            // Steeper curve: From 50k to 100k
-            threshold = 50000 + Math.floor(Math.pow((L - 92) / 7, 1.5) * 50000);
-        }
-
+        let threshold = Math.floor(Math.pow((L - 1) / 98, 3.1) * 100000);
         if (xp < threshold) return L - 1;
     }
     return 99;
 }
+
 
 function checkLevelUp(gainedXp) {
     const oldLevel = getLevel(currentProfileXp);
@@ -973,28 +908,21 @@ function createParticle(parent, xPosPercent, colors) {
     p.onanimationend = () => p.remove();
 }
 
-// Optimized version (if currentQuestion already has the ID)
-function highlightCorrectAnswer() {
-    if (!currentQuestion) return;
-
-    // Use the ID already inside your currentQuestion object
-    const correctId = currentQuestion.correct_answer; 
-    
+async function highlightCorrectAnswer() {
+    const { data: correctId } = await supabase.rpc('reveal_correct_answer', { 
+        input_id: currentQuestion.id 
+    });
     document.querySelectorAll('.answer-btn').forEach(btn => {
-        // Use String() comparison to avoid type mismatch (1 vs "1")
-        if (String(btn.dataset.answerId) === String(correctId)) {
+        if (parseInt(btn.dataset.answerId) === correctId) {
             btn.classList.add('correct');
         }
     });
 }
 
-async function endGame(force = false) {
-   // If gameEnding is true AND we aren't forcing it, then return.
-    if (gameEnding && !force) return;
-  
+async function endGame() {
+    if (gameEnding) return;
     gameEnding = true;
     clearInterval(timer);
-    stopTickSound();
 
     // 1. PREPARE DATA FIRST (Quietly in background)
     const { data: { session } } = await supabase.auth.getSession();
@@ -1061,9 +989,8 @@ async function endGame(force = false) {
         game.classList.add('hidden');
         endScreen.classList.remove('hidden');
         updateShareButtonState();
-        //gameEnding = false;
+        gameEnding = false;
     });
-    
 }
 
 // new for xp drops 
@@ -1102,6 +1029,8 @@ function setupRealtimeSync(userId) {
         .on('broadcast', { event: 'lock-daily' }, (payload) => {
             console.log("Broadcast received! Locking daily button.");
             lockDailyButton();
+            // Also sync the score/message data so the "Share" button appears
+            fetchDailyStatus(userId);
         })
         .subscribe((status) => {
             if (status === 'SUBSCRIBED') {
@@ -1113,44 +1042,34 @@ function setupRealtimeSync(userId) {
 }
 
 async function saveNormalScore(currentUsername, finalScore) {
-    try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) return;
-    
-        const userId = session.user.id;
-    
-        // Fixed: Use .limit(1) to avoid the 406 "Not Acceptable" error
-        const { data: records, error: fetchError } = await supabase
+    // 1. Get the session to get the UUID (The "Key" to bypass 403)
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    const userId = session.user.id;
+
+    // 2. Check for existing score using user_id (the most stable way)
+    const { data: record } = await supabase
+        .from('scores')
+        .select('score')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+    // 3. Save only if it's a new High Score
+    if (!record || finalScore > record.score) {
+        const { error } = await supabase
             .from('scores')
-            .select('score')
-            .eq('user_id', userId)
-            .limit(1);
-    
-        if (fetchError) {
-            console.error("Error checking high score:", fetchError);
-            return;
+            .upsert({ 
+                user_id: userId,        // Required for RLS / 403 fix
+                username: currentUsername, 
+                score: finalScore 
+            }, { onConflict: 'user_id' }); // Prevents duplicate rows for one user
+
+        if (error) {
+            console.error("Leaderboard Save Error:", error.message);
+        } else {
+            console.log("Personal best updated on leaderboard!");
         }
-    
-        const record = records && records.length > 0 ? records[0] : null;
-    
-        if (!record || finalScore > record.score) {
-            const { error } = await supabase
-                .from('scores')
-                .upsert({ 
-                    user_id: userId, 
-                    username: currentUsername, 
-                    score: finalScore 
-                }, { onConflict: 'user_id' });
-    
-            if (error) {
-                console.error("Leaderboard Save Error:", error.message);
-            } else {
-                console.log("Personal best updated on leaderboard!");
-            }
-        }
-      } catch (err) {
-        // We catch the error so the game doesn't crash/hang
-        console.error("Leaderboard Save Failed (Quietly):", err.message);
     }
 }
 
@@ -1162,9 +1081,6 @@ async function saveDailyScore(session, msg) {
     localStorage.setItem('lastDailyMessage', msg);
 
     if (session) {
-        // Tag the local storage with the user ID so Guest accounts can't see it
-        localStorage.setItem('lastDailyUserId', session.user.id);
-
         await supabase.from('daily_attempts').update({
             score: score,
             message: msg
@@ -1172,6 +1088,7 @@ async function saveDailyScore(session, msg) {
     }
     updateShareButtonState();
 }
+gameEnding = false;
 
 if (shareBtn) {
     shareBtn.onclick = async () => {
@@ -1181,7 +1098,6 @@ if (shareBtn) {
         updateShareButtonState(); // Force it to stay grey
         return;
     }
-     
       // 1. CAPTURE CURRENT STATE (To restore later)
       const originalScore = finalScore.textContent;
       const originalMsg = document.getElementById('game-over-title').textContent;
@@ -1245,7 +1161,7 @@ if (shareBtn) {
                   //const startScreenRef = clonedDoc.getElementById('start-screen');
                   
                   // 1. Force the Game and Start screens to HIDE in the picture
-                  if (gameScreen) gameScreen.style.setProperty('display', 'none', 'important');
+                  if (gameScreen) gameScreen.style.display = 'none';
                   //if (startScreenRef) startScreenRef.style.display = 'none';
                   
                   // 2. Force the End Screen to SHOW in the picture
@@ -1371,8 +1287,7 @@ if (shareBtn) {
         // So the user doesn't see their score change on the actual screen
         finalScore.textContent = originalScore;
         document.getElementById('game-over-title').textContent = originalMsg;
-     
-        // 3. Restore button visibility
+        
         shareBtn.style.opacity = '1';
         if (muteBtn) muteBtn.style.opacity = '1';
     }
@@ -1422,38 +1337,15 @@ async function startDailyChallenge() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return alert("Log in to play Daily Mode!");
 
-    // 1. CHECK THE SHIELD FIRST
-    const localUserId = localStorage.getItem('lastDailyUserId');
-    const savedDate = localStorage.getItem('dailyPlayedDate');
-    
-    if (localUserId === session.user.id && savedDate === todayStr) {
-        alert("You've already played today!");
-        lockDailyButton();
-        return;
-    }
-
-    // 2. Double check DB before inserting to prevent the 406/409 error
-    const played = await hasUserCompletedDaily(session);
-    if (played) {
-        // Sync local storage so we don't have to hit the DB again
-        localStorage.setItem('dailyPlayedDate', todayStr);
-        localStorage.setItem('lastDailyUserId', session.user.id);
-        alert("You've already played today!");
-        lockDailyButton();
-        return;
-    }
-
-    // 3. Burn the attempt (Only happens if checks above pass)
+    // 1. Burn the attempt
     const { error: burnError } = await supabase
         .from('daily_attempts')
         .insert({ user_id: session.user.id, attempt_date: todayStr });
 
-    if (burnError) {
-        console.error("Burn error:", burnError);
-        return alert("You've already played today!");
-    }
+    if (burnError) return alert("You've already played today!");
     
-    lockDailyButton();
+    lockDailyButton(); 
+
     // 2. Load Questions
     const { data: allQuestions } = await supabase.from('questions').select('id').order('id', { ascending: true });
     if (!allQuestions || allQuestions.length < 10) return alert("Error loading questions.");
@@ -1501,6 +1393,25 @@ function seededRandom(seed) {
     return x - Math.floor(x);
 }
 
+function subscribeToDailyChanges(userId) {
+    const channel = supabase
+        .channel('daily-updates')
+        .on('postgres_changes', {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'daily_attempts',
+            filter: `user_id=eq.${userId}`
+        }, () => {
+            console.log('Daily challenge sync: locking button.');
+            lockDailyButton();
+        })
+        .subscribe();
+
+    return channel;
+}
+
+
+
 // ====== MOBILE TAP FEEDBACK (THE FLASH) ======
 document.addEventListener('DOMContentLoaded', () => {
   (async () => {
@@ -1535,67 +1446,6 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
