@@ -744,19 +744,20 @@ async function handleTimeout() {
     highlightCorrectAnswer();
     
     setTimeout(() => {
-            // If the user clicked "Main Menu" or "Play Again" during this 1s delay, stop.
-            if (!document.body.classList.contains('game-active')) {
-                gameEnding = false;
-                return;
-            }
+        if (!document.body.classList.contains('game-active')) {
+            gameEnding = false;
+            return;
+        }
     
-            if (isDailyMode) {
-                gameEnding = false; // Lower shield to allow next question
-                loadQuestion();
-            } else {
-                endGame(); // This will handle hiding the game screen
-            }
-        }, 1000);
+        if (isDailyMode) {
+            gameEnding = false; // Lower shield to allow next question
+            loadQuestion();
+        } else {
+            // IMPORTANT: We don't reset gameEnding here because 
+            // we want endGame to finish the job.
+            endGame(true); // Pass a flag to override the shield
+        }
+    }, 1000);
 }
 
 async function checkAnswer(choiceId, btn) {
@@ -957,8 +958,10 @@ async function highlightCorrectAnswer() {
     });
 }
 
-async function endGame() {
-    if (gameEnding) return;
+async function endGame(force = false) {
+   // If gameEnding is true AND we aren't forcing it, then return.
+    if (gameEnding && !force) return;
+  
     gameEnding = true;
     clearInterval(timer);
     stopTickSound();
@@ -1503,6 +1506,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
