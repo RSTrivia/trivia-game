@@ -1112,8 +1112,20 @@ input.input-field:-webkit-autofill:active {
     }
 }
 /*                             for notifications in text                                       */
-
-
+/* ====== MOBILE NOTIFICATION ADJUSTMENT ====== */
+@media (max-width: 480px) {
+    #game-notifications {
+        /* Pushes the notification down. 
+           Increase to 10px or 20px if you want it even lower. */
+        top: 5px !important; 
+    }
+    
+    .notif-text {
+        /* Slightly smaller font for mobile to keep it tidy */
+        font-size: 14px !important; 
+    }
+}
+/* ====== MOBILE NOTIFICATION ADJUSTMENT ====== */
 
 /* ====== MOBILE XP DROP ADJUSTMENT ====== */
 @media (max-width: 480px) {
@@ -1182,6 +1194,7 @@ input.input-field:-webkit-autofill:active {
   font-weight: bold;
 }
 /* ====== tab for leaderboards xp====== */
+
 
 
 
