@@ -177,7 +177,6 @@ let currentQuestionIndex = 0;
 let preloadQueue = []; 
 let timer;
 let timeLeft = 15;
-let startTime; // Add this to track the exact millisecond the question started
 let isDailyMode = false;
 
 // ====== INITIAL UI SYNC ======
@@ -330,19 +329,7 @@ async function init() {
         }
     };
 }
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && document.body.classList.contains('game-active')) {
-        // If they were tabbed out and time expired, trigger timeout immediately
-        if (startTime && !gameEnding) {
-            const elapsed = Date.now() - startTime;
-            if (elapsed >= timerDuration) {
-                clearInterval(timer);
-                stopTickSound();
-                handleTimeout();
-            }
-        }
-    }
-});
+  
   // This will check if a user is logged in and lock the button if they aren't
   await syncDailyButton();
   // This will check if a user has played daily mode already and will unlock it if they did
@@ -700,37 +687,27 @@ async function loadQuestion() {
 
 function startTimer() {
     clearInterval(timer);
-    if (activeTickSource) { activeTickSource.stop(); activeTickSource = null; }
-
-    startTime = Date.now(); // Record exactly when the question started
+    if (activeTickSource) { activeTickSource.stop(); activeTickSource = null; } // Cleanup
+  
     timeLeft = 15;
     timeDisplay.textContent = timeLeft;
     timeWrap.classList.remove('red-timer');
-
+  
     timer = setInterval(() => {
-        const elapsed = Date.now() - startTime;
-        const remaining = Math.max(0, 15 - Math.floor(elapsed / 1000));
-        
-        // Only update UI if the second has actually changed
-        if (remaining !== timeLeft) {
-            timeLeft = remaining;
-            timeDisplay.textContent = timeLeft;
-            
-            // Sound logic
-            if (timeLeft <= 5 && timeLeft > 0 && !activeTickSource) {
-                activeTickSource = playSound(tickBuffer, true);
-            }
-            
-            if (timeLeft <= 5) timeWrap.classList.add('red-timer');
+        timeLeft--;
+        timeDisplay.textContent = timeLeft;
+        // When the UI shows 3, start the loop
+        // This ensures that even if a frame is dropped, the sound starts
+        if (timeLeft <= 5 && timeLeft > 0 && !activeTickSource) {
+            activeTickSource = playSound(tickBuffer, true); 
         }
-
-        // Check if time is up using milliseconds for high accuracy
-        if (elapsed >= timerDuration) {
+        if (timeLeft <= 5) timeWrap.classList.add('red-timer');
+        if (timeLeft <= 0) {
             clearInterval(timer);
-            stopTickSound();
-            handleTimeout(); 
+            stopTickSound(); // Stop sound when time hits zero
+            handleTimeout();
         }
-    }, 100); // Check every 100ms so it catches "tab back in" immediately
+    }, 1000);
 }
 
 function stopTickSound() {
@@ -745,32 +722,16 @@ function stopTickSound() {
 }
 
 async function handleTimeout() {
-    // Prevent double triggers if they tab back in exactly as they click
-    if (gameEnding) return; 
-    gameEnding = true;
-
-    stopTickSound();
-    clearInterval(timer);
-
+    stopTickSound(); // <--- ADD THIS FIRST
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
     playSound(wrongBuffer);
-    
     await highlightCorrectAnswer();
     
-    setTimeout(() => {
-        // Only proceed if we haven't reset the game/returned to menu
-        if (!document.body.classList.contains('game-active')) {
-            gameEnding = false;
-            return;
-        }
-
-        if (isDailyMode) {
-            gameEnding = false; 
-            loadQuestion();
-        } else {
-            endGame();
-        }
-    }, 1500);
+    if (isDailyMode) {
+        setTimeout(loadQuestion, 1500);
+    } else {
+        setTimeout(endGame, 1000);
+    }
 }
 
 async function checkAnswer(choiceId, btn) {
@@ -1485,8 +1446,6 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
-
-
 
 
 
