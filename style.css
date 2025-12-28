@@ -1072,9 +1072,10 @@ input.input-field:-webkit-autofill:active {
 
 /*                             for notifications in text                                       */
 
+/* ====== LEVEL UP NOTIFICATION (STATIC FADE) ====== */
 #game-notifications {
     position: absolute; 
-    top: -20px; /* Adjust this to center the stack in your gap */
+    top: -30px; 
     left: 0;
     right: 0;
     display: flex;
@@ -1090,32 +1091,24 @@ input.input-field:-webkit-autofill:active {
     font-weight: 900;
     font-size: 16px;
     color: #ffde00;
-    /*text-shadow: 2px 2px 0px #000;*/
     white-space: nowrap;
-    /* Reduced duration for a snappier feel */
-    animation: notif-steady-pop 1.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
     text-shadow: 2px 2px 0px #000, 0 0 5px currentColor;
+    /* We use a simple fade animation now */
+    animation: notif-fade-only 1.8s ease-in-out forwards;
 }
 
-@keyframes notif-steady-pop {
+@keyframes notif-fade-only {
     0% { 
         opacity: 0; 
-        transform: scale(0.9); 
     }
     15% { 
-        opacity: 1; 
-        transform: scale(1.02); /* Very minimal pop */
+        opacity: 1; /* Quickly appears */
     }
-    30% { 
-        transform: scale(1); 
-    }
-    /* Long, smooth fade starts here */
-    50% {
-        opacity: 1;
+    70% {
+        opacity: 1; /* Stays fully visible for a while */
     }
     100% { 
-        opacity: 0; 
-        transform: translateY(-5px); /* Gentle drift */
+        opacity: 0; /* Smoothly fades out without moving */
     }
 }
 /*                             for notifications in text                                       */
@@ -1149,6 +1142,7 @@ input.input-field:-webkit-autofill:active {
     }
 }
 /* ====== MOBILE XP DROP ADJUSTMENT ====== */
+
 
 
 
