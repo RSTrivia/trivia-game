@@ -287,11 +287,12 @@ async function init() {
 };
     }
         if (playAgainBtn) {
-        playAgainBtn.onclick = async () => {
-        isDailyMode = false;
-        await startGame();
-    };
-}
+          playAgainBtn.onclick = async () => {
+          resetGame(); // KILL OLD STATE FIRST
+          isDailyMode = false;
+          await startGame();
+      };
+  }
   if (mainMenuBtn) {  
         mainMenuBtn.onclick = async () => {
         preloadQueue = []; // Clear the buffer only when going back to menu
@@ -478,12 +479,17 @@ function lockDailyButton() {
 // ====== GAME ENGINE ======
 
 function resetGame() {
-    // 1. Stop any active logic
+   // 1. Kill the actual interval
     clearInterval(timer);
+    timer = null; 
+    
+  // 2. Kill the logic tracking
+    startTime = null; 
+    gameEnding = false;
     stopTickSound(); 
     // Wipe any existing firework particles that didn't get removed
     document.querySelectorAll('.firework-particle').forEach(p => p.remove());
-  
+   
     // 2. Reset numerical state
     score = 0;
     currentQuestion = null;
@@ -508,6 +514,8 @@ function resetGame() {
     if (scoreDisplay) {
         scoreDisplay.textContent = `Score: 0`;
     }
+  // Ensure the body class is clean
+    document.body.classList.remove('game-active');
 }
 
 async function preloadNextQuestions() {
@@ -621,6 +629,8 @@ async function startGame() {
 }
 
 async function loadQuestion() {
+    // IF we are in the middle of ending the game, STOP.
+    if (gameEnding) return;
     // A. IMMEDIATE CLEANUP
     questionImage.style.display = 'none';
     questionImage.style.opacity = '0';
@@ -1479,6 +1489,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //updateShareButtonState();
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
