@@ -78,8 +78,13 @@
             width: 100%;
             /* Reduced bottom margin because margin-top: auto will do the heavy lifting */
             margin-bottom: 0px; 
+            opacity: 0;
+            transition: opacity 0.2s ease-in;
         }
-
+        /* Show the grid once the JS has applied the classes */
+        #logGrid.ready {
+            opacity: 1;
+        }
         .pet-slot {
             background: rgba(40, 40, 40, 0.9);
             border: 2px solid transparent; /* Always keep a 2px border space */
