@@ -325,28 +325,21 @@ h1 {
   padding-top: 10px; /* Optional: adds a little space below the title */
   position: relative;
 }
-
-/* Unified Layout for all 3 icons  come here*/
-/* ====== USER CONTROLS (REVERTED TO ORIGINAL) ====== */
-/* ====== USER CONTROLS (FIXED PLACEMENT & COLORS) ====== */
-#user-controls {
+/* 2. The Icon Group: Float them to the left of the center */
+.icon-group {
+  position: absolute;
+  /* This moves the right edge of the icons to be 80px left of the center line */
+  right: calc(50% + 80px); 
   display: flex;
+  gap: 8px;
   align-items: center;
-  justify-content: center; /* This keeps the row centered */
-  gap: 10px;
-  margin-bottom: 30px;
-  padding-top: 10px;
-  position: relative;
 }
 
-/* 1. Unified Layout (Fixed Placement - No Overlap) */
+/* 3. The Icons: Clean up the individual buttons */
 #shareBtn, #muteBtn, #logBtn {
   width: 32px;
   height: 32px;
-  position: relative;
-  /*left: -80px;  Changed from -80px to stop overlap */
   display: flex;
-  /* REMOVED: left: -80px (This was causing the overlap) */
   justify-content: center;
   align-items: center;
   background: none;
@@ -354,20 +347,23 @@ h1 {
   font-size: 1.3rem;
   cursor: pointer;
   padding: 0;
-  text-decoration: none;
-  
-  /* Standard Transition */
-  transition: opacity 0.2s ease; 
-  
-  outline: none;
-  -webkit-tap-highlight-color: transparent;
-
-  /* ISOLATION: Keeps the gold filters stable */
-  isolation: isolate;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  transform: translateZ(0); 
+  transition: opacity 0.2s ease;
+  filter: sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85);
 }
+
+/* 4. The Text: Now stays perfectly in the middle */
+#userDisplay {
+  font-size: 1.2rem;
+  color: #d4af37;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center the "Player" and "Level" lines */
+  margin: 0; /* Clear previous negative margins */
+}
+/* Unified Layout for all 3 icons  come here*/
+/* ====== USER CONTROLS (REVERTED TO ORIGINAL) ====== */
+/* ====== USER CONTROLS (FIXED PLACEMENT & COLORS) ====== *
 
 /* Space between the icons themselves */
 #shareBtn { margin-right: 4px; }
@@ -1304,6 +1300,7 @@ input.input-field:-webkit-autofill:active {
     margin-top: 2px;
 }
 /* ====== PET UNLOCK MODAL ====== */
+
 
 
 
