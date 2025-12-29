@@ -327,7 +327,7 @@ h1 {
 }
 
 /* Unified Layout for all 3 icons  come here*/
-/* 1. Unified Layout (Structure only, NO filters here) */
+/* 1. Unified Layout (Structure & Hardware Isolation) */
 #shareBtn, #muteBtn, #logBtn {
   width: 32px;
   height: 32px;
@@ -342,20 +342,24 @@ h1 {
   cursor: pointer;
   padding: 0;
   text-decoration: none;
-  /* Only transition opacity to keep it smooth without filter glitches */
-  transition: opacity 0.2s ease;
+  
+  /* FIXED: Remove filter from transition to stop the "calculation flash" */
+  transition: opacity 0.2s ease; 
+  
   outline: none;
   -webkit-tap-highlight-color: transparent;
-  -webkit-backface-visibility: hidden;
+
+  /* ISOLATION: Forces each button to render on its own layer */
+  isolation: isolate;
   backface-visibility: hidden;
-  transform: translateZ(0);
-  will-change: opacity, filter;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0); 
 }
 
 #shareBtn { margin-right: 4px; }
 #logBtn { margin-right: 4px; }
 
-/* 2. Apply Gold Filter ONLY to buttons that are NOT muted/disabled */
+/* 2. Standard State: Gold (Only when NOT muted/disabled) */
 #shareBtn:not(.is-disabled), 
 #logBtn:not(.is-disabled), 
 #muteBtn:not(.is-muted) {
@@ -363,7 +367,7 @@ h1 {
   opacity: 0.9;
 }
 
-/* 3. Apply Gray Filter ONLY to the muted/disabled states */
+/* 3. Muted/Disabled State: Grey (Prevents overlap) */
 #muteBtn.is-muted,
 #shareBtn.is-disabled, 
 #logBtn.is-disabled {
@@ -371,10 +375,16 @@ h1 {
   opacity: 0.5;
 }
 
-/* 4. HOVER logic (specifically targeted) */
-#shareBtn:hover:not(.is-disabled), 
-#logBtn:hover:not(.is-disabled), 
-#muteBtn:hover:not(.is-muted) {
+/* 4. Hover Logic: Optimized to only affect the SPECIFIC button being hovered */
+#shareBtn:not(.is-disabled):hover {
+  opacity: 1;
+  filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.1);
+}
+#logBtn:not(.is-disabled):hover {
+  opacity: 1;
+  filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.1);
+}
+#muteBtn:not(.is-muted):hover {
   opacity: 1;
   filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.1);
 }
@@ -384,8 +394,6 @@ h1 {
   pointer-events: none;
   cursor: default;
 }
-
-
 
 
 
@@ -1295,6 +1303,7 @@ input.input-field:-webkit-autofill:active {
     margin-top: 2px;
 }
 /* ====== PET UNLOCK MODAL ====== */
+
 
 
 
