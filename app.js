@@ -1220,6 +1220,7 @@ if (shareBtn) {
                         const el = clonedDoc.getElementById(id);
                         if (el) el.style.display = 'none';
                     });
+                    const mainTitle = clonedDoc.getElementById('main-title');
                     // --- A. FORCE DIMENSIONS (Prevents Mobile Shrinking) ---
                     const clonedContainer = clonedDoc.querySelector('.container');
                     // 1. FORCE THE VIEWPORT (The "Magic" fix for mobile)
@@ -1737,6 +1738,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
