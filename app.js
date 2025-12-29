@@ -1172,6 +1172,7 @@ gameEnding = false;
 
 if (shareBtn) {
     shareBtn.onclick = async () => {
+      shareBtn.blur();
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         alert("Please log in to share your score!");
@@ -1709,6 +1710,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
