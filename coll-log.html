@@ -123,73 +123,95 @@
 
         /* --- HIGH-FIDELITY UNLOCKED STATES --- */
         
+        /* --- FLAT GOLD UNLOCKED STATES --- */
+
+        /* --- 1. BASE UNLOCKED STATE (Common Tier - Row 1) --- */
         .unlocked { 
-            /* The "Gold Base": A rich, metallic gradient */
-            background: linear-gradient(135deg, 
-                rgba(212, 175, 55, 0.4) 0%, 
-                rgba(100, 80, 20, 0.9) 50%, 
-                rgba(212, 175, 55, 0.4) 100%
-            ) !important;
-            border: 2px solid #ffdf00 !important;
-            box-shadow: 
-                inset 0 0 15px rgba(255, 223, 0, 0.3), /* Inner gold glow */
-                0 0 10px rgba(0, 0, 0, 0.5); /* Outer shadow for depth */
+            background: rgba(0, 0, 0, 0.6) !important;
+            border: 2px solid #d4af37 !important; /* Standard Gold */
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5) !important;
             position: relative;
             overflow: hidden;
         }
         
         .unlocked .pet-img { 
-            filter: drop-shadow(0 0 8px rgba(255, 223, 0, 0.6)) !important; 
+            filter: none !important; 
+            opacity: 1 !important;
             z-index: 2;
         }
         
         .unlocked .pet-name { 
-            color: #ffdf00 !important; /* Golden text */
+            color: #d4af37 !important; 
             font-weight: bold; 
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
             z-index: 2;
         }
-
-        /* --- ENHANCED RARITY GLOWS --- */
         
-        .unlocked.rare { 
+        /* --- 2. TIERED ROW EFFECTS (Increases shine per row) --- */
+        
+        /* Row 2 (Uncommon): Slightly cleaner border */
+        #logGrid .pet-slot:nth-child(n+3):nth-child(-n+4).unlocked {
+            border-color: #e5c158 !important; 
+        }
+        
+        /* Row 3 (Rare): Noticeable Shine & Gradient */
+        #logGrid .pet-slot:nth-child(n+5):nth-child(-n+6).unlocked {
             border-color: #ffdf00 !important;
-            box-shadow: 0 0 20px rgba(212, 175, 55, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.2);
+            background: linear-gradient(135deg, rgba(20,20,20,0.9), rgba(60,50,20,0.4)) !important;
+            box-shadow: inset 0 0 15px rgba(255, 223, 0, 0.1) !important;
+        }
+        #logGrid .pet-slot:nth-child(n+5):nth-child(-n+6).unlocked .pet-name {
+            color: #ffdf00 !important;
         }
         
-        .unlocked.legendary { 
-            border-color: #ff8000 !important;
-            background: linear-gradient(135deg, 
-                rgba(255, 128, 0, 0.4) 0%, 
-                rgba(80, 40, 0, 0.9) 50%, 
-                rgba(255, 128, 0, 0.4) 100%
-            ) !important;
-            box-shadow: 0 0 25px rgba(255, 128, 0, 0.6), inset 0 0 15px rgba(255, 255, 255, 0.2);
+        /* Row 4 (Legendary): Maximum Shine & Pulse */
+        #logGrid .pet-slot:nth-child(n+7):nth-child(-n+8).unlocked {
+            border-color: #ffea8a !important; /* Hover Gold */
+            background: linear-gradient(135deg, rgba(30,20,0,0.9), rgba(100,80,20,0.6)) !important;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.3), inset 0 0 10px rgba(255, 255, 255, 0.1) !important;
+            animation: legendary-pulse 3s infinite alternate;
         }
-
+        #logGrid .pet-slot:nth-child(n+7):nth-child(-n+8).unlocked .pet-name {
+            color: #ffea8a !important;
+            font-weight: 900;
+        }
+        
+        @keyframes legendary-pulse {
+            0% { border-color: #ffea8a; box-shadow: 0 0 10px rgba(212, 175, 55, 0.2); }
+            100% { border-color: #ffffff; box-shadow: 0 0 20px rgba(212, 175, 55, 0.5); }
+        }
+        
+        /* --- 3. HOVER FOR UNLOCKED --- */
+        .unlocked:hover {
+            background: rgba(0, 0, 0, 0.85) !important;
+            border-color: #ffea8a !important;
+        }
+        
+        /* --- 4. MYSTERY (LOCKED) STATES --- */
         .pet-slot:not(.unlocked) {
             background: rgba(20, 20, 20, 0.6);
-            border: 2px dashed #333; /* Makes them look like 'placeholders' to be filled */
+            border: 2px dashed #333;
         }
+        
+        .pet-slot:not(.unlocked) .pet-img {
+            filter: brightness(0) contrast(0.5) blur(2px);
+            opacity: 0.4;
+        }
+        
         .pet-slot:not(.unlocked) .pet-name {
             letter-spacing: 2px;
-            opacity: 0.5;
-            font-family: 'Courier New', monospace; /* Makes the ??? look more like a secret */
+            opacity: 0.4;
+            font-family: 'Courier New', monospace;
             color: #555;
         }
-                /* Mystery State Styling */
-        .pet-slot:not(.unlocked) .pet-img {
-            filter: brightness(0) contrast(0.5) blur(4px); /* Blurs the silhouette */
-            opacity: 0.6;
-        }
-     
+        
         /* Hover effect for locked slots */
         .pet-slot:not(.unlocked):hover {
             background: rgba(30, 30, 30, 0.9);
             border-color: #555;
         }
         
-               .btn-small {
+        .btn-small {
                     background: #111111 !important;
                     border: 2px solid #d4af37;
                     color: #d4af37;
@@ -213,7 +235,7 @@
                     
                     transition: all 0.2s ease;
                     box-sizing: border-box !important;
-                }
+        }    
 
         @media (max-width: 480px) {
             #app .container {
