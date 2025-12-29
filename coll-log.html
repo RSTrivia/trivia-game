@@ -57,7 +57,7 @@
 
         .pet-slot {
             background: rgba(40, 40, 40, 0.9);
-            border: 2px solid #444;
+            border: 2px solid transparent; /* Always keep a 2px border space */
             border-radius: 8px;
             padding: 15px;
             display: flex;
@@ -65,7 +65,8 @@
             align-items: center;
             justify-content: center;
             transition: all 0.3s ease;
-            /* Removed min-height and height to prevent 'growing' too large */
+            box-sizing: border-box; /* Crucial: border stays inside the width */
+            height: 120px; /* Optional: Set a fixed height to prevent ANY vertical jumping */
         }
         
         .pet-img {
@@ -134,7 +135,7 @@
 
         .pet-slot:not(.unlocked) {
             background: rgba(20, 20, 20, 0.6);
-            border: 1px dashed #333; /* Makes them look like 'placeholders' to be filled */
+            border: 2px dashed #333; /* Makes them look like 'placeholders' to be filled */
         }
         
                .btn-small {
