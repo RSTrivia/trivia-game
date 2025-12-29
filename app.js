@@ -1199,8 +1199,8 @@ if (shareBtn) {
         try {
             const target = document.querySelector('.container');
             const muteBtn = document.getElementById('muteBtn');
-            //shareBtn.style.opacity = '0';
-            //if (muteBtn) muteBtn.style.opacity = '0';
+            shareBtn.style.opacity = '0';
+            if (muteBtn) muteBtn.style.opacity = '0';
 
             const canvas = await html2canvas(target, {
                 backgroundColor: '#0a0a0a', 
@@ -1213,18 +1213,9 @@ if (shareBtn) {
                     const clonedBody = clonedDoc.body;
                     clonedBody.style.width = '450px';
                     clonedBody.style.height = '600px';
-                    // ADD THESE THREE LINES BELOW:
-                    //clonedBody.style.display = 'flex';
-                    //clonedBody.style.justifyContent = 'center';
-                    //clonedBody.style.alignItems = 'center';                
                     //clonedBody.style.overflow = 'hidden';
-                    // --- ADD THIS BLOCK HERE ---
-                    const idsToHide = ['muteBtn', 'shareBtn', 'logBtn', 'collection-log'];
-                    idsToHide.forEach(id => {
-                        const el = clonedDoc.getElementById(id);
-                        if (el) el.style.display = 'none';
-                    });
-                        if (clonedContainer) {
+
+                    if (clonedContainer) {
                         // Reset all container styles to be a fixed "card"
                         Object.assign(clonedContainer.style, {
                             width: '450px',
@@ -1379,12 +1370,12 @@ if (shareBtn) {
         finalScore.textContent = originalScore;
         document.getElementById('game-over-title').textContent = originalMsg;
         
-        //shareBtn.style.opacity = '1';
-        //if (muteBtn) muteBtn.style.opacity = '1';
+        shareBtn.style.opacity = '1';
+        if (muteBtn) muteBtn.style.opacity = '1';
     }
       
     };
-}
+}  
 
 
 async function rollForPet() {
@@ -1720,6 +1711,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
