@@ -1465,14 +1465,15 @@ async function rollForPet() {
 
 
 function showCollectionLogNotification(petName) {
-    let win = document.getElementById('pet-unlock-window');
-    if (!win) {
-        win = document.createElement('div');
-        win.id = 'pet-unlock-window';
-        document.body.appendChild(win);
+    let modal = document.getElementById('pet-modal');
+    
+    // Create it if it doesn't exist
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'pet-modal';
+        document.body.appendChild(modal);
     }
 
-    // Mapping ID/Name to the local PNG file
     const fileNameMap = {
         'Baby Mole': 'mole.png',
         'Pet Kraken': 'kraken.png',
@@ -1486,26 +1487,29 @@ function showCollectionLogNotification(petName) {
 
     const fileName = fileNameMap[petName] || 'mole.png';
 
-    win.innerHTML = `
-        <div class="pet-unlock-title">NEW COLLECTION DROP</div>
+    modal.innerHTML = `
+        <div class="pet-unlock-title">NEW PET UNLOCKED</div>
         <img src="pets/${fileName}" class="pet-unlock-icon">
-        <div class="pet-unlock-text">${petName} unlocked!</div>
-        <div class="pet-unlock-flavor">You have a funny feeling like you're being followed.</div>
+        <div class="pet-unlock-name">${petName}</div>
+        <div class="pet-unlock-msg">You have a funny feeling like you're being followed.</div>
     `;
 
-    win.classList.add('active');
+    // Delay slightly to trigger the CSS transition
+    setTimeout(() => {
+        modal.classList.add('active');
+    }, 100);
 
-    // Run your fireworks if they exist
+    // Trigger your fireworks
     if (typeof triggerFireworks === "function") triggerFireworks();
 
+    // Auto-hide after 6 seconds
     setTimeout(() => {
-        win.classList.remove('active');
+        modal.classList.remove('active');
     }, 6000);
 }
 
-// CRITICAL: This allows the console and external buttons to "see" the function
+// Make it accessible for testing
 window.showCollectionLogNotification = showCollectionLogNotification;
-
 
 
 // ====== HELPERS & AUDIO ======
@@ -1689,6 +1693,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
