@@ -1232,27 +1232,26 @@ input.input-field:-webkit-autofill:active {
 /* Close Button (X) */
 /* ====== SMALL TOP-ALIGNED PET WINDOW ====== */
 /* ====== PET UNLOCK WINDOW (Responsive) ====== */
-/* ====== RESPONSIVE PET MODAL ====== */
+/* ====== PET MODAL (CENTERED MOBILE) ====== */
 #pet-modal {
     position: fixed !important;
     left: 50% !important;
-    top: 20px !important; /* Desktop Default */
-    transform: translateX(-50%) scale(0.7);
+    top: 20px !important; /* Keep it at top for Desktop */
+    transform: translateX(-50%) scale(0.8);
     
-    background: rgba(0, 0, 0, 0.9) !important; 
+    background: rgba(15, 15, 15, 0.95) !important; 
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border: 2px solid #d4af37 !important;
-    border-radius: 10px;
-    box-shadow: 0 4px 25px rgba(0,0,0,0.7);
+    border-radius: 12px;
     
-    padding: 12px 15px;
+    padding: 20px;
     width: 280px;
     text-align: center;
-    z-index: 200000 !important; 
+    z-index: 999999 !important; 
     opacity: 0;
     pointer-events: none;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 #pet-modal.active {
@@ -1261,21 +1260,17 @@ input.input-field:-webkit-autofill:active {
     pointer-events: auto !important;
 }
 
-/* ====== MOBILE SPECIFIC (iOS/Safari Safe Fix) ====== */
-@media (max-width: 480px) {
+/* Mobile: Force Center */
+@media screen and (max-width: 480px) {
     #pet-modal {
-        top: auto !important;
-        /* Calculate 40px + the Safari/iOS bar height */
-        bottom: calc(40px + env(safe-area-inset-bottom)) !important; 
-        width: 85%;
-        max-width: 300px;
-        /* Slide up effect: starts slightly lower */
-        transform: translateX(-50%) translateY(30px);
+        top: 50% !important; /* Move to middle */
+        transform: translate(-50%, -50%) scale(0.8) !important;
+        width: 80% !important;
+        max-width: 280px;
     }
 
     #pet-modal.active {
-        /* Ends at the calculated bottom position */
-        transform: translateX(-50%) translateY(0) !important;
+        transform: translate(-50%, -50%) scale(1) !important;
     }
 }
 
@@ -1284,22 +1279,21 @@ input.input-field:-webkit-autofill:active {
     top: 5px;
     right: 10px;
     color: #d4af37;
-    font-size: 24px; /* Larger for fingers */
+    font-size: 22px;
     cursor: pointer;
-    padding: 5px;
     line-height: 1;
 }
 
 .pet-unlock-title {
     font-family: 'Cinzel', serif;
     color: #ffde00;
-    font-size: 0.95rem;
-    margin: 0 0 5px 0;
+    font-size: 1.1rem;
+    margin-bottom: 10px;
 }
 
 .pet-unlock-icon {
-    width: 45px;
-    height: 45px;
+    width: 50px;
+    height: 50px;
     image-rendering: pixelated;
     margin: 5px auto;
     display: block;
@@ -1307,17 +1301,19 @@ input.input-field:-webkit-autofill:active {
 
 .pet-unlock-name {
     color: #ffffff;
-    font-size: 1rem;
     font-weight: bold;
+    font-size: 1.1rem;
+    margin-top: 5px;
 }
 
 .pet-unlock-msg {
     color: #d4af37;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     font-style: italic;
-    margin-top: 4px;
+    margin-top: 5px;
 }
 /* ====== PET UNLOCK MODAL ====== */
+
 
 
 
