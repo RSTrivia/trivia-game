@@ -319,6 +319,10 @@ async function init() {
     };
   }
   if (muteBtn) {
+    // --- ADD THESE TWO LINES TO SYNC ON REFRESH ---
+    muteBtn.querySelector('#muteIcon').textContent = muted ? '🔇' : '🔊';
+    muteBtn.classList.toggle('is-muted', muted);
+    
     muteBtn.onclick = () => {
         muted = !muted;
         localStorage.setItem('muted', muted);
@@ -1633,6 +1637,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
