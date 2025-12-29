@@ -37,16 +37,17 @@ function handleAuthAction() {
 }
 
   document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
     const span = document.getElementById('usernameSpan');
     const authBtn = document.getElementById('authBtn');
     const authLabel = authBtn?.querySelector('.btn-label');
     const muteIcon = document.getElementById('muteIcon');
     const muteBtn = document.getElementById('muteBtn');
     const dailyBtn = document.getElementById('dailyBtn');
-    const shareBtn = document.getElementById('shareBtn'); // Added this
-    // Re-check the value inside the listener
+    const shareBtn = document.getElementById('shareBtn');
+    const logBtn = document.getElementById('logBtn'); // Reference added
+
     hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
-    // Check if there is a score saved from a previous game today
     const hasScore = localStorage.getItem('lastDailyScore') !== null;
     
     if (span) span.textContent = ' ' + cachedUsername;
@@ -65,17 +66,30 @@ function handleAuthAction() {
             dailyBtn.classList.remove('disabled');
         }
         
-        // Share Button Logic: Unlock if they have a score saved for today
+        // Share Button Logic
         if (hasScore && shareBtn) {
             shareBtn.classList.add('is-active');
             shareBtn.classList.remove('is-disabled');
             shareBtn.style.opacity = '1';
             shareBtn.style.pointerEvents = 'auto';
         }
+
+        // Collection Log Logic: Unlock for cached users
+        if (logBtn) {
+            logBtn.classList.remove('is-disabled');
+            logBtn.style.opacity = '1';
+            logBtn.style.pointerEvents = 'auto';
+        }
     } else {
-        // Force guest state (locked)
+        // Force guest state (locked) for all protected buttons
         if (dailyBtn) dailyBtn.classList.add('disabled');
         if (shareBtn) shareBtn.classList.add('is-disabled');
+        
+        if (logBtn) {
+            logBtn.classList.add('is-disabled');
+            logBtn.style.opacity = '0.5';
+            logBtn.style.pointerEvents = 'none';
+        }
     }
 
     if (authBtn) {
@@ -120,8 +134,8 @@ function handleAuthAction() {
         <button id="shareBtn" class="is-disabled" type="button" style="opacity: 0.5; pointer-events: none;">
           <span id="shareIcon">🔗</span>
         </button>
-        <a href="coll-log.html" id="logBtn">
-          <span id="logIcon">🏆</span>
+        <a href="coll-log.html" id="logBtn" class="is-disabled" style="opacity: 0.5; pointer-events: none;">
+            <span id="logIcon">🏆</span>
         </a>
         <button id="muteBtn" type="button">
           <span id="muteIcon"></span>
@@ -192,6 +206,7 @@ function handleAuthAction() {
     
 </body>
 </html>
+
 
 
 
