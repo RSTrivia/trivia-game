@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Collection Log</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .log-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      width: 100%;
+      margin: 20px 0;
+      max-height: 400px;
+      overflow-y: auto;
+      padding-right: 5px;
+    }
+    /* The container for the pet image */
+    .pet-slot {
+      background: rgba(30, 30, 30, 0.9);
+      border: 2px solid #333;
+      padding: 15px;
+      border-radius: 4px;
+      position: relative;
+      transition: all 0.4s ease;
+      
+      /* FORCE GREY SCALE FOR LOCKED PETS */
+      filter: grayscale(100%) brightness(40%);
+      opacity: 0.6;
+    }
+    
+    /* THE "YOU GOT IT" STATE */
+    .pet-slot.unlocked {
+      filter: grayscale(0%) brightness(100%);
+      opacity: 1;
+      border-color: #d4af37; /* OSRS Gold border */
+      background: rgba(60, 50, 20, 0.8);
+      box-shadow: inset 0 0 15px rgba(212, 175, 55, 0.2), 0 0 10px rgba(0,0,0,0.5);
+    }
+    
+    .pet-slot img {
+      width: 64px;
+      height: 64px;
+      display: block;
+      margin: 0 auto 10px;
+    }
+    .pet-name {
+      font-size: 0.75rem;
+      display: block;
+      color: #fff;
+    }
+    .log-stats {
+      color: #d4af37;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+      
+  </style>
+</head>
+<body>
+  <div id="background-root"><div id="bg-fade-layer"></div></div>
+  <div id="app">
+    <div class="container">
+      <h1 id="main-title" style="font-size: 2.5rem;">Collection Log</h1>
+      <div class="log-stats">Completed: <span id="logCount">0</span>/9</div>
+      
+      <div class="log-grid" id="logGrid">
+        </div>
+
+      <a href="index.html" class="btn">Back to Menu</a>
+    </div>
+  </div>
+
+  <script src="background.js"></script>
+  <script type="module">
+    import { supabase } from './supabase.js';
+
+    const PET_DATA = [
+      { id: 'pet_mole', name: 'Baby Mole', img: 'assets/pets/mole.png' }, //common
+      { id: 'pet_kraken', name: 'Pet Kraken', img: 'assets/pets/kraken.png' }, //common
+      { id: 'pet_vorki', name: 'Vorki', img: 'assets/pets/vorki.png' }, //uncommon
+      { id: 'pet_snakeling', name: 'Pet Snakeling', img: 'assets/pets/snakeling.png' }, //uncommon
+      { id: 'pet_yami', name: 'Yami', img: 'assets/pets/yami.png' }, //rare
+      { id: 'pet_zilyana', name: 'Pet Zilyana', img: 'assets/pets/zilyana.png' }, //rare
+      { id: 'pet_olmlet', name: 'Olmlet', img: 'assets/pets/olmlet.png' }, // legendary
+      { id: 'pet_jad', name: 'TzRek-Jad', img: 'assets/pets/jad.png' }, // legendary
+    ];
+
+    async function loadLog() {
+      const { data: { session } } = await supabase.auth.getSession();
+      let unlockedPets = [];
+
+      if (session) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('collection_log')
+          .eq('id', session.user.id)
+          .single();
+        unlockedPets = data?.collection_log || [];
+      }
+
+      const grid = document.getElementById('logGrid');
+      grid.innerHTML = '';
+      
+      PET_DATA.forEach(pet => {
+        const isUnlocked = unlockedPets.includes(pet.id);
+        const div = document.createElement('div');
+        div.className = `pet-slot ${isUnlocked ? 'unlocked' : ''}`;
+        div.innerHTML = `
+          <img src="${pet.img}" alt="${pet.name}">
+          <span class="pet-name">${pet.name}</span>
+        `;
+        grid.appendChild(div);
+      });
+
+      document.getElementById('logCount').textContent = unlockedPets.length;
+    }
+
+    loadLog();
+  </script>
+</body>
+</html>
