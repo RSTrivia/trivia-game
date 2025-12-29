@@ -15,29 +15,23 @@
   <title>OSRS Trivia</title>
   <script>
     
-  // Define these globally for this script
+// Define these globally for this script
   const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
   const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
   const cachedMuted = localStorage.getItem('muted') === 'true';
   const todayStr = new Date().toISOString().split('T')[0];
-  let hasPlayed = false;
 
-function handleAuthAction() {
-  const isLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
-
-  if (isLoggedIn) {
-    localStorage.removeItem('cachedLoggedIn');
-    localStorage.removeItem('cachedUsername');
-    localStorage.removeItem('dailyPlayedDate');
-    localStorage.removeItem('lastDailyScore');
-    window.location.reload();
-  } else {
-    window.location.href = 'login.html';
+  function handleAuthAction() {
+    const isLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
+    if (isLoggedIn) {
+      localStorage.clear(); // Clear all to be safe
+      window.location.reload();
+    } else {
+      window.location.href = 'login.html';
+    }
   }
-}
 
   document.addEventListener('DOMContentLoaded', () => {
-document.addEventListener('DOMContentLoaded', () => {
     const span = document.getElementById('usernameSpan');
     const authBtn = document.getElementById('authBtn');
     const authLabel = authBtn?.querySelector('.btn-label');
@@ -45,63 +39,44 @@ document.addEventListener('DOMContentLoaded', () => {
     const muteBtn = document.getElementById('muteBtn');
     const dailyBtn = document.getElementById('dailyBtn');
     const shareBtn = document.getElementById('shareBtn');
-    const logBtn = document.getElementById('logBtn'); // Reference added
+    const logBtn = document.getElementById('logBtn');
 
-    hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
+    const hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
     const hasScore = localStorage.getItem('lastDailyScore') !== null;
-    
+
+    // 1. Instant Text/Emoji Sync
     if (span) span.textContent = ' ' + cachedUsername;
     if (authLabel) authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
-
+    
     if (muteIcon && muteBtn) {
-        // 1. Set the emoji immediately based on cache
-        muteIcon.textContent = cachedMuted ? '🔇' : '🔊';
-        
-        // 2. Add the visual class if it's muted
-        if (cachedMuted) {
-            muteBtn.classList.add('is-muted');
-        } else {
-            muteBtn.classList.remove('is-muted');
-        }
+      muteIcon.textContent = cachedMuted ? '🔇' : '🔊';
+      if (cachedMuted) muteBtn.classList.add('is-muted');
     }
 
-    // --- Unified Anti-Flicker Logic ---
+    // 2. Instant Button State Sync (Anti-Flicker)
     if (cachedLoggedIn) {
-        // Daily Button Logic
-        if (!hasPlayed && dailyBtn) {
-            dailyBtn.classList.add('is-active');
-            dailyBtn.classList.remove('disabled');
+      if (!hasPlayed && dailyBtn) {
+        dailyBtn.classList.add('is-active');
+        dailyBtn.classList.remove('disabled');
+      }
+      [shareBtn, logBtn].forEach(btn => {
+        if (btn && (btn === logBtn || hasScore)) {
+          btn.classList.remove('is-disabled');
+          btn.style.opacity = '1';
+          btn.style.pointerEvents = 'auto';
         }
-        
-        // Share Button Logic
-        if (hasScore && shareBtn) {
-            shareBtn.classList.add('is-active');
-            shareBtn.classList.remove('is-disabled');
-            shareBtn.style.opacity = '1';
-            shareBtn.style.pointerEvents = 'auto';
-        }
-
-        // Collection Log Logic: Unlock for cached users
-        if (logBtn) {
-            logBtn.classList.remove('is-disabled');
-            logBtn.style.opacity = '1';
-            logBtn.style.pointerEvents = 'auto';
-        }
+      });
     } else {
-        // Force guest state (locked) for all protected buttons
-        if (dailyBtn) dailyBtn.classList.add('disabled');
-        if (shareBtn) shareBtn.classList.add('is-disabled');
-        
-        if (logBtn) {
-            logBtn.classList.add('is-disabled');
-            logBtn.style.opacity = '0.5';
-            logBtn.style.pointerEvents = 'none';
+      [dailyBtn, shareBtn, logBtn].forEach(btn => {
+        if (btn) {
+          btn.classList.add('is-disabled');
+          btn.style.opacity = '0.5';
+          btn.style.pointerEvents = 'none';
         }
+      });
     }
 
-    if (authBtn) {
-      authBtn.onclick = handleAuthAction;
-    }
+    if (authBtn) authBtn.onclick = handleAuthAction;
   });
 </script>
 
@@ -213,6 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
 </body>
 </html>
+
 
 
 
