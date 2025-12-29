@@ -232,29 +232,33 @@ async function init() {
 
     // 2. Listen for changes (like logging out)
     supabase.auth.onAuthStateChange((event, session) => {
-        if (event === 'SIGNED_OUT') {
-            handleAuthChange('SIGNED_OUT', null);
-        } else if (session) {
-            handleAuthChange(event, session);
-        }
-    });
-    
+      if (event === 'SIGNED_OUT') {
+              // Only redirect or wipe if the user EXPLICITLY signed out 
+              // or if the session is truly gone.
+              handleAuthChange('SIGNED_OUT', null);
+          } else if (event === 'TOKEN_REFRESHED') {
+              console.log("Token refreshed successfully");
+          } else if (session) {
+              handleAuthChange(event, session);
+          }
+      });
+      
     // 2. Auth Button (Log In / Log Out)
-    authBtn.onclick = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (session) {
-        // Try to tell the server we are leaving
-        const { error } = await supabase.auth.signOut();
-        
-        // REGARDLESS of error (like 403), we wipe the local device
-        // This ensures the user can "Log In" again to get a fresh token
-        localStorage.clear(); 
-        window.location.reload(); 
-    } else {
-        window.location.href = '/login.html';
-    }
-};
+  authBtn.onclick = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+          await supabase.auth.signOut();
+          // Remove only Auth items, keep 'muted' and 'cached_xp'
+          Object.keys(localStorage).forEach(key => {
+              if (key.includes('supabase.auth.token')) {
+                  localStorage.removeItem(key);
+              }
+          });
+          window.location.reload(); 
+      } else {
+          window.location.href = '/login.html';
+      }
+  };
 
     // 3. Game Buttons
     if (startBtn) {
@@ -1731,6 +1735,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
