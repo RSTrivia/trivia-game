@@ -19,7 +19,6 @@
   const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
   const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
   const cachedMuted = localStorage.getItem('muted') === 'true';
-  const cachedXp = parseInt(localStorage.getItem('cached_xp')) || 0;
   const todayStr = new Date().toISOString().split('T')[0];
  
   function handleAuthAction() {
@@ -41,8 +40,6 @@
     const dailyBtn = document.getElementById('dailyBtn');
     const shareBtn = document.getElementById('shareBtn');
     const logBtn = document.getElementById('logBtn');
-    const lvlNum = document.getElementById('levelNumber');
-    const xpBracket = document.getElementById('xpBracket');
     
     const hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
     const hasScore = localStorage.getItem('lastDailyScore') !== null;
@@ -51,31 +48,6 @@
     if (span) span.textContent = ' ' + cachedUsername;
     if (authLabel) authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
 
-    // --- NEW: XP & LEVEL INSTANT SYNC ---
-    if (lvlNum && xpBracket) {
-      if (cachedLoggedIn) {
-        // Use the globally defined cachedXp from your script
-        let displayLvl = 1;
-        if (cachedXp >= 100000) {
-          displayLvl = 99;
-        } else if (cachedXp > 0) {
-          for (let L = 1; L <= 99; L++) {
-            let threshold = Math.floor(Math.pow((L - 1) / 98, 3.1) * 100000);
-            if (cachedXp < threshold) {
-              displayLvl = Math.max(1, L - 1);
-              break;
-            }
-          }
-        }
-        lvlNum.textContent = displayLvl;
-        xpBracket.textContent = `(${cachedXp.toLocaleString()} XP)`;
-      } else {
-        // Reset to Guest defaults if not logged in
-        lvlNum.textContent = '1';
-        xpBracket.textContent = '(0 XP)';
-      }
-    }
-    
     if (muteIcon && muteBtn) {
       muteIcon.textContent = cachedMuted ? '🔇' : '🔊';
       if (cachedMuted) muteBtn.classList.add('is-muted');
@@ -248,6 +220,7 @@
     
 </body>
 </html>
+
 
 
 
