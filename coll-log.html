@@ -10,23 +10,40 @@
             }
         })();
     </script>
-    <script>
-    // Anti-flicker: Apply classes before the body even renders
+  <script>
     (function () {
         const cached = JSON.parse(localStorage.getItem('cached_pets') || '[]');
         if (cached.length > 0) {
-            // Create a temporary style to hide the mystery state for items we know are unlocked
+            // 1. Create instant CSS for colors/borders
             let style = document.createElement('style');
             let selectors = cached.map(id => `#slot-${id}`).join(', ');
-            // This forces the unlocked slots to look right immediately
             style.innerHTML = `
                 ${selectors} { 
-                    border-color: #d4af37 !important; 
+                    border-color: #ffdf00 !important; 
                     background: linear-gradient(135deg, rgba(212,175,55,0.4), rgba(100,80,20,0.9)) !important;
+                    box-shadow: inset 0 0 15px rgba(255, 223, 0, 0.3) !important;
                 }
-                ${selectors} .pet-img { filter: none !important; opacity: 1 !important; }
+                ${selectors} .pet-img { filter: drop-shadow(0 0 8px rgba(255, 223, 0, 0.6)) !important; opacity: 1 !important; }
+                ${selectors} .pet-name { color: #ffdf00 !important; font-weight: bold !important; opacity: 1 !important; letter-spacing: normal !important; }
             `;
             document.head.appendChild(style);
+
+            // 2. Instant Text Reveal: This runs as soon as the DOM is ready to be touched
+            const PET_NAMES = {
+                'pet_mole': 'Baby Mole', 'pet_kraken': 'Pet Kraken', 'pet_vorki': 'Vorki',
+                'pet_snakeling': 'Pet Snakeling', 'pet_yami': 'Yami', 'pet_zilyana': 'Pet Zilyana',
+                'pet_olmlet': 'Olmlet', 'pet_jad': 'TzRek-Jad'
+            };
+
+            document.addEventListener("DOMContentLoaded", () => {
+                cached.forEach(id => {
+                    const slot = document.getElementById(`slot-${id}`);
+                    if (slot) {
+                        const nameSpan = slot.querySelector('.pet-name');
+                        if (nameSpan) nameSpan.textContent = PET_NAMES[id];
+                    }
+                });
+            });
         }
     })();
 </script>
@@ -87,6 +104,10 @@
             transition: all 0.3s ease;
             box-sizing: border-box; /* Crucial: border stays inside the width */
             height: 120px; /* Optional: Set a fixed height to prevent ANY vertical jumping */
+        }
+        /* Add this to allow the gold reveal to animate ONLY when actually unlocking, not refreshing */
+        .container.loaded .pet-slot {
+            transition: all 0.5s ease;
         }
         
         .pet-img {
