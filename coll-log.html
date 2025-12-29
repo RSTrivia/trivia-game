@@ -65,17 +65,17 @@
             align-items: center;
             justify-content: center;
             transition: all 0.3s ease;
-            width: 100%;
-            height: 120px; /* Force a consistent height for the box */
+            /* Removed min-height and height to prevent 'growing' too large */
         }
-
-            .pet-img {
-            width: 50px;           /* The 'box' width */
-            height: 50px;          /* The 'box' height */
-            object-fit: scale-down; /* Keeps small images small, prevents stretching */
-            image-rendering: pixelated; 
-            display: block;        /* Removes bottom whitespace gap */
-            margin: 0 auto 8px auto;
+        
+        .pet-img {
+            width: 50px;           /* The maximum box width */
+            height: 50px;          /* The maximum box height */
+            object-fit: scale-down; /* Keeps them original size if smaller than 50px */
+            filter: brightness(0) contrast(0.5); 
+            margin-bottom: 8px;
+            image-rendering: pixelated;
+            display: block;
         }
 
         .pet-name {
