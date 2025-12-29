@@ -1467,7 +1467,6 @@ async function rollForPet() {
 function showCollectionLogNotification(petName) {
     let modal = document.getElementById('pet-modal');
     
-    // Create it if it doesn't exist
     if (!modal) {
         modal = document.createElement('div');
         modal.id = 'pet-modal';
@@ -1487,26 +1486,27 @@ function showCollectionLogNotification(petName) {
 
     const fileName = fileNameMap[petName] || 'mole.png';
 
+    // Added the 'X' button with an onclick event
     modal.innerHTML = `
+        <span class="pet-modal-close" onclick="this.parentElement.classList.remove('active')">&times;</span>
         <div class="pet-unlock-title">NEW PET UNLOCKED</div>
         <img src="pets/${fileName}" class="pet-unlock-icon">
         <div class="pet-unlock-name">${petName}</div>
         <div class="pet-unlock-msg">You have a funny feeling like you're being followed.</div>
     `;
 
-    // Delay slightly to trigger the CSS transition
     setTimeout(() => {
         modal.classList.add('active');
     }, 100);
 
-    // Trigger your fireworks
     if (typeof triggerFireworks === "function") triggerFireworks();
 
-    // Auto-hide after 6 seconds
+    // Optional: Still auto-hide after 10 seconds just in case they forget
     setTimeout(() => {
         modal.classList.remove('active');
-    }, 6000);
+    }, 10000);
 }
+
 
 // Make it accessible for testing
 window.showCollectionLogNotification = showCollectionLogNotification;
@@ -1693,6 +1693,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
