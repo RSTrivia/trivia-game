@@ -444,7 +444,7 @@ async function handleAuthChange(event, session) {
     await fetchDailyStatus(session.user.id);
     // Establish the live sync
     syncChannel = setupRealtimeSync(session.user.id);
-    updateLevelUI();
+    //updateLevelUI();
 }
 
 async function hasUserCompletedDaily(session) {
@@ -1724,6 +1724,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
