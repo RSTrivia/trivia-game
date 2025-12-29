@@ -1199,14 +1199,19 @@ if (shareBtn) {
         try {
             const target = document.querySelector('.container');
             const muteBtn = document.getElementById('muteBtn');
-            shareBtn.style.opacity = '0';
-            if (muteBtn) muteBtn.style.opacity = '0';
+            //shareBtn.style.opacity = '0';
+            //if (muteBtn) muteBtn.style.opacity = '0';
 
             const canvas = await html2canvas(target, {
                 backgroundColor: '#0a0a0a', 
                 scale: 2, 
                 useCORS: true,
                 onclone: (clonedDoc) => {
+                  const idsToHide = ['muteBtn', 'shareBtn', 'logBtn', 'collection-log'];
+                    idsToHide.forEach(id => {
+                        const el = clonedDoc.getElementById(id);
+                        if (el) el.style.display = 'none';
+                    });
                     // --- A. FORCE DIMENSIONS (Prevents Mobile Shrinking) ---
                     const clonedContainer = clonedDoc.querySelector('.container');
                     // 1. FORCE THE VIEWPORT (The "Magic" fix for mobile)
@@ -1370,8 +1375,8 @@ if (shareBtn) {
         finalScore.textContent = originalScore;
         document.getElementById('game-over-title').textContent = originalMsg;
         
-        shareBtn.style.opacity = '1';
-        if (muteBtn) muteBtn.style.opacity = '1';
+        //shareBtn.style.opacity = '1';
+        //if (muteBtn) muteBtn.style.opacity = '1';
     }
       
     };
@@ -1711,6 +1716,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
