@@ -1504,7 +1504,7 @@ function showCollectionLogNotification(petName) {
     // Optional: Still auto-hide after 6 seconds just in case they forget
     setTimeout(() => {
         modal.classList.remove('active');
-    }, 6000);
+    }, 4000);
 }
 
 
@@ -1693,6 +1693,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
