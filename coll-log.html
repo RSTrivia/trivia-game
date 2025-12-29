@@ -14,35 +14,23 @@
     (function () {
         const cached = JSON.parse(localStorage.getItem('cached_pets') || '[]');
         if (cached.length > 0) {
-            // 1. Create instant CSS for colors/borders
-            let style = document.createElement('style');
-            let selectors = cached.map(id => `#slot-${id}`).join(', ');
-            style.innerHTML = `
-                ${selectors} { 
-                    border-color: #ffdf00 !important; 
-                    background: linear-gradient(135deg, rgba(212,175,55,0.4), rgba(100,80,20,0.9)) !important;
-                    box-shadow: inset 0 0 15px rgba(255, 223, 0, 0.3) !important;
-                }
-                ${selectors} .pet-img { filter: drop-shadow(0 0 8px rgba(255, 223, 0, 0.6)) !important; opacity: 1 !important; }
-                ${selectors} .pet-name { color: #ffdf00 !important; font-weight: bold !important; opacity: 1 !important; letter-spacing: normal !important; }
-            `;
-            document.head.appendChild(style);
-
-            // 2. Instant Text Reveal: This runs as soon as the DOM is ready to be touched
-            const PET_NAMES = {
-                'pet_mole': 'Baby Mole', 'pet_kraken': 'Pet Kraken', 'pet_vorki': 'Vorki',
-                'pet_snakeling': 'Pet Snakeling', 'pet_yami': 'Yami', 'pet_zilyana': 'Pet Zilyana',
-                'pet_olmlet': 'Olmlet', 'pet_jad': 'TzRek-Jad'
-            };
-
             document.addEventListener("DOMContentLoaded", () => {
+                const grid = document.getElementById('logGrid');
                 cached.forEach(id => {
                     const slot = document.getElementById(`slot-${id}`);
                     if (slot) {
-                        const nameSpan = slot.querySelector('.pet-name');
-                        if (nameSpan) nameSpan.textContent = PET_NAMES[id];
+                        // Apply the gold class instantly
+                        slot.classList.add('unlocked');
+                        // We will handle specific rarities and names in the module script
                     }
                 });
+                // Show the grid now that slots are pre-colored
+                grid.classList.add('ready');
+            });
+        } else {
+            // If no cache, just show the mystery grid immediately
+            document.addEventListener("DOMContentLoaded", () => {
+                document.getElementById('logGrid').classList.add('ready');
             });
         }
     })();
@@ -315,16 +303,14 @@ function applyUnlocks(unlockedList) {
     PET_DATA.forEach(pet => {
         const slot = document.getElementById(`slot-${pet.id}`);
         if (!slot) return;
-
         const isUnlocked = unlockedList.includes(pet.id);
         const nameSpan = slot.querySelector('.pet-name');
 
-        // Update the final class list
         slot.className = `pet-slot ${isUnlocked ? 'unlocked ' + pet.rarity : ''}`;
-        
-        // Update the text - this will now happen so fast the user won't see the change
         nameSpan.textContent = isUnlocked ? pet.name : "???";
     });
+    // Ensure grid is visible and animations are enabled
+    document.getElementById('logGrid').classList.add('ready');
     document.querySelector('.container').classList.add('loaded');
 }
 
