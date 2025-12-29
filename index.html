@@ -19,8 +19,9 @@
   const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
   const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
   const cachedMuted = localStorage.getItem('muted') === 'true';
+  const cachedXp = parseInt(localStorage.getItem('cached_xp')) || 0;
   const todayStr = new Date().toISOString().split('T')[0];
-
+ 
   function handleAuthAction() {
     const isLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
     if (isLoggedIn) {
@@ -43,10 +44,35 @@
 
     const hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
     const hasScore = localStorage.getItem('lastDailyScore') !== null;
-
+    const lvlNum = document.getElementById('levelNumber');
+    const xpBracket = document.getElementById('xpBracket');
+    
     // 1. Instant Text/Emoji Sync
     if (span) span.textContent = ' ' + cachedUsername;
     if (authLabel) authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
+
+    // --- NEW: XP & LEVEL INSTANT SYNC ---
+        if (lvlNum && xpBracket && cachedLoggedIn) {
+            // Simple level calculation for the anti-flicker
+            // (Just a quick version of your getLevel function)
+            let displayLvl = 1;
+            if (cachedXp >= 100000) {
+                displayLvl = 99;
+            } else {
+                for (let L = 1; L <= 99; L++) {
+                    let threshold = Math.floor(Math.pow((L - 1) / 98, 3.1) * 100000);
+                    if (cachedXp < threshold) {
+                        displayLvl = L - 1;
+                        break;
+                    }
+                }
+            }
+        
+        lvlNum.textContent = displayLvl;
+        xpBracket.textContent = `(${cachedXp.toLocaleString()} XP)`;
+    }
+
+
     
     if (muteIcon && muteBtn) {
       muteIcon.textContent = cachedMuted ? '🔇' : '🔊';
@@ -78,6 +104,7 @@
 
     if (authBtn) authBtn.onclick = handleAuthAction;
   });
+    
 </script>
 
   <!-- 🔥 Load last background BEFORE first paint (NO flicker) -->
@@ -190,6 +217,7 @@
     
 </body>
 </html>
+
 
 
 
