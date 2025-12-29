@@ -325,11 +325,11 @@ h1 {
   padding-top: 10px; /* Optional: adds a little space below the title */
   position: relative;
 }
-/* 2. The Icon Group: Float them to the left of the center */
 .icon-group {
   position: absolute;
-  /* This moves the right edge of the icons to be 80px left of the center line */
-  right: calc(50% + 80px); 
+  /* Increasing this number pushes icons LEFT, 
+     which makes the NAME feel like it's more to the RIGHT */
+  right: calc(50% + 105px); 
   display: flex;
   gap: 8px;
   align-items: center;
@@ -353,13 +353,13 @@ h1 {
 
 /* 4. The Text: Now stays perfectly in the middle */
 #userDisplay {
-  font-size: 1.2rem;
-  color: #d4af37;
+  /* Ensure no residual margins are fighting the centering */
+  margin-left: 0 !important;
+  margin-right: 0 !important;
   text-align: center;
   display: flex;
   flex-direction: column;
-  align-items: center; /* Center the "Player" and "Level" lines */
-  margin: 0; /* Clear previous negative margins */
+  align-items: center;
 }
 /* Unified Layout for all 3 icons  come here*/
 /* ====== USER CONTROLS (REVERTED TO ORIGINAL) ====== */
@@ -1300,6 +1300,7 @@ input.input-field:-webkit-autofill:active {
     margin-top: 2px;
 }
 /* ====== PET UNLOCK MODAL ====== */
+
 
 
 
