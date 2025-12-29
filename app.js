@@ -390,11 +390,14 @@ async function handleAuthChange(event, session) {
         localStorage.removeItem('lastDailyScore');
         localStorage.removeItem('dailyPlayedDate');
         
-        [dailyBtn, shareBtn].forEach(btn => {
+        // DISABLE Log, Share, and Daily for guests
+        [dailyBtn, shareBtn, logBtn].forEach(btn => {
             if (btn) {
                 btn.classList.add('is-disabled');
                 btn.style.opacity = '0.5';
                 btn.style.pointerEvents = 'none';
+                // If it's the <a> tag (logBtn), ensure it can't be clicked
+                if(btn.tagName === 'A') btn.setAttribute('tabindex', '-1');
             }
         });
       
@@ -414,7 +417,15 @@ async function handleAuthChange(event, session) {
     currentProfileXp = profile?.xp || 0; // Set the global variable
     if (span) span.textContent = ' ' + username;
     if (label) label.textContent = 'Log Out';
-    
+
+  // ENABLE the Log Button for users
+    if (logBtn) {
+        logBtn.classList.remove('is-disabled');
+        logBtn.style.opacity = '1';
+        logBtn.style.pointerEvents = 'auto';
+        logBtn.removeAttribute('tabindex');
+    }
+  
     // Sync their daily status
     await fetchDailyStatus(session.user.id);
     // Establish the live sync
@@ -1621,6 +1632,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
