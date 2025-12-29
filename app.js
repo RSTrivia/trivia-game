@@ -171,7 +171,7 @@ const dailyMessages = {
   ]
 };
 
-let correctBuffer, wrongBuffer, tickBuffer, levelUpBuffer, bonusBuffer;
+let correctBuffer, wrongBuffer, tickBuffer, levelUpBuffer, bonusBuffer, petBuffer;
 let activeTickSource = null; // To track the running sound
 let muted = cachedMuted;
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1473,6 +1473,12 @@ function showCollectionLogNotification(petName) {
         document.body.appendChild(modal);
     }
 
+    // 1. Play your existing Level Up sound
+    // Assuming you have a playSound(buffer) function defined in your audio script
+    if (typeof playSound === "function" && petBuffer) {
+        playSound(petBuffer);
+    }
+
     const fileNameMap = {
         'Baby Mole': 'mole.png',
         'Pet Kraken': 'kraken.png',
@@ -1498,10 +1504,10 @@ function showCollectionLogNotification(petName) {
         modal.classList.add('active');
     }, 50);
 
+    // Trigger fireworks
     if (typeof triggerFireworks === "function") triggerFireworks();
 
-    // --- DYNAMIC DISPLAY TIME ---
-    // If screen width is 480px or less, use 2 seconds. Otherwise, use 6 seconds.
+    // 2. Dynamic Display Time (Mobile: 2s, PC: 6s)
     const isMobile = window.innerWidth <= 480;
     const displayTime = isMobile ? 2000 : 6000;
 
@@ -1513,17 +1519,14 @@ function showCollectionLogNotification(petName) {
 window.showCollectionLogNotification = showCollectionLogNotification;
 
 
-// Make it accessible for testing
-window.showCollectionLogNotification = showCollectionLogNotification;
-
-
 // ====== HELPERS & AUDIO ======
 async function loadSounds() {
     if (!correctBuffer) correctBuffer = await loadAudio('./sounds/correct.mp3');
     if (!wrongBuffer) wrongBuffer = await loadAudio('./sounds/wrong.mp3');
     if (!tickBuffer) tickBuffer = await loadAudio('./sounds/tick.mp3');
     if (!levelUpBuffer) levelUpBuffer = await loadAudio('./sounds/level.mp3');
-    if (!bonusBuffer)   bonusBuffer = await loadAudio('./sounds/bonus.mp3');
+    if (!bonusBuffer) bonusBuffer = await loadAudio('./sounds/bonus.mp3');
+    if (!petBuffer) petBuffer = await loadAudio('./sounds/pet.mp3');
 }
 
 async function loadAudio(url) {
@@ -1698,6 +1701,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
