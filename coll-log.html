@@ -155,8 +155,16 @@
         <div class="container">
             <h1 id="main-title">Collection Log</h1>
             
-            <div id="logGrid">
-                </div>
+           <div id="logGrid">
+            <div class="pet-slot" id="slot-pet_mole"><img src="pets/mole.png" class="pet-img"><span class="pet-name">Baby Mole</span></div>
+            <div class="pet-slot" id="slot-pet_kraken"><img src="pets/kraken.png" class="pet-img"><span class="pet-name">Pet Kraken</span></div>
+            <div class="pet-slot" id="slot-pet_vorki"><img src="pets/vorki.png" class="pet-img"><span class="pet-name">Vorki</span></div>
+            <div class="pet-slot" id="slot-pet_snakeling"><img src="pets/snakeling.png" class="pet-img"><span class="pet-name">Pet Snakeling</span></div>
+            <div class="pet-slot" id="slot-pet_yami"><img src="pets/yami.png" class="pet-img"><span class="pet-name">Yami</span></div>
+            <div class="pet-slot" id="slot-pet_zilyana"><img src="pets/zilyana.png" class="pet-img"><span class="pet-name">Pet Zilyana</span></div>
+            <div class="pet-slot" id="slot-pet_olmlet"><img src="pets/olmlet.png" class="pet-img"><span class="pet-name">Olmlet</span></div>
+            <div class="pet-slot" id="slot-pet_jad"><img src="pets/jad.png" class="pet-img"><span class="pet-name">TzRek-Jad</span></div>
+        </div>
 
             <a href="index.html" class="btn-small">Main Menu</a>
         </div>
@@ -164,49 +172,56 @@
 
     <script src="background.js"></script>
     <script type="module">
-        import { supabase } from './supabase.js';
+       import { supabase } from './supabase.js';
 
-        const PET_DATA = [
-            { id: 'pet_mole', name: 'Baby Mole', rarity: 'common', file: 'mole.png' },
-            { id: 'pet_kraken', name: 'Pet Kraken', rarity: 'common', file: 'kraken.png' },
-            { id: 'pet_vorki', name: 'Vorki', rarity: 'uncommon', file: 'vorki.png' },
-            { id: 'pet_snakeling', name: 'Pet Snakeling', rarity: 'uncommon', file: 'snakeling.png' },
-            { id: 'pet_yami', name: 'Yami', rarity: 'rare', file: 'yami.png' },
-            { id: 'pet_zilyana', name: 'Pet Zilyana', rarity: 'rare', file: 'zilyana.png' },
-            { id: 'pet_olmlet', name: 'Olmlet', rarity: 'legendary', file: 'olmlet.png' },
-            { id: 'pet_jad', name: 'TzRek-Jad', rarity: 'legendary', file: 'jad.png' }
-        ];
+const PET_DATA = [
+    { id: 'pet_mole', name: 'Baby Mole', rarity: 'common', file: 'mole.png' },
+    { id: 'pet_kraken', name: 'Pet Kraken', rarity: 'common', file: 'kraken.png' },
+    { id: 'pet_vorki', name: 'Vorki', rarity: 'uncommon', file: 'vorki.png' },
+    { id: 'pet_snakeling', name: 'Pet Snakeling', rarity: 'uncommon', file: 'snakeling.png' },
+    { id: 'pet_yami', name: 'Yami', rarity: 'rare', file: 'yami.png' },
+    { id: 'pet_zilyana', name: 'Pet Zilyana', rarity: 'rare', file: 'zilyana.png' },
+    { id: 'pet_olmlet', name: 'Olmlet', rarity: 'legendary', file: 'olmlet.png' },
+    { id: 'pet_jad', name: 'TzRek-Jad', rarity: 'legendary', file: 'jad.png' }
+];
 
-        async function loadCollection() {
-            const { data: { session } } = await supabase.auth.getSession();
-            let unlockedPets = [];
-
-            if (session) {
-                const { data } = await supabase
-                    .from('profiles')
-                    .select('collection_log')
-                    .eq('id', session.user.id)
-                    .single();
-                unlockedPets = data?.collection_log || [];
-            }
-
-            const grid = document.getElementById('logGrid');
-            grid.innerHTML = '';
-
-            PET_DATA.forEach(pet => {
-                const isUnlocked = unlockedPets.includes(pet.id);
-                const slot = document.createElement('div');
-                slot.className = `pet-slot ${isUnlocked ? 'unlocked ' + pet.rarity : ''}`;
-                
-                slot.innerHTML = `
-                    <img src="pets/${pet.file}" class="pet-img" alt="${pet.name}">
-                    <span class="pet-name">${pet.name}</span>
-                `;
-                grid.appendChild(slot);
-            });
+function applyUnlocks(unlockedList) {
+    PET_DATA.forEach(pet => {
+        // Find the slot we already put in the HTML
+        const slot = document.getElementById(`slot-${pet.id}`);
+        if (slot) {
+            const isUnlocked = unlockedList.includes(pet.id);
+            // We only update the class. We don't touch innerHTML, so no flicker!
+            slot.className = `pet-slot ${isUnlocked ? 'unlocked ' + pet.rarity : ''}`;
         }
+    });
+}
 
-        loadCollection();
+async function loadCollection() {
+    // 1. Check LocalStorage first (Instant highlight)
+    const cached = JSON.parse(localStorage.getItem('cached_pets') || '[]');
+    if (cached.length > 0) {
+        applyUnlocks(cached);
+    }
+
+    // 2. Get fresh data from Supabase
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+        const { data } = await supabase
+            .from('profiles')
+            .select('collection_log')
+            .eq('id', session.user.id)
+            .single();
+        
+        const freshPets = data?.collection_log || [];
+        
+        // 3. Update storage and UI if there's a change
+        localStorage.setItem('cached_pets', JSON.stringify(freshPets));
+        applyUnlocks(freshPets);
+    }
+}
+
+loadCollection();
     </script>
 </body>
 </html>
