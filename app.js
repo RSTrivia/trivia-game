@@ -7,7 +7,7 @@ const cachedMuted = localStorage.getItem('muted') === 'true';
 let dailySubscription = null; // Track this globally to prevent duplicates
 let streak = 0;              // Tracking for normal game bonus
 let dailyQuestionCount = 0;   // Tracking for daily bonus
-let currentProfileXp = 0;    // Store the player's current XP locally
+let currentProfileXp = parseInt(localStorage.getItem('cached_xp')) || 0;    // Store the player's current XP locally
 let syncChannel;
 let username = 'Guest';
 let gameEnding = false;
@@ -1724,6 +1724,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
