@@ -101,7 +101,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             box-sizing: border-box; /* Crucial: border stays inside the width */
             height: 120px; /* Optional: Set a fixed height to prevent ANY vertical jumping */
         }
@@ -325,6 +325,7 @@ function applyUnlocks(unlockedList) {
         // Update the text - this will now happen so fast the user won't see the change
         nameSpan.textContent = isUnlocked ? pet.name : "???";
     });
+    document.querySelector('.container').classList.add('loaded');
 }
 
 async function loadCollection() {
