@@ -1215,38 +1215,6 @@ if (shareBtn) {
                 scale: 2, 
                 useCORS: true,
                 onclone: (clonedDoc) => {
-                  // 1. Target the Title
-                  const title = clonedDoc.getElementById('main-title');
-                  // --- FORCE TITLE VISIBILITY (Fixes mobile disappearance) ---
-                    if (title) {
-                        // Reset classes and force block display
-                        title.classList.remove('hidden'); 
-                        Object.assign(title.style, {
-                            display: 'block',           // Overrides 'none'
-                            visibility: 'visible',     // Overrides 'hidden'
-                            opacity: '1',              // Overrides '0'
-                            background: 'none',
-                            backgroundImage: 'none',
-                            webkitBackgroundClip: 'initial',
-                            color: '#000000',
-                            webkitTextFillColor: '#000000',
-                            fontFamily: "'Cinzel', serif",
-                            fontWeight: "700",
-                            fontSize: "48px",          // Fixed size for the photo
-                            textAlign: "center",
-                            width: '100%',
-                            marginBottom: '20px',
-                            textShadow: `
-                                0 0 4px rgba(0,0,0,0.8),
-                                1px 1px 0 #000,
-                                2px 2px 2px rgba(0,0,0,0.6),
-                                0 0 12px rgba(212, 175, 55, 0.95),
-                                0 0 30px rgba(212, 175, 55, 0.75),
-                                0 0 55px rgba(212, 175, 55, 0.45)`
-                        });
-                    }
-
-                  
                   const idsToHide = ['muteBtn', 'shareBtn', 'logBtn', 'collection-log'];
                     idsToHide.forEach(id => {
                         const el = clonedDoc.getElementById(id);
@@ -1350,6 +1318,10 @@ if (shareBtn) {
                   // --- D. TITLE FIX (Locked Pixel Size) ---
                     if (title) {
                         Object.assign(title.style, {
+                            display: 'block',             // <--- ADD THIS
+                            visibility: 'visible',       // <--- ADD THIS
+                            opacity: '1',                // <--- ADD THIS
+                            width: '100%',               // <--- ADD THIS (ensures centering)
                             background: 'none',
                             backgroundImage: 'none',
                             webkitBackgroundClip: 'initial',
@@ -1367,6 +1339,8 @@ if (shareBtn) {
                                 0 0 30px rgba(212, 175, 55, 0.75),
                                 0 0 55px rgba(212, 175, 55, 0.45)`
                         });
+                      // 3. Final safety: Force display none override
+                      title.style.setProperty('display', 'block', 'important');
                     }
                 }
             });
@@ -1757,6 +1731,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
