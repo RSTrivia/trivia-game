@@ -140,7 +140,19 @@
         .pet-slot:not(.unlocked) .pet-name {
             letter-spacing: 2px;
             opacity: 0.5;
-            font-family: monospace; /* Question marks often look cooler in monospace */
+            font-family: 'Courier New', monospace; /* Makes the ??? look more like a secret */
+            color: #555;
+        }
+                /* Mystery State Styling */
+        .pet-slot:not(.unlocked) .pet-img {
+            filter: brightness(0) contrast(0.5) blur(4px); /* Blurs the silhouette */
+            opacity: 0.6;
+        }
+     
+        /* Hover effect for locked slots */
+        .pet-slot:not(.unlocked):hover {
+            background: rgba(30, 30, 30, 0.9);
+            border-color: #555;
         }
         
                .btn-small {
@@ -265,15 +277,11 @@ function applyUnlocks(unlockedList) {
             const isUnlocked = unlockedList.includes(pet.id);
             const nameSpan = slot.querySelector('.pet-name');
 
-            // 1. Update the CSS class
+            // Set the state class
             slot.className = `pet-slot ${isUnlocked ? 'unlocked ' + pet.rarity : ''}`;
 
-            // 2. Update the Text
-            if (isUnlocked) {
-                nameSpan.textContent = pet.name;
-            } else {
-                nameSpan.textContent = "???";
-            }
+            // Reveal name or keep mystery
+            nameSpan.textContent = isUnlocked ? pet.name : "???";
         }
     });
 }
