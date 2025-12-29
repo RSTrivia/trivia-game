@@ -316,25 +316,44 @@ h1 {
 
 /* ====== USER DISPLAY & MUTE BUTTON ===== */
 #user-controls {
-  display: flex;            /* horizontal layout */
-  align-items: center;      /* vertically center mic and text */
-  justify-content: center; /*center;   horizontally center inside container */
-  padding-left: 20px; /* new - delete if doesnt work */
-  gap: 10px;                 /* space between mic and name */
-  margin-bottom: 30px;
-  padding-top: 10px; /* Optional: adds a little space below the title */
-  position: relative;
-}
-.icon-group {
-  position: absolute;
-  /* Increasing this number pushes icons LEFT, 
-     which makes the NAME feel like it's more to the RIGHT */
-  right: calc(50% + 105px); 
   display: flex;
-  gap: 8px;
   align-items: center;
+  /* This is the secret: space-between + 3 equal parts */
+  justify-content: space-between; 
+  width: 100%;
+  margin-bottom: 30px;
+  padding: 0 10px; /* Keeps icons from touching the very edge */
+  box-sizing: border-box;
 }
 
+/* 1. The Left Side (Icons) */
+.icon-group {
+  display: flex;
+  gap: 8px;
+  flex: 1; /* Takes up 1/3 of the space */
+  justify-content: flex-start; /* Aligns icons to the left */
+}
+
+/* 2. The Center Side (Name) */
+#userDisplay {
+  flex: 2; /* Takes up more space to stay centered */
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 !important;
+  font-size: 1.2rem;
+  color: #d4af37;
+}
+
+/* 3. The "Ghost" Right Side (To balance the center) */
+#user-controls::after {
+  content: "";
+  flex: 1; /* Takes up 1/3 of the space on the right */
+}
+
+
+/* ====== USER CONTROLS (FIXED PLACEMENT & COLORS) ====== *
 /* 3. The Icons: Clean up the individual buttons */
 #shareBtn, #muteBtn, #logBtn {
   width: 32px;
@@ -350,21 +369,6 @@ h1 {
   transition: opacity 0.2s ease;
   filter: sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85);
 }
-
-/* 4. The Text: Now stays perfectly in the middle */
-#userDisplay {
-  /* Ensure no residual margins are fighting the centering */
-  margin-left: 0 !important;
-  margin-right: 0 !important;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-/* Unified Layout for all 3 icons  come here*/
-/* ====== USER CONTROLS (REVERTED TO ORIGINAL) ====== */
-/* ====== USER CONTROLS (FIXED PLACEMENT & COLORS) ====== *
-
 /* Space between the icons themselves */
 #shareBtn { margin-right: 4px; }
 #logBtn { margin-right: 4px; }
@@ -392,6 +396,8 @@ h1 {
   opacity: 1;
   filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.1);
 }
+
+
 
 
 /* MOBILE FIX: Stop the icons from jumping out of the container */
@@ -1300,6 +1306,7 @@ input.input-field:-webkit-autofill:active {
     margin-top: 2px;
 }
 /* ====== PET UNLOCK MODAL ====== */
+
 
 
 
