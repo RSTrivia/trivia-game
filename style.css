@@ -339,52 +339,62 @@ h1 {
   position: relative;
 }
 
-#muteBtn, #shareBtn, #logBtn {
+/* 1. Unified Layout (Fixed Placement - No Overlap) */
+#shareBtn, #muteBtn, #logBtn {
   width: 32px;
   height: 32px;
-  flex-shrink: 0;
+  position: relative; 
+  /* REMOVED: left: -80px (This was causing the overlap) */
   display: flex;
   justify-content: center;
   align-items: center;
   background: none;
   border: none;
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   cursor: pointer;
   padding: 0;
-  outline: none;
-  transition: filter 0.2s ease, opacity 0.2s ease;
+  text-decoration: none;
   
-  /* YOUR ORIGINAL GOLD COLOR */
+  /* Standard Transition */
+  transition: opacity 0.2s ease; 
+  
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+
+  /* ISOLATION: Keeps the gold filters stable */
+  isolation: isolate;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0); 
+}
+
+/* Space between the icons themselves */
+#shareBtn { margin-right: 4px; }
+#logBtn { margin-right: 4px; }
+
+/* 2. Standard State: Your Original Gold */
+#shareBtn:not(.is-disabled), 
+#logBtn:not(.is-disabled), 
+#muteBtn:not(.is-muted) {
   filter: sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85);
   opacity: 0.9;
 }
 
-/* Original Spacing */
-#shareBtn { margin-right: 4px; }
-#logBtn { margin-right: 4px; }
-
-/* Original Greyed out state */
-#muteBtn.is-muted, 
+/* 3. Muted/Disabled State: Grey */
+#muteBtn.is-muted,
 #shareBtn.is-disabled, 
 #logBtn.is-disabled {
-  filter: grayscale(1) brightness(0.5) !important; 
+  filter: grayscale(1) brightness(0.5) !important;
   opacity: 0.5;
-  cursor: pointer;
 }
 
-/* Original Hover */
-#muteBtn:hover:not(.is-muted), 
-#shareBtn:hover:not(.is-disabled),
-#logBtn:not(.is-disabled):hover {
+/* 4. Hover Logic: Slight Glow */
+#shareBtn:not(.is-disabled):hover,
+#logBtn:not(.is-disabled):hover,
+#muteBtn:not(.is-muted):hover {
   opacity: 1;
+  filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.1);
 }
-
-#muteIcon {
-  display: inline-block;
-  line-height: 1;
-  pointer-events: none;
-}
-
 
 
 /* MOBILE FIX: Stop the icons from jumping out of the container */
@@ -1291,6 +1301,7 @@ input.input-field:-webkit-autofill:active {
     margin-top: 2px;
 }
 /* ====== PET UNLOCK MODAL ====== */
+
 
 
 
