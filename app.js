@@ -1213,6 +1213,10 @@ if (shareBtn) {
                     const clonedBody = clonedDoc.body;
                     clonedBody.style.width = '450px';
                     clonedBody.style.height = '600px';
+                    // ADD THESE THREE LINES BELOW:
+                    clonedBody.style.display = 'flex';
+                    clonedBody.style.justifyContent = 'center';
+                    clonedBody.style.alignItems = 'center';                
                     //clonedBody.style.overflow = 'hidden';
                     // --- ADD THIS BLOCK HERE ---
                     const idsToHide = ['muteBtn', 'shareBtn', 'logBtn', 'collection-log'];
@@ -1716,6 +1720,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
