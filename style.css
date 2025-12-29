@@ -326,60 +326,70 @@ h1 {
   position: relative;
 }
 
-#muteBtn, #shareBtn {
+/* Unified Layout for all 3 icons */
+#shareBtn, #muteBtn, #logBtn {
   width: 32px;
   height: 32px;
-  position: relative;/* new */
-  flex-shrink: 0;
+  position: relative;
+  left: -80px; /* PC Shift */
   display: flex;
   justify-content: center;
   align-items: center;
   background: none;
   border: none;
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   cursor: pointer;
   padding: 0;
-  outline: none;
-  transition: filter 0.2s ease, opacity 0.2s ease;
+  text-decoration: none;
+  transition: filter 0.2s, opacity 0.2s;
+  
+  /* Standard Gold State */
   filter: sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85);
   opacity: 0.9;
 }
 
-/* 2. Move ONLY the buttons to the left without affecting the text's center */
-#shareBtn, #muteBtn {
-  position: relative; 
-  /* This pushes them left without taking them out of the vertical flow */
-  left: -80px; 
-  /* This moves them "South" (down) slightly to align with the gap between lines */
-  /*top: 2px;   */ 
-}
+#shareBtn { margin-right: 4px; }
+#logBtn { margin-right: 4px; }
 
-/* 3. Adjust the gap between the two buttons */
-#shareBtn {
-  margin-right: 6px;
-}
-
-/* Greyed out state for both */
-#muteBtn.is-muted {
-  filter: grayscale(1) brightness(0.5) !important; 
-  opacity: 0.5;
-  cursor: pointer; /* clickable */
-}
-#shareBtn.is-disabled {
-  filter: grayscale(1) brightness(0.5) !important; 
-  opacity: 0.5;
-  cursor: default; /* Shows it's not clickable */
-}
-#muteBtn:hover:not(.is-muted), #shareBtn:hover:not(.is-disabled) {
+/* HOVER (Only if not disabled) */
+#shareBtn:hover:not(.is-disabled), 
+#logBtn:hover:not(.is-disabled), 
+#muteBtn:hover:not(.is-muted) {
   opacity: 1;
-}
-/* Ensure the icon itself doesn't have weird spacing */
-#muteIcon {
-  display: inline-block;
-  line-height: 1;
-  pointer-events: none; /* Clicks go through to the button */
+  filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.1);
 }
 
+/* DISABLED STATE (Share & Log) */
+#shareBtn.is-disabled, 
+#logBtn.is-disabled {
+  filter: grayscale(1) brightness(0.5) !important;
+  opacity: 0.5;
+  pointer-events: none;
+  cursor: default;
+}
+
+/* MUTED STATE (Only affects Mute Button) */
+#muteBtn.is-muted {
+  filter: grayscale(1) brightness(0.5) !important;
+  opacity: 0.5;
+}
+
+/* MOBILE FIX: Stop the icons from jumping out of the container */
+@media (max-width: 480px) {
+  #user-controls {
+    justify-content: center;
+    width: 100%;
+    gap: 5px; /* Tighten the icon gap */
+  }
+
+  #shareBtn, #muteBtn, #logBtn {
+    left: -15px !important; /* Smaller shift for small screens */
+  }
+
+  #userDisplay {
+    margin-left: 5px !important;
+  }
+}
 /* Tapped State: If you use the mobileFlash function, this matches the gold flash */
 /*#muteBtn.tapped {
   /* Reduced brightness from 1.3 to 1.0 and saturation from 4 to 2.5 */
@@ -824,17 +834,6 @@ input.input-field:-webkit-autofill:active {
     width: 100%;
   }
   
-  #shareBtn, #muteBtn, #logBtn {
-    position: relative;
-    /* 1. Adjust this slightly to move icons West (smaller number = safer) */
-    left: -10px; 
-    /*top: 3px;*/
-  }
-
-  /* 2. REDUCE gap between Mic and Share */
-  #shareBtn {
-    margin-right: 2px !important; 
-  }
 
   /* 3. INCREASE gap between Text and Mic */
   #userDisplay {
@@ -1194,47 +1193,6 @@ input.input-field:-webkit-autofill:active {
   font-weight: bold;
 }
 /* ====== tab for leaderboards xp====== */
-
-/* ====== collection log button (Icon Style) ====== */
-#logBtn {
-  width: 32px; /* Matches your #muteBtn exactly */
-  height: 32px;
-  position: relative;
-  left: -80px; /* Moves it West with the other icons */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: none; /* Removed the background box */
-  border: none;     /* Removed the border */
-  font-size: 1.4rem;
-  text-decoration: none;
-  cursor: pointer;
-  transition: filter 0.2s ease, opacity 0.2s ease;
-  
-  /* Use the exact same gold filter as your muteBtn */
-  filter: sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85);
-  opacity: 0.9;
-  margin-right: 6px; /* Space between icons */
-}
-
-#logBtn:hover {
-  opacity: 1;
-  filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.1);
-}
-
-/* Matching the "Greyed out" look for guests */
-#logBtn.is-disabled {
-  filter: grayscale(1) brightness(0.5) !important;
-  opacity: 0.5;
-  pointer-events: none;
-}
-
-#logIcon {
-  line-height: 1;
-  display: inline-block;
-}
-
-/* ====== collection log button (Icon Style) ====== */
 
 
 
