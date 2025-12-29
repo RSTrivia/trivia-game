@@ -374,23 +374,31 @@ h1 {
   opacity: 0.5;
 }
 
-/* 1. Ensure the mute button doesn't "re-filter" when other elements change */
+
+
+
+#shareBtn, #muteBtn, #logBtn {
+    /* ... come here ... */
+    
+    /* ADD THIS: Forces each button into its own compositor layer */
+    backface-visibility: hidden;
+    -webkit-font-smoothing: subpixel-antialiased;
+    transform: translateZ(0); 
+}
+
 #muteBtn {
-  transition: opacity 0.2s ease; /* Remove 'filter' from the transition */
-  will-change: opacity;
+    /* Prevent the button from reacting to sibling changes */
+    isolation: isolate;
 }
 
-/* 2. Specific isolation for the icon inside */
-#muteIcon {
-  display: inline-block;
-  pointer-events: none; /* Prevents the icon itself from capturing clicks */
-}
 
-/* 3. Stop the "Focus" outline which often causes a blue/white flash on mobile */
-#shareBtn:focus, #muteBtn:focus, #logBtn:focus {
-  outline: none;
-  -webkit-tap-highlight-color: transparent;
-}
+
+
+
+
+
+
+
 
 /* MOBILE FIX: Stop the icons from jumping out of the container */
 @media (max-width: 480px) {
@@ -1296,6 +1304,7 @@ input.input-field:-webkit-autofill:active {
     margin-top: 2px;
 }
 /* ====== PET UNLOCK MODAL ====== */
+
 
 
 
