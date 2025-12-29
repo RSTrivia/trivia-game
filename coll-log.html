@@ -10,6 +10,26 @@
             }
         })();
     </script>
+    <script>
+    // Anti-flicker: Apply classes before the body even renders
+    (function () {
+        const cached = JSON.parse(localStorage.getItem('cached_pets') || '[]');
+        if (cached.length > 0) {
+            // Create a temporary style to hide the mystery state for items we know are unlocked
+            let style = document.createElement('style');
+            let selectors = cached.map(id => `#slot-${id}`).join(', ');
+            // This forces the unlocked slots to look right immediately
+            style.innerHTML = `
+                ${selectors} { 
+                    border-color: #d4af37 !important; 
+                    background: linear-gradient(135deg, rgba(212,175,55,0.4), rgba(100,80,20,0.9)) !important;
+                }
+                ${selectors} .pet-img { filter: none !important; opacity: 1 !important; }
+            `;
+            document.head.appendChild(style);
+        }
+    })();
+</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Collection Log</title>
     <meta name="darkreader-lock">
