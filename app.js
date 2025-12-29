@@ -844,6 +844,7 @@ async function checkAnswer(choiceId, btn) {
           
             // 5. UPDATE DATA
             currentProfileXp += gained; // Add the XP to local state
+            localStorage.setItem('cached_xp', currentProfileXp);
             updateLevelUI(); // Refresh the Player/Level row
             triggerXpDrop(gained);
             
@@ -1716,6 +1717,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
