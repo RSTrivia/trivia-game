@@ -958,7 +958,7 @@ function processQueue() {
             notif.remove();
             isShowingNotification = false;
             processQueue(); // Instantly start the next notification
-        }, 200); 
+        }, 100); 
     }, 500); 
 }
 
@@ -1646,6 +1646,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
