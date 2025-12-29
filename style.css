@@ -1231,26 +1231,25 @@ input.input-field:-webkit-autofill:active {
 
 /* Close Button (X) */
 /* ====== SMALL TOP-ALIGNED PET WINDOW ====== */
+/* ====== PET UNLOCK WINDOW (Responsive) ====== */
 #pet-modal {
     position: fixed !important;
-    top: 20px !important; /* Positions it at the top */
     left: 50% !important;
-    transform: translateX(-50%) scale(0.7); /* Starts smaller */
+    /* Default Desktop: Top Center */
+    top: 20px !important; 
+    transform: translateX(-50%) scale(0.7);
     
-    /* Matches container transparency */
-    background: rgba(0, 0, 0, 0.85) !important; 
+    background: rgba(0, 0, 0, 0.9) !important; 
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    
     border: 2px solid #d4af37 !important;
     border-radius: 8px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.6);
     
-    padding: 15px 20px; /* Reduced padding */
-    width: 280px; /* Slimmer width */
+    padding: 12px 15px;
+    width: 280px;
     text-align: center;
     z-index: 200000 !important; 
-    
     opacity: 0;
     pointer-events: none;
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -1262,28 +1261,47 @@ input.input-field:-webkit-autofill:active {
     pointer-events: auto !important;
 }
 
-/* Smaller "X" to match small window */
+/* ====== MOBILE SPECIFIC: Move to bottom ====== */
+@media (max-width: 480px) {
+    #pet-modal {
+        top: auto !important; /* Remove top alignment */
+        bottom: 20px !important; /* Stick to bottom */
+        width: 90%; /* Take up most of the width */
+        max-width: 320px;
+        transform: translateX(-50%) translateY(20px); /* Start slightly lower */
+    }
+
+    #pet-modal.active {
+        transform: translateX(-50%) translateY(0) !important; /* Slide up into view */
+    }
+    
+    .pet-unlock-icon {
+        width: 40px; /* Even smaller for mobile */
+        height: 40px;
+    }
+}
+
+/* Close Button (Larger tap target for mobile) */
 .pet-modal-close {
     position: absolute;
     top: 5px;
-    right: 8px;
+    right: 10px;
     color: #d4af37;
-    font-size: 18px;
+    font-size: 22px;
     cursor: pointer;
-    line-height: 1;
+    padding: 5px; /* Makes it easier to hit with a thumb */
 }
 
 .pet-unlock-title {
     font-family: 'Cinzel', serif;
     color: #ffde00;
-    font-size: 1.1rem; /* Smaller title */
-    margin: 0 0 8px 0;
-    text-shadow: 0 0 5px rgba(212, 175, 55, 0.6);
+    font-size: 1rem;
+    margin: 0 0 5px 0;
 }
 
 .pet-unlock-icon {
-    width: 45px; /* Shrunk from 65px */
-    height: 45px;
+    width: 50px;
+    height: 50px;
     image-rendering: pixelated;
     margin: 5px auto;
     display: block;
@@ -1291,18 +1309,17 @@ input.input-field:-webkit-autofill:active {
 
 .pet-unlock-name {
     color: #ffffff;
-    font-size: 1rem; /* Smaller text */
+    font-size: 0.95rem;
     font-weight: bold;
-    margin-top: 5px;
 }
 
 .pet-unlock-msg {
     color: #d4af37;
-    font-size: 0.75rem; /* Smaller flavor text */
-    margin-top: 5px;
+    font-size: 0.75rem;
     font-style: italic;
 }
 /* ====== PET UNLOCK MODAL ====== */
+
 
 
 
