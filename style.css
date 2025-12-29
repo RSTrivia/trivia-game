@@ -327,71 +327,52 @@ h1 {
 }
 
 /* Unified Layout for all 3 icons  come here*/
-/* 1. Unified Layout (Structure & Hardware Isolation) */
-#shareBtn, #muteBtn, #logBtn {
+/* ====== USER CONTROLS (REVERTED TO ORIGINAL) ====== */
+#muteBtn, #shareBtn, #logBtn {
   width: 32px;
   height: 32px;
-  position: relative;
-  left: -80px; 
+  flex-shrink: 0;
   display: flex;
   justify-content: center;
   align-items: center;
   background: none;
   border: none;
-  font-size: 1.3rem;
+  font-size: 1.4rem;
   cursor: pointer;
   padding: 0;
-  text-decoration: none;
-  
-  /* FIXED: Remove filter from transition to stop the "calculation flash" */
-  transition: opacity 0.2s ease; 
-  
   outline: none;
-  -webkit-tap-highlight-color: transparent;
-
-  /* ISOLATION: Forces each button to render on its own layer */
-  isolation: isolate;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  transform: translateZ(0); 
+  transition: filter 0.2s ease, opacity 0.2s ease;
+  /* Your Original Gold Settings */
+  filter: sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85);
+  opacity: 0.9;
 }
 
+/* Maintain spacing */
 #shareBtn { margin-right: 4px; }
 #logBtn { margin-right: 4px; }
 
-/* 2. Standard State: Rich Gold */
-#shareBtn:not(.is-disabled), 
-#logBtn:not(.is-disabled), 
-#muteBtn:not(.is-muted) {
-  /* Increased saturate to 4.5 and brightness to 1.1 for a brighter gold */
-  filter: sepia(1) saturate(4.5) hue-rotate(-15deg) brightness(1.1);
-  opacity: 0.95;
-}
-
-/* 3. Muted/Disabled State: Grey (Prevents overlap) */
-#muteBtn.is-muted,
+/* Greyed out state for all three */
+/* This is better - it keeps the cursor but changes the look */
+#muteBtn.is-muted, 
 #shareBtn.is-disabled, 
 #logBtn.is-disabled {
-  filter: grayscale(1) brightness(0.5) !important;
+  filter: grayscale(1) brightness(0.5) !important; 
   opacity: 0.5;
+  cursor: pointer; /* Keep it clickable so they can unmute! */
 }
 
-/* 4. Hover Logic: Glowing Gold */
-#shareBtn:not(.is-disabled):hover,
-#logBtn:not(.is-disabled):hover,
-#muteBtn:not(.is-muted):hover {
+/* Hover effect for all three */
+#muteBtn:hover:not(.is-muted), 
+#shareBtn:hover:not(.is-disabled), 
+#logBtn:not(.is-disabled):hover {
   opacity: 1;
-  /* Even more vibrant on hover */
-  filter: sepia(1) saturate(6) hue-rotate(-15deg) brightness(1.3);
 }
 
-/* 5. Pointer Events */
-#shareBtn.is-disabled, #logBtn.is-disabled {
+#muteIcon {
+  display: inline-block;
+  line-height: 1;
   pointer-events: none;
-  cursor: default;
 }
-
-
 
 
 
@@ -1299,6 +1280,7 @@ input.input-field:-webkit-autofill:active {
     margin-top: 2px;
 }
 /* ====== PET UNLOCK MODAL ====== */
+
 
 
 
