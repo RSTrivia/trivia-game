@@ -1463,6 +1463,8 @@ async function rollForPet() {
     }
 }
 
+// 1. Create a variable outside the function to track the timer
+let petNotificationTimeout = null;
 
 function showCollectionLogNotification(petName) {
     let modal = document.getElementById('pet-modal');
@@ -1473,8 +1475,14 @@ function showCollectionLogNotification(petName) {
         document.body.appendChild(modal);
     }
 
-    // 1. Play your existing Level Up sound
-    // Assuming you have a playSound(buffer) function defined in your audio script
+  // 2. Clear any existing timer so they don't overlap
+    if (petNotificationTimeout) {
+        clearTimeout(petNotificationTimeout);
+    }
+    // 3. Reset the state immediately to restart animation
+    modal.classList.remove('active');
+  
+    // 4. Play sound
     if (typeof playSound === "function" && petBuffer) {
         playSound(petBuffer);
     }
@@ -1497,12 +1505,12 @@ function showCollectionLogNotification(petName) {
         <div class="pet-unlock-title">PET UNLOCKED</div>
         <img src="pets/${fileName}" class="pet-unlock-icon">
         <div class="pet-unlock-name">${petName}</div>
-        <div class="pet-unlock-msg">You have a funny feeling like you're being followed.</div>
+        <div class="pet-unlock-msg">You have a funny feeling like you're being followed...</div>
     `;
 
     setTimeout(() => {
         modal.classList.add('active');
-    }, 50);
+    }, 100);
 
     // Trigger fireworks
     if (typeof triggerFireworks === "function") triggerFireworks();
@@ -1511,11 +1519,11 @@ function showCollectionLogNotification(petName) {
     const isMobile = window.innerWidth <= 480;
     const displayTime = isMobile ? 2000 : 6000;
 
-    setTimeout(() => {
+    petNotificationTimeout = setTimeout(() => {
         modal.classList.remove('active');
+        petNotificationTimeout = null;
     }, displayTime); 
 }
-
 window.showCollectionLogNotification = showCollectionLogNotification;
 
 
@@ -1701,6 +1709,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
