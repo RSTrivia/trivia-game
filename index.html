@@ -54,8 +54,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (authLabel) authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
 
     if (muteIcon && muteBtn) {
-      muteIcon.textContent = cachedMuted ? '🔇' : '🔊';
-      if (cachedMuted) muteBtn.classList.add('is-muted');
+        // 1. Set the emoji immediately based on cache
+        muteIcon.textContent = cachedMuted ? '🔇' : '🔊';
+        
+        // 2. Add the visual class if it's muted
+        if (cachedMuted) {
+            muteBtn.classList.add('is-muted');
+        } else {
+            muteBtn.classList.remove('is-muted');
+        }
     }
 
     // --- Unified Anti-Flicker Logic ---
@@ -206,6 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
 </body>
 </html>
+
 
 
 
