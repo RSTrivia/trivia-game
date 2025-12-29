@@ -328,6 +328,17 @@ h1 {
 
 /* Unified Layout for all 3 icons  come here*/
 /* ====== USER CONTROLS (REVERTED TO ORIGINAL) ====== */
+/* ====== USER CONTROLS (FIXED PLACEMENT & COLORS) ====== */
+#user-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* This keeps the row centered */
+  gap: 10px;
+  margin-bottom: 30px;
+  padding-top: 10px;
+  position: relative;
+}
+
 #muteBtn, #shareBtn, #logBtn {
   width: 32px;
   height: 32px;
@@ -342,28 +353,28 @@ h1 {
   padding: 0;
   outline: none;
   transition: filter 0.2s ease, opacity 0.2s ease;
-  /* Your Original Gold Settings */
+  
+  /* YOUR ORIGINAL GOLD COLOR */
   filter: sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85);
   opacity: 0.9;
 }
 
-/* Maintain spacing */
+/* Original Spacing */
 #shareBtn { margin-right: 4px; }
 #logBtn { margin-right: 4px; }
 
-/* Greyed out state for all three */
-/* This is better - it keeps the cursor but changes the look */
+/* Original Greyed out state */
 #muteBtn.is-muted, 
 #shareBtn.is-disabled, 
 #logBtn.is-disabled {
   filter: grayscale(1) brightness(0.5) !important; 
   opacity: 0.5;
-  cursor: pointer; /* Keep it clickable so they can unmute! */
+  cursor: pointer;
 }
 
-/* Hover effect for all three */
+/* Original Hover */
 #muteBtn:hover:not(.is-muted), 
-#shareBtn:hover:not(.is-disabled), 
+#shareBtn:hover:not(.is-disabled),
 #logBtn:not(.is-disabled):hover {
   opacity: 1;
 }
@@ -1280,6 +1291,7 @@ input.input-field:-webkit-autofill:active {
     margin-top: 2px;
 }
 /* ====== PET UNLOCK MODAL ====== */
+
 
 
 
