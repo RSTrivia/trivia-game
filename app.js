@@ -18,6 +18,7 @@ const leaderboardRows = document.querySelectorAll('#leaderboard li');
 const scoreTab = document.getElementById('scoreTab');
 const xpTab = document.getElementById('xpTab');
 const shareBtn = document.getElementById('shareBtn');
+const logBtn = document.getElementById('logBtn');
 const startBtn = document.getElementById('startBtn');
 const playAgainBtn = document.getElementById('playAgainBtn');
 const mainMenuBtn = document.getElementById('mainMenuBtn');
@@ -1632,6 +1633,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
