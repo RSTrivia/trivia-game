@@ -1198,55 +1198,21 @@ input.input-field:-webkit-autofill:active {
 
 /* ====== PET UNLOCK MODAL ====== */
 /* ====== PET UNLOCK WINDOW (TRANSPARENT) ====== */
-#pet-modal {
-    position: fixed !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) scale(0.7);
-    
-    /* Matches your main container transparency */
-    background: rgba(0, 0, 0, 0.85) !important; 
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    
-    border: 2px solid #d4af37 !important;
-    border-radius: 10px; /* Matches your .container radius */
-    box-shadow: 0 0 30px rgba(0,0,0,0.5); /* Matches your container shadow */
-    
-    padding: 25px;
-    width: 320px;
-    text-align: center;
-    z-index: 200000 !important; 
-    
-    opacity: 0;
-    pointer-events: none;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-#pet-modal.active {
-    opacity: 1 !important;
-    transform: translate(-50%, -50%) scale(1) !important;
-    pointer-events: auto !important;
-}
-
-/* Close Button (X) */
-/* ====== SMALL TOP-ALIGNED PET WINDOW ====== */
-/* ====== PET UNLOCK WINDOW (Responsive) ====== */
-/* ====== PET MODAL (CENTERED MOBILE) ====== */
+/* ====== COMPACT PET MODAL ====== */
 #pet-modal {
     position: fixed !important;
     left: 50% !important;
-    top: 20px !important; /* Keep it at top for Desktop */
+    top: 20px !important; /* Desktop remains at top */
     transform: translateX(-50%) scale(0.8);
     
-    background: rgba(15, 15, 15, 0.95) !important; 
+    background: rgba(15, 15, 15, 0.9) !important; 
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border: 2px solid #d4af37 !important;
-    border-radius: 12px;
+    border-radius: 8px;
     
-    padding: 20px;
-    width: 280px;
+    padding: 12px 15px; /* Compact padding */
+    width: 260px; /* Smaller width */
     text-align: center;
     z-index: 999999 !important; 
     opacity: 0;
@@ -1260,13 +1226,13 @@ input.input-field:-webkit-autofill:active {
     pointer-events: auto !important;
 }
 
-/* Mobile: Force Center */
+/* Mobile Center Fix */
 @media screen and (max-width: 480px) {
     #pet-modal {
-        top: 50% !important; /* Move to middle */
+        top: 50% !important;
         transform: translate(-50%, -50%) scale(0.8) !important;
-        width: 80% !important;
-        max-width: 280px;
+        width: 75% !important;
+        max-width: 250px;
     }
 
     #pet-modal.active {
@@ -1276,24 +1242,23 @@ input.input-field:-webkit-autofill:active {
 
 .pet-modal-close {
     position: absolute;
-    top: 5px;
-    right: 10px;
+    top: 4px;
+    right: 8px;
     color: #d4af37;
-    font-size: 22px;
+    font-size: 18px;
     cursor: pointer;
-    line-height: 1;
 }
 
 .pet-unlock-title {
     font-family: 'Cinzel', serif;
     color: #ffde00;
-    font-size: 1.1rem;
-    margin-bottom: 10px;
+    font-size: 0.9rem; /* Small & sharp */
+    margin: 0 0 5px 0;
 }
 
 .pet-unlock-icon {
-    width: 50px;
-    height: 50px;
+    width: 40px; /* Small icon */
+    height: 40px;
     image-rendering: pixelated;
     margin: 5px auto;
     display: block;
@@ -1302,17 +1267,18 @@ input.input-field:-webkit-autofill:active {
 .pet-unlock-name {
     color: #ffffff;
     font-weight: bold;
-    font-size: 1.1rem;
-    margin-top: 5px;
+    font-size: 0.95rem;
+    margin-top: 2px;
 }
 
 .pet-unlock-msg {
     color: #d4af37;
-    font-size: 0.8rem;
+    font-size: 0.7rem; /* Tiny flavor text */
     font-style: italic;
-    margin-top: 5px;
+    margin-top: 2px;
 }
 /* ====== PET UNLOCK MODAL ====== */
+
 
 
 
