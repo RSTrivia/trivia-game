@@ -959,7 +959,7 @@ function processQueue() {
             isShowingNotification = false;
             processQueue(); // Instantly start the next notification
         }, 200); 
-    }, 600); 
+    }, 500); 
 }
 
 function createParticle(parent, xPosPercent, colors) {
@@ -1646,6 +1646,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
