@@ -87,13 +87,46 @@
         }
 
         /* Unlocked States */
-        .unlocked { border-color: #d4af37; background: rgba(60, 60, 60, 0.9); }
-        .unlocked .pet-img { filter: none; }
-        .unlocked .pet-name { color: #fff; font-weight: bold; }
-
-        /* Rarity Glows */
-        .unlocked.legendary { box-shadow: 0 0 15px rgba(255, 128, 0, 0.4); border-color: #ff8000; }
-        .unlocked.rare { box-shadow: 0 0 15px rgba(212, 175, 55, 0.4); border-color: #d4af37; }
+        .unlocked { 
+            border-color: #d4af37; 
+            /* A subtle gold tint that is stronger in the center */
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.25) 0%, rgba(60, 60, 60, 0.9) 100%);
+            box-shadow: inset 0 0 10px rgba(212, 175, 55, 0.1); /* Subtle inner glow */
+        }
+        
+        .unlocked .pet-img { 
+            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.2)); /* Makes the colored pet pop */
+        }
+        
+        .unlocked .pet-name { 
+            color: #fff; 
+            font-weight: bold; 
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* Rarity Glows - Enhanced for "Received" look */
+        .unlocked.rare { 
+            border-color: #d4af37;
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.35) 0%, rgba(60, 60, 60, 0.9) 100%);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.3); 
+        }
+        
+        .unlocked.legendary { 
+            border-color: #ff8000;
+            /* Orange-Gold gradient for Legendary */
+            background: radial-gradient(circle, rgba(255, 128, 0, 0.35) 0%, rgba(60, 60, 60, 0.9) 100%);
+            box-shadow: 0 0 20px rgba(255, 128, 0, 0.4); 
+        }
+        
+        /* Add a subtle animation when it unlocks */
+        .unlocked {
+            animation: unlock-shimmer 0.5s ease-out;
+        }
+        
+        @keyframes unlock-shimmer {
+            0% { filter: brightness(2); transform: scale(1.02); }
+            100% { filter: brightness(1); transform: scale(1); }
+        }
 
        .btn-small {
             background: #111111 !important;
