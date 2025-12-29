@@ -86,76 +86,109 @@
             color: #888;
         }
 
-        /* Unlocked States */
+        /* --- HIGH-FIDELITY UNLOCKED STATES --- */
+        
         .unlocked { 
-            border-color: #d4af37; 
-            /* A subtle gold tint that is stronger in the center */
-            background: radial-gradient(circle, rgba(212, 175, 55, 0.25) 0%, rgba(60, 60, 60, 0.9) 100%);
-            box-shadow: inset 0 0 10px rgba(212, 175, 55, 0.1); /* Subtle inner glow */
+            /* The "Gold Base": A rich, metallic gradient */
+            background: linear-gradient(135deg, 
+                rgba(212, 175, 55, 0.4) 0%, 
+                rgba(100, 80, 20, 0.9) 50%, 
+                rgba(212, 175, 55, 0.4) 100%
+            ) !important;
+            border: 2px solid #ffdf00 !important;
+            box-shadow: 
+                inset 0 0 15px rgba(255, 223, 0, 0.3), /* Inner gold glow */
+                0 0 10px rgba(0, 0, 0, 0.5); /* Outer shadow for depth */
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* The "Shine" Effect: A diagonal light beam that passes over unlocked slots */
+        .unlocked::after {
+            content: "";
+            position: absolute;
+            top: -100%;
+            left: -100%;
+            width: 300%;
+            height: 300%;
+            background: linear-gradient(
+                45deg,
+                transparent 45%,
+                rgba(255, 255, 255, 0.1) 50%,
+                transparent 55%
+            );
+            animation: gold-shimmer 6s infinite linear;
         }
         
         .unlocked .pet-img { 
-            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.2)); /* Makes the colored pet pop */
+            filter: drop-shadow(0 0 8px rgba(255, 223, 0, 0.6)) !important; 
+            z-index: 2;
         }
         
         .unlocked .pet-name { 
-            color: #fff; 
+            color: #ffdf00 !important; /* Golden text */
             font-weight: bold; 
-            text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            z-index: 2;
         }
+
+        /* --- ENHANCED RARITY GLOWS --- */
         
-        /* Rarity Glows - Enhanced for "Received" look */
         .unlocked.rare { 
-            border-color: #d4af37;
-            background: radial-gradient(circle, rgba(212, 175, 55, 0.35) 0%, rgba(60, 60, 60, 0.9) 100%);
-            box-shadow: 0 0 15px rgba(212, 175, 55, 0.3); 
+            border-color: #ffdf00 !important;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.2);
         }
         
         .unlocked.legendary { 
-            border-color: #ff8000;
-            /* Orange-Gold gradient for Legendary */
-            background: radial-gradient(circle, rgba(255, 128, 0, 0.35) 0%, rgba(60, 60, 60, 0.9) 100%);
-            box-shadow: 0 0 20px rgba(255, 128, 0, 0.4); 
+            border-color: #ff8000 !important;
+            background: linear-gradient(135deg, 
+                rgba(255, 128, 0, 0.4) 0%, 
+                rgba(80, 40, 0, 0.9) 50%, 
+                rgba(255, 128, 0, 0.4) 100%
+            ) !important;
+            box-shadow: 0 0 25px rgba(255, 128, 0, 0.6), inset 0 0 15px rgba(255, 255, 255, 0.2);
         }
         
-        /* Add a subtle animation when it unlocks */
-        .unlocked {
-            animation: unlock-shimmer 0.5s ease-out;
+        /* --- ANIMATIONS --- */
+        
+        @keyframes gold-shimmer {
+            0% { transform: translate(-30%, -30%); }
+            20% { transform: translate(30%, 30%); } /* Quick swipe */
+            100% { transform: translate(30%, 30%); } /* Long pause */
         }
         
         @keyframes unlock-shimmer {
-            0% { filter: brightness(2); transform: scale(1.02); }
+            0% { filter: brightness(3); transform: scale(1.1); }
             100% { filter: brightness(1); transform: scale(1); }
         }
-
-       .btn-small {
-            background: #111111 !important;
-            border: 2px solid #d4af37;
-            color: #d4af37;
-            border-radius: 8px;
-            font-size: 1rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            
-            /* Exact Leaderboard Specs */
-            width: 175px !important; 
-            height: 45px !important;
-            min-height: 45px !important;
-            max-height: 45px !important;
-            flex-shrink: 0 !important;
         
-            /* Increase the 'Gap' on PC */
-            margin-top: 40px !important; /* Forces a minimum 40px gap */
-            margin-bottom: 20px;
-            
-            transition: all 0.2s ease;
-            box-sizing: border-box !important;
-        }
+               .btn-small {
+                    background: #111111 !important;
+                    border: 2px solid #d4af37;
+                    color: #d4af37;
+                    border-radius: 8px;
+                    font-size: 1rem;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    text-decoration: none;
+                    
+                    /* Exact Leaderboard Specs */
+                    width: 175px !important; 
+                    height: 45px !important;
+                    min-height: 45px !important;
+                    max-height: 45px !important;
+                    flex-shrink: 0 !important;
+                
+                    /* Increase the 'Gap' on PC */
+                    margin-top: 40px !important; /* Forces a minimum 40px gap */
+                    margin-bottom: 20px;
+                    
+                    transition: all 0.2s ease;
+                    box-sizing: border-box !important;
+                }
 
         @media (max-width: 480px) {
-@media (max-width: 480px) {
             #app .container {
                 width: 440px !important; 
                 max-width: 95% !important; 
