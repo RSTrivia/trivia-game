@@ -344,7 +344,7 @@ h1 {
   width: 32px;
   height: 32px;
   position: relative;
-  left: -40px; /* Changed from -80px to stop overlap */
+  left: -70px; /* Changed from -80px to stop overlap */
   display: flex;
   /* REMOVED: left: -80px (This was causing the overlap) */
   justify-content: center;
@@ -1302,6 +1302,7 @@ input.input-field:-webkit-autofill:active {
     margin-top: 2px;
 }
 /* ====== PET UNLOCK MODAL ====== */
+
 
 
 
