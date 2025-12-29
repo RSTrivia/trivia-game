@@ -1256,7 +1256,9 @@ if (shareBtn) {
                   //const startScreenRef = clonedDoc.getElementById('start-screen');
                   
                   // 1. Force the Game and Start screens to HIDE in the picture
-                  if (gameScreen) gameScreen.style.display = 'none';
+                  if (gameScreen) {
+                      gameScreen.style.setProperty('display', 'none', 'important');
+                  }
                   //if (startScreenRef) startScreenRef.style.display = 'none';
                   
                   // 2. Force the End Screen to SHOW in the picture
@@ -1724,6 +1726,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
