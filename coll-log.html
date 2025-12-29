@@ -44,19 +44,6 @@
             justify-content: flex-start;
         }
 
-        h1#log-title {
-            font-family: 'Cinzel', serif; 
-            font-size: 2.8rem; 
-            margin: 23px 0 25px 0 !important;
-            padding: 0 !important; 
-            line-height: 1.2; 
-            letter-spacing: 2px;
-            background: linear-gradient(145deg, #fff8dc 0%, #ffdd44 25%, #f2b705 50%, #c28f0c 75%, #a77b0a 100%);
-            -webkit-background-clip: text; 
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 4px rgba(0,0,0,0.9), 1px 1px 0 #000, 0 0 12px rgba(212, 175, 55, 1.0);
-        }
-
         /* 4x2 Grid Layout */
         #logGrid {
             display: grid;
@@ -150,12 +137,6 @@
                 align-self: center !important;
             }
         
-            h1#log-title { 
-                font-size: 2.3rem !important; 
-                margin-bottom: 15px !important; 
-                margin-top: 5px !important;
-            }
-        
             #logGrid {
                 /* Reduce gap slightly on mobile to make room */
                 gap: 10px !important;
@@ -172,7 +153,7 @@
 
     <div id="app">
         <div class="container">
-            <h1 id="log-title">Collection Log</h1>
+            <h1 id="main-title">Collection Log</h1>
             
             <div id="logGrid">
                 </div>
