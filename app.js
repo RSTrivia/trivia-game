@@ -395,13 +395,15 @@ async function handleAuthChange(event, session) {
         localStorage.removeItem('lastDailyScore');
         localStorage.removeItem('dailyPlayedDate');
         
-        // DISABLE Log, Share, and Daily for guests
+       // Replace the loop inside handleAuthChange with this:
         [dailyBtn, shareBtn, logBtn].forEach(btn => {
             if (btn) {
-                btn.classList.add('is-disabled');
-                btn.style.opacity = '0.5';
-                btn.style.pointerEvents = 'none';
-                // If it's the <a> tag (logBtn), ensure it can't be clicked
+                // Only update if it's NOT already disabled to prevent the filter flicker
+                if (!btn.classList.contains('is-disabled')) {
+                    btn.classList.add('is-disabled');
+                    btn.style.opacity = '0.5';
+                    btn.style.pointerEvents = 'none';
+                }
                 if(btn.tagName === 'A') btn.setAttribute('tabindex', '-1');
             }
         });
@@ -1709,6 +1711,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
