@@ -818,7 +818,7 @@ async function checkAnswer(choiceId, btn) {
                     }
                 } else {
                     streak++; // Only track streak in normal mode
-                    if (streak === 10) { // change this back to 10
+                    if (streak === 1) { // change this back to 10
                         gained += 30;
                         streak = 0; 
                         isBonusEarned = true; // Normal bonus!
@@ -936,7 +936,6 @@ function processQueue() {
     const container = document.getElementById('game-notifications');
     const item = notificationQueue.shift();
 
-    // FIXED: Use your existing playSound function for AudioBuffers
     if (item.sound) {
         playSound(item.sound); 
     }
@@ -945,21 +944,22 @@ function processQueue() {
     notif.className = 'notif-text';
     notif.innerText = item.text;
     
-    // APPLY THE COLOR DYNAMICALLY
     notif.style.color = item.color;
     notif.style.textShadow = `2px 2px 0px #000, 0 0 8px ${item.color}`;
 
     container.appendChild(notif);
 
-    // Remove notification after 1.25 seconds
+    // --- REDUCED TIMING ---
+    // Changed from 1250ms to 800ms for faster cycling
     setTimeout(() => {
-        notif.classList.add('fade-out'); // Optional: add a fade out class
+        notif.classList.add('fade-out'); 
+        // Changed removal from 300ms to 200ms
         setTimeout(() => {
             notif.remove();
             isShowingNotification = false;
-            processQueue();
-        }, 300); // Wait for fade animation
-    }, 1250); 
+            processQueue(); // Instantly start the next notification
+        }, 200); 
+    }, 600); 
 }
 
 function createParticle(parent, xPosPercent, colors) {
@@ -1646,6 +1646,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
