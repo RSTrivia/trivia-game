@@ -69,16 +69,13 @@
             height: 120px; /* Force a consistent height for the box */
         }
 
-        .pet-img {
-            width: 50px;
-            height: 50px;
-            min-width: 50px; /* Prevents shrinking */
-            min-height: 50px; /* Prevents shrinking */
-            object-fit: contain;
-            filter: brightness(0) contrast(0.5); /* Locked state */
-            margin-bottom: 8px;
-            image-rendering: pixelated;
-            aspect-ratio: 1 / 1;
+            .pet-img {
+            width: 50px;           /* The 'box' width */
+            height: 50px;          /* The 'box' height */
+            object-fit: scale-down; /* Keeps small images small, prevents stretching */
+            image-rendering: pixelated; 
+            display: block;        /* Removes bottom whitespace gap */
+            margin: 0 auto 8px auto;
         }
 
         .pet-name {
