@@ -41,38 +41,40 @@
     const dailyBtn = document.getElementById('dailyBtn');
     const shareBtn = document.getElementById('shareBtn');
     const logBtn = document.getElementById('logBtn');
-
-    const hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
-    const hasScore = localStorage.getItem('lastDailyScore') !== null;
     const lvlNum = document.getElementById('levelNumber');
     const xpBracket = document.getElementById('xpBracket');
+    
+    const hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
+    const hasScore = localStorage.getItem('lastDailyScore') !== null;
     
     // 1. Instant Text/Emoji Sync
     if (span) span.textContent = ' ' + cachedUsername;
     if (authLabel) authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
 
     // --- NEW: XP & LEVEL INSTANT SYNC ---
-        if (lvlNum && xpBracket && cachedLoggedIn) {
-            // Simple level calculation for the anti-flicker
-            // (Just a quick version of your getLevel function)
-            let displayLvl = 1;
-            if (cachedXp >= 100000) {
-                displayLvl = 99;
-            } else {
-                for (let L = 1; L <= 99; L++) {
-                    let threshold = Math.floor(Math.pow((L - 1) / 98, 3.1) * 100000);
-                    if (cachedXp < threshold) {
-                        displayLvl = L - 1;
-                        break;
-                    }
-                }
+    if (lvlNum && xpBracket) {
+      if (cachedLoggedIn) {
+        // Use the globally defined cachedXp from your script
+        let displayLvl = 1;
+        if (cachedXp >= 100000) {
+          displayLvl = 99;
+        } else if (cachedXp > 0) {
+          for (let L = 1; L <= 99; L++) {
+            let threshold = Math.floor(Math.pow((L - 1) / 98, 3.1) * 100000);
+            if (cachedXp < threshold) {
+              displayLvl = Math.max(1, L - 1);
+              break;
             }
-        
+          }
+        }
         lvlNum.textContent = displayLvl;
         xpBracket.textContent = `(${cachedXp.toLocaleString()} XP)`;
+      } else {
+        // Reset to Guest defaults if not logged in
+        lvlNum.textContent = '1';
+        xpBracket.textContent = '(0 XP)';
+      }
     }
-
-
     
     if (muteIcon && muteBtn) {
       muteIcon.textContent = cachedMuted ? '🔇' : '🔊';
@@ -217,6 +219,7 @@
     
 </body>
 </html>
+
 
 
 
