@@ -1465,7 +1465,6 @@ async function rollForPet() {
 
 
 function showCollectionLogNotification(petName) {
-    // 1. Create the window if it doesn't exist
     let win = document.getElementById('pet-unlock-window');
     if (!win) {
         win = document.createElement('div');
@@ -1473,8 +1472,7 @@ function showCollectionLogNotification(petName) {
         document.body.appendChild(win);
     }
 
-    // 2. Map Name to Filename (Matches your pet_id logic)
-    // Convert "Baby Mole" -> "mole", "TzRek-Jad" -> "jad", etc.
+    // Mapping ID/Name to the local PNG file
     const fileNameMap = {
         'Baby Mole': 'mole.png',
         'Pet Kraken': 'kraken.png',
@@ -1488,7 +1486,6 @@ function showCollectionLogNotification(petName) {
 
     const fileName = fileNameMap[petName] || 'mole.png';
 
-    // 3. Set Content
     win.innerHTML = `
         <div class="pet-unlock-title">NEW COLLECTION DROP</div>
         <img src="pets/${fileName}" class="pet-unlock-icon">
@@ -1496,25 +1493,18 @@ function showCollectionLogNotification(petName) {
         <div class="pet-unlock-flavor">You have a funny feeling like you're being followed.</div>
     `;
 
-    // 4. Play Level Up sound if you have it
-    if (typeof playSound === "function" && window.levelUpBuffer) {
-        playSound(window.levelUpBuffer);
-    }
-    
-    // 5. Trigger Fireworks (Uses your existing level-up logic)
-    if (typeof triggerFireworks === "function") {
-        triggerFireworks();
-    }
-
-    // 6. Show it
     win.classList.add('active');
 
-    // 7. Auto-hide after 6 seconds
+    // Run your fireworks if they exist
+    if (typeof triggerFireworks === "function") triggerFireworks();
+
     setTimeout(() => {
         win.classList.remove('active');
     }, 6000);
 }
 
+// CRITICAL: This allows the console and external buttons to "see" the function
+window.showCollectionLogNotification = showCollectionLogNotification;
 
 
 
@@ -1699,6 +1689,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
