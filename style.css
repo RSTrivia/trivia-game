@@ -824,7 +824,7 @@ input.input-field:-webkit-autofill:active {
     width: 100%;
   }
   
-  #shareBtn, #muteBtn {
+  #shareBtn, #muteBtn, #logBtn {
     position: relative;
     /* 1. Adjust this slightly to move icons West (smaller number = safer) */
     left: -10px; 
@@ -1195,72 +1195,46 @@ input.input-field:-webkit-autofill:active {
 }
 /* ====== tab for leaderboards xp====== */
 
-/* ====== collection log button====== */
-/* This ensures the log button looks exactly like the share/mute buttons */
+/* ====== collection log button (Icon Style) ====== */
 #logBtn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px; /* Match your existing button widths */
-    height: 44px;
-    background: #111;
-    border: 2px solid #d4af37;
-    border-radius: 8px;
-    text-decoration: none;
-    transition: all 0.2s ease;
-    cursor: pointer;
-    margin-right: 5px; /* Spacing */
+  width: 32px; /* Matches your #muteBtn exactly */
+  height: 32px;
+  position: relative;
+  left: -80px; /* Moves it West with the other icons */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: none; /* Removed the background box */
+  border: none;     /* Removed the border */
+  font-size: 1.4rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: filter 0.2s ease, opacity 0.2s ease;
+  
+  /* Use the exact same gold filter as your muteBtn */
+  filter: sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85);
+  opacity: 0.9;
+  margin-right: 6px; /* Space between icons */
 }
 
 #logBtn:hover {
-    background: #222;
-    box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+  opacity: 1;
+  filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.1);
+}
+
+/* Matching the "Greyed out" look for guests */
+#logBtn.is-disabled {
+  filter: grayscale(1) brightness(0.5) !important;
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 #logIcon {
-    font-size: 1.2rem;
-    /* This filter makes standard emojis look more "Golden/Metallic" */
-    filter: sepia(1) saturate(5) hue-rotate(10deg) brightness(1.2);
+  line-height: 1;
+  display: inline-block;
 }
 
-/* If the user is a guest, make it look locked/grey like your share button */
-#logBtn.is-disabled {
-    opacity: 0.5;
-    pointer-events: none;
-    filter: grayscale(1);
-    border-color: #555;
-}
-/* ====== collection log button====== */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/* ====== collection log button (Icon Style) ====== */
 
 
 
