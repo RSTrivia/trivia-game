@@ -1260,7 +1260,18 @@ if (shareBtn) {
                       gameScreen.style.setProperty('display', 'none', 'important');
                   }
                   //if (startScreenRef) startScreenRef.style.display = 'none';
-                  
+                  // 3. FORCE the Title to show (Overrides mobile CSS 'display: none')
+                  if (mainTitle) {
+                      Object.assign(mainTitle.style, {
+                          display: 'block',
+                          visibility: 'visible',
+                          opacity: '1',
+                          fontSize: '40px', // Force a readable size for the photo
+                          marginBottom: '20px'
+                      });
+                      // Remove any 'hidden' classes that might be applied via mobile media queries
+                      mainTitle.classList.remove('hidden'); 
+                  }
                   // 2. Force the End Screen to SHOW in the picture
                   // ----------------------------------
                     if (endScreen) {
@@ -1726,6 +1737,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
