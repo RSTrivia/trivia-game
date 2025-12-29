@@ -411,7 +411,14 @@ async function handleAuthChange(event, session) {
         updateLevelUI()
         return; // Stop here for guests
     }
-
+    // 1. Immediately sync with local cache so we don't overwrite the HTML script's work
+    username = localStorage.getItem('cachedUsername') || 'Player';
+    currentProfileXp = parseInt(localStorage.getItem('cached_xp')) || 0;
+    
+    // 2. Update the UI with the cached values right now
+    if (span) span.textContent = ' ' + username;
+    updateLevelUI();
+  
     // 2. Logged In State
     // Fetch profile
     const { data: profile } = await supabase
@@ -1717,6 +1724,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
