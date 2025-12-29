@@ -293,16 +293,16 @@ const PET_DATA = [
 function applyUnlocks(unlockedList) {
     PET_DATA.forEach(pet => {
         const slot = document.getElementById(`slot-${pet.id}`);
-        if (slot) {
-            const isUnlocked = unlockedList.includes(pet.id);
-            const nameSpan = slot.querySelector('.pet-name');
+        if (!slot) return;
 
-            // Set the state class
-            slot.className = `pet-slot ${isUnlocked ? 'unlocked ' + pet.rarity : ''}`;
+        const isUnlocked = unlockedList.includes(pet.id);
+        const nameSpan = slot.querySelector('.pet-name');
 
-            // Reveal name or keep mystery
-            nameSpan.textContent = isUnlocked ? pet.name : "???";
-        }
+        // Update the final class list
+        slot.className = `pet-slot ${isUnlocked ? 'unlocked ' + pet.rarity : ''}`;
+        
+        // Update the text - this will now happen so fast the user won't see the change
+        nameSpan.textContent = isUnlocked ? pet.name : "???";
     });
 }
 
