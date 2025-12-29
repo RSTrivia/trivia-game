@@ -1486,10 +1486,9 @@ function showCollectionLogNotification(petName) {
 
     const fileName = fileNameMap[petName] || 'mole.png';
 
-    // Added the 'X' button with an onclick event
     modal.innerHTML = `
         <span class="pet-modal-close" onclick="this.parentElement.classList.remove('active')">&times;</span>
-        <div class="pet-unlock-title">NEW PET UNLOCKED</div>
+        <div class="pet-unlock-title">PET UNLOCKED</div>
         <img src="pets/${fileName}" class="pet-unlock-icon">
         <div class="pet-unlock-name">${petName}</div>
         <div class="pet-unlock-msg">You have a funny feeling like you're being followed.</div>
@@ -1497,15 +1496,21 @@ function showCollectionLogNotification(petName) {
 
     setTimeout(() => {
         modal.classList.add('active');
-    }, 100);
+    }, 50);
 
     if (typeof triggerFireworks === "function") triggerFireworks();
 
-    // Optional: Still auto-hide after 6 seconds just in case they forget
+    // --- DYNAMIC DISPLAY TIME ---
+    // If screen width is 480px or less, use 2 seconds. Otherwise, use 6 seconds.
+    const isMobile = window.innerWidth <= 480;
+    const displayTime = isMobile ? 2000 : 6000;
+
     setTimeout(() => {
         modal.classList.remove('active');
-    }, 4000);
+    }, displayTime); 
 }
+
+window.showCollectionLogNotification = showCollectionLogNotification;
 
 
 // Make it accessible for testing
@@ -1693,6 +1698,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
