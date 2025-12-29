@@ -326,12 +326,22 @@ h1 {
   position: relative;
 }
 
-/* Unified Layout for all 3 icons */
+
+
+
+
+
+
+
+
+
+/* Unified Layout for all 3 icons  come here*/
+/* 1. Unified Layout (Structure only, NO filters here) */
 #shareBtn, #muteBtn, #logBtn {
   width: 32px;
   height: 32px;
   position: relative;
-  left: -80px; /* PC Shift */
+  left: -80px; 
   display: flex;
   justify-content: center;
   align-items: center;
@@ -341,17 +351,32 @@ h1 {
   cursor: pointer;
   padding: 0;
   text-decoration: none;
-  transition: filter 0.2s, opacity 0.2s;
-  
-  /* Standard Gold State */
-  filter: sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85);
-  opacity: 0.9;
+  /* Only transition opacity to keep it smooth without filter glitches */
+  transition: opacity 0.2s, filter 0.2s; 
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 #shareBtn { margin-right: 4px; }
 #logBtn { margin-right: 4px; }
 
-/* HOVER (Only if not disabled) */
+/* 2. Apply Gold Filter ONLY to buttons that are NOT muted/disabled */
+#shareBtn:not(.is-disabled), 
+#logBtn:not(.is-disabled), 
+#muteBtn:not(.is-muted) {
+  filter: sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85);
+  opacity: 0.9;
+}
+
+/* 3. Apply Gray Filter ONLY to the muted/disabled states */
+#muteBtn.is-muted,
+#shareBtn.is-disabled, 
+#logBtn.is-disabled {
+  filter: grayscale(1) brightness(0.5) !important;
+  opacity: 0.5;
+}
+
+/* 4. HOVER logic (specifically targeted) */
 #shareBtn:hover:not(.is-disabled), 
 #logBtn:hover:not(.is-disabled), 
 #muteBtn:hover:not(.is-muted) {
@@ -359,40 +384,11 @@ h1 {
   filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.1);
 }
 
-/* DISABLED STATE (Share & Log) */
-#shareBtn.is-disabled, 
-#logBtn.is-disabled {
-  filter: grayscale(1) brightness(0.5) !important;
-  opacity: 0.5;
+/* 5. Pointer Events */
+#shareBtn.is-disabled, #logBtn.is-disabled {
   pointer-events: none;
   cursor: default;
 }
-
-/* MUTED STATE (Only affects Mute Button) */
-#muteBtn.is-muted {
-  filter: grayscale(1) brightness(0.5) !important;
-  opacity: 0.5;
-}
-
-
-
-
-#shareBtn, #muteBtn, #logBtn {
-    /* ... come here ... */
-    
-    /* ADD THIS: Forces each button into its own compositor layer */
-    backface-visibility: hidden;
-    -webkit-font-smoothing: subpixel-antialiased;
-    transform: translateZ(0); 
-}
-
-#muteBtn {
-    /* Prevent the button from reacting to sibling changes */
-    isolation: isolate;
-}
-
-
-
 
 
 
@@ -1304,6 +1300,7 @@ input.input-field:-webkit-autofill:active {
     margin-top: 2px;
 }
 /* ====== PET UNLOCK MODAL ====== */
+
 
 
 
