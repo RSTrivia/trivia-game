@@ -343,9 +343,10 @@ h1 {
 #shareBtn, #muteBtn, #logBtn {
   width: 32px;
   height: 32px;
-  position: relative; 
-  /* REMOVED: left: -80px (This was causing the overlap) */
+  position: relative;
+  left: -25px; /* Changed from -80px to stop overlap */
   display: flex;
+  /* REMOVED: left: -80px (This was causing the overlap) */
   justify-content: center;
   align-items: center;
   background: none;
@@ -1301,6 +1302,7 @@ input.input-field:-webkit-autofill:active {
     margin-top: 2px;
 }
 /* ====== PET UNLOCK MODAL ====== */
+
 
 
 
