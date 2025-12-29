@@ -359,12 +359,13 @@ h1 {
 #shareBtn { margin-right: 4px; }
 #logBtn { margin-right: 4px; }
 
-/* 2. Standard State: Gold (Only when NOT muted/disabled) */
+/* 2. Standard State: Rich Gold */
 #shareBtn:not(.is-disabled), 
 #logBtn:not(.is-disabled), 
 #muteBtn:not(.is-muted) {
-  filter: sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85);
-  opacity: 0.9;
+  /* Increased saturate to 4.5 and brightness to 1.1 for a brighter gold */
+  filter: sepia(1) saturate(4.5) hue-rotate(-15deg) brightness(1.1);
+  opacity: 0.95;
 }
 
 /* 3. Muted/Disabled State: Grey (Prevents overlap) */
@@ -375,18 +376,13 @@ h1 {
   opacity: 0.5;
 }
 
-/* 4. Hover Logic: Optimized to only affect the SPECIFIC button being hovered */
-#shareBtn:not(.is-disabled):hover {
-  opacity: 1;
-  filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.1);
-}
-#logBtn:not(.is-disabled):hover {
-  opacity: 1;
-  filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.1);
-}
+/* 4. Hover Logic: Glowing Gold */
+#shareBtn:not(.is-disabled):hover,
+#logBtn:not(.is-disabled):hover,
 #muteBtn:not(.is-muted):hover {
   opacity: 1;
-  filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.1);
+  /* Even more vibrant on hover */
+  filter: sepia(1) saturate(6) hue-rotate(-15deg) brightness(1.3);
 }
 
 /* 5. Pointer Events */
@@ -1303,6 +1299,7 @@ input.input-field:-webkit-autofill:active {
     margin-top: 2px;
 }
 /* ====== PET UNLOCK MODAL ====== */
+
 
 
 
