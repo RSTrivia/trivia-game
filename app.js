@@ -1425,19 +1425,28 @@ async function rollForPet() {
     let reward = null;
 
     // 4. Roll the dice (Only if missing pets exist in that tier)
-    if (roll <= 0.005 && missingLegendary.length > 0) {
+   // 1/1000 = 0.001
+  // 1/500  = 0.002
+  // 1/200  = 0.005
+  // 1/50   = 0.02
+
+    if (roll <= 0.001 && missingLegendary.length > 0) {
+        // Exact 1/1000 chance
         reward = missingLegendary[Math.floor(Math.random() * missingLegendary.length)];
     } 
-    else if (roll <= 0.02 && missingRare.length > 0) {
+    else if (roll <= (0.001 + 0.002) && missingRare.length > 0) {
+        // Exact 1/500 chance (0.003 threshold)
         reward = missingRare[Math.floor(Math.random() * missingRare.length)];
-    }
-    else if (roll <= 0.05 && missingUncommon.length > 0) {
+    } 
+    else if (roll <= (0.001 + 0.002 + 0.005) && missingUncommon.length > 0) {
+        // Exact 1/200 chance (0.008 threshold)
         reward = missingUncommon[Math.floor(Math.random() * missingUncommon.length)];
-    }
-    else if (roll <= 0.10 && missingCommon.length > 0) {
+    } 
+    else if (roll <= (0.001 + 0.002 + 0.005 + 0.02) && missingCommon.length > 0) {
+        // Exact 1/50 chance (0.028 threshold)
         reward = missingCommon[Math.floor(Math.random() * missingCommon.length)];
     }
-
+  
     // 5. If they won a pet they didn't have
     if (reward) {
         currentLog.push(reward.id);
@@ -1637,6 +1646,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
