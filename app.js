@@ -827,17 +827,17 @@ async function checkAnswer(choiceId, btn) {
             // 2. PREDICT LEVEL CHANGE
             const oldLevel = getLevel(currentProfileXp);
             const newLevel = getLevel(currentProfileXp + gained);
-
+          
+            // 4. TRIGGER BONUS SECOND (This goes behind Level Up in the queue)
+            if (isBonusEarned) {
+                showNotification("BONUS XP!", bonusBuffer, "#a335ee"); //purple
+            }
+          
             // 3. TRIGGER LEVEL UP FIRST (This puts it at the front of the queue)
             if (newLevel > oldLevel) {
                 triggerFireworks(); 
                 // We call this first so it processes first
                 showNotification("LEVEL UP!", levelUpBuffer, "#ffde00"); //gold
-            }
-          
-            // 4. TRIGGER BONUS SECOND (This goes behind Level Up in the queue)
-            if (isBonusEarned) {
-                showNotification("BONUS XP!", bonusBuffer, "#a335ee"); //cyan
             }
           
             // 5. UPDATE DATA
@@ -1646,6 +1646,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
