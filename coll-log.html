@@ -76,6 +76,9 @@
             margin-bottom: 8px;
             image-rendering: pixelated;
             display: block;
+            user-select: none;           /* Prevents text/image selection */
+            -webkit-user-drag: none;     /* Specifically disables dragging in Chrome/Safari/Edge */
+            pointer-events: none;
         }
 
         .pet-name {
