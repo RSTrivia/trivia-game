@@ -1455,12 +1455,65 @@ async function rollForPet() {
             .from('profiles')
             .update({ collection_log: currentLog })
             .eq('id', session.user.id);
-
-        showCollectionLogNotification(reward.name);
+      
+      // Update LocalStorage so the Collection Log page updates instantly
+      localStorage.setItem('cached_pets', JSON.stringify(currentLog));
+      
+      showCollectionLogNotification(reward.name);
     }
 }
 
 
+function showCollectionLogNotification(petName) {
+    // 1. Create the window if it doesn't exist
+    let win = document.getElementById('pet-unlock-window');
+    if (!win) {
+        win = document.createElement('div');
+        win.id = 'pet-unlock-window';
+        document.body.appendChild(win);
+    }
+
+    // 2. Map Name to Filename (Matches your pet_id logic)
+    // Convert "Baby Mole" -> "mole", "TzRek-Jad" -> "jad", etc.
+    const fileNameMap = {
+        'Baby Mole': 'mole.png',
+        'Pet Kraken': 'kraken.png',
+        'Vorki': 'vorki.png',
+        'Pet Snakeling': 'snakeling.png',
+        'Yami': 'yami.png',
+        'Pet Zilyana': 'zilyana.png',
+        'Olmlet': 'olmlet.png',
+        'TzRek-Jad': 'jad.png'
+    };
+
+    const fileName = fileNameMap[petName] || 'mole.png';
+
+    // 3. Set Content
+    win.innerHTML = `
+        <div class="pet-unlock-title">NEW COLLECTION DROP</div>
+        <img src="pets/${fileName}" class="pet-unlock-icon">
+        <div class="pet-unlock-text">${petName} unlocked!</div>
+        <div class="pet-unlock-flavor">You have a funny feeling like you're being followed.</div>
+    `;
+
+    // 4. Play Level Up sound if you have it
+    if (typeof playSound === "function" && window.levelUpBuffer) {
+        playSound(window.levelUpBuffer);
+    }
+    
+    // 5. Trigger Fireworks (Uses your existing level-up logic)
+    if (typeof triggerFireworks === "function") {
+        triggerFireworks();
+    }
+
+    // 6. Show it
+    win.classList.add('active');
+
+    // 7. Auto-hide after 6 seconds
+    setTimeout(() => {
+        win.classList.remove('active');
+    }, 6000);
+}
 
 
 
@@ -1646,6 +1699,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
