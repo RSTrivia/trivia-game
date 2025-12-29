@@ -212,6 +212,35 @@
  </div>
 
   <!-- Scripts -->
+  <script>
+  // This runs instantly, BEFORE the page finishes loading
+  (function() {
+    const cXp = parseInt(localStorage.getItem('cached_xp')) || 0;
+    const cLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
+    const cUser = localStorage.getItem('cachedUsername') || 'Guest';
+    
+    document.getElementById('usernameSpan').textContent = ' ' + cUser;
+
+    if (cLoggedIn) {
+      let dLvl = 1;
+      if (cXp >= 100000) { dLvl = 99; }
+      else if (cXp > 0) {
+        for (let L = 1; L <= 99; L++) {
+          let threshold = Math.floor(Math.pow((L - 1) / 98, 3.1) * 100000);
+          if (cXp < threshold) {
+            dLvl = Math.max(1, L - 1);
+            break;
+          }
+        }
+      }
+      document.getElementById('levelNumber').textContent = dLvl;
+      document.getElementById('xpBracket').textContent = '(' + cXp.toLocaleString() + ' XP)';
+    } else {
+      document.getElementById('levelNumber').textContent = '1';
+      document.getElementById('xpBracket').textContent = '(0 XP)';
+    }
+  })();
+</script>
   <script src="config.js"></script>
   <script type="module" src="supabase.js"></script>
   <script type="module" src="app.js"></script>
@@ -219,6 +248,7 @@
     
 </body>
 </html>
+
 
 
 
