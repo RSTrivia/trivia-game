@@ -836,6 +836,8 @@ async function checkAnswer(choiceId, btn) {
         // Update Local State & UI
         score++;
         updateScore();
+        // This is where the pet roll happens
+        rollForPet();
         setTimeout(loadQuestion, 1000);
     } else {
         playSound(wrongBuffer);
@@ -1355,7 +1357,88 @@ if (shareBtn) {
     }
       
     };
-}  
+}
+
+
+async function rollForPet() {
+  // 1. Check if the user is logged in
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    // If no session exists (Guest), exit the function immediately
+    if (!session) {
+        //console.log("Guest player: Skipping pet roll.");
+        return; 
+    }
+
+    // 1. Fetch user's current collection
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('collection_log')
+        .eq('id', session.user.id)
+        .single();
+
+    let currentLog = profile?.collection_log || [];
+
+    // 2. Define the Pools
+    const allPets = {
+        legendary: [
+            { id: 'pet_olmlet', name: 'Olmlet' },
+            { id: 'pet_jad', name: 'TzRek-Jad' }
+        ],
+        rare: [
+            { id: 'pet_yami', name: 'Yami' },
+            { id: 'pet_zilyana', name: 'Pet Zilyana' }
+        ],
+        uncommon: [
+            { id: 'pet_vorki', name: 'Vorki' },
+            { id: 'pet_snakeling', name: 'Pet Snakeling' }
+        ],
+        common: [
+            { id: 'pet_mole', name: 'Baby Mole' },
+            { id: 'pet_kraken', name: 'Pet Kraken' }
+        ]
+    };
+
+    // 3. Filter pools to ONLY include missing pets
+    const missingLegendary = allPets.legendary.filter(p => !currentLog.includes(p.id));
+    const missingRare = allPets.rare.filter(p => !currentLog.includes(p.id));
+    const missingUncommon = allPets.uncommon.filter(p => !currentLog.includes(p.id));
+    const missingCommon = allPets.common.filter(p => !currentLog.includes(p.id));
+
+    const roll = Math.random();
+    let reward = null;
+
+    // 4. Roll the dice (Only if missing pets exist in that tier)
+    if (roll <= 0.005 && missingLegendary.length > 0) {
+        reward = missingLegendary[Math.floor(Math.random() * missingLegendary.length)];
+    } 
+    else if (roll <= 0.02 && missingRare.length > 0) {
+        reward = missingRare[Math.floor(Math.random() * missingRare.length)];
+    }
+    else if (roll <= 0.05 && missingUncommon.length > 0) {
+        reward = missingUncommon[Math.floor(Math.random() * missingUncommon.length)];
+    }
+    else if (roll <= 0.10 && missingCommon.length > 0) {
+        reward = missingCommon[Math.floor(Math.random() * missingCommon.length)];
+    }
+
+    // 5. If they won a pet they didn't have
+    if (reward) {
+        currentLog.push(reward.id);
+        
+        await supabase
+            .from('profiles')
+            .update({ collection_log: currentLog })
+            .eq('id', session.user.id);
+
+        showCollectionLogNotification(reward.name);
+    }
+}
+
+
+
+
+
 
 // ====== HELPERS & AUDIO ======
 async function loadSounds() {
@@ -1538,6 +1621,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
