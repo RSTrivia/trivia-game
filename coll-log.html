@@ -423,10 +423,10 @@ const ACHIEVEMENT_SCHEMA = [
         { id: 'sc510', text: 'Reach max score', check: (d) => d.maxScore >= 510 }
     ]},
     { cat: 'Daily Mode', tasks: [
-        { id: 'd1', text: 'Complete daily mode', check: (d) => d.dailyCount >= 1 },
+        { id: 'd1', text: 'Complete daily mode', check: (d) => d.dailyTotal >= 1 },
         { id: 'd10r', text: 'Daily mode 10 streak', check: (d) => d.dailyStreak >= 10 },
-        { id: 'd20t', text: 'Daily mode 20 total', check: (d) => d.dailyCount >= 20 },
-        { id: 'd100t', text: 'Daily mode 100 total', check: (d) => d.dailyCount >= 100 },
+        { id: 'd20t', text: 'Daily mode 20 total', check: (d) => d.dailyTotal >= 20 },
+        { id: 'd100t', text: 'Daily mode 100 total', check: (d) => d.dailyTotal >= 100 },
         { id: 'd10d', text: 'Score 10/10 in daily mode', check: (d) => d.dailyPerfect === true }
     ]},
     { cat: 'Pets', tasks: [
@@ -463,7 +463,7 @@ async function renderAchievements() {
     const stats = {
         level: parseInt(localStorage.getItem('cached_level')) || 1,
         maxScore: parseInt(localStorage.getItem('cached_max_score')) || 0,
-        dailyCount: parseInt(localStorage.getItem('cached_daily_total')) || 0,
+        dailyTotal: parseInt(localStorage.getItem('cached_daily_total')) || 0,
         dailyStreak: parseInt(localStorage.getItem('cached_daily_streak')) || 0,
         petsUnlocked: JSON.parse(localStorage.getItem('cached_pets') || '[]').length,
         fastestGuess: parseFloat(localStorage.getItem('stat_fastest')) || 99,
