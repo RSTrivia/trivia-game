@@ -1662,6 +1662,10 @@ async function rollForPet() {
         ]
     };
 
+    // --- NEW: Calculate Total Possible Pets ---
+    const flatAllPets = Object.values(allPets).flat();
+    const totalPetCount = flatAllPets.length;
+  
     // 3. Filter pools to ONLY include missing pets
     const missingLegendary = allPets.legendary.filter(p => !currentLog.includes(p.id));
     const missingRare = allPets.rare.filter(p => !currentLog.includes(p.id));
@@ -1696,8 +1700,16 @@ async function rollForPet() {
   
     // 5. If they won a pet they didn't have
     if (reward) {
+      // 1. First Pet Notification
+        if (currentLog.length === 0) {
+            showAchievementNotification("First Pet Obtained!");
+        }
         currentLog.push(reward.id);
-        
+        // 2. All Pets Notification (Check if new length matches total)
+        if (currentLog.length === totalPetCount) {
+            showAchievementNotification("Collection Log Complete: All Pets!");
+        }
+
         await supabase
             .from('profiles')
             .update({ collection_log: currentLog })
@@ -2002,6 +2014,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
