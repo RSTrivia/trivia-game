@@ -1423,8 +1423,38 @@ input.input-field:-webkit-autofill:active {
 }
 
 /*                  scroll bar              */
+/*                  scroll bar   mobile           */
+/* 1. Global scrollbar override for mobile */
+#achievementList::-webkit-scrollbar,
+.modal-content::-webkit-scrollbar,
+#logGrid::-webkit-scrollbar {
+    width: 6px !important;       /* Slightly thinner for mobile */
+    height: 6px !important;
+    display: block !important;    /* Forces it to exist */
+}
 
+/* 2. Track style */
+#achievementList::-webkit-scrollbar-track,
+.modal-content::-webkit-scrollbar-track {
+    background: rgba(20, 20, 20, 0.5) !important;
+    border-radius: 10px;
+}
 
+/* 3. Thumb style (The gold part) */
+#achievementList::-webkit-scrollbar-thumb,
+.modal-content::-webkit-scrollbar-thumb {
+    background: #c28f0c !important; 
+    border-radius: 10px;
+    border: 1px solid #ffdd44;
+}
+
+/* 4. IMPORTANT: On mobile, scrollbars are often hidden until movement. 
+   This ensures the container is ready for a custom scrollbar. */
+#achievementList, .modal-content {
+    -webkit-overflow-scrolling: touch; /* Smooth momentum scrolling */
+    scrollbar-gutter: stable;          /* Prevents layout jumping */
+}
+/*                  scroll bar   mobile           */
 
 
 
