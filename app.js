@@ -1056,10 +1056,11 @@ async function endGame() {
             gameOverTitle.textContent = randomMsg;
             gameOverTitle.classList.remove('hidden');
         }
-        // This one function now handles: Streak, Total Count, and Perfect 10/10
-        updateDailyStreak();
+  
         // Saves the score for the leaderboard
         saveDailyScore(session, randomMsg); 
+        // This one function now handles: Streak, Total Count, and Perfect 10/10
+        updateDailyStreak();
        
     } else {
         if (playAgainBtn) playAgainBtn.classList.remove('hidden');
@@ -1888,6 +1889,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
