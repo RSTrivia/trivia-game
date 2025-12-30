@@ -347,7 +347,23 @@
         font-size: 0.7rem !important; /* Smaller text to prevent overflow */
         line-height: 1 !important;
          }
-    }
+            /* --- MOBILE ACHIEVEMENT FIXES --- */
+            #achievementList {
+                height: 420px !important; /* Shorter than PC to fit the 640px container */
+                max-height: 420px !important;
+            }
+        
+            .achieve-item {
+                padding: 8px 12px !important; /* Slimmer items for mobile */
+                margin-bottom: 6px !important;
+                font-size: 0.85rem !important;
+            }
+        
+            .achieve-category {
+                padding: 10px 5px 5px 5px !important;
+                font-size: 1rem !important;
+            }
+        }
     </style>
 </head>
 
