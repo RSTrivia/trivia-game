@@ -1447,53 +1447,46 @@ if (shareBtn) {
     }
       
     };
-}  
+}
+
 
 async function calculateStreakFromHistory(userId) {
     const { data, error } = await supabase
         .from('daily_attempts')
-        .select('created_at')
+        .select('attempt_date') // Use the column you manually save to
         .eq('user_id', userId)
-        .order('created_at', { ascending: false });
+        .order('attempt_date', { ascending: false });
 
     if (error || !data || data.length === 0) return 0;
 
-    // 1. Get unique dates in YYYY-MM-DD format (Local Time)
-    // Using locale string ensures the date matches what the user thinks "today" is
-    const playedDates = [...new Set(data.map(d => {
-        const date = new Date(d.created_at);
-        return date.toLocaleDateString('en-CA'); // Returns YYYY-MM-DD
-    }))];
+    // 1. Get unique strings (they are already YYYY-MM-DD from your saveDailyScore)
+    const uniqueDates = [...new Set(data.map(d => d.attempt_date))];
 
-    let streak = 0;
-    let today = new Date().toLocaleDateString('en-CA');
-    let yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    yesterday = yesterday.toLocaleDateString('en-CA');
+    // todayStr is UTC (from the top of your script)
+    const yesterdayDate = new Date();
+    yesterdayDate.setUTCDate(yesterdayDate.getUTCDate() - 1);
+    const yesterdayStr = yesterdayDate.toISOString().split('T')[0];
 
-    // 2. If they haven't played today AND haven't played yesterday, streak is dead.
-    if (!playedDates.includes(today) && !playedDates.includes(yesterday)) {
+    // 2. Initial check: Is the latest game from Today or Yesterday?
+    const latestGame = uniqueDates[0];
+    if (latestGame !== todayStr && latestGame !== yesterdayStr) {
         return 0;
     }
 
-    // 3. Start checking from the most recent date played
-    // Since playedDates is sorted by DB (descending), index 0 is the newest
-    let lastDate = new Date(playedDates[0]);
-    streak = 1;
-
-    for (let i = 1; i < playedDates.length; i++) {
-        let currentDate = new Date(playedDates[i]);
+    // 3. Count backward through the strings
+    let streak = 1;
+    for (let i = 0; i < uniqueDates.length - 1; i++) {
+        // Force UTC by adding T00:00:00Z
+        const current = new Date(uniqueDates[i] + 'T00:00:00Z');
+        const next = new Date(uniqueDates[i + 1] + 'T00:00:00Z');
         
-        // Calculate difference in days
-        const diffTime = Math.abs(lastDate - currentDate);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        const diffTime = Math.abs(current - next);
+        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
         if (diffDays === 1) {
             streak++;
-            lastDate = currentDate;
-        } else {
-            // Gap found, streak ends
-            break;
+        } else if (diffDays > 1) {
+            break; // Found a gap larger than 1 day
         }
     }
 
@@ -2009,6 +2002,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
