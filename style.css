@@ -1346,27 +1346,36 @@ input.input-field:-webkit-autofill:active {
 /* ====== PET UNLOCK MODAL ====== */
 
 
+
 /* ====== HELP MODAL STYLES ====== */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7); /* Dims the background site */
+  background: rgba(0, 0, 0, 0.7);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 99999; /* Higher than everything else */
+  z-index: 99999;
   backdrop-filter: blur(3px);
 }
 
 .modal-content {
-  /* Inherits .container styles from your CSS (gold border, dark bg) */
   animation: modalSlideIn 0.3s ease-out;
   max-height: 80vh;
   overflow-y: auto;
-  /* ADD THESE THREE LINES: */
-  padding-top: 15px !important;    /* Forces the inside space to be smaller */
-  display: flex;                   /* Helps align content */
-  flex-direction: column;          /* Keeps items stacked */
+  
+  /* REDUCED TOP PADDING */
+  padding: 10px 25px 25px 25px !important; 
+  display: flex;
+  flex-direction: column;
+}
+
+/* TARGET THE TITLE SPECIFICALLY */
+.modal-content h2, 
+.modal-content h1 {
+  margin-top: 0;         /* Removes gap between top of modal and title */
+  margin-bottom: 5px;    /* Minimizes gap between title and the text below */
+  line-height: 1.2;      /* Optional: tightens the text height */
 }
 
 @keyframes modalSlideIn {
@@ -1375,9 +1384,10 @@ input.input-field:-webkit-autofill:active {
 }
 
 .instructions-text p {
-  margin-bottom: 15px;
+  margin-top: 0;         /* Ensures the first paragraph doesn't push away from title */
+  margin-bottom: 10px;   /* Slightly reduced from 15px */
 }
-
+/* ====== HELP MODAL STYLES ====== */
 
 
 /*                  scroll bar              */
@@ -1475,6 +1485,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
