@@ -1472,11 +1472,11 @@ async function updateDailyStreak(currentScore) {
 
     // --- NOTIFICATIONS ---
     if (!oldAchieve.daily_total || oldAchieve.daily_total === 0) {
-        showNotification("Achievement: Daily Mode Complete!", "fanfare_sound", "#ffde00");
+        showNotification("Achievement: Daily Mode Complete!", bonusBuffer, "#ffde00");
     }
 
     if (currentScore === 10 && !oldAchieve.daily_perfect) {
-        showNotification("Achievement: Perfect 10/10!", "legendary_sound", "#ff4500");
+        showNotification("Achievement: Perfect 10/10!", bonusBuffer, "#ff4500");
     }
     
     // 3. Get the raw count of attempts from DB
@@ -1889,6 +1889,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
