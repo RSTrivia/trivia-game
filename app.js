@@ -1717,7 +1717,9 @@ window.showCollectionLogNotification = showCollectionLogNotification;
 
 let achievementNotificationTimeout = null;
 
-function showAchievementNotification(title, description) {
+let achievementNotificationTimeout = null;
+
+async function showAchievementNotification(title, description) {
     let modal = document.getElementById('achievement-modal');
     
     if (!modal) {
@@ -1726,18 +1728,14 @@ function showAchievementNotification(title, description) {
         document.body.appendChild(modal);
     }
 
-    // Clear existing timers to prevent overlapping
-    if (achievementNotificationTimeout) {
-        clearTimeout(achievementNotificationTimeout);
-    }
+    if (achievementNotificationTimeout) clearTimeout(achievementNotificationTimeout);
     modal.classList.remove('active');
   
-    // Play Achievement sound (using bonusBuffer instead of petBuffer)
+    // Audio check
     if (typeof playSound === "function" && typeof bonusBuffer !== 'undefined' && bonusBuffer) {
         playSound(bonusBuffer);
     }
 
-    // OSRS Achievement style layout
     modal.innerHTML = `
         <span class="achieve-modal-close" onclick="this.parentElement.classList.remove('active')">&times;</span>
         <div class="achieve-unlock-title">ACHIEVEMENT UNLOCKED</div>
@@ -1745,12 +1743,11 @@ function showAchievementNotification(title, description) {
         <div class="achieve-unlock-msg">${description}</div>
     `;
 
-    // Brief delay to trigger CSS transition
     setTimeout(() => {
         modal.classList.add('active');
     }, 100);
 
-    // Trigger fireworks for achievements too!
+    // Trigger fireworks
     if (typeof triggerFireworks === "function") triggerFireworks();
 
     const isMobile = window.innerWidth <= 480;
@@ -1947,6 +1944,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
