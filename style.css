@@ -1363,6 +1363,10 @@ input.input-field:-webkit-autofill:active {
   animation: modalSlideIn 0.3s ease-out;
   max-height: 80vh;
   overflow-y: auto;
+  /* ADD THESE THREE LINES: */
+  padding-top: 15px !important;    /* Forces the inside space to be smaller */
+  display: flex;                   /* Helps align content */
+  flex-direction: column;          /* Keeps items stacked */
 }
 
 @keyframes modalSlideIn {
@@ -1375,43 +1379,11 @@ input.input-field:-webkit-autofill:active {
 }
 
 
-/* 1. Reset the padding on the modal specifically */
-.modal-content {
-  /* This keeps the box the same size but lets us control the inside */
-  padding-top: 10px !important; 
-  padding-bottom: 25px !important;
-  
-  display: flex;
-  flex-direction: column;
-  animation: modalSlideIn 0.3s ease-out;
-  max-height: 85vh; /* Gives it a consistent height */
-  overflow-y: auto;
-}
-
-/* 2. Target the Title specifically */
-#help-modal h2 {
-  margin-top: 5px !important;    /* Move title up towards the top edge */
-  margin-bottom: 5px !important; /* Bring the HR line closer */
-  padding: 0 !important;
-}
-
-/* 3. Target the HR line specifically */
-#help-modal hr {
+/* Add this to move the text itself higher up */
+.modal-content h2 {
   margin-top: 0 !important;
-  margin-bottom: 15px !important;
-  width: 90%; /* Looks cleaner if it doesn't touch the very edges */
+  padding-top: 0 !important;
 }
-
-/* 4. Instructions area */
-.instructions-text {
-  margin-top: 0 !important;
-}
-
-/* ====== HELP MODAL STYLES ====== */
-
-
-
-
 
 
 
