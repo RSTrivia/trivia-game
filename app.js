@@ -1152,37 +1152,51 @@ function setupRealtimeSync(userId) {
 }
 
 async function saveNormalScore(currentUsername, finalScore) {
-    // 1. Get the session to get the UUID (The "Key" to bypass 403)
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
-
     const userId = session.user.id;
 
-    // 2. Check for existing score using user_id (the most stable way)
-    const { data: record } = await supabase
-        .from('scores')
-        .select('score')
-        .eq('user_id', userId)
-        .maybeSingle();
+    // 1. Fetch current High Score and Achievement data
+    const { data: record } = await supabase.from('scores').select('score').eq('user_id', userId).maybeSingle();
+    const { data: profile } = await supabase.from('profiles').select('achievements').eq('id', userId).maybeSingle();
+    
+    const oldBest = record?.score || 0;
+    let achievements = profile?.achievements || {};
 
-    // 3. Save only if it's a new High Score
+    // --- 2. MILESTONE CHECK (Logic remains independent of High Score update) ---
+    // This triggers even if they don't beat their High Score, 
+    // but only if they haven't seen the notification before.
+    if (finalScore >= 10 && oldBest < 10) showAchievementNotification("Novice: 10 Points");
+    if (finalScore >= 50 && oldBest < 50) showAchievementNotification("Apprentice: 50 Points");
+    if (finalScore >= 100 && oldBest < 100) showAchievementNotification("Master: 100 Points");
+    if (finalScore >= 510 && oldBest < 510) showAchievementNotification("OSRS Trivia Legend");
+
+    // --- 3. LEADERBOARD UPDATE (Matches your original logic exactly) ---
     if (!record || finalScore > record.score) {
-        const { error } = await supabase
+        const { error: scoreError } = await supabase
             .from('scores')
             .upsert({ 
-                user_id: userId,        // Required for RLS / 403 fix
+                user_id: userId, 
                 username: currentUsername, 
                 score: finalScore 
-            }, { onConflict: 'user_id' }); // Prevents duplicate rows for one user
+            }, { onConflict: 'user_id' });
 
-        if (error) {
-            console.error("Leaderboard Save Error:", error.message);
+        if (scoreError) {
+            console.error("Leaderboard Save Error:", scoreError.message);
         } else {
             console.log("Personal best updated on leaderboard!");
+            
+            // --- 4. PROFILE SYNC ---
+            // We update the profiles table only when a new high score is hit
+            // to keep the achievements object in sync with the leaderboard.
+            achievements.best_score = finalScore;
+            await supabase
+                .from('profiles')
+                .update({ achievements })
+                .eq('id', userId);
         }
     }
 }
-
 
 // Helper to keep endGame clean
 async function saveDailyScore(session, msg) {
@@ -1965,6 +1979,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
