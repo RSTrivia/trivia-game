@@ -862,9 +862,9 @@ async function checkAnswer(choiceId, btn) {
 
             // 2. Lucky Guess Check (< 1 second)
             if (timeLeft >= 14) {
-                saveAchievement('fastest_guess', 1); // This triggers the "Lucky Guess"
+                saveAchievement('fastest_guess', true); // This triggers the "Lucky Guess"
             }
-            if (timeLeft <= 1) {
+            if (timeLeft <= 1 && timeLeft > 0) {
                 saveAchievement('just_in_time', true); // 2. Just in Time
             }
             // 5. UPDATE DATA
@@ -1574,47 +1574,59 @@ async function saveAchievement(key, value) {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
 
-    const { data } = await supabase.from('profiles').select('achievements').eq('id', session.user.id).single();
-    let achievements = data?.achievements || {};
+    // Fetch existing achievements from Supabase
+    const { data, error } = await supabase
+        .from('profiles')
+        .select('achievements')
+        .eq('id', session.user.id)
+        .single();
 
-    // 1. Check if this is a "First Time" or "New Record" achievement
+    if (error) return console.error("Error fetching achievements:", error);
+
+    let achievements = data?.achievements || {};
     let isNewAchievement = false;
     let notificationText = "";
 
+    // 1. LUCKY GUESS (Fastest Guess)
     if (key === 'fastest_guess') {
-        const oldBest = achievements[key] || 99;
-        if (value < oldBest) {
+        // If they already have ANY value for fastest_guess, they've been notified before.
+        // Since we only care that they DID it once (answering at 14s/1s elapsed), 
+        // we check if the key exists.
+        if (!achievements[key]) {
             isNewAchievement = true;
             notificationText = "Lucky Guess";
-            //showNotification("Achievement: Lucky guess Complete!", bonusBuffer, "#ffde00");
-        } else {
-            return; // Not a new record, stop here
         }
-    } else if (key === 'just_in_time' && value === true) {
+    } 
+    
+    // 2. JUST IN TIME
+    else if (key === 'just_in_time') {
+        // Only trigger if the key doesn't exist yet
         if (!achievements[key]) {
             isNewAchievement = true;
             notificationText = "Just in Time";
-            //showNotification("Achievement: Just in time Complete!", bonusBuffer, "#ffde00");
         }
     }
-  if (isNewAchievement) {
-    if (typeof showNotification === "function" && bonusBuffer instanceof AudioBuffer) {
-            showAchievementNotification(notificationText);
-        } else {
-            // Fallback if sound isn't loaded yet
-            console.log(notificationText); 
-            if (typeof showNotification === "function") {
-                showAchievementNotification(notificationText); 
-            }
-        }
-    // 2. Save to DB
-    achievements[key] = value;
-    await supabase.from('profiles').update({ achievements }).eq('id', session.user.id);
-  }
 
-    // 4. Local Sync
-    const storageKey = key === 'fastest_guess' ? 'stat_fastest' : 'stat_just_in_time';
-    localStorage.setItem(storageKey, value.toString());
+    // --- EXECUTE SAVING & NOTIFICATION ---
+    if (isNewAchievement) {
+        // We call the notification here. 
+        // Note: I removed the strict AudioBuffer check so the visual always shows.
+        if (typeof showAchievementNotification === "function") {
+            showAchievementNotification(notificationText);
+        }
+
+        // Update the object and send to Supabase
+        achievements[key] = value;
+        
+        await supabase
+            .from('profiles')
+            .update({ achievements: achievements })
+            .eq('id', session.user.id);
+
+        // Update local storage for immediate UI sync if needed
+        const storageKey = key === 'fastest_guess' ? 'stat_fastest' : 'stat_just_in_time';
+        localStorage.setItem(storageKey, value.toString());
+    }
 }
 
 
@@ -1997,6 +2009,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
