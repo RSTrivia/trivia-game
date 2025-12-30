@@ -384,7 +384,8 @@ const ACHIEVEMENT_SCHEMA = [
         { id: 'd1', text: 'Complete daily mode', check: (d) => d.dailyCount >= 1 },
         { id: 'd10r', text: 'Daily mode 10 streak', check: (d) => d.dailyStreak >= 10 },
         { id: 'd20t', text: 'Daily mode 20 total', check: (d) => d.dailyCount >= 20 },
-        { id: 'd100t', text: 'Daily mode 100 total', check: (d) => d.dailyCount >= 100 }
+        { id: 'd100t', text: 'Daily mode 100 total', check: (d) => d.dailyCount >= 100 },
+        { id: 'd10d', text: 'Score 10/10 in daily mode', check: (d) => d.dailyPerfect === true }
     ]},
     { cat: 'Pets', tasks: [
         { id: 'p1', text: 'Unlock 1 pet', check: (d) => d.petsUnlocked >= 1 },
@@ -425,6 +426,7 @@ async function renderAchievements() {
         petsUnlocked: JSON.parse(localStorage.getItem('cached_pets') || '[]').length,
         fastestGuess: parseFloat(localStorage.getItem('stat_fastest')) || 99,
         justInTime: localStorage.getItem('stat_just_in_time') === 'true'
+        dailyPerfect: localStorage.getItem('stat_daily_perfect') === 'true'
     };
 
     ACHIEVEMENT_SCHEMA.forEach(category => {
