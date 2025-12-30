@@ -950,6 +950,8 @@ function showNotification(message, soundToPlay, color = "#ffde00") {
     });
     processQueue();
 }
+// Add this right after your function definition in your JS file
+window.showNotification = showNotification;
 
 function processQueue() {
     if (isShowingNotification || notificationQueue.length === 0) return;
@@ -1886,6 +1888,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
