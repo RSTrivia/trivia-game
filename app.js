@@ -1402,6 +1402,67 @@ if (shareBtn) {
 }  
 
 
+
+
+
+
+
+
+async function syncAchievementsToCloud() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    // Package everything into one object
+    const achievementData = {
+        level: parseInt(localStorage.getItem('cached_level')) || 1,
+        max_score: parseInt(localStorage.getItem('cached_max_score')) || 0,
+        daily_total: parseInt(localStorage.getItem('cached_daily_total')) || 0,
+        daily_streak: parseInt(localStorage.getItem('cached_daily_streak')) || 0,
+        fastest_guess: parseFloat(localStorage.getItem('stat_fastest')) || 99,
+        just_in_time: localStorage.getItem('stat_just_in_time') === 'true',
+        daily_perfect: localStorage.getItem('stat_daily_perfect') === 'true'
+    };
+
+    const { error } = await supabase
+        .from('profiles')
+        .update({ achievements: achievementData }) // Save the whole object to one column
+        .eq('id', session.user.id);
+
+    if (error) console.error("Error syncing to cloud:", error);
+}
+
+
+
+async function loadCollection() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+        const { data } = await supabase
+            .from('profiles')
+            .select('collection_log, achievements')
+            .eq('id', session.user.id)
+            .single();
+        
+        if (data && data.achievements) {
+            const a = data.achievements;
+            // Map the JSON back to LocalStorage keys
+            localStorage.setItem('cached_level', a.level || 1);
+            localStorage.setItem('cached_max_score', a.max_score || 0);
+            localStorage.setItem('cached_daily_total', a.daily_total || 0);
+            localStorage.setItem('cached_daily_streak', a.daily_streak || 0);
+            localStorage.setItem('stat_fastest', a.fastest_guess || 99);
+            localStorage.setItem('stat_just_in_time', (a.just_in_time || false).toString());
+            localStorage.setItem('stat_daily_perfect', (a.daily_perfect || false).toString());
+        }
+        
+        if (data?.collection_log) {
+            localStorage.setItem('cached_pets', JSON.stringify(data.collection_log));
+        }
+    }
+}
+
+
+
+
 async function rollForPet() {
   // 1. Check if the user is logged in
     const { data: { session } } = await supabase.auth.getSession();
@@ -1735,6 +1796,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
