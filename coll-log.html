@@ -412,30 +412,30 @@ const PET_DATA = [
 
 const ACHIEVEMENT_SCHEMA = [
     { cat: 'Levels', tasks: [
-        { id: 'lvl10', text: 'Reach level 10', check: (d) => d.level >= 10 },
-        { id: 'lvl50', text: 'Reach level 50', check: (d) => d.level >= 50 },
-        { id: 'lvl99', text: 'Reach max level', check: (d) => d.level >= 99 }
+        { id: 'lvl10', text: 'Reach Level 10', check: (d) => d.level >= 10 },
+        { id: 'lvl50', text: 'Reach Level 50', check: (d) => d.level >= 50 },
+        { id: 'lvl99', text: 'Reach Max Level', check: (d) => d.level >= 99 }
     ]},
     { cat: 'Scores', tasks: [
-        { id: 'sc10', text: 'Reach 10 score', check: (d) => d.maxScore >= 10 },
-        { id: 'sc50', text: 'Reach 50 score', check: (d) => d.maxScore >= 50 },
-        { id: 'sc100', text: 'Reach 100 score', check: (d) => d.maxScore >= 100 },
-        { id: 'sc510', text: 'Reach max score', check: (d) => d.maxScore >= 510 }
+        { id: 'sc10', text: 'Reach 10 Score', check: (d) => d.maxScore >= 10 },
+        { id: 'sc50', text: 'Reach 50 Score', check: (d) => d.maxScore >= 50 },
+        { id: 'sc100', text: 'Reach 100 Score', check: (d) => d.maxScore >= 100 },
+        { id: 'sc510', text: 'Reach Max Score', check: (d) => d.maxScore >= 510 }
     ]},
     { cat: 'Daily Mode', tasks: [
-        { id: 'd1', text: 'Complete daily mode', check: (d) => d.dailyTotal >= 1 },
-        { id: 'd10r', text: 'Daily mode 10 streak', check: (d) => d.dailyStreak >= 10 },
-        { id: 'd20t', text: 'Daily mode 20 total', check: (d) => d.dailyTotal >= 20 },
-        { id: 'd100t', text: 'Daily mode 100 total', check: (d) => d.dailyTotal >= 100 },
+        { id: 'd1', text: 'First Daily Mode', check: (d) => d.dailyTotal >= 1 },
+        { id: 'd10r', text: '10 Day Streak', check: (d) => d.dailyStreak >= 10 },
+        { id: 'd20t', text: '20 Daily Games', check: (d) => d.dailyTotal >= 20 },
+        { id: 'd100t', text: '100 Daily Games', check: (d) => d.dailyTotal >= 100 },
         { id: 'd10d', text: 'Perfect 10/10', check: (d) => d.dailyPerfect === true }
     ]},
     { cat: 'Pets', tasks: [
-        { id: 'p1', text: 'Unlock 1 pet', check: (d) => d.petsUnlocked >= 1 },
-        { id: 'pall', text: 'Unlock all pets', check: (d) => d.petsUnlocked >= 8 }
+        { id: 'p1', text: 'Unlock 1 Pet', check: (d) => d.petsUnlocked >= 1 },
+        { id: 'pall', text: 'Unlock all Pets', check: (d) => d.petsUnlocked >= 8 }
     ]},
     { cat: 'Game', tasks: [
-        { id: 'fast', text: 'Lucky guess', check: (d) => d.fastestGuess <= 1 },
-        { id: 'close', text: 'Just in time', check: (d) => d.justInTime === true }
+        { id: 'fast', text: 'Lucky Guess', check: (d) => d.fastestGuess <= 1 },
+        { id: 'close', text: 'Just in Time', check: (d) => d.justInTime === true }
     ]}
 ];
 
