@@ -40,6 +40,9 @@
     const dailyBtn = document.getElementById('dailyBtn');
     const shareBtn = document.getElementById('shareBtn');
     const logBtn = document.getElementById('logBtn');
+    const helpBtn = document.getElementById('helpBtn');
+    const helpModal = document.getElementById('help-modal');
+    const closeHelpBtn = document.getElementById('closeHelpBtn');
     
     const hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
     const hasScore = localStorage.getItem('lastDailyScore') !== null;
@@ -77,6 +80,24 @@
     }
 
     if (authBtn) authBtn.onclick = handleAuthAction;
+
+  // Open Modal
+  helpBtn.onclick = () => {
+    helpModal.classList.remove('hidden');
+  };
+
+  // Close Modal (via button)
+  closeHelpBtn.onclick = () => {
+    helpModal.classList.add('hidden');
+  };
+
+  // Close Modal (clicking outside the box)
+  window.onclick = (event) => {
+    if (event.target == helpModal) {
+      helpModal.classList.add('hidden');
+    }
+  };
+    
   });
     
 </script>
@@ -110,8 +131,8 @@
   <!-- App wrapper -->
   <div id="app">
     <div class="container">
-    <button id="helpBtn" type="button" onclick="hi">
-      <span id="helpIcon" style="font-weight: 900; font-family: 'Cinzel', serif;">❔</span>
+    <button id="helpBtn" type="button">
+      <span id="helpIcon" style="font-weight: 900; font-family: 'Cinzel', serif;">?</span>
     </button>
       <h1 id="main-title">OSRS Trivia</h1>
 
@@ -239,6 +260,7 @@
     
 </body>
 </html>
+
 
 
 
