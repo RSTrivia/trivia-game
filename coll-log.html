@@ -434,7 +434,7 @@ const ACHIEVEMENT_SCHEMA = [
         { id: 'pall', text: 'Unlock all Pets', check: (d) => d.petsUnlocked >= 8 }
     ]},
     { cat: 'Game', tasks: [
-        { id: 'fast', text: 'Lucky Guess', check: (d) => d.fastestGuess <= 1 },
+        { id: 'fast', text: 'Lucky Guess', check: (d) => d.fastestGuess === true },
         { id: 'close', text: 'Just in Time', check: (d) => d.justInTime === true }
     ]}
 ];
@@ -483,7 +483,7 @@ async function renderAchievements(calculatedLevel) {
         dailyTotal: parseInt(localStorage.getItem('cached_daily_total')) || 0,
         dailyStreak: parseInt(localStorage.getItem('stat_max_streak')) || 0,
         petsUnlocked: JSON.parse(localStorage.getItem('cached_pets') || '[]').length,
-        fastestGuess: parseFloat(localStorage.getItem('stat_fastest')) || 99,
+        fastestGuess: localStorage.getItem('stat_fastest') === 'true',
         justInTime: localStorage.getItem('stat_just_in_time') === 'true',
         dailyPerfect: localStorage.getItem('stat_daily_perfect') === 'true'
     };
@@ -563,7 +563,7 @@ async function loadCollection() {
         // --- STANDARD SYNC ---
         localStorage.setItem('cached_daily_streak', a.daily_streak || 0);
         localStorage.setItem('stat_max_streak', a.max_streak || 0);
-        localStorage.setItem('stat_fastest', a.fastest_guess || 99);
+        localStorage.setItem('stat_fastest', a.fastest_guess || false).toString());
         localStorage.setItem('stat_just_in_time', (a.just_in_time || false).toString());
 
         // Update Pets and UI
