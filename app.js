@@ -1474,11 +1474,11 @@ async function updateDailyStreak(currentScore) {
 
     // --- NOTIFICATIONS ---
     if (!oldAchieve.daily_total || oldAchieve.daily_total === 0) {
-        showNotification("Achievement: Daily Mode!", bonusBuffer, "#ffde00");
+        showAchievementNotification("Complete daily mode", bonusBuffer, "#ffde00");
     }
 
     if (currentScore === 10 && !oldAchieve.daily_perfect) {
-        showNotification("Achievement: Perfect 10/10!", bonusBuffer, "#ff4500");
+        showAchievementNotification("Perfect 10/10", bonusBuffer, "#ff4500");
     }
     
     // 3. Get the raw count of attempts from DB
@@ -1532,7 +1532,7 @@ async function saveAchievement(key, value) {
         const oldBest = achievements[key] || 99;
         if (value < oldBest) {
             isNewAchievement = true;
-            notificationText = "Achievement: Lucky Guess!";
+            notificationText = "Lucky guess";
             //showNotification("Achievement: Lucky guess Complete!", bonusBuffer, "#ffde00");
         } else {
             return; // Not a new record, stop here
@@ -1540,18 +1540,18 @@ async function saveAchievement(key, value) {
     } else if (key === 'just_in_time' && value === true) {
         if (!achievements[key]) {
             isNewAchievement = true;
-            notificationText = "Achievement: Just in Time!";
+            notificationText = "Just in time";
             //showNotification("Achievement: Just in time Complete!", bonusBuffer, "#ffde00");
         }
     }
   if (isNewAchievement) {
     if (typeof showNotification === "function" && bonusBuffer instanceof AudioBuffer) {
-            showAchievementNotification(notificationText, "New achievement unlocked!");
+            showAchievementNotification(notificationText);
         } else {
             // Fallback if sound isn't loaded yet
             console.log(notificationText); 
             if (typeof showNotification === "function") {
-                showAchievementNotification(notificationText, "New achievement unlocked!"); 
+                showAchievementNotification(notificationText); 
             }
         }
     // 2. Save to DB
@@ -1715,11 +1715,12 @@ function showCollectionLogNotification(petName) {
 }
 window.showCollectionLogNotification = showCollectionLogNotification;
 
-let achievementNotificationTimeout = null;
+
+
 
 let achievementNotificationTimeout = null;
 
-async function showAchievementNotification(title, description) {
+function showAchievementNotification(achievementName) {
     let modal = document.getElementById('achievement-modal');
     
     if (!modal) {
@@ -1731,33 +1732,32 @@ async function showAchievementNotification(title, description) {
     if (achievementNotificationTimeout) clearTimeout(achievementNotificationTimeout);
     modal.classList.remove('active');
   
-    // Audio check
+    // Play sound if available
     if (typeof playSound === "function" && typeof bonusBuffer !== 'undefined' && bonusBuffer) {
         playSound(bonusBuffer);
     }
 
     modal.innerHTML = `
-        <span class="achieve-modal-close" onclick="this.parentElement.classList.remove('active')">&times;</span>
-        <div class="achieve-unlock-title">ACHIEVEMENT UNLOCKED</div>
-        <div class="achieve-unlock-name">${title}</div>
-        <div class="achieve-unlock-msg">${description}</div>
+        <span class="achieve-modal-close" onclick="this.parentElement.classList.remove('active')" style="position:absolute; top:4px; right:8px; color:#cd7f32; cursor:pointer;">&times;</span>
+        <div class="achieve-unlock-title">Achievement Unlocked!</div>
+        <div class="achieve-unlock-name">${achievementName}</div>
     `;
 
     setTimeout(() => {
         modal.classList.add('active');
     }, 100);
 
-    // Trigger fireworks
     if (typeof triggerFireworks === "function") triggerFireworks();
 
     const isMobile = window.innerWidth <= 480;
-    const displayTime = isMobile ? 3000 : 6000;
+    const displayTime = isMobile ? 3000 : 5000;
 
     achievementNotificationTimeout = setTimeout(() => {
         modal.classList.remove('active');
         achievementNotificationTimeout = null;
     }, displayTime); 
 }
+
 window.showAchievementNotification = showAchievementNotification;
 
 
@@ -1944,6 +1944,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
