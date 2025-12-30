@@ -1454,80 +1454,84 @@ async function calculateStreakFromHistory(userId) {
 async function updateDailyStreak(currentScore) {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
+    const userId = session.user.id;
 
     // 1. Calculate the REAL current streak from history
-    const actualStreak = await calculateStreakFromHistory(session.user.id);
+    const actualStreak = await calculateStreakFromHistory(userId);
 
-    // 2. Get the Profile
+    // 2. Get the current Profile Achievements
     const { data: profile } = await supabase.from('profiles')
         .select('achievements')
-        .eq('id', session.user.id)
-        .single();
+        .eq('id', userId)
+        .maybeSingle();
     
-    let achievements = profile?.achievements || {};
+    // Ensure we don't wipe out other achievement data
+    let oldAchieve = profile?.achievements || {};
 
-    // 3. Update Current Streak
-    achievements.daily_streak = actualStreak;
-
-    // 4. Update MAX Streak (The "Permanent" Record)
-    // If the current run is higher than the record, update the record.
-    if (actualStreak > (achievements.max_streak || 0)) {
-        achievements.max_streak = actualStreak;
-    }
-
-    // 5. Update Totals
-    const { count: totalGames } = await supabase
+    // 3. Get the raw count of attempts
+    const { count: dbCount } = await supabase
         .from('daily_attempts')
         .select('*', { count: 'exact', head: true })
-        .eq('user_id', session.user.id);
-    
-    achievements.daily_total = totalGames || 0;
-    if (currentScore === 10) achievements.daily_perfect = true;
+        .eq('user_id', userId);
 
-    // Save to Supabase
-    await supabase.from('profiles').update({ achievements }).eq('id', session.user.id);
+    // Logic: If we are calling this at the end of a game, 
+    // the current game record might still be saving, so we ensure total is at least 1.
+    const newTotal = Math.max((dbCount || 0), (oldAchieve.daily_total || 0) + 1);
 
-    // Sync LocalStorage
-    localStorage.setItem('cached_daily_streak', actualStreak);
-    localStorage.setItem('stat_max_streak', achievements.max_streak); // Save the record!
-    localStorage.setItem('cached_daily_total', achievements.daily_total);
+    // 4. Construct the updated object
+    const updatedAchieve = {
+        ...oldAchieve, // Keep existing stats like fastest_guess, etc.
+        daily_streak: actualStreak,
+        max_streak: Math.max(actualStreak, (oldAchieve.max_streak || 0)),
+        daily_total: newTotal
+    };
+
+    // Only set perfect to true, never revert it to false if they already have it
+    if (currentScore === 10) {
+        updatedAchieve.daily_perfect = true;
+    }
+
+    // 5. Save to Supabase (Explicitly named object)
+    const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ achievements: updatedAchieve })
+        .eq('id', userId);
+
+    if (updateError) {
+        console.error("Failed to sync achievements to Supabase:", updateError.message);
+    }
+
+    // 6. Sync LocalStorage for immediate UI feedback
+    localStorage.setItem('cached_daily_streak', updatedAchieve.daily_streak);
+    localStorage.setItem('stat_max_streak', updatedAchieve.max_streak);
+    localStorage.setItem('cached_daily_total', updatedAchieve.daily_total);
+    if (updatedAchieve.daily_perfect) {
+        localStorage.setItem('stat_daily_perfect', 'true');
+    }
 }
-
 
 
 async function saveAchievement(key, value) {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
 
-    // 1. Map game keys to the "cached" keys used by your collections page
-    const storageMapping = {
-        'level': 'cached_level',
-        'fastest_guess': 'stat_fastest',
-        'just_in_time': 'stat_just_in_time',
-        'daily_total': 'cached_daily_total',
-        'daily_perfect': 'stat_daily_perfect'
-    };
-
-    // 2. Update LocalStorage immediately so the UI reflects the change
-    if (storageMapping[key]) {
-        localStorage.setItem(storageMapping[key], value.toString());
-    }
-
-    // 3. Sync to Supabase
+    // 1. Get current data to check records
     const { data } = await supabase.from('profiles').select('achievements').eq('id', session.user.id).single();
-    let current = data?.achievements || {};
+    let achievements = data?.achievements || {};
 
-    // LOGIC FIX:
+    // 2. Logic: Only update fastest_guess if the new value is actually LOWER (faster)
     if (key === 'fastest_guess') {
-        // If we already have a record, and the NEW time is SLOWER (higher) than the record, stop.
-        if (current[key] !== undefined && value >= current[key]) return;
-    } else if (typeof value === 'number' && value <= current[key]) {
-        // For totals (like daily_total), if the new value is LOWER than what we have, stop.
-        return;
+        const oldBest = achievements[key] || 99;
+        if (value >= oldBest) return; 
     }
 
-    current[key] = value;
-    await supabase.from('profiles').update({ achievements: current }).eq('id', session.user.id);
+    // 3. Update the object and Sync to Supabase
+    achievements[key] = value;
+    await supabase.from('profiles').update({ achievements }).eq('id', session.user.id);
+
+    // 4. Update LocalStorage (Mapping keys to your Collection UI names)
+    const storageKey = key === 'fastest_guess' ? 'stat_fastest' : 'stat_just_in_time';
+    localStorage.setItem(storageKey, value.toString());
 }
 
 
@@ -1864,6 +1868,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
