@@ -455,13 +455,30 @@ document.getElementById('achieveTab').onclick = () => {
     renderAchievements();
 };       
 
+function getLevel(xp) {
+    if (!xp || xp <= 0) return 1;
+    if (xp >= 100000) return 99;
+
+    // This formula is tuned so that Level 92 hits at exactly 50,000 XP
+    // and Level 99 hits at 100,000 XP.
+    // We use a power function: Level = constant * XP^(1/power)
+    
+    // Reverse check for the table:
+    for (let L = 1; L <= 99; L++) {
+        let threshold = Math.floor(Math.pow((L - 1) / 98, 3.1) * 100000);
+        if (xp < threshold) return L - 1;
+    }
+    return 99;
+}
+
+        
 async function renderAchievements() {
     const list = document.getElementById('achievementList');
     list.innerHTML = '';
     
     // Get user stats from LocalStorage or Supabase
     const stats = {
-        level: parseInt(localStorage.getItem('cached_level')) || 1,
+        level: calculatedLevel || parseInt(localStorage.getItem('cached_level')) || 1,
         maxScore: parseInt(localStorage.getItem('cached_max_score')) || 0,
         dailyTotal: parseInt(localStorage.getItem('cached_daily_total')) || 0,
         dailyStreak: parseInt(localStorage.getItem('cached_daily_streak')) || 0,
@@ -502,46 +519,57 @@ function applyUnlocks(unlockedList) {
 
 async function loadCollection() {
     // 1. Initial UI from LocalStorage (Instant load for UX)
-    const cached = JSON.parse(localStorage.getItem('cached_pets') || '[]');
-    if (cached.length > 0) applyUnlocks(cached);
+    const cachedPets = JSON.parse(localStorage.getItem('cached_pets') || '[]');
+    const cachedLevel = localStorage.getItem('cached_level') || 1;
+    if (cachedPets.length > 0) applyUnlocks(cachedPets);
 
     // 2. Fetch fresh data from Supabase
     const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-        // --- UPDATED: Fetch from both Profiles and Scores tables ---
-        const [profileRes, scoreRes] = await Promise.all([
-            supabase.from('profiles').select('collection_log, achievements').eq('id', session.user.id).single(),
-            supabase.from('scores').select('score').eq('user_id', session.user.id).maybeSingle()
-        ]);
+    if (!session) return;
 
-        const profileData = profileRes.data;
-        const maxScore = scoreRes.data?.score || 0; // The true High Score from your scores table
+    // --- UPDATED: Added 'xp' to select and added error handling ---
+    const [profileRes, scoreRes] = await Promise.all([
+        supabase.from('profiles').select('collection_log, achievements, xp').eq('id', session.user.id).single(),
+        supabase.from('scores').select('score').eq('user_id', session.user.id).maybeSingle()
+    ]);
 
-        if (profileData) {
-            // Update Achievement Stats in LocalStorage
-            if (profileData.achievements) {
-                const a = profileData.achievements;
-                localStorage.setItem('cached_level', a.level || 1);
-                localStorage.setItem('cached_daily_total', a.daily_total || 0);
-                localStorage.setItem('cached_daily_streak', a.daily_streak || 0);
-                localStorage.setItem('stat_fastest', a.fastest_guess || 99);
-                localStorage.setItem('stat_just_in_time', (a.just_in_time || false).toString());
-                localStorage.setItem('stat_daily_perfect', (a.daily_perfect || false).toString());
-            }
+    if (profileRes.error) {
+        console.error("Error fetching profile:", profileRes.error.message);
+        return;
+    }
 
-            // Explicitly set the High Score from the scores table
-            localStorage.setItem('cached_max_score', maxScore);
+    const profileData = profileRes.data;
+    const maxScore = scoreRes.data?.score || 0;
 
-            // Update Pets
-            const freshPets = profileData.collection_log || [];
-            localStorage.setItem('cached_pets', JSON.stringify(freshPets));
-            applyUnlocks(freshPets);
+    if (profileData) {
+        // --- UPDATED: Calculate level dynamically from XP ---
+        const currentXP = profileData.xp || 0;
+        const calculatedLevel = getLevel(currentXP);
+        
+        localStorage.setItem('cached_xp', currentXP);
+        localStorage.setItem('cached_level', calculatedLevel);
 
-            // Re-render achievements if that tab is currently open
-            const achieveTab = document.getElementById('achieveTab');
-            if (achieveTab && achieveTab.classList.contains('active')) {
-                renderAchievements();
-            }
+        // Update Achievement Stats in LocalStorage
+        if (profileData.achievements) {
+            const a = profileData.achievements;
+            localStorage.setItem('cached_daily_total', a.daily_total || 0);
+            localStorage.setItem('cached_daily_streak', a.daily_streak || 0);
+            localStorage.setItem('stat_fastest', a.fastest_guess || 99);
+            localStorage.setItem('stat_just_in_time', (a.just_in_time || false).toString());
+            localStorage.setItem('stat_daily_perfect', (a.daily_perfect || false).toString());
+        }
+
+        localStorage.setItem('cached_max_score', maxScore);
+
+        // Update Pets
+        const freshPets = profileData.collection_log || [];
+        localStorage.setItem('cached_pets', JSON.stringify(freshPets));
+        applyUnlocks(freshPets);
+
+        // Re-render achievements with the NEW level
+        const achieveTab = document.getElementById('achieveTab');
+        if (achieveTab && achieveTab.classList.contains('active')) {
+            renderAchievements(calculatedLevel); 
         }
     }
 }
