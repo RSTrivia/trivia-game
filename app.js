@@ -245,16 +245,29 @@ async function init() {
       });
       
     // 2. Auth Button (Log In / Log Out)
-  authBtn.onclick = async () => {
+    authBtn.onclick = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
           await supabase.auth.signOut();
-          // Remove only Auth items, keep 'muted' and 'cached_xp'
+          
+          // --- FIX STARTS HERE ---
+          // Specifically remove the profile-related caches
+          localStorage.removeItem('cached_xp');
+          localStorage.removeItem('cachedUsername');
+          localStorage.removeItem('lastDailyScore');
+          localStorage.removeItem('dailyPlayedDate');
+          localStorage.removeItem('lastDailyMessage');
+          
+          // Remove Supabase tokens
           Object.keys(localStorage).forEach(key => {
               if (key.includes('supabase.auth.token')) {
                   localStorage.removeItem(key);
               }
           });
+          
+          // Reset the global variable so the UI doesn't flicker before reload
+          currentProfileXp = 0; 
+          
           window.location.reload(); 
       } else {
           window.location.href = '/login.html';
@@ -1995,6 +2008,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
