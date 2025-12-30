@@ -925,6 +925,22 @@ function checkLevelUp(gainedXp) {
 
     if (newLevel > oldLevel) {
         triggerFireworks(); // Visual celebration
+       // --- LEVEL MILESTONE NOTIFICATIONS ---
+        
+        // 1. Reach Level 10
+        if (newLevel === 10) {
+            showAchievementNotification("Reach Level 10");
+        }
+        
+        // 2. Reach Level 50
+        else if (newLevel === 50) {
+            showAchievementNotification("Reach Level 50");
+        }
+        
+        // 3. Reach Max Level (99)
+        else if (newLevel === 99) {
+            showAchievementNotification("Reach Max Level");
+        }
     }
     
     updateLevelUI(); // Update the labels and XP brackets
@@ -1979,6 +1995,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
