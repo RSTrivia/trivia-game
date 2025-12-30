@@ -322,10 +322,12 @@ function applyUnlocks(unlockedList) {
         const isUnlocked = unlockedList.includes(pet.id);
         const nameSpan = slot.querySelector('.pet-name');
 
-        slot.className = `pet-slot ${isUnlocked ? 'unlocked ' + pet.rarity : ''}`;
+        // Cleaned up: Just 'unlocked' or nothing. 
+        // CSS nth-child handles the tiering automatically!
+        slot.className = `pet-slot ${isUnlocked ? 'unlocked' : ''}`;
+        
         nameSpan.textContent = isUnlocked ? pet.name : "???";
     });
-    // Ensure grid is visible and animations are enabled
     document.getElementById('logGrid').classList.add('ready');
     document.querySelector('.container').classList.add('loaded');
 }
