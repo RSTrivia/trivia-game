@@ -1529,23 +1529,33 @@ async function saveAchievement(key, value) {
     if (key === 'fastest_guess') {
         const oldBest = achievements[key] || 99;
         if (value < oldBest) {
-            //isNewAchievement = true;
-            //message = `New Record! Fastest Guess: ${value}s`;
-            showNotification("Achievement: Lucky guess Complete!", bonusBuffer, "#ffde00");
+            isNewAchievement = true;
+            notificationText = `New Record! Fastest Guess: ${value}s`;
+            //showNotification("Achievement: Lucky guess Complete!", bonusBuffer, "#ffde00");
         } else {
             return; // Not a new record, stop here
         }
     } else if (key === 'just_in_time' && value === true) {
         if (!achievements[key]) {
-            //isNewAchievement = true;
-            //message = "Achievement: Just in Time!";
-            showNotification("Achievement: Just in time Complete!", bonusBuffer, "#ffde00");
+            isNewAchievement = true;
+            notificationText = "Achievement: Just in Time!";
+            //showNotification("Achievement: Just in time Complete!", bonusBuffer, "#ffde00");
         }
     }
-
+  if (isNewAchievement) {
+    if (typeof showNotification === "function" && bonusBuffer instanceof AudioBuffer) {
+            showNotification(notificationText, bonusBuffer, "#ffde00");
+        } else {
+            // Fallback if sound isn't loaded yet
+            console.log(notificationText); 
+            if (typeof showNotification === "function") {
+                showNotification(notificationText, null, "#ffde00"); 
+            }
+        }
     // 2. Save to DB
     achievements[key] = value;
-    await supabase.from('profiles').update({ achievements }).eq('id', session.user.id);}
+    await supabase.from('profiles').update({ achievements }).eq('id', session.user.id);
+  }
 
     // 4. Local Sync
     const storageKey = key === 'fastest_guess' ? 'stat_fastest' : 'stat_just_in_time';
@@ -1886,6 +1896,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
