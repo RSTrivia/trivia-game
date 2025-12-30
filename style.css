@@ -1375,6 +1375,27 @@ input.input-field:-webkit-autofill:active {
 }
 
 
+/* 1. Reduce the top padding of the modal container specifically */
+.modal-content {
+  padding-top: 15px !important; /* This overrides the 40px in .container */
+  animation: modalSlideIn 0.3s ease-out;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+/* 2. Remove the default margin-top from the title inside the modal */
+.modal-content h2 {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  line-height: 1.2;
+}
+
+/* 3. Tighten the space around the horizontal line (hr) */
+.modal-content hr {
+  margin-top: 8px !important; /* Pulls the line closer to the title */
+  margin-bottom: 15px !important;
+}
+
 
 
 
