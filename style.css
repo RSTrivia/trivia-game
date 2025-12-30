@@ -417,21 +417,25 @@ h1 {
 }
 
 /* Adjust the icon size and look */
+/* Adjust the icon size and look */
 .gold-text-icon {
   font-weight: 900;
-  font-size: 1.1rem !important; /* Smaller text size */
+  font-size: 1.1rem !important;
   line-height: 1.5;
-  background: linear-gradient(to bottom, #fff8dc 0%, #ffdd44 50%, #c28f0c 100%);
+  /* Swapped to deeper, more muted gold tones */
+  background: linear-gradient(to bottom, #d4af37 0%, #b8860b 50%, #8b6508 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   display: inline-block;
-  /* Add shadow for visibility */
- /* Use a standard drop-shadow that doesn't trigger clipping */
+  
+  /* Standard shadow - removed the bright glow filters */
   filter: drop-shadow(0px 1px 1px rgba(0,0,0,0.8)) !important;
 }
 
 #helpBtn:hover .gold-text-icon {
-  filter: drop-shadow(0 0 5px #ffea8a) brightness(1.2) !important;
+  /* Hover is now a subtle highlight rather than a bright flash */
+  filter: drop-shadow(0 0 2px rgba(212, 175, 55, 0.5)) brightness(1.1) !important;
+  transition: filter 0.2s ease;
 }
 
 /* MOBILE FIX: Stop the icons from jumping out of the container */
@@ -1369,6 +1373,7 @@ input.input-field:-webkit-autofill:active {
 .instructions-text p {
   margin-bottom: 15px;
 }
+
 
 
 
