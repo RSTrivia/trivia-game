@@ -1531,6 +1531,7 @@ async function saveAchievement(key, value) {
         if (value < oldBest) {
             isNewAchievement = true;
             message = `New Record! Fastest Guess: ${value}s`;
+            showNotification("Achievement: Lucky guess complete!", bonusBuffer, "#ffde00");
         } else {
             return; // Not a new record, stop here
         }
@@ -1538,6 +1539,7 @@ async function saveAchievement(key, value) {
         if (!achievements[key]) {
             isNewAchievement = true;
             message = "Achievement: Just in Time!";
+            showNotification("Achievement: Just in time Complete!", bonusBuffer, "#ffde00");
         }
     }
 
@@ -1889,6 +1891,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
