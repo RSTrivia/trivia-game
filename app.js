@@ -1474,9 +1474,10 @@ async function updateDailyStreak(currentScore) {
     if (!session) return;
     const userId = session.user.id;
 
-    // 1. Calculate REAL streak (ensure this function is working correctly!)
+    // 1. Get the current Streak from History
     const actualStreak = await calculateStreakFromHistory(userId);
 
+    // 2. Get existing achievements from Profile
     const { data: profile } = await supabase.from('profiles')
         .select('achievements')
         .eq('id', userId)
@@ -1484,31 +1485,39 @@ async function updateDailyStreak(currentScore) {
     
     let oldAchieve = profile?.achievements || {};
 
-    // --- BRONZE NOTIFICATIONS (Title only as requested) ---
+    // 3. Current stats before updating
+    const oldTotal = oldAchieve.daily_total || 0;
+    const newTotal = oldTotal + 1; // Increment total
     
-    // First Daily Completion
-    if (!oldAchieve.daily_total || oldAchieve.daily_total === 0) {
+    // --- MILESTONE LOGIC ---
+
+    // Milestone 1: Complete Daily Mode (Once)
+    if (newTotal === 1 && !oldAchieve.daily_total) {
         showAchievementNotification("First Daily Mode");
     }
 
-    // Perfect Score
+    // Milestone 2: 10 Day Streak (Exactly 10)
+    // We check if their new streak is 10 AND their previous max was less than 10
+    if (actualStreak === 10 && (oldAchieve.max_streak || 0) < 10) {
+        showAchievementNotification("10 Day Streak");
+    }
+
+    // Milestone 3: 20 Total Games
+    if (newTotal === 20 && oldTotal < 20) {
+        showAchievementNotification("20 Daily Games");
+    }
+
+    // Milestone 4: 100 Total Games
+    if (newTotal === 100 && oldTotal < 100) {
+        showAchievementNotification("100 Daily Games");
+    }
+
+    // Milestone 5: Perfect 10/10 (One-time unlock)
     if (currentScore === 10 && !oldAchieve.daily_perfect) {
         showAchievementNotification("Perfect 10/10");
     }
 
-    // New Streak Milestone (Example: 5 days)
-    if (actualStreak > (oldAchieve.max_streak || 0)) {
-        showAchievementNotification(`${actualStreak} Day Streak`);
-    }
-
-    // 3. Update logic
-    const { count: dbCount } = await supabase
-        .from('daily_attempts')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId);
-
-    const newTotal = Math.max((dbCount || 0), (oldAchieve.daily_total || 0));
-
+    // 4. Construct and Save updated object
     const updatedAchieve = {
         ...oldAchieve, 
         daily_streak: actualStreak,
@@ -1522,13 +1531,12 @@ async function updateDailyStreak(currentScore) {
         .update({ achievements: updatedAchieve })
         .eq('id', userId);
 
-    // 6. Sync LocalStorage
+    // 5. Sync LocalStorage for UI
     localStorage.setItem('cached_daily_streak', updatedAchieve.daily_streak);
     localStorage.setItem('stat_max_streak', updatedAchieve.max_streak);
     localStorage.setItem('cached_daily_total', updatedAchieve.daily_total);
     localStorage.setItem('stat_daily_perfect', updatedAchieve.daily_perfect.toString());
 }
-
 
 async function saveAchievement(key, value) {
     const { data: { session } } = await supabase.auth.getSession();
@@ -1957,6 +1965,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
