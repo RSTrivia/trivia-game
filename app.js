@@ -1475,17 +1475,18 @@ async function saveAchievement(key, value) {
     const { data } = await supabase.from('profiles').select('achievements').eq('id', session.user.id).single();
     let current = data?.achievements || {};
 
+    // LOGIC FIX:
     if (key === 'fastest_guess') {
-    if (current[key] <= value && current[key] !== undefined) return;
-      } else if (typeof value === 'number' && current[key] >= value) {
-          return;
-      }
+        // If we already have a record, and the NEW time is SLOWER (higher) than the record, stop.
+        if (current[key] !== undefined && value >= current[key]) return;
+    } else if (typeof value === 'number' && value <= current[key]) {
+        // For totals (like daily_total), if the new value is LOWER than what we have, stop.
+        return;
+    }
 
     current[key] = value;
     await supabase.from('profiles').update({ achievements: current }).eq('id', session.user.id);
 }
-
-
 
 
 async function loadCollection() {
@@ -1859,6 +1860,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
