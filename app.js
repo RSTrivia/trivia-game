@@ -1553,7 +1553,7 @@ async function saveAchievement(key, value) {
         const oldBest = achievements[key] || 99;
         if (value < oldBest) {
             isNewAchievement = true;
-            notificationText = "Lucky guess";
+            notificationText = "Lucky Guess";
             //showNotification("Achievement: Lucky guess Complete!", bonusBuffer, "#ffde00");
         } else {
             return; // Not a new record, stop here
@@ -1561,7 +1561,7 @@ async function saveAchievement(key, value) {
     } else if (key === 'just_in_time' && value === true) {
         if (!achievements[key]) {
             isNewAchievement = true;
-            notificationText = "Just in time";
+            notificationText = "Just in Time";
             //showNotification("Achievement: Just in time Complete!", bonusBuffer, "#ffde00");
         }
     }
@@ -1965,6 +1965,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
