@@ -855,10 +855,10 @@ async function checkAnswer(choiceId, btn) {
                 showNotification("LEVEL UP!", levelUpBuffer, "#ffde00"); //gold
             }
             // 2. Lucky Guess Check (< 1 second)
-            if (timeLeft === 14) {
+            if (timeLeft >= 14) {
                 saveAchievement('fastest_guess', 1); // This triggers the "Lucky Guess"
             }
-            if (timeLeft === 1) {
+            if (timeLeft <= 1) {
                 saveAchievement('just_in_time', true); // 2. Just in Time
             }
             // 5. UPDATE DATA
@@ -1812,6 +1812,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
