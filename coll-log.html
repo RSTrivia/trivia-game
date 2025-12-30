@@ -501,26 +501,43 @@ function applyUnlocks(unlockedList) {
 }
 
 async function loadCollection() {
-    // 1. Check LocalStorage first (Instant highlight)
+    // 1. Initial UI from LocalStorage
     const cached = JSON.parse(localStorage.getItem('cached_pets') || '[]');
-    if (cached.length > 0) {
-        applyUnlocks(cached);
-    }
+    if (cached.length > 0) applyUnlocks(cached);
 
-    // 2. Get fresh data from Supabase
+    // 2. Fetch fresh data from Supabase
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
+        // We select BOTH the pets (collection_log) and the stats (achievements)
         const { data } = await supabase
             .from('profiles')
-            .select('collection_log')
+            .select('collection_log, achievements')
             .eq('id', session.user.id)
             .single();
         
-        const freshPets = data?.collection_log || [];
-        
-        // 3. Update storage and UI if there's a change
-        localStorage.setItem('cached_pets', JSON.stringify(freshPets));
-        applyUnlocks(freshPets);
+        if (data) {
+            // Update Achievement Stats
+            if (data.achievements) {
+                const a = data.achievements;
+                localStorage.setItem('cached_level', a.level || 1);
+                localStorage.setItem('cached_max_score', a.max_score || 0);
+                localStorage.setItem('cached_daily_total', a.daily_total || 0);
+                localStorage.setItem('cached_daily_streak', a.daily_streak || 0);
+                localStorage.setItem('stat_fastest', a.fastest_guess || 99);
+                localStorage.setItem('stat_just_in_time', (a.just_in_time || false).toString());
+                localStorage.setItem('stat_daily_perfect', (a.daily_perfect || false).toString());
+            }
+
+            // Update Pets
+            const freshPets = data.collection_log || [];
+            localStorage.setItem('cached_pets', JSON.stringify(freshPets));
+            applyUnlocks(freshPets);
+
+            // Re-render achievements if that tab is currently open
+            if (document.getElementById('achieveTab').classList.contains('active')) {
+                renderAchievements();
+            }
+        }
     }
 }
 
