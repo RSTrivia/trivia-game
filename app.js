@@ -1426,18 +1426,28 @@ async function saveAchievement(key, value) {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
 
-    // 1. Get current achievements from DB
+    // 1. Map game keys to the "cached" keys used by your collections page
+    const storageMapping = {
+        'level': 'cached_level',
+        'fastest_guess': 'stat_fastest',
+        'just_in_time': 'stat_just_in_time',
+        'daily_total': 'cached_daily_total',
+        'daily_perfect': 'stat_daily_perfect'
+    };
+
+    // 2. Update LocalStorage immediately so the UI reflects the change
+    if (storageMapping[key]) {
+        localStorage.setItem(storageMapping[key], value.toString());
+    }
+
+    // 3. Sync to Supabase
     const { data } = await supabase.from('profiles').select('achievements').eq('id', session.user.id).single();
     let current = data?.achievements || {};
 
-    // 2. Safety Check: Don't downgrade stats (e.g., don't save level 5 if DB has level 10)
     if (typeof value === 'number' && current[key] >= value) return;
     if (current[key] === value) return;
 
-    // 3. Update the specific key
     current[key] = value;
-
-    // 4. Push back to Supabase
     await supabase.from('profiles').update({ achievements: current }).eq('id', session.user.id);
 }
 
@@ -1812,6 +1822,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
