@@ -1411,43 +1411,85 @@ if (shareBtn) {
     };
 }  
 
-async function updateDailyStreak() {
+async function calculateStreakFromHistory(userId) {
+    // 1. Fetch the dates of all past daily attempts
+    const { data, error } = await supabase
+        .from('daily_attempts')
+        .select('created_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+    if (error || !data || data.length === 0) return 0;
+
+    // 2. Get unique dates in YYYY-MM-DD format (ignore multiple plays same day)
+    const playedDates = [...new Set(data.map(d => d.created_at.split('T')[0]))];
+    
+    let streak = 0;
+    let checkDate = new Date(); // Start checking from today
+
+    for (let i = 0; i < playedDates.length; i++) {
+        const dateStr = checkDate.toISOString().split('T')[0];
+        
+        if (playedDates.includes(dateStr)) {
+            streak++;
+            // Move back 1 day to check the previous day
+            checkDate.setDate(checkDate.getDate() - 1);
+        } else {
+            // If they haven't played today, we don't break the streak yet 
+            // until we check if they played yesterday.
+            if (streak === 0) {
+                checkDate.setDate(checkDate.getDate() - 1);
+                const yesterdayStr = checkDate.toISOString().split('T')[0];
+                if (playedDates.includes(yesterdayStr)) {
+                    continue; // They played yesterday, keep checking
+                }
+            }
+            break; // Streak broken
+        }
+    }
+    return streak;
+}
+
+
+async function updateDailyStreak(currentScore) {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
 
-    const { data } = await supabase.from('profiles').select('achievements').eq('id', session.user.id).single();
-    let achievements = data?.achievements || {};
+    // 1. Calculate the REAL current streak from history
+    const actualStreak = await calculateStreakFromHistory(session.user.id);
 
-    const today = new Date().toISOString().split('T')[0]; // Format: "2025-12-30"
-    const lastDate = achievements.last_daily_date;
-    let currentStreak = achievements.daily_streak || 0;
-
-    if (lastDate === today) {
-        return; // Already played today, don't increase streak again
-    }
-
-    // Check if yesterday
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split('T')[0];
-
-    if (lastDate === yesterdayStr) {
-        currentStreak += 1;
-    } else {
-        currentStreak = 1; // Reset if they missed a day
-    }
-
-    // Save both the new streak and the date
-    achievements.daily_streak = currentStreak;
-    achievements.last_daily_date = today;
+    // 2. Get the Profile
+    const { data: profile } = await supabase.from('profiles')
+        .select('achievements')
+        .eq('id', session.user.id)
+        .single();
     
-    // Also increment total daily games played
-    achievements.daily_total = (achievements.daily_total || 0) + 1;
+    let achievements = profile?.achievements || {};
 
+    // 3. Update Current Streak
+    achievements.daily_streak = actualStreak;
+
+    // 4. Update MAX Streak (The "Permanent" Record)
+    // If the current run is higher than the record, update the record.
+    if (actualStreak > (achievements.max_streak || 0)) {
+        achievements.max_streak = actualStreak;
+    }
+
+    // 5. Update Totals
+    const { count: totalGames } = await supabase
+        .from('daily_attempts')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', session.user.id);
+    
+    achievements.daily_total = totalGames || 0;
+    if (currentScore === 10) achievements.daily_perfect = true;
+
+    // Save to Supabase
     await supabase.from('profiles').update({ achievements }).eq('id', session.user.id);
-    
-    // Update local cache for the Collections page
-    localStorage.setItem('cached_daily_streak', currentStreak);
+
+    // Sync LocalStorage
+    localStorage.setItem('cached_daily_streak', actualStreak);
+    localStorage.setItem('stat_max_streak', achievements.max_streak); // Save the record!
     localStorage.setItem('cached_daily_total', achievements.daily_total);
 }
 
@@ -1860,6 +1902,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
