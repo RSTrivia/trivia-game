@@ -527,10 +527,12 @@ async function loadCollection() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
 
-    // --- UPDATED: Added 'xp' to select and added error handling ---
-    const [profileRes, scoreRes] = await Promise.all([
+    // --- UPDATED: Fetching from 3 places now to ensure total_games is accurate ---
+    const [profileRes, scoreRes, attemptsRes] = await Promise.all([
         supabase.from('profiles').select('collection_log, achievements, xp').eq('id', session.user.id).single(),
-        supabase.from('scores').select('score').eq('user_id', session.user.id).maybeSingle()
+        supabase.from('scores').select('score').eq('user_id', session.user.id).maybeSingle(),
+        // Direct count from the daily_attempts table
+        supabase.from('daily_attempts').select('*', { count: 'exact', head: true }).eq('user_id', session.user.id)
     ]);
 
     if (profileRes.error) {
@@ -540,34 +542,35 @@ async function loadCollection() {
 
     const profileData = profileRes.data;
     const maxScore = scoreRes.data?.score || 0;
+    const realTotalGames = attemptsRes.count || 0; // This is the source of truth
 
     if (profileData) {
-        // --- UPDATED: Calculate level dynamically from XP ---
         const currentXP = profileData.xp || 0;
         const calculatedLevel = getLevel(currentXP);
         
         localStorage.setItem('cached_xp', currentXP);
         localStorage.setItem('cached_level', calculatedLevel);
-
-        // Update Achievement Stats in LocalStorage
-        if (profileData.achievements) {
-            const a = profileData.achievements;
-            localStorage.setItem('cached_daily_total', a.daily_total || 0);
-            localStorage.setItem('cached_daily_streak', a.daily_streak || 0);
-            localStorage.setItem('stat_max_streak', a.max_streak || 0);
-            localStorage.setItem('stat_fastest', a.fastest_guess || 99);
-            localStorage.setItem('stat_just_in_time', (a.just_in_time || false).toString());
-            localStorage.setItem('stat_daily_perfect', (a.daily_perfect || false).toString());
-        }
-
         localStorage.setItem('cached_max_score', maxScore);
+
+        // --- UPDATED LOGIC: Prioritize real count over the achievement column ---
+        const a = profileData.achievements || {};
+        
+        // Use the actual table count for the 'total' achievement
+        localStorage.setItem('cached_daily_total', realTotalGames);
+        
+        // These still come from the achievement summary
+        localStorage.setItem('cached_daily_streak', a.daily_streak || 0);
+        localStorage.setItem('stat_max_streak', a.max_streak || 0);
+        localStorage.setItem('stat_fastest', a.fastest_guess || 99);
+        localStorage.setItem('stat_just_in_time', (a.just_in_time || false).toString());
+        localStorage.setItem('stat_daily_perfect', (a.daily_perfect || false).toString());
 
         // Update Pets
         const freshPets = profileData.collection_log || [];
         localStorage.setItem('cached_pets', JSON.stringify(freshPets));
         applyUnlocks(freshPets);
 
-        // Re-render achievements with the NEW level
+        // Re-render achievements
         const achieveTab = document.getElementById('achieveTab');
         if (achieveTab && achieveTab.classList.contains('active')) {
             renderAchievements(calculatedLevel); 
