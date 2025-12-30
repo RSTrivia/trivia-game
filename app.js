@@ -1465,49 +1465,50 @@ async function updateDailyStreak(currentScore) {
         .eq('id', userId)
         .maybeSingle();
     
-    // Ensure we don't wipe out other achievement data
     let oldAchieve = profile?.achievements || {};
 
-    // 3. Get the raw count of attempts
+    // --- NOTIFICATIONS ---
+    if (!oldAchieve.daily_total || oldAchieve.daily_total === 0) {
+        showNotification("Achievement: Daily Mode Complete!", "fanfare_sound", "#ffde00");
+    }
+
+    if (currentScore === 10 && !oldAchieve.daily_perfect) {
+        showNotification("Achievement: Perfect 10/10!", "legendary_sound", "#ff4500");
+    }
+    
+    // 3. Get the raw count of attempts from DB
     const { count: dbCount } = await supabase
         .from('daily_attempts')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', userId);
 
-    // Logic: If we are calling this at the end of a game, 
-    // the current game record might still be saving, so we ensure total is at least 1.
+    // Logic for total games
     const newTotal = Math.max((dbCount || 0), (oldAchieve.daily_total || 0) + 1);
 
-    // 4. Construct the updated object
+    // 4. Construct the updated object (MUST be before Step 5)
     const updatedAchieve = {
-        ...oldAchieve, // Keep existing stats like fastest_guess, etc.
+        ...oldAchieve, 
         daily_streak: actualStreak,
         max_streak: Math.max(actualStreak, (oldAchieve.max_streak || 0)),
-        daily_total: newTotal
+        daily_total: newTotal,
+        daily_perfect: currentScore === 10 ? true : (oldAchieve.daily_perfect || false)
     };
 
-    // Only set perfect to true, never revert it to false if they already have it
-    if (currentScore === 10) {
-        updatedAchieve.daily_perfect = true;
-    }
-
-    // 5. Save to Supabase (Explicitly named object)
+    // 5. Save to Supabase
     const { error: updateError } = await supabase
         .from('profiles')
         .update({ achievements: updatedAchieve })
         .eq('id', userId);
 
     if (updateError) {
-        console.error("Failed to sync achievements to Supabase:", updateError.message);
+        console.error("Failed to sync achievements:", updateError.message);
     }
 
     // 6. Sync LocalStorage for immediate UI feedback
     localStorage.setItem('cached_daily_streak', updatedAchieve.daily_streak);
     localStorage.setItem('stat_max_streak', updatedAchieve.max_streak);
     localStorage.setItem('cached_daily_total', updatedAchieve.daily_total);
-    if (updatedAchieve.daily_perfect) {
-        localStorage.setItem('stat_daily_perfect', 'true');
-    }
+    localStorage.setItem('stat_daily_perfect', updatedAchieve.daily_perfect.toString());
 }
 
 
@@ -1515,21 +1516,38 @@ async function saveAchievement(key, value) {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
 
-    // 1. Get current data to check records
     const { data } = await supabase.from('profiles').select('achievements').eq('id', session.user.id).single();
     let achievements = data?.achievements || {};
 
-    // 2. Logic: Only update fastest_guess if the new value is actually LOWER (faster)
+    // 1. Check if this is a "First Time" or "New Record" achievement
+    let isNewAchievement = false;
+    let message = "";
+
     if (key === 'fastest_guess') {
         const oldBest = achievements[key] || 99;
-        if (value >= oldBest) return; 
+        if (value < oldBest) {
+            isNewAchievement = true;
+            message = `New Record! Fastest Guess: ${value}s`;
+        } else {
+            return; // Not a new record, stop here
+        }
+    } else if (key === 'just_in_time' && value === true) {
+        if (!achievements[key]) {
+            isNewAchievement = true;
+            message = "Achievement: Just in Time!";
+        }
     }
 
-    // 3. Update the object and Sync to Supabase
+    // 2. Save to DB
     achievements[key] = value;
     await supabase.from('profiles').update({ achievements }).eq('id', session.user.id);
 
-    // 4. Update LocalStorage (Mapping keys to your Collection UI names)
+    // 3. Trigger Notification
+    if (isNewAchievement) {
+        showNotification(message, "achievement_sound", "#00ff00"); // Green for skill
+    }
+
+    // 4. Local Sync
     const storageKey = key === 'fastest_guess' ? 'stat_fastest' : 'stat_just_in_time';
     localStorage.setItem(storageKey, value.toString());
 }
@@ -1868,6 +1886,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
