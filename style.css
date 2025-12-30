@@ -1387,10 +1387,42 @@ input.input-field:-webkit-autofill:active {
 
 
 
+/*                  scroll bar              */
 
+/* Target the scrollbar area */
+#achievementList::-webkit-scrollbar,
+.modal-content::-webkit-scrollbar {
+    width: 8px; /* Slim scrollbar */
+}
 
+/* The background of the scrollbar (the track) */
+#achievementList::-webkit-scrollbar-track,
+.modal-content::-webkit-scrollbar-track {
+    background: rgba(30, 30, 30, 0.8);
+    border-radius: 10px;
+}
 
+/* The draggable handle (the thumb) */
+#achievementList::-webkit-scrollbar-thumb,
+.modal-content::-webkit-scrollbar-thumb {
+    background: #c28f0c; /* Base Gold */
+    border: 1px solid #ffdd44; /* Shiny edge */
+    border-radius: 10px;
+}
 
+/* Handle on hover */
+#achievementList::-webkit-scrollbar-thumb:hover,
+.modal-content::-webkit-scrollbar-thumb:hover {
+    background: #ffdd44;
+}
+
+/* Firefox Support */
+#achievementList, .modal-content {
+    scrollbar-width: thin;
+    scrollbar-color: #c28f0c rgba(30, 30, 30, 0.8);
+}
+
+/*                  scroll bar              */
 
 
 
