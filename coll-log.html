@@ -425,7 +425,7 @@ async function renderAchievements() {
         dailyStreak: parseInt(localStorage.getItem('cached_daily_streak')) || 0,
         petsUnlocked: JSON.parse(localStorage.getItem('cached_pets') || '[]').length,
         fastestGuess: parseFloat(localStorage.getItem('stat_fastest')) || 99,
-        justInTime: localStorage.getItem('stat_just_in_time') === 'true'
+        justInTime: localStorage.getItem('stat_just_in_time') === 'true',
         dailyPerfect: localStorage.getItem('stat_daily_perfect') === 'true'
     };
 
