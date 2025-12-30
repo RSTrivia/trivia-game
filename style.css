@@ -1426,16 +1426,14 @@ input.input-field:-webkit-autofill:active {
     top: 20px !important; 
     transform: translateX(-50%) scale(0.8);
     
-    /* Deep Bronze/Chocolate Background */
-    background: rgba(30, 20, 10, 0.95) !important; 
+    background: rgba(25, 15, 10, 0.95) !important; 
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    /* Bronze Border */
-    border: 2px solid #cd7f32 !important; 
+    border: 2px solid #cd7f32 !important; /* Bronze */
     border-radius: 8px;
     
-    padding: 12px 15px; 
-    width: 260px; 
+    padding: 15px 20px; /* Adjusted for single-line balance */
+    min-width: 220px; 
     text-align: center;
     z-index: 999999 !important; 
     opacity: 0;
@@ -1454,47 +1452,30 @@ input.input-field:-webkit-autofill:active {
     #achievement-modal {
         top: 50% !important;
         transform: translate(-50%, -50%) scale(0.8) !important;
-        width: 75% !important;
-        max-width: 250px;
     }
-
     #achievement-modal.active {
         transform: translate(-50%, -50%) scale(1) !important;
     }
 }
 
-.achieve-modal-close {
-    position: absolute;
-    top: 4px;
-    right: 8px;
-    color: #cd7f32;
-    font-size: 18px;
-    cursor: pointer;
-}
-
 .achieve-unlock-title {
     font-family: 'Cinzel', serif;
-    color: #ffde00; /* Keeping your yellow for high visibility */
-    font-size: 0.9rem;
-    margin: 0 0 5px 0;
+    color: #cd7f32; /* Bronze "Achievement Unlocked!" */
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    margin: 0 0 4px 0;
+    text-transform: uppercase;
 }
 
-/* We removed the icon for achievements to keep it text-focused */
 .achieve-unlock-name {
-    color: #ffffff;
+    color: #ffde00; /* Your Golden Yellow for the Achievement Name */
+    font-family: 'Cinzel', serif;
     font-weight: bold;
-    font-size: 0.95rem;
-    margin-top: 2px;
+    font-size: 1.1rem;
+    text-shadow: 2px 2px 0px #000;
 }
-
-.achieve-unlock-msg {
-    color: #cd7f32; /* Bronze sub-text */
-    font-size: 0.7rem; 
-    font-style: italic;
-    margin-top: 2px;
-}
-
 /* Achievement Modal Base */
+
 
 
 
