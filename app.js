@@ -382,7 +382,7 @@ supabase
   await syncDailyButton();
   // This will check if a user has played daily mode already and will unlock it if they did
   await updateShareButtonState();
-  loadCollection();
+  //loadCollection();
 }
 
 // Replace your existing handleAuthChange with this:
@@ -1531,44 +1531,6 @@ async function saveAchievement(key, value) {
 }
 
 
-async function loadCollection() {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
-
-    // 1. Fetch from BOTH tables at once for speed
-    const [profileRes, scoreRes] = await Promise.all([
-        supabase.from('profiles').select('achievements, collection_log').eq('id', session.user.id).single(),
-        supabase.from('scores').select('score').eq('user_id', session.user.id).maybeSingle()
-    ]);
-
-    // 2. Extract the data safely
-    const profileData = profileRes.data;
-    const achievements = profileData?.achievements || {};
-    const maxScore = scoreRes.data?.score || 0;
-
-    // 3. Map everything to LocalStorage
-    // We get 'maxScore' from the scores table, and the rest from profile achievements
-    localStorage.setItem('cached_max_score', maxScore);
-    
-    localStorage.setItem('cached_level', achievements.level || 1);
-    localStorage.setItem('cached_daily_total', achievements.daily_total || 0);
-    localStorage.setItem('cached_daily_streak', achievements.daily_streak || 0);
-    localStorage.setItem('stat_fastest', achievements.fastest_guess || 99);
-    localStorage.setItem('stat_just_in_time', (achievements.just_in_time || false).toString());
-    localStorage.setItem('stat_daily_perfect', (achievements.daily_perfect || false).toString());
-
-    // 4. Handle Pet Collection Log
-    if (profileData?.collection_log) {
-        localStorage.setItem('cached_pets', JSON.stringify(profileData.collection_log));
-    }
-    
-    // 5. Trigger the UI render (if this is on your collections page)
-    if (typeof renderAchievements === 'function') {
-        renderAchievements();
-    }
-}
-
-
 async function rollForPet() {
   // 1. Check if the user is logged in
     const { data: { session } } = await supabase.auth.getSession();
@@ -1902,6 +1864,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
