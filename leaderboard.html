@@ -129,17 +129,40 @@ const xpTab = document.getElementById('xpTab');
 
 let currentMode = 'score'; // Default mode
 
+// Use your specific tuned formula
+function getLevel(xp) {
+    if (!xp || xp <= 0) return 1;
+    if (xp >= 100000) return 99;
+    for (let L = 1; L <= 99; L++) {
+        let threshold = Math.floor(Math.pow((L - 1) / 98, 3.1) * 100000);
+        if (xp < threshold) return L - 1;
+    }
+    return 99;
+}
+
 function updateLeaderboard(data) {
   leaderboardRows.forEach((row, i) => {
-    // We use 'val' as a generic key for both score and xp
     const entry = data[i] || { username: '', val: '' };
     const userTxt = row.querySelector('.user-txt');
     const scoreSpan = row.querySelector('.score-part');
 
-    userTxt.textContent = entry.username || '';
+    if (!entry.username) {
+        userTxt.textContent = '';
+        scoreSpan.textContent = '';
+        return;
+    }
+
+    // Logic for Username + Level
+    if (currentMode === 'xp') {
+        const level = getLevel(entry.val);
+        // Using innerHTML to allow a slightly dimmed color for the level
+        userTxt.innerHTML = `${entry.username} <span style="color: rgba(212, 175, 55, 0.6); font-size: 0.85em;">- ${level}</span>`;
+    } else {
+        userTxt.textContent = entry.username;
+    }
     
-    // Format numbers with commas (e.g., 1,000)
-    const displayVal = entry.username && entry.val !== undefined ? entry.val.toLocaleString() : '';
+    // Format the number part (Score or XP)
+    const displayVal = entry.val !== undefined ? entry.val.toLocaleString() : '';
     scoreSpan.textContent = displayVal;
   });
 }
@@ -229,6 +252,7 @@ supabase
 </script>
 </body>
 </html>
+
 
 
 
