@@ -1060,9 +1060,10 @@ async function endGame() {
         }
   
         // Saves the score for the leaderboard
-        saveDailyScore(session, randomMsg); 
+        await saveDailyScore(session, randomMsg); 
         // This one function now handles: Streak, Total Count, and Perfect 10/10
-        updateDailyStreak();
+        // Pass the actual 'score' variable here
+        await updateDailyStreak(score);
        
     } else {
         if (playAgainBtn) playAgainBtn.classList.remove('hidden');
@@ -1417,7 +1418,6 @@ if (shareBtn) {
 }  
 
 async function calculateStreakFromHistory(userId) {
-    // 1. Fetch the dates of all past daily attempts
     const { data, error } = await supabase
         .from('daily_attempts')
         .select('created_at')
@@ -1426,32 +1426,45 @@ async function calculateStreakFromHistory(userId) {
 
     if (error || !data || data.length === 0) return 0;
 
-    // 2. Get unique dates in YYYY-MM-DD format (ignore multiple plays same day)
-    const playedDates = [...new Set(data.map(d => d.created_at.split('T')[0]))];
-    
-    let streak = 0;
-    let checkDate = new Date(); // Start checking from today
+    // 1. Get unique dates in YYYY-MM-DD format (Local Time)
+    // Using locale string ensures the date matches what the user thinks "today" is
+    const playedDates = [...new Set(data.map(d => {
+        const date = new Date(d.created_at);
+        return date.toLocaleDateString('en-CA'); // Returns YYYY-MM-DD
+    }))];
 
-    for (let i = 0; i < playedDates.length; i++) {
-        const dateStr = checkDate.toISOString().split('T')[0];
+    let streak = 0;
+    let today = new Date().toLocaleDateString('en-CA');
+    let yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    yesterday = yesterday.toLocaleDateString('en-CA');
+
+    // 2. If they haven't played today AND haven't played yesterday, streak is dead.
+    if (!playedDates.includes(today) && !playedDates.includes(yesterday)) {
+        return 0;
+    }
+
+    // 3. Start checking from the most recent date played
+    // Since playedDates is sorted by DB (descending), index 0 is the newest
+    let lastDate = new Date(playedDates[0]);
+    streak = 1;
+
+    for (let i = 1; i < playedDates.length; i++) {
+        let currentDate = new Date(playedDates[i]);
         
-        if (playedDates.includes(dateStr)) {
+        // Calculate difference in days
+        const diffTime = Math.abs(lastDate - currentDate);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays === 1) {
             streak++;
-            // Move back 1 day to check the previous day
-            checkDate.setDate(checkDate.getDate() - 1);
+            lastDate = currentDate;
         } else {
-            // If they haven't played today, we don't break the streak yet 
-            // until we check if they played yesterday.
-            if (streak === 0) {
-                checkDate.setDate(checkDate.getDate() - 1);
-                const yesterdayStr = checkDate.toISOString().split('T')[0];
-                if (playedDates.includes(yesterdayStr)) {
-                    continue; // They played yesterday, keep checking
-                }
-            }
-            break; // Streak broken
+            // Gap found, streak ends
+            break;
         }
     }
+
     return streak;
 }
 
@@ -1461,10 +1474,9 @@ async function updateDailyStreak(currentScore) {
     if (!session) return;
     const userId = session.user.id;
 
-    // 1. Calculate the REAL current streak from history
+    // 1. Calculate REAL streak (ensure this function is working correctly!)
     const actualStreak = await calculateStreakFromHistory(userId);
 
-    // 2. Get the current Profile Achievements
     const { data: profile } = await supabase.from('profiles')
         .select('achievements')
         .eq('id', userId)
@@ -1472,25 +1484,31 @@ async function updateDailyStreak(currentScore) {
     
     let oldAchieve = profile?.achievements || {};
 
-    // --- NOTIFICATIONS ---
+    // --- BRONZE NOTIFICATIONS (Title only as requested) ---
+    
+    // First Daily Completion
     if (!oldAchieve.daily_total || oldAchieve.daily_total === 0) {
-        showAchievementNotification("Complete daily mode", bonusBuffer, "#ffde00");
+        showAchievementNotification("First Daily Mode");
     }
 
+    // Perfect Score
     if (currentScore === 10 && !oldAchieve.daily_perfect) {
-        showAchievementNotification("Perfect 10/10", bonusBuffer, "#ff4500");
+        showAchievementNotification("Perfect 10/10");
     }
-    
-    // 3. Get the raw count of attempts from DB
+
+    // New Streak Milestone (Example: 5 days)
+    if (actualStreak > (oldAchieve.max_streak || 0)) {
+        showAchievementNotification(`${actualStreak} Day Streak`);
+    }
+
+    // 3. Update logic
     const { count: dbCount } = await supabase
         .from('daily_attempts')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', userId);
 
-    // Logic for total games
-    const newTotal = Math.max((dbCount || 0), (oldAchieve.daily_total || 0) + 1);
+    const newTotal = Math.max((dbCount || 0), (oldAchieve.daily_total || 0));
 
-    // 4. Construct the updated object (MUST be before Step 5)
     const updatedAchieve = {
         ...oldAchieve, 
         daily_streak: actualStreak,
@@ -1499,17 +1517,12 @@ async function updateDailyStreak(currentScore) {
         daily_perfect: currentScore === 10 ? true : (oldAchieve.daily_perfect || false)
     };
 
-    // 5. Save to Supabase
-    const { error: updateError } = await supabase
+    await supabase
         .from('profiles')
         .update({ achievements: updatedAchieve })
         .eq('id', userId);
 
-    if (updateError) {
-        console.error("Failed to sync achievements:", updateError.message);
-    }
-
-    // 6. Sync LocalStorage for immediate UI feedback
+    // 6. Sync LocalStorage
     localStorage.setItem('cached_daily_streak', updatedAchieve.daily_streak);
     localStorage.setItem('stat_max_streak', updatedAchieve.max_streak);
     localStorage.setItem('cached_daily_total', updatedAchieve.daily_total);
@@ -1944,6 +1957,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
