@@ -151,10 +151,20 @@
         
         /* --- 2. TIERED ROW EFFECTS (Subtle Border/Fill Increases) --- */
         
+        /* --- 2. TIERED ROW EFFECTS --- */
+        
+        /* Row 1 (Handled by base .unlocked) */
+        #logGrid .pet-slot.unlocked:hover {
+            border-color: #ffea8a !important;
+        }
+        
         /* Row 2 (Uncommon) */
         #logGrid .pet-slot:nth-child(n+3):nth-child(-n+4).unlocked {
             background: rgba(212, 175, 55, 0.15) !important;
             border-color: rgba(212, 175, 55, 0.6) !important; 
+        }
+        #logGrid .pet-slot:nth-child(n+3):nth-child(-n+4).unlocked:hover {
+            border-color: #ffea8a !important;
         }
         
         /* Row 3 (Rare) */
@@ -162,18 +172,17 @@
             background: rgba(212, 175, 55, 0.2) !important;
             border-color: rgba(212, 175, 55, 0.8) !important;
         }
-        
-        /* Row 4 (Legendary) - The "Solid" Gold */
-        #logGrid .pet-slot:nth-child(n+7):nth-child(-n+8).unlocked {
-            background: rgba(212, 175, 55, 0.25) !important;
-            border-color: #d4af37 !important; /* Full solid gold border */
+        #logGrid .pet-slot:nth-child(n+5):nth-child(-n+6).unlocked:hover {
+            border-color: #ffea8a !important;
         }
         
-        /* --- 3. THE HOVER (Made specific to override all rows) --- */
-        #logGrid .pet-slot.unlocked:hover {
-            border-color: #ffea8a !important; 
-            transition: border-color 0.2s ease;
-            cursor: pointer;
+        /* Row 4 (Legendary) */
+        #logGrid .pet-slot:nth-child(n+7):nth-child(-n+8).unlocked {
+            background: rgba(212, 175, 55, 0.25) !important;
+            border-color: #d4af37 !important; 
+        }
+        #logGrid .pet-slot:nth-child(n+7):nth-child(-n+8).unlocked:hover {
+            border-color: #ffea8a !important;
         }
         
         /* --- 4. MYSTERY (LOCKED) STATES --- */
