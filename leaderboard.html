@@ -153,12 +153,11 @@ function updateLeaderboard(data) {
     }
 
     // Logic for Username + Level
+   // Inside updateLeaderboard function:
     if (currentMode === 'xp') {
         const level = getLevel(entry.val);
-        // Using innerHTML to allow a slightly dimmed color for the level
-        userTxt.innerHTML = `${entry.username} <span style="color: rgba(212, 175, 55, 0.6); font-size: 0.85em;">- ${level}</span>`;
-    } else {
-        userTxt.textContent = entry.username;
+        // Use currentcolor with opacity so it automatically adapts to gold/silver/bronze/grey
+        userTxt.innerHTML = `${entry.username} <span style="color: inherit; opacity: 0.6; font-size: 0.85em;">- ${level}</span>`;
     }
     
     // Format the number part (Score or XP)
@@ -252,6 +251,7 @@ supabase
 </script>
 </body>
 </html>
+
 
 
 
