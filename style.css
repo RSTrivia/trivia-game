@@ -1311,10 +1311,41 @@ input.input-field:-webkit-autofill:active {
 
 
 
+/* ====== ? button ====== */
 
+/* 1. Add #helpBtn to the shared sizing and layout */
+#helpBtn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  cursor: pointer;
+  padding: 0;
+  transition: opacity 0.2s ease;
+  /* This gives it that OSRS gold tint */
+  filter: sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85);
+}
 
+/* 2. Add #helpBtn to the standard gold state */
+#helpBtn {
+  filter: sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85);
+  opacity: 0.9;
+}
 
+/* 3. Add #helpBtn to the hover logic */
+#helpBtn:hover {
+  opacity: 1;
+  filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.1);
+}
 
+/* 4. Keep the spacing consistent */
+#helpBtn { margin-right: 4px; }
+
+/* ====== ? button ====== */
 
 
 
