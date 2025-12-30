@@ -1054,22 +1054,11 @@ async function endGame() {
             gameOverTitle.textContent = randomMsg;
             gameOverTitle.classList.remove('hidden');
         }
+        // This one function now handles: Streak, Total Count, and Perfect 10/10
         updateDailyStreak();
-        // Save logic (Non-blocking)
+        // Saves the score for the leaderboard
         saveDailyScore(session, randomMsg); 
-        // --- ACHIEVEMENT: DAILY MODE UPDATES ---
-        if (session) {
-            // 1. Increment Daily Total Count
-            const currentDailyTotal = parseInt(localStorage.getItem('cached_daily_total')) || 0;
-            const newTotal = currentDailyTotal + 1;
-            localStorage.setItem('cached_daily_total', newTotal);
-            saveAchievement('daily_total', newTotal); // Matches SCHEMA id 'd1', 'd20t', etc.
-
-            // 2. Daily Perfect (10/10)
-            if (score === 10) {
-                saveAchievement('daily_perfect', true);
-            }
-        }
+       
     } else {
         if (playAgainBtn) playAgainBtn.classList.remove('hidden');
         // Trigger the high-score save
@@ -1870,6 +1859,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
