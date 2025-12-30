@@ -967,23 +967,25 @@ function processQueue() {
     const notif = document.createElement('div');
     notif.className = 'notif-text';
     notif.innerText = item.text;
-    
     notif.style.color = item.color;
     notif.style.textShadow = `2px 2px 0px #000, 0 0 8px ${item.color}`;
 
     container.appendChild(notif);
 
-    // --- REDUCED TIMING ---
-    // Changed from 1250ms to 800ms for faster cycling
+    // --- DYNAMIC TIMING ---
+    // If more notifications are waiting, go fast (600ms).
+    // If it's the last one, stay longer (2000ms) so the player can actually read it.
+    const displayTime = notificationQueue.length > 0 ? 600 : 1600;
+
     setTimeout(() => {
         notif.classList.add('fade-out'); 
-        // Changed removal from 300ms to 200ms
+        
         setTimeout(() => {
             notif.remove();
             isShowingNotification = false;
-            processQueue(); // Instantly start the next notification
-        }, 100); 
-    }, 500); 
+            processQueue(); 
+        }, 300); // 300ms for the fade-out animation to finish
+    }, displayTime); 
 }
 
 function createParticle(parent, xPosPercent, colors) {
@@ -1530,7 +1532,7 @@ async function saveAchievement(key, value) {
         const oldBest = achievements[key] || 99;
         if (value < oldBest) {
             isNewAchievement = true;
-            notificationText = `New Record! Fastest Guess: ${value}s`;
+            notificationText = "Achievement: Lucky Guess!";
             //showNotification("Achievement: Lucky guess Complete!", bonusBuffer, "#ffde00");
         } else {
             return; // Not a new record, stop here
@@ -1896,6 +1898,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
