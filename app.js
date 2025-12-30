@@ -14,6 +14,7 @@ let gameEnding = false;
 let notificationQueue = [];
 let isShowingNotification = false;
 let currentMode = 'score'; // 'score' or 'xp'
+
 const leaderboardRows = document.querySelectorAll('#leaderboard li');
 const scoreTab = document.getElementById('scoreTab');
 const xpTab = document.getElementById('xpTab');
@@ -381,6 +382,7 @@ supabase
   await syncDailyButton();
   // This will check if a user has played daily mode already and will unlock it if they did
   await updateShareButtonState();
+  loadCollection();
 }
 
 // Replace your existing handleAuthChange with this:
@@ -852,7 +854,13 @@ async function checkAnswer(choiceId, btn) {
                 // We call this first so it processes first
                 showNotification("LEVEL UP!", levelUpBuffer, "#ffde00"); //gold
             }
-          
+            // 2. Lucky Guess Check (< 1 second)
+            if (timeLeft === 14) {
+                saveAchievement('fastest_guess', 1); // This triggers the "Lucky Guess"
+            }
+            if (timeLeft === 1) {
+                saveAchievement('just_in_time', true); // 2. Just in Time
+            }
             // 5. UPDATE DATA
             currentProfileXp += gained; // Add the XP to local state
             localStorage.setItem('cached_xp', currentProfileXp);
@@ -1049,6 +1057,19 @@ async function endGame() {
         
         // Save logic (Non-blocking)
         saveDailyScore(session, randomMsg); 
+        // --- ACHIEVEMENT: DAILY MODE UPDATES ---
+        if (session) {
+            // 1. Increment Daily Total Count
+            const currentDailyTotal = parseInt(localStorage.getItem('cached_daily_total')) || 0;
+            const newTotal = currentDailyTotal + 1;
+            localStorage.setItem('cached_daily_total', newTotal);
+            saveAchievement('daily_count', newTotal); // Matches SCHEMA id 'd1', 'd20t', etc.
+
+            // 2. Daily Perfect (10/10)
+            if (score === 10) {
+                saveAchievement('daily_perfect', true);
+            }
+        }
     } else {
         if (playAgainBtn) playAgainBtn.classList.remove('hidden');
         // Trigger the high-score save
@@ -1401,66 +1422,61 @@ if (shareBtn) {
     };
 }  
 
-
-
-
-
-
-
-
-async function syncAchievementsToCloud() {
+async function saveAchievement(key, value) {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
 
-    // Package everything into one object
-    const achievementData = {
-        level: parseInt(localStorage.getItem('cached_level')) || 1,
-        max_score: parseInt(localStorage.getItem('cached_max_score')) || 0,
-        daily_total: parseInt(localStorage.getItem('cached_daily_total')) || 0,
-        daily_streak: parseInt(localStorage.getItem('cached_daily_streak')) || 0,
-        fastest_guess: parseFloat(localStorage.getItem('stat_fastest')) || 99,
-        just_in_time: localStorage.getItem('stat_just_in_time') === 'true',
-        daily_perfect: localStorage.getItem('stat_daily_perfect') === 'true'
-    };
+    // 1. Get current achievements from DB
+    const { data } = await supabase.from('profiles').select('achievements').eq('id', session.user.id).single();
+    let current = data?.achievements || {};
 
-    const { error } = await supabase
-        .from('profiles')
-        .update({ achievements: achievementData }) // Save the whole object to one column
-        .eq('id', session.user.id);
+    // 2. Safety Check: Don't downgrade stats (e.g., don't save level 5 if DB has level 10)
+    if (typeof value === 'number' && current[key] >= value) return;
+    if (current[key] === value) return;
 
-    if (error) console.error("Error syncing to cloud:", error);
+    // 3. Update the specific key
+    current[key] = value;
+
+    // 4. Push back to Supabase
+    await supabase.from('profiles').update({ achievements: current }).eq('id', session.user.id);
 }
-
-
 
 async function loadCollection() {
     const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-        const { data } = await supabase
-            .from('profiles')
-            .select('collection_log, achievements')
-            .eq('id', session.user.id)
-            .single();
-        
-        if (data && data.achievements) {
-            const a = data.achievements;
-            // Map the JSON back to LocalStorage keys
-            localStorage.setItem('cached_level', a.level || 1);
-            localStorage.setItem('cached_max_score', a.max_score || 0);
-            localStorage.setItem('cached_daily_total', a.daily_total || 0);
-            localStorage.setItem('cached_daily_streak', a.daily_streak || 0);
-            localStorage.setItem('stat_fastest', a.fastest_guess || 99);
-            localStorage.setItem('stat_just_in_time', (a.just_in_time || false).toString());
-            localStorage.setItem('stat_daily_perfect', (a.daily_perfect || false).toString());
-        }
-        
-        if (data?.collection_log) {
-            localStorage.setItem('cached_pets', JSON.stringify(data.collection_log));
-        }
+    if (!session) return;
+
+    // 1. Fetch from BOTH tables at once for speed
+    const [profileRes, scoreRes] = await Promise.all([
+        supabase.from('profiles').select('achievements, collection_log').eq('id', session.user.id).single(),
+        supabase.from('scores').select('score').eq('user_id', session.user.id).maybeSingle()
+    ]);
+
+    // 2. Extract the data safely
+    const profileData = profileRes.data;
+    const achievements = profileData?.achievements || {};
+    const maxScore = scoreRes.data?.score || 0;
+
+    // 3. Map everything to LocalStorage
+    // We get 'maxScore' from the scores table, and the rest from profile achievements
+    localStorage.setItem('cached_max_score', maxScore);
+    
+    localStorage.setItem('cached_level', achievements.level || 1);
+    localStorage.setItem('cached_daily_total', achievements.daily_total || 0);
+    localStorage.setItem('cached_daily_streak', achievements.daily_streak || 0);
+    localStorage.setItem('stat_fastest', achievements.fastest_guess || 99);
+    localStorage.setItem('stat_just_in_time', (achievements.just_in_time || false).toString());
+    localStorage.setItem('stat_daily_perfect', (achievements.daily_perfect || false).toString());
+
+    // 4. Handle Pet Collection Log
+    if (profileData?.collection_log) {
+        localStorage.setItem('cached_pets', JSON.stringify(profileData.collection_log));
+    }
+    
+    // 5. Trigger the UI render (if this is on your collections page)
+    if (typeof renderAchievements === 'function') {
+        renderAchievements();
     }
 }
-
-
 
 
 async function rollForPet() {
@@ -1796,6 +1812,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
