@@ -1379,13 +1379,6 @@ input.input-field:-webkit-autofill:active {
 }
 
 
-/* Add this to move the text itself higher up */
-.modal-content h2 {
-  margin-top: 0 !important;
-  padding-top: 0 !important;
-}
-
-
 
 /*                  scroll bar              */
 
@@ -1423,6 +1416,7 @@ input.input-field:-webkit-autofill:active {
 }
 
 /*                  scroll bar              */
+
 
 
 
