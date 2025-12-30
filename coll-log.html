@@ -563,7 +563,7 @@ async function loadCollection() {
         // --- STANDARD SYNC ---
         localStorage.setItem('cached_daily_streak', a.daily_streak || 0);
         localStorage.setItem('stat_max_streak', a.max_streak || 0);
-        localStorage.setItem('stat_fastest', a.fastest_guess || false).toString());
+        localStorage.setItem('stat_fastest', (a.fastest_guess || false).toString());
         localStorage.setItem('stat_just_in_time', (a.just_in_time || false).toString());
 
         // Update Pets and UI
