@@ -1474,7 +1474,7 @@ async function updateDailyStreak(currentScore) {
 
     // --- NOTIFICATIONS ---
     if (!oldAchieve.daily_total || oldAchieve.daily_total === 0) {
-        showNotification("Achievement: Daily Mode Complete!", bonusBuffer, "#ffde00");
+        showNotification("Achievement: Daily Mode!", bonusBuffer, "#ffde00");
     }
 
     if (currentScore === 10 && !oldAchieve.daily_perfect) {
@@ -1898,6 +1898,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
