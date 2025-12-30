@@ -1166,10 +1166,10 @@ async function saveNormalScore(currentUsername, finalScore) {
     // --- 2. MILESTONE CHECK (Logic remains independent of High Score update) ---
     // This triggers even if they don't beat their High Score, 
     // but only if they haven't seen the notification before.
-    if (finalScore >= 10 && oldBest < 10) showAchievementNotification("Novice: 10 Points");
-    if (finalScore >= 50 && oldBest < 50) showAchievementNotification("Apprentice: 50 Points");
-    if (finalScore >= 100 && oldBest < 100) showAchievementNotification("Master: 100 Points");
-    if (finalScore >= 510 && oldBest < 510) showAchievementNotification("OSRS Trivia Legend");
+    if (finalScore >= 10 && oldBest < 10) showAchievementNotification("Reach 20 Score");
+    if (finalScore >= 50 && oldBest < 50) showAchievementNotification("Reach 50 Score");
+    if (finalScore >= 100 && oldBest < 100) showAchievementNotification("Reach 100 Score");
+    if (finalScore >= 510 && oldBest < 510) showAchievementNotification("Reach Max Score");
 
     // --- 3. LEADERBOARD UPDATE (Matches your original logic exactly) ---
     if (!record || finalScore > record.score) {
@@ -1979,6 +1979,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
