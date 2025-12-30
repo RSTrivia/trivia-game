@@ -400,8 +400,8 @@ h1 {
 /* Position the Help Button in the top right corner of the .container */
 #helpBtn {
   position: absolute !important;
-  top: 8px;    /* Distance from top edge */
-  right: 8px;  /* Distance from right edge */
+  top: 5px;    /* Distance from top edge */
+  right: 5px;  /* Distance from right edge */
   width: 26px; /* Reduced size (was 32px) */
   height: 26px;/* Reduced size (was 32px) */
   z-index: 100;
@@ -1369,6 +1369,7 @@ input.input-field:-webkit-autofill:active {
 .instructions-text p {
   margin-bottom: 15px;
 }
+
 
 
 
