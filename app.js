@@ -1054,7 +1054,7 @@ async function endGame() {
             gameOverTitle.textContent = randomMsg;
             gameOverTitle.classList.remove('hidden');
         }
-        
+        updateDailyStreak();
         // Save logic (Non-blocking)
         saveDailyScore(session, randomMsg); 
         // --- ACHIEVEMENT: DAILY MODE UPDATES ---
@@ -1063,7 +1063,7 @@ async function endGame() {
             const currentDailyTotal = parseInt(localStorage.getItem('cached_daily_total')) || 0;
             const newTotal = currentDailyTotal + 1;
             localStorage.setItem('cached_daily_total', newTotal);
-            saveAchievement('daily_count', newTotal); // Matches SCHEMA id 'd1', 'd20t', etc.
+            saveAchievement('daily_total', newTotal); // Matches SCHEMA id 'd1', 'd20t', etc.
 
             // 2. Daily Perfect (10/10)
             if (score === 10) {
@@ -1422,6 +1422,48 @@ if (shareBtn) {
     };
 }  
 
+async function updateDailyStreak() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    const { data } = await supabase.from('profiles').select('achievements').eq('id', session.user.id).single();
+    let achievements = data?.achievements || {};
+
+    const today = new Date().toISOString().split('T')[0]; // Format: "2025-12-30"
+    const lastDate = achievements.last_daily_date;
+    let currentStreak = achievements.daily_streak || 0;
+
+    if (lastDate === today) {
+        return; // Already played today, don't increase streak again
+    }
+
+    // Check if yesterday
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+    if (lastDate === yesterdayStr) {
+        currentStreak += 1;
+    } else {
+        currentStreak = 1; // Reset if they missed a day
+    }
+
+    // Save both the new streak and the date
+    achievements.daily_streak = currentStreak;
+    achievements.last_daily_date = today;
+    
+    // Also increment total daily games played
+    achievements.daily_total = (achievements.daily_total || 0) + 1;
+
+    await supabase.from('profiles').update({ achievements }).eq('id', session.user.id);
+    
+    // Update local cache for the Collections page
+    localStorage.setItem('cached_daily_streak', currentStreak);
+    localStorage.setItem('cached_daily_total', achievements.daily_total);
+}
+
+
+
 async function saveAchievement(key, value) {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
@@ -1449,11 +1491,13 @@ async function saveAchievement(key, value) {
       } else if (typeof value === 'number' && current[key] >= value) {
           return;
       }
-    if (current[key] === value) return;
 
     current[key] = value;
     await supabase.from('profiles').update({ achievements: current }).eq('id', session.user.id);
 }
+
+
+
 
 async function loadCollection() {
     const { data: { session } } = await supabase.auth.getSession();
@@ -1826,6 +1870,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
