@@ -501,26 +501,27 @@ function applyUnlocks(unlockedList) {
 }
 
 async function loadCollection() {
-    // 1. Initial UI from LocalStorage
+    // 1. Initial UI from LocalStorage (Instant load for UX)
     const cached = JSON.parse(localStorage.getItem('cached_pets') || '[]');
     if (cached.length > 0) applyUnlocks(cached);
 
     // 2. Fetch fresh data from Supabase
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
-        // We select BOTH the pets (collection_log) and the stats (achievements)
-        const { data } = await supabase
-            .from('profiles')
-            .select('collection_log, achievements')
-            .eq('id', session.user.id)
-            .single();
-        
-        if (data) {
-            // Update Achievement Stats
-            if (data.achievements) {
-                const a = data.achievements;
+        // --- UPDATED: Fetch from both Profiles and Scores tables ---
+        const [profileRes, scoreRes] = await Promise.all([
+            supabase.from('profiles').select('collection_log, achievements').eq('id', session.user.id).single(),
+            supabase.from('scores').select('score').eq('user_id', session.user.id).maybeSingle()
+        ]);
+
+        const profileData = profileRes.data;
+        const maxScore = scoreRes.data?.score || 0; // The true High Score from your scores table
+
+        if (profileData) {
+            // Update Achievement Stats in LocalStorage
+            if (profileData.achievements) {
+                const a = profileData.achievements;
                 localStorage.setItem('cached_level', a.level || 1);
-                localStorage.setItem('cached_max_score', a.max_score || 0);
                 localStorage.setItem('cached_daily_total', a.daily_total || 0);
                 localStorage.setItem('cached_daily_streak', a.daily_streak || 0);
                 localStorage.setItem('stat_fastest', a.fastest_guess || 99);
@@ -528,13 +529,17 @@ async function loadCollection() {
                 localStorage.setItem('stat_daily_perfect', (a.daily_perfect || false).toString());
             }
 
+            // Explicitly set the High Score from the scores table
+            localStorage.setItem('cached_max_score', maxScore);
+
             // Update Pets
-            const freshPets = data.collection_log || [];
+            const freshPets = profileData.collection_log || [];
             localStorage.setItem('cached_pets', JSON.stringify(freshPets));
             applyUnlocks(freshPets);
 
             // Re-render achievements if that tab is currently open
-            if (document.getElementById('achieveTab').classList.contains('active')) {
+            const achieveTab = document.getElementById('achieveTab');
+            if (achieveTab && achieveTab.classList.contains('active')) {
                 renderAchievements();
             }
         }
