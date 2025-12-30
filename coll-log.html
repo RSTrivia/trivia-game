@@ -481,7 +481,7 @@ async function renderAchievements(calculatedLevel) {
         level: calculatedLevel || parseInt(localStorage.getItem('cached_level')) || 1,
         maxScore: parseInt(localStorage.getItem('cached_max_score')) || 0,
         dailyTotal: parseInt(localStorage.getItem('cached_daily_total')) || 0,
-        dailyStreak: parseInt(localStorage.getItem('cached_daily_streak')) || 0,
+        dailyStreak: parseInt(localStorage.getItem('stat_max_streak')) || 0,
         petsUnlocked: JSON.parse(localStorage.getItem('cached_pets') || '[]').length,
         fastestGuess: parseFloat(localStorage.getItem('stat_fastest')) || 99,
         justInTime: localStorage.getItem('stat_just_in_time') === 'true',
@@ -554,6 +554,7 @@ async function loadCollection() {
             const a = profileData.achievements;
             localStorage.setItem('cached_daily_total', a.daily_total || 0);
             localStorage.setItem('cached_daily_streak', a.daily_streak || 0);
+            localStorage.setItem('stat_max_streak', a.max_streak || 0);
             localStorage.setItem('stat_fastest', a.fastest_guess || 99);
             localStorage.setItem('stat_just_in_time', (a.just_in_time || false).toString());
             localStorage.setItem('stat_daily_perfect', (a.daily_perfect || false).toString());
