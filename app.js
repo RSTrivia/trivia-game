@@ -1524,7 +1524,7 @@ async function saveAchievement(key, value) {
 
     // 1. Check if this is a "First Time" or "New Record" achievement
     let isNewAchievement = false;
-    let message = "";
+    let notificationText = "";
 
     if (key === 'fastest_guess') {
         const oldBest = achievements[key] || 99;
@@ -1896,6 +1896,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
