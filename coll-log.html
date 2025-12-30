@@ -518,59 +518,59 @@ function applyUnlocks(unlockedList) {
 }
 
 async function loadCollection() {
-    // 1. Initial UI from LocalStorage (Instant load for UX)
+    // 1. Initial UI from LocalStorage
     const cachedPets = JSON.parse(localStorage.getItem('cached_pets') || '[]');
-    const cachedLevel = localStorage.getItem('cached_level') || 1;
     if (cachedPets.length > 0) applyUnlocks(cachedPets);
 
-    // 2. Fetch fresh data from Supabase
+    // 2. Fetch fresh data
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
 
-    // --- UPDATED: Fetching from 3 places now to ensure total_games is accurate ---
+    // --- UPDATED: Now fetching the highest score from daily_attempts as well ---
     const [profileRes, scoreRes, attemptsRes] = await Promise.all([
         supabase.from('profiles').select('collection_log, achievements, xp').eq('id', session.user.id).single(),
         supabase.from('scores').select('score').eq('user_id', session.user.id).maybeSingle(),
-        // Direct count from the daily_attempts table
-        supabase.from('daily_attempts').select('*', { count: 'exact', head: true }).eq('user_id', session.user.id)
+        // Get the count AND check if a score of 10 exists
+        supabase.from('daily_attempts').select('score').eq('user_id', session.user.id)
     ]);
 
-    if (profileRes.error) {
-        console.error("Error fetching profile:", profileRes.error.message);
-        return;
-    }
+    if (profileRes.error) return;
 
     const profileData = profileRes.data;
     const maxScore = scoreRes.data?.score || 0;
-    const realTotalGames = attemptsRes.count || 0; // This is the source of truth
+    
+    // Calculate total games and check for a perfect 10/10 from the attempts list
+    const attempts = attemptsRes.data || [];
+    const realTotalGames = attempts.length;
+    const hasPerfectGame = attempts.some(attempt => attempt.score === 10);
 
     if (profileData) {
-        const currentXP = profileData.xp || 0;
-        const calculatedLevel = getLevel(currentXP);
+        const calculatedLevel = getLevel(profileData.xp || 0);
         
-        localStorage.setItem('cached_xp', currentXP);
+        localStorage.setItem('cached_xp', profileData.xp || 0);
         localStorage.setItem('cached_level', calculatedLevel);
         localStorage.setItem('cached_max_score', maxScore);
 
-        // --- UPDATED LOGIC: Prioritize real count over the achievement column ---
         const a = profileData.achievements || {};
         
-        // Use the actual table count for the 'total' achievement
+        // --- SOURCE OF TRUTH OVERRIDES ---
         localStorage.setItem('cached_daily_total', realTotalGames);
         
-        // These still come from the achievement summary
+        // If hasPerfectGame is true from the table, use 'true', otherwise fallback to the JSON column
+        const isPerfect = hasPerfectGame || a.daily_perfect || false;
+        localStorage.setItem('stat_daily_perfect', isPerfect.toString());
+
+        // --- STANDARD SYNC ---
         localStorage.setItem('cached_daily_streak', a.daily_streak || 0);
         localStorage.setItem('stat_max_streak', a.max_streak || 0);
         localStorage.setItem('stat_fastest', a.fastest_guess || 99);
         localStorage.setItem('stat_just_in_time', (a.just_in_time || false).toString());
-        localStorage.setItem('stat_daily_perfect', (a.daily_perfect || false).toString());
 
-        // Update Pets
+        // Update Pets and UI
         const freshPets = profileData.collection_log || [];
         localStorage.setItem('cached_pets', JSON.stringify(freshPets));
         applyUnlocks(freshPets);
 
-        // Re-render achievements
         const achieveTab = document.getElementById('achieveTab');
         if (achieveTab && achieveTab.classList.contains('active')) {
             renderAchievements(calculatedLevel); 
