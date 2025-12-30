@@ -1444,7 +1444,11 @@ async function saveAchievement(key, value) {
     const { data } = await supabase.from('profiles').select('achievements').eq('id', session.user.id).single();
     let current = data?.achievements || {};
 
-    if (typeof value === 'number' && current[key] >= value) return;
+    if (key === 'fastest_guess') {
+    if (current[key] <= value && current[key] !== undefined) return;
+      } else if (typeof value === 'number' && current[key] >= value) {
+          return;
+      }
     if (current[key] === value) return;
 
     current[key] = value;
@@ -1822,6 +1826,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
