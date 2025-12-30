@@ -169,10 +169,11 @@
             border-color: #d4af37 !important; /* Full solid gold border */
         }
         
-        /* --- 3. THE HOVER (Border Only) --- */
-        .unlocked:hover {
-            /* No white, no bright background change. Just a brighter gold border. */
+        /* --- 3. THE HOVER (Made specific to override all rows) --- */
+        #logGrid .pet-slot.unlocked:hover {
             border-color: #ffea8a !important; 
+            transition: border-color 0.2s ease;
+            cursor: pointer;
         }
         
         /* --- 4. MYSTERY (LOCKED) STATES --- */
