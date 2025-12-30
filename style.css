@@ -1309,11 +1309,33 @@ input.input-field:-webkit-autofill:active {
 /* ====== PET UNLOCK MODAL ====== */
 
 
+/* ====== HELP MODAL STYLES ====== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7); /* Dims the background site */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 99999; /* Higher than everything else */
+  backdrop-filter: blur(3px);
+}
 
+.modal-content {
+  /* Inherits .container styles from your CSS (gold border, dark bg) */
+  animation: modalSlideIn 0.3s ease-out;
+  max-height: 80vh;
+  overflow-y: auto;
+}
 
+@keyframes modalSlideIn {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
 
-/* ====== ? button ====== */
-
+.instructions-text p {
+  margin-bottom: 15px;
+}
 
 
 
