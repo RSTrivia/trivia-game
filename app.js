@@ -1546,12 +1546,12 @@ async function saveAchievement(key, value) {
     }
   if (isNewAchievement) {
     if (typeof showNotification === "function" && bonusBuffer instanceof AudioBuffer) {
-            showNotification(notificationText, bonusBuffer, "#ffde00");
+            showAchievementNotification(notificationText, "New achievement unlocked!");
         } else {
             // Fallback if sound isn't loaded yet
             console.log(notificationText); 
             if (typeof showNotification === "function") {
-                showNotification(notificationText, null, "#ffde00"); 
+                showAchievementNotification(notificationText, "New achievement unlocked!"); 
             }
         }
     // 2. Save to DB
@@ -1714,6 +1714,55 @@ function showCollectionLogNotification(petName) {
     }, displayTime); 
 }
 window.showCollectionLogNotification = showCollectionLogNotification;
+
+let achievementNotificationTimeout = null;
+
+function showAchievementNotification(title, description) {
+    let modal = document.getElementById('achievement-modal');
+    
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'achievement-modal';
+        document.body.appendChild(modal);
+    }
+
+    // Clear existing timers to prevent overlapping
+    if (achievementNotificationTimeout) {
+        clearTimeout(achievementNotificationTimeout);
+    }
+    modal.classList.remove('active');
+  
+    // Play Achievement sound (using bonusBuffer instead of petBuffer)
+    if (typeof playSound === "function" && typeof bonusBuffer !== 'undefined' && bonusBuffer) {
+        playSound(bonusBuffer);
+    }
+
+    // OSRS Achievement style layout
+    modal.innerHTML = `
+        <span class="achieve-modal-close" onclick="this.parentElement.classList.remove('active')">&times;</span>
+        <div class="achieve-unlock-title">ACHIEVEMENT UNLOCKED</div>
+        <div class="achieve-unlock-name">${title}</div>
+        <div class="achieve-unlock-msg">${description}</div>
+    `;
+
+    // Brief delay to trigger CSS transition
+    setTimeout(() => {
+        modal.classList.add('active');
+    }, 100);
+
+    // Trigger fireworks for achievements too!
+    if (typeof triggerFireworks === "function") triggerFireworks();
+
+    const isMobile = window.innerWidth <= 480;
+    const displayTime = isMobile ? 3000 : 6000;
+
+    achievementNotificationTimeout = setTimeout(() => {
+        modal.classList.remove('active');
+        achievementNotificationTimeout = null;
+    }, displayTime); 
+}
+window.showAchievementNotification = showAchievementNotification;
+
 
 
 // ====== HELPERS & AUDIO ======
@@ -1898,6 +1947,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
