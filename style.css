@@ -401,7 +401,7 @@ h1 {
 #helpBtn {
   position: absolute !important;
   top: 5px;    /* Distance from top edge */
-  right: 5px;  /* Distance from right edge */
+  right: 3px;  /* Distance from right edge */
   width: 26px; /* Reduced size (was 32px) */
   height: 26px;/* Reduced size (was 32px) */
   z-index: 100;
@@ -1373,6 +1373,7 @@ input.input-field:-webkit-autofill:active {
 .instructions-text p {
   margin-bottom: 15px;
 }
+
 
 
 
