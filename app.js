@@ -1702,12 +1702,12 @@ async function rollForPet() {
     if (reward) {
       // 1. First Pet Notification
         if (currentLog.length === 0) {
-            showAchievementNotification("First Pet Obtained!");
+            showAchievementNotification("Unlock 1 Pet");
         }
         currentLog.push(reward.id);
         // 2. All Pets Notification (Check if new length matches total)
         if (currentLog.length === totalPetCount) {
-            showAchievementNotification("Collection Log Complete: All Pets!");
+            showAchievementNotification("Unlock all Pets");
         }
 
         await supabase
@@ -2014,6 +2014,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
