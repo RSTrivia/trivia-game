@@ -852,21 +852,14 @@ async function checkAnswer(choiceId, btn) {
                         isBonusEarned = true; // Normal bonus!
                     }
             }
-            // 2. PREDICT LEVEL CHANGE
-            const oldLevel = getLevel(currentProfileXp);
-            const newLevel = getLevel(currentProfileXp + gained);
-          
             // 4. TRIGGER BONUS SECOND (This goes behind Level Up in the queue)
             if (isBonusEarned) {
                 showNotification("BONUS XP!", bonusBuffer, "#a335ee"); //purple
             }
           
-            // 3. TRIGGER LEVEL UP FIRST (This puts it at the front of the queue)
-            if (newLevel > oldLevel) {
-                triggerFireworks(); 
-                // We call this first so it processes first
-                showNotification("LEVEL UP!", levelUpBuffer, "#ffde00"); //gold
-            }
+            // A. Check for Level Up / Milestones BEFORE updating the global XP
+            checkLevelUp(gained);
+
             // 2. Lucky Guess Check (< 1 second)
             if (timeLeft >= 14) {
                 saveAchievement('fastest_guess', 1); // This triggers the "Lucky Guess"
@@ -931,32 +924,28 @@ function getLevel(xp) {
 }
 
 
+// 1. Updated checkLevelUp function
 function checkLevelUp(gainedXp) {
     const oldLevel = getLevel(currentProfileXp);
-    currentProfileXp += gainedXp;
-    const newLevel = getLevel(currentProfileXp);
+    const newLevel = getLevel(currentProfileXp + gainedXp);
 
     if (newLevel > oldLevel) {
-        triggerFireworks(); // Visual celebration
-       // --- LEVEL MILESTONE NOTIFICATIONS ---
-        
-        // 1. Reach Level 10
+        triggerFireworks(); 
+        // Trigger the generic Level Up notification
+        showNotification("LEVEL UP!", levelUpBuffer, "#ffde00"); 
+
+        // --- MILESTONE CHECKS ---
         if (newLevel === 10) {
+            saveAchievement('reach_level_10', true); // Save to Supabase
             showAchievementNotification("Reach Level 10");
-        }
-        
-        // 2. Reach Level 50
-        else if (newLevel === 50) {
+        } else if (newLevel === 50) {
+            saveAchievement('reach_level_50', true);
             showAchievementNotification("Reach Level 50");
-        }
-        
-        // 3. Reach Max Level (99)
-        else if (newLevel === 99) {
+        } else if (newLevel === 99) {
+            saveAchievement('reach_max_level', true);
             showAchievementNotification("Reach Max Level");
         }
     }
-    
-    updateLevelUI(); // Update the labels and XP brackets
 }
 
 function triggerFireworks() {
@@ -2008,6 +1997,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
