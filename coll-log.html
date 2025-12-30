@@ -391,8 +391,8 @@ const ACHIEVEMENT_SCHEMA = [
         { id: 'pall', text: 'Unlock all pets', check: (d) => d.petsUnlocked >= 8 }
     ]},
     { cat: 'Game', tasks: [
-        { id: 'fast', text: 'Lucky Guess (<1s)', check: (d) => d.fastestGuess <= 1 },
-        { id: 'close', text: 'Just in time (2s left)', check: (d) => d.justInTime === true }
+        { id: 'fast', text: 'Lucky guess (<1s)', check: (d) => d.fastestGuess <= 1 },
+        { id: 'close', text: 'Just in time (1s left)', check: (d) => d.justInTime === true }
     ]}
 ];
 
