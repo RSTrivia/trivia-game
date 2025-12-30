@@ -1419,8 +1419,58 @@ input.input-field:-webkit-autofill:active {
 
 
 
+/* Achievement Modal Base */
+#achievement-modal {
+    position: fixed;
+    top: -150px; /* Start off-screen */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 320px;
+    background: rgba(10, 30, 10, 0.95); /* Dark Green Tint */
+    border: 3px solid #d4af37; /* Gold Border */
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    z-index: 10000;
+    transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+}
 
+#achievement-modal.active {
+    top: 20px; /* Slide down into view */
+}
 
+.achieve-unlock-title {
+    color: #00ff00; /* Achievement Green */
+    font-family: 'Cinzel', serif;
+    font-size: 0.9rem;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+}
+
+.achieve-unlock-name {
+    color: #ffde00; /* Your Golden Yellow */
+    font-size: 1.4rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.achieve-unlock-msg {
+    color: #e3d7c1; /* Parchment color */
+    font-style: italic;
+    font-size: 0.9rem;
+}
+
+.achieve-modal-close {
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    color: #d4af37;
+    cursor: pointer;
+    font-size: 20px;
+}
+
+/* Achievement Modal Base */
 
 
 
