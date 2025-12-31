@@ -11,29 +11,38 @@
     })();
   </script>
   
- <script>
+<script>
   (function () {
     const loggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
-    const played = localStorage.getItem('dailyPlayedDate') === new Date().toISOString().split('T')[0];
-    const hasScore = localStorage.getItem('lastDailyScore') !== null;
+    const todayStr = new Date().toISOString().split('T')[0];
+    const playedToday = localStorage.getItem('dailyPlayedDate') === todayStr;
+    
+    // Check if a score exists AND if it was earned today
+    const scoreDate = localStorage.getItem('lastDailyScoreDate'); 
+    const hasScoreToday = (localStorage.getItem('lastDailyScore') !== null && scoreDate === todayStr);
 
     if (loggedIn) {
       let css = "";
-      
-      // Selectors for buttons we want to force GOLD
       const targets = [];
-      targets.push("#logBtn");
-      if (!played) targets.push("#dailyBtn");
-      if (hasScore) targets.push("#shareBtn");
+      
+      // Collection Log is always available if logged in
+      targets.push("#logBtn"); 
+      
+      // Daily Mode available only if NOT played today
+      if (!playedToday) targets.push("#dailyBtn");
+      
+      // Share Button available ONLY if you have a score FROM TODAY
+      if (hasScoreToday) targets.push("#shareBtn");
 
       if (targets.length > 0) {
-        // We target the ID with body to ensure highest specificity
-        const selector = targets.map(id => `body ${id}.is-disabled`).join(", ");
+        const selector = targets.map(id => `body ${id}.is-disabled, body ${id}.daily-btn`).join(", ");
         css = `
           ${selector} { 
             opacity: 1 !important; 
             pointer-events: auto !important; 
-            filter: sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85) !important; 
+            filter: sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85) !important;
+            color: #d4af37 !important;
+            border-color: #d4af37 !important;
           }
         `;
       }
@@ -292,6 +301,7 @@
 </script>
 </body>
 </html>
+
 
 
 
