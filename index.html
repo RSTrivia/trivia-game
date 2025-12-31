@@ -179,19 +179,31 @@
     }
 
     // DAILY BUTTON: Gold if logged in AND NOT played today
+    // DAILY BUTTON: Master Controller
     if (dailyBtn) {
       if (cachedLoggedIn && !playedToday) {
+        // STATE 1: ACTIVE (Gold)
         dailyBtn.classList.remove('is-disabled');
         dailyBtn.classList.add('is-active');
         dailyBtn.textContent = "Daily Mode";
-      } else if (cachedLoggedIn && playedToday) {
+        dailyBtn.style.opacity = "1";
+        dailyBtn.style.pointerEvents = "auto";
+      } 
+      else if (cachedLoggedIn && playedToday) {
+        // STATE 2: DAILY DONE (Grey - exactly like Logged Out)
         dailyBtn.classList.add('is-disabled');
-        dailyBtn.classList.remove('is-active');
+        dailyBtn.classList.remove('is-active'); // Remove gold!
         dailyBtn.textContent = "Daily Done";
-      } else {
-        // Not logged in
+        dailyBtn.style.opacity = "0.5";
+        dailyBtn.style.pointerEvents = "none";
+      } 
+      else {
+        // STATE 3: LOGGED OUT (Grey)
         dailyBtn.classList.add('is-disabled');
         dailyBtn.classList.remove('is-active');
+        dailyBtn.textContent = "Daily Mode";
+        dailyBtn.style.opacity = "0.5";
+        dailyBtn.style.pointerEvents = "none";
       }
     }
 
@@ -241,6 +253,7 @@
 </script>
 </body>
 </html>
+
 
 
 
