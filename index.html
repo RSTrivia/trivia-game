@@ -10,7 +10,27 @@
       }
     })();
   </script>
- 
+  
+    <script>
+  (function () {
+    const loggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
+    const played = localStorage.getItem('dailyPlayedDate') === new Date().toISOString().split('T')[0];
+    const hasScore = localStorage.getItem('lastDailyScore') !== null;
+
+    if (loggedIn) {
+      let css = "";
+      // Force Log and Daily (if not played) to be gold immediately
+      css += "#logBtn { opacity: 1 !important; pointer-events: auto !important; } ";
+      if (!played) css += "#dailyBtn { opacity: 1 !important; pointer-events: auto !important; } ";
+      if (hasScore) css += "#shareBtn { opacity: 1 !important; pointer-events: auto !important; } ";
+
+      const style = document.createElement('style');
+      style.innerHTML = css;
+      document.head.appendChild(style);
+    }
+  })();
+</script>
+
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>OSRS Trivia</title>
@@ -192,36 +212,37 @@
 
 // 2. State Sync 
 // 3. Button Logic (One single source of truth)
-    if (cachedLoggedIn) {
+    //if (cachedLoggedIn) {
       // Daily Button
-      if (!hasPlayedToday && dailyBtn) {
-        dailyBtn.classList.add('is-active');
-        dailyBtn.classList.remove('is-disabled');
-        dailyBtn.style.opacity = '1';
-        dailyBtn.style.pointerEvents = 'auto';
-      } else if (dailyBtn) {
-        dailyBtn.textContent = hasPlayedToday ? "Daily Done" : "Daily Mode";
-      }
+      //if (!hasPlayedToday && dailyBtn) {
+        //dailyBtn.classList.add('is-active');
+        //dailyBtn.classList.remove('is-disabled');
+        //dailyBtn.style.opacity = '1';
+        //dailyBtn.style.pointerEvents = 'auto';
+      //} else if (dailyBtn) {
+        //dailyBtn.textContent = hasPlayedToday ? "Daily Done" : "Daily Mode";
+     // }
 
       // Share & Log Buttons
-      [shareBtn, logBtn].forEach(btn => {
-        if (btn && (btn === logBtn || hasScore)) {
-          btn.classList.remove('is-disabled');
-          btn.style.opacity = '1';
-          btn.style.pointerEvents = 'auto';
-        }
-      });
-    } else {
+      //[shareBtn, logBtn].forEach(btn => {
+        //if (btn && (btn === logBtn || hasScore)) {
+          //btn.classList.remove('is-disabled');
+          //btn.style.opacity = '1';
+          //btn.style.pointerEvents = 'auto';
+       // }
+      //});
+   // } else {
       // Not Logged In - Force all to disabled state
-      [dailyBtn, shareBtn, logBtn].forEach(btn => {
-        if (btn) {
-          btn.classList.add('is-disabled');
-          btn.classList.remove('is-active');
-          btn.style.opacity = '0.5';
-          btn.style.pointerEvents = 'none';
-        }
-      });
-    }
+     // [dailyBtn, shareBtn, logBtn].forEach(btn => {
+       // if (btn) {
+       //   btn.classList.add('is-disabled');
+       //   btn.classList.remove('is-active');
+       //   btn.style.opacity = '0.5';
+       //   btn.style.pointerEvents = 'none';
+      //  }
+    //  });
+    
+   // }
     
     // 1. Instant Text/Emoji Sync
     if (span) span.textContent = ' ' + cachedUsername;
@@ -257,6 +278,7 @@
 </script>
 </body>
 </html>
+
 
 
 
