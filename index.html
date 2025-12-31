@@ -223,25 +223,38 @@
       if (xpBracket) xpBracket.textContent = ' (0 XP)';
     }
 
-   // 2. State Sync 
-// We only run this IF the head script didn't already handle it 
-// (or to handle the 'Guest' logic)
-if (!cachedLoggedIn) {
-    [dailyBtn, shareBtn, logBtn].forEach(btn => {
-        if (btn) {
-            btn.classList.add('is-disabled');
-            btn.style.opacity = '0.5';
-            btn.style.pointerEvents = 'none';
+// 2. State Sync 
+// 3. Button Logic (One single source of truth)
+    if (cachedLoggedIn) {
+      // Daily Button
+      if (!hasPlayedToday && dailyBtn) {
+        dailyBtn.classList.add('is-active');
+        dailyBtn.classList.remove('is-disabled');
+        dailyBtn.style.opacity = '1';
+        dailyBtn.style.pointerEvents = 'auto';
+      } else if (dailyBtn) {
+        dailyBtn.textContent = hasPlayedToday ? "Daily Done" : "Daily Mode";
+      }
+
+      // Share & Log Buttons
+      [shareBtn, logBtn].forEach(btn => {
+        if (btn && (btn === logBtn || hasScore)) {
+          btn.classList.remove('is-disabled');
+          btn.style.opacity = '1';
+          btn.style.pointerEvents = 'auto';
         }
-    });
-} else {
-    // If logged in, only update classes, don't touch .style.opacity 
-    // unless necessary, to avoid fighting the <head> CSS.
-    if (!hasPlayedToday && dailyBtn) dailyBtn.classList.add('is-active');
-    
-    // Set the text
-    if (dailyBtn && hasPlayedToday) dailyBtn.textContent = 'Daily Done';
-}
+      });
+    } else {
+      // Not Logged In - Force all to disabled state
+      [dailyBtn, shareBtn, logBtn].forEach(btn => {
+        if (btn) {
+          btn.classList.add('is-disabled');
+          btn.classList.remove('is-active');
+          btn.style.opacity = '0.5';
+          btn.style.pointerEvents = 'none';
+        }
+      });
+    }
     
     // 1. Instant Text/Emoji Sync
     if (span) span.textContent = ' ' + cachedUsername;
@@ -277,6 +290,7 @@ if (!cachedLoggedIn) {
 </script>
 </body>
 </html>
+
 
 
 
