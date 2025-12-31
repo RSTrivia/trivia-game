@@ -10,31 +10,6 @@
             }
         })();
     </script>
-  <script>
-    (function () {
-        const cached = JSON.parse(localStorage.getItem('cached_pets') || '[]');
-        if (cached.length > 0) {
-            document.addEventListener("DOMContentLoaded", () => {
-                const grid = document.getElementById('logGrid');
-                cached.forEach(id => {
-                    const slot = document.getElementById(`slot-${id}`);
-                    if (slot) {
-                        // Apply the gold class instantly
-                        slot.classList.add('unlocked');
-                        // We will handle specific rarities and names in the module script
-                    }
-                });
-                // Show the grid now that slots are pre-colored
-                grid.classList.add('ready');
-            });
-        } else {
-            // If no cache, just show the mystery grid immediately
-            document.addEventListener("DOMContentLoaded", () => {
-                document.getElementById('logGrid').classList.add('ready');
-            });
-        }
-    })();
-</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Collections</title>
     <meta name="darkreader-lock">
