@@ -1425,6 +1425,14 @@ input.input-field:-webkit-autofill:active {
     scrollbar-color: #c28f0c rgba(30, 30, 30, 0.8);
 }
 
+/* 3. Mobile Specific Override */
+/* This forces the scrollbar to stay "gold" even when the mobile OS tries to hide/style it */
+@media (max-width: 480px) {
+  ::-webkit-scrollbar-thumb {
+    background: #d4af37; /* Solid gold for better mobile visibility */
+  }
+}
+
 /*                  scroll bar              */
 
 
@@ -1490,6 +1498,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
