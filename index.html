@@ -34,8 +34,9 @@
       // Share Button available ONLY if you have a score FROM TODAY
       if (hasScoreToday) targets.push("#shareBtn");
 
-      if (targets.length > 0) {
-        const selector = targets.map(id => `body ${id}.is-disabled, body ${id}.daily-btn`).join(", ");
+     if (targets.length > 0) {
+        // We target the IDs specifically to override the "disabled" grayscale
+        const selector = targets.join(", "); 
         css = `
           ${selector} { 
             opacity: 1 !important; 
@@ -301,6 +302,7 @@
 </script>
 </body>
 </html>
+
 
 
 
