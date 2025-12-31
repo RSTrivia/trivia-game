@@ -830,6 +830,7 @@ input.input-field:-webkit-autofill:active {
   }
   
   /* 2. THE PRESS (Finger Down) */
+  /* This kills the flash for ALL main buttons and icons */
   .btn:not(.is-disabled):active, 
   .btn-small:not(.is-disabled):active,
   .btn.tapped:not(.is-disabled), 
@@ -838,8 +839,17 @@ input.input-field:-webkit-autofill:active {
     background-color: #000000 !important;
     border-color: #ffea8a !important;
     color: #ffea8a !important;
-    transition: 0s !important; /* Force instant highlight */
-    transform: scale(0.97);     /* Physical "click" feel */
+    transition: 0s !important; 
+    transform: scale(0.97);     
+  }
+
+  /* >>> NEW: ICON SPECIFIC PRESS FIX <<< */
+  /* This ensures icons NEVER flash gold/black background, 
+     keeping them feeling like simple image toggles. */
+  #shareBtn:active, #logBtn:active, #muteBtn:active {
+    background: none !important; /* No background flash */
+    transform: scale(0.9) !important; /* Visual shrink feedback instead */
+    transition: 0s !important;
   }
   
 /* Ensure disabled buttons on mobile stay flat and grey */
@@ -856,15 +866,16 @@ input.input-field:-webkit-autofill:active {
 /* >>> THE ULTIMATE FLASH KILLER <<< */
   /* This targets icons that are muted/disabled. It forces them to stay grey 
      even while being pressed, so there is no color to "fade" from. */
+ /* >>> THE ULTIMATE FLASH KILLER (Muted/Disabled) <<< */
   #muteBtn.is-muted, 
   #shareBtn.is-disabled, 
   #logBtn.is-disabled,
   #dailyBtn:not(.is-active) {
-    background: rgba(0, 0, 0, 0.4) !important; /* Force grey bg */
-    border-color: #555 !important;             /* Force grey border */
-    color: #888 !important;                    /* Force grey text */
-    transition: none !important;               /* No fading */
-    transform: none !important;                /* No shrinking */
+    background: rgba(0, 0, 0, 0.4) !important;
+    border-color: #555 !important;
+    color: #888 !important;
+    transition: none !important; 
+    transform: none !important; 
     filter: grayscale(1) brightness(0.5) !important;
   }
   /* 4. Disable system gray boxes */
@@ -1512,6 +1523,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
