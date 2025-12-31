@@ -223,7 +223,7 @@ async function syncDailyButton() {
         localStorage.setItem('dailyPlayedDate', todayStr);
         dailyBtn.style.opacity = '0.5';
         dailyBtn.style.pointerEvents = 'none';
-        dailyBtn.textContent = "Daily Done";
+        //dailyBtn.textContent = "Daily Done";
         // Keep it locked
     } else {
         // ONLY NOW, after all checks, do we turn it gold
@@ -2065,6 +2065,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
