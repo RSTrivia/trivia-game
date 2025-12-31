@@ -958,38 +958,38 @@ input.input-field:-webkit-autofill:active {
 
 
 
-/* 1. The "Off" state - Forced to match Row 3 height */
+/* 1. The "Off" state - This is the default when the page loads */
 #dailyBtn {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 14px 0 !important; /* Matches Row 3 exactly */
+    padding: 14px 0 !important;
     width: 100%;
     box-sizing: border-box;
-    pointer-events: none;
-    filter: grayscale(1) brightness(0.7);
-    opacity: 0.5;
+    pointer-events: none !important; /* Disable clicks immediately */
+    
+    /* VISUAL LOCKED STATE */
+    filter: grayscale(1) brightness(0.7) !important;
+    opacity: 0.5 !important;
     border: 2px solid #444 !important;
     color: #666 !important;
+    background: rgba(0, 0, 0, 0.4) !important;
+    
     text-align: center;
+    transition: none; /* No transition while loading to prevent "fading" into view */
 }
 
-/* 2. The "Gold" state - Inherits the same dimensions */
+/* 2. The "Gold" state - ONLY triggers when .is-active is added */
 #dailyBtn.is-active {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 14px 0 !important;
-    
-    background: rgba(0, 0, 0, 0.6);
-    border: 2px solid #d4af37 !important;
-    color: #d4af37 !important;
-    border-radius: 8px;
-    font-size: 1.1rem;
-    cursor: pointer;
-    pointer-events: auto !important;
     filter: none !important;
     opacity: 1 !important;
+    pointer-events: auto !important;
+    
+    background: rgba(0, 0, 0, 0.6) !important;
+    border: 2px solid #d4af37 !important;
+    color: #d4af37 !important;
+    
+    cursor: pointer;
     transition: 0.2s;
 }
 
@@ -1490,6 +1490,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
