@@ -20,13 +20,13 @@
     const hasScoreToday = (localStorage.getItem('lastDailyScore') !== null && scoreDate === todayStr);
 
     if (loggedIn) {
-      let targets = ["#logBtn"]; 
-      if (!playedToday) targets.push("#dailyBtn");
-      if (hasScoreToday) targets.push("#shareBtn");
+      let activeTargets = ["#logBtn"]; 
+      // Only make Daily gold if NOT played
+      if (!playedToday) activeTargets.push("#dailyBtn");
+      if (hasScoreToday) activeTargets.push("#shareBtn");
 
-      // We only force visibility and pointer events here.
-      // The COLOR and HOVER will be handled by the CSS file.
-      const selector = targets.join(", ");
+      // Injecting the visibility/interaction rules
+      const selector = activeTargets.join(", ");
       const css = `
         ${selector} { 
           opacity: 1 !important; 
@@ -39,14 +39,27 @@
       document.head.appendChild(style);
 
       document.addEventListener('DOMContentLoaded', () => {
-        targets.forEach(id => {
+        // Handle Active Buttons (Gold + Clickable)
+        activeTargets.forEach(id => {
           const el = document.querySelector(id);
-          // Adding 'is-active' ensures it gets the gold theme from your CSS
           if (el) {
             el.classList.remove('is-disabled');
-            if (id === "#dailyBtn") el.classList.add('is-active');
+            // Only add gold class to buttons that should be active
+            el.classList.add('is-active');
           }
         });
+
+        // Handle the "Daily Done" state specifically
+        if (playedToday) {
+          const dailyBtn = document.querySelector("#dailyBtn");
+          if (dailyBtn) {
+            dailyBtn.textContent = "Daily Done";
+            dailyBtn.classList.add('is-disabled');
+            dailyBtn.classList.remove('is-active');
+            dailyBtn.style.opacity = "0.5";
+            dailyBtn.style.pointerEvents = "none";
+          }
+        }
       });
     }
   })();
@@ -299,6 +312,7 @@
 </script>
 </body>
 </html>
+
 
 
 
