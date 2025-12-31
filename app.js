@@ -1259,6 +1259,7 @@ if (shareBtn) {
         try {
             const target = document.querySelector('.container');
             const muteBtn = document.getElementById('muteBtn');
+            const helpBtn = document.getElementById('helpBtn');
             //shareBtn.style.opacity = '0';
             //if (muteBtn) muteBtn.style.opacity = '0';
 
@@ -1267,7 +1268,7 @@ if (shareBtn) {
                 scale: 2, 
                 useCORS: true,
                 onclone: (clonedDoc) => {
-                  const idsToHide = ['muteBtn', 'shareBtn', 'logBtn', 'collection-log'];
+                  const idsToHide = ['muteBtn', 'shareBtn', 'logBtn', 'collection-log', 'helpBtn'];
                     idsToHide.forEach(id => {
                         const el = clonedDoc.getElementById(id);
                         if (el) el.style.display = 'none';
@@ -2014,6 +2015,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
