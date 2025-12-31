@@ -192,16 +192,7 @@ let isDailyMode = false;
 
 async function syncDailyButton() {
     const { data: { session } } = await supabase.auth.getSession();
-    if (!dailyBtn) return;
-  
-    // Explicitly lock if no one is logged in
-    if (!session) {
-        lockDailyButton();
-      // Add visual guest feedback
-        dailyBtn.style.opacity = '0.5';
-        dailyBtn.style.pointerEvents = 'none';
-        return;
-    }
+    if (!dailyBtn || !session) return; // Do nothing if guest, handleAuthChange handles guests
 
     const played = await hasUserCompletedDaily(session);
 
@@ -395,9 +386,9 @@ supabase
 }
 
   // This will check if a user is logged in and lock the button if they aren't
-  await syncDailyButton();
+  //await syncDailyButton();
   // This will check if a user has played daily mode already and will unlock it if they did
-  await updateShareButtonState();
+  //await updateShareButtonState();
   //loadCollection();
 }
 
@@ -423,15 +414,11 @@ async function handleAuthChange(event, session) {
             localStorage.removeItem('lastDailyMessage');   
              [dailyBtn, shareBtn, logBtn].forEach(btn => {
                       if (btn) {
-                          // Only update if it's NOT already disabled to prevent the filter flicker
-                            if (!btn.classList.contains('is-disabled')) {
-                                  btn.classList.add('is-disabled');
-                                  btn.style.opacity = '0.5';
-                                  btn.style.pointerEvents = 'none';
-                              }
-                            if(btn.tagName === 'A') btn.setAttribute('tabindex', '-1');
-                        }
-                    });
+                    btn.classList.add('is-disabled');
+                    btn.style.opacity = '0.5';
+                    btn.style.pointerEvents = 'none';
+                }
+            });
         }
         if (span) span.textContent = ' Guest';
         if (label) label.textContent = 'Log In';
@@ -485,7 +472,9 @@ async function handleAuthChange(event, session) {
     // Sync their daily status
     await fetchDailyStatus(session.user.id);
     // Establish the live sync
-    syncChannel = setupRealtimeSync(session.user.id);
+   if (!syncChannel) {
+        syncChannel = setupRealtimeSync(session.user.id);
+    }
     updateLevelUI();
 }
 
@@ -2038,6 +2027,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
