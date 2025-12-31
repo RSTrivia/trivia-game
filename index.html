@@ -9,12 +9,135 @@
         document.documentElement.style.setProperty("--bg-image", `url('${bg}')`);
       }
     })();
-  </script>
 
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>OSRS Trivia</title>
+  <script>
+    
+// Define these globally for this script
+  const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
+  const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
+  const cachedMuted = localStorage.getItem('muted') === 'true';
+  const todayStr = new Date().toISOString().split('T')[0];
+ 
+  function handleAuthAction() {
+    const isLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
+    if (isLoggedIn) {
+      localStorage.clear(); // Clear all to be safe
+      window.location.reload();
+    } else {
+      window.location.href = 'login.html';
+    }
+  }
 
+  document.addEventListener('DOMContentLoaded', () => {
+    const span = document.getElementById('usernameSpan');
+    const authBtn = document.getElementById('authBtn');
+    const authLabel = authBtn?.querySelector('.btn-label');
+    const muteIcon = document.getElementById('muteIcon');
+    const muteBtn = document.getElementById('muteBtn');
+    const dailyBtn = document.getElementById('dailyBtn');
+    const shareBtn = document.getElementById('shareBtn');
+    const logBtn = document.getElementById('logBtn');
+    const helpBtn = document.getElementById('helpBtn');
+    const helpModal = document.getElementById('help-modal');
+    const closeHelpBtn = document.getElementById('closeHelpBtn');
+    const levelNum = document.getElementById('levelNumber');
+    const xpBracket = document.getElementById('xpBracket');
+    
+    const hasPlayedToday = localStorage.getItem('dailyPlayedDate') === todayStr;
+    const hasScore = localStorage.getItem('lastDailyScore') !== null;
+
+    // 1. Level & XP Calculation (Moved from bottom to here)
+    if (cachedLoggedIn) {
+      const cXp = parseInt(localStorage.getItem('cached_xp')) || 0;
+      let dLvl = 1;
+      if (cXp >= 100000) { dLvl = 99; }
+      else if (cXp > 0) {
+        for (let L = 1; L <= 99; L++) {
+          let threshold = Math.floor(Math.pow((L - 1) / 98, 3.1) * 100000);
+          if (cXp < threshold) {
+            dLvl = Math.max(1, L - 1);
+            break;
+          }
+        }
+      }
+      if (levelNum) levelNum.textContent = dLvl;
+      if (xpBracket) xpBracket.textContent = ` (${cXp.toLocaleString()} XP)`;
+    } else {
+      if (levelNum) levelNum.textContent = '1';
+      if (xpBracket) xpBracket.textContent = ' (0 XP)';
+    }
+
+    // 1. Reset everything to locked first (Safety)
+    if (dailyBtn) {
+        dailyBtn.classList.remove('is-active');
+        dailyBtn.classList.add('is-disabled');
+        dailyBtn.style.opacity = '0.5';
+        dailyBtn.style.pointerEvents = 'none';
+    }
+    
+    // 1. Instant Text/Emoji Sync
+    if (span) span.textContent = ' ' + cachedUsername;
+    if (authLabel) authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
+
+    if (muteIcon && muteBtn) {
+      muteIcon.textContent = cachedMuted ? '🔇' : '🔊';
+      if (cachedMuted) muteBtn.classList.add('is-muted');
+    }
+
+    
+    // 2. Instant Button State Sync (Anti-Flicker)
+    if (cachedLoggedIn) {
+      // 2. ONLY unlock if they are logged in AND haven't played
+      if (!hasPlayedToday && dailyBtn) {
+          dailyBtn.classList.add('is-active');
+          dailyBtn.classList.remove('is-disabled');
+          dailyBtn.style.opacity = '1';
+          dailyBtn.style.pointerEvents = 'auto';
+      }
+      [shareBtn, logBtn].forEach(btn => {
+        if (btn && (btn === logBtn || hasScore)) {
+          btn.classList.remove('is-disabled');
+          btn.style.opacity = '1';
+          btn.style.pointerEvents = 'auto';
+        }
+      });
+    } else {
+      // If not logged in, ensure these stay locked
+      [dailyBtn, shareBtn, logBtn].forEach(btn => {
+        if (btn) {
+          btn.classList.add('is-disabled');
+          btn.style.opacity = '0.5';
+          btn.style.pointerEvents = 'none';
+        }
+      });
+    }
+
+    if (authBtn) authBtn.onclick = handleAuthAction;
+
+  // Open Modal
+  helpBtn.onclick = () => {
+    helpModal.classList.remove('hidden');
+  };
+
+  // Close Modal (via button)
+  closeHelpBtn.onclick = () => {
+    helpModal.classList.add('hidden');
+  };
+
+  // Close Modal (clicking outside the box)
+  window.onclick = (event) => {
+    if (event.target == helpModal) {
+      helpModal.classList.add('hidden');
+    }
+  };
+    
+  });
+    
+</script>
 
   <meta name="darkreader-lock">  
   <!-- OSRS Title Font -->
@@ -38,13 +161,13 @@
     </button>
       <h1 id="main-title">OSRS Trivia</h1>
 
-      <!-- First row: User + Mute  style="opacity: 0.5; pointer-events: none;-->
+      <!-- First row: User + Mute -->
       <div id="user-controls" class="row">
         <div class="icon-group">
-        <button id="shareBtn" class="is-disabled" type="button"> 
+        <button id="shareBtn" class="is-disabled" type="button" style="opacity: 0.5; pointer-events: none;">
           <span id="shareIcon">🔗</span>
         </button>
-        <a href="coll-log.html" id="logBtn" class="is-disabled">
+        <a href="coll-log.html" id="logBtn" class="is-disabled" style="opacity: 0.5; pointer-events: none;">
             <span id="logIcon">🏆</span>
         </a>
         <button id="muteBtn" type="button">
@@ -79,12 +202,12 @@
 
       <!-- Start Screen -->
       <div id="start-screen">
-        <!-- Second row: Start button  style="opacity: 0.5; pointer-events: none;"-->
+        <!-- Second row: Start button -->
         <div class="row">
           <button id="startBtn" class="btn">Normal Mode</button>
         </div>
        <div class="row">
-        <button id="dailyBtn" class="daily-btn is-disabled">Daily Mode</button>
+        <button id="dailyBtn" class="daily-btn is-disabled" style="opacity: 0.5; pointer-events: none;">Daily Mode</button>
       </div>
         <!-- Third row: Login + Leaderboard -->
         <div class="row">
@@ -132,219 +255,7 @@
     <button id="closeHelpBtn" class="btn" style="margin-top: 25px;">Close</button>
   </div>
 </div>
-<script>
-  // Define these globally for the script
-  const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
-  const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
-  const cachedMuted = localStorage.getItem('muted') === 'true';
-  const todayStr = new Date().toISOString().split('T')[0];
-  const playedToday = localStorage.getItem('dailyPlayedDate') === todayStr;
-  
-  // Logic for the Share Button (only show if they have a score FROM TODAY)
-  const scoreDate = localStorage.getItem('lastDailyScoreDate'); 
-  const hasScoreToday = (localStorage.getItem('lastDailyScore') !== null && scoreDate === todayStr);
-  const cXp = parseInt(localStorage.getItem('cached_xp')) || 0;
-
-  function handleAuthAction() {
-    if (cachedLoggedIn) {
-      localStorage.clear();
-      window.location.reload();
-    } else {
-      window.location.href = 'login.html';
-    }
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    const authBtn = document.getElementById('authBtn');
-    const dailyBtn = document.getElementById('dailyBtn');
-    const shareBtn = document.getElementById('shareBtn');
-    const logBtn = document.getElementById('logBtn');
-    const span = document.getElementById('usernameSpan');
-
-    // 1. Set Identity & Auth
-    if (span) span.textContent = ' ' + cachedUsername;
-    if (authBtn) {
-      const label = authBtn.querySelector('.btn-label');
-      if (label) label.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
-      authBtn.onclick = handleAuthAction;
-    }
-
-    // 2. MASTER BUTTON CONTROLLER
-    // We handle every button based on the logged-in + played state
     
-    // LOG BUTTON: Always gold if logged in
-    if (cachedLoggedIn && logBtn) {
-      logBtn.classList.remove('is-disabled');
-      logBtn.classList.add('is-active');
-    }
-
-    // DAILY BUTTON: Gold if logged in AND NOT played today
-    // DAILY BUTTON: Master Controller
-    if (dailyBtn) {
-      if (cachedLoggedIn && !playedToday) {
-        // STATE 1: ACTIVE (Gold)
-        dailyBtn.classList.remove('is-disabled');
-        dailyBtn.classList.add('is-active');
-        //dailyBtn.textContent = "Daily Mode";
-        dailyBtn.style.opacity = "1";
-        dailyBtn.style.pointerEvents = "auto";
-      } 
-      else if (cachedLoggedIn && playedToday) {
-        // STATE 2: DAILY DONE (Grey - exactly like Logged Out)
-        dailyBtn.classList.add('is-disabled');
-        dailyBtn.classList.remove('is-active'); // Remove gold!
-        //dailyBtn.textContent = "Daily Mode";
-        dailyBtn.style.opacity = "0.5";
-        dailyBtn.style.pointerEvents = "none";
-      } 
-      else {
-        // STATE 3: LOGGED OUT (Grey)
-        dailyBtn.classList.add('is-disabled');
-        dailyBtn.classList.remove('is-active');
-        //dailyBtn.textContent = "Daily Mode";
-        dailyBtn.style.opacity = "0.5";
-        dailyBtn.style.pointerEvents = "none";
-      }
-    }
-
-    // SHARE BUTTON: Gold only if they have a score today
-    if (shareBtn) {
-      if (cachedLoggedIn && hasScoreToday) {
-        shareBtn.classList.remove('is-disabled');
-        shareBtn.classList.add('is-active');
-      } else {
-        shareBtn.classList.add('is-disabled');
-        shareBtn.classList.remove('is-active');
-      }
-    }
-
-    // 3. Level Calculation
-    const levelNum = document.getElementById('levelNumber');
-    const xpBracket = document.getElementById('xpBracket');
-    if (cachedLoggedIn) {
-      let dLvl = 1;
-      if (cXp >= 100000) dLvl = 99;
-      else if (cXp > 0) {
-        for (let L = 1; L <= 99; L++) {
-          let threshold = Math.floor(Math.pow((L - 1) / 98, 3.1) * 100000);
-          if (cXp < threshold) {
-            dLvl = Math.max(1, L - 1);
-            break;
-          }
-        }
-      }
-      if (levelNum) levelNum.textContent = dLvl;
-      if (xpBracket) xpBracket.textContent = ` (${cXp.toLocaleString()} XP)`;
-    }
-
-    // 4. Modal & Audio Logic
-    const helpBtn = document.getElementById('helpBtn');
-    const helpModal = document.getElementById('help-modal');
-    const closeHelpBtn = document.getElementById('closeHelpBtn');
-    const muteIcon = document.getElementById('muteIcon');
-    const muteBtn = document.getElementById('muteBtn');
-
-    if (helpBtn) helpBtn.onclick = () => helpModal.classList.remove('hidden');
-    if (closeHelpBtn) closeHelpBtn.onclick = () => helpModal.classList.add('hidden');
-    if (muteIcon) muteIcon.textContent = cachedMuted ? '🔇' : '🔊';
-    
-    window.onclick = (e) => { if (e.target == helpModal) helpModal.classList.add('hidden'); };
-  });
-</script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
