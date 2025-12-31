@@ -1122,7 +1122,16 @@ async function endGame() {
         await saveDailyScore(session, randomMsg); 
         // This one function now handles: Streak, Total Count, and Perfect 10/10
         // Pass the actual 'score' variable here
+        localStorage.setItem('lastDailyScore',  score);
+        localStorage.setItem('lastDailyScoreDate', new Date().toISOString().split('T')[0]);
         await updateDailyStreak(score);
+      const shareBtn = document.getElementById('shareBtn');
+      if (shareBtn && isDailyMode) {
+          shareBtn.classList.remove('is-disabled');
+          shareBtn.style.filter = "sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85)";
+          shareBtn.style.opacity = "1";
+          shareBtn.style.pointerEvents = "auto";
+      }
        
     } else {
         if (playAgainBtn) playAgainBtn.classList.remove('hidden');
@@ -2056,6 +2065,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
