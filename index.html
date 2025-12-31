@@ -218,14 +218,6 @@
         }
       });
     }
-
-    // 1. Reset everything to locked first (Safety)
-    if (dailyBtn) {
-        dailyBtn.classList.remove('is-active');
-        dailyBtn.classList.add('is-disabled');
-        dailyBtn.style.opacity = '0.5';
-        dailyBtn.style.pointerEvents = 'none';
-    }
     
     // 1. Instant Text/Emoji Sync
     if (span) span.textContent = ' ' + cachedUsername;
@@ -259,20 +251,9 @@
   });
     
 </script>
-      <!-- 🔥 Load last background BEFORE first paint (NO flicker) -->
-  <script>
-    (function () {
-      const bg = localStorage.getItem("bg_current");
-      if (bg) {
-        document.documentElement.style.setProperty(
-          "--bg-image",
-          `url('${bg}')`
-        );
-      }
-    })();
-  </script>
 </body>
 </html>
+
 
 
 
