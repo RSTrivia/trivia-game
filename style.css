@@ -961,6 +961,7 @@ input.input-field:-webkit-autofill:active {
 
 /* 1. The "Off" state - This is the default when the page loads */
 /* 1. The BASE state (Locked/Loading) */
+/* 1. The BASE state (Locked/Disabled) */
 #dailyBtn.daily-btn {
     display: flex;
     align-items: center;
@@ -969,32 +970,28 @@ input.input-field:-webkit-autofill:active {
     width: 100%;
     border-radius: 8px;
     font-size: 1.1rem;
-    
-    /* FORCE GRAY IMMEDIATELY */
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.4); 
     border: 2px solid #444;
     color: #666;
-    /*filter: grayscale(1) !important;*/
-    /*opacity: 0.5 !important;*/
-    pointer-events: none !important;
-}
-
-/* 2. The ACTIVE state (Unlocked) */
-#dailyBtn.daily-btn.is-active {
-    background: rgba(0, 0, 0, 0.6) !important;
-    border: 2px solid #d4af37 !important;
-    color: #d4af37 !important;
-    filter: none !important;
-    opacity: 1 !important;
-    pointer-events: auto !important;
+    pointer-events: none;
+    transition: 0.2s;
     cursor: pointer;
 }
 
-/* Ensure hover matches other gold buttons */
+/* 2. The ACTIVE state (Logged in & Ready) */
+#dailyBtn.daily-btn.is-active {
+    background: rgba(0, 0, 0, 0.6);
+    border: 2px solid #d4af37;
+    color: #d4af37;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* 3. The HOVER state (The highlight you were missing) */
 #dailyBtn.is-active:hover {
-    background: rgba(0, 0, 0, 0.85) !important;
-    border-color: #ffea8a !important;
-    color: #ffea8a !important;
+    background: rgba(0, 0, 0, 0.85);
+    border-color: #ffea8a;
+    color: #ffea8a;
 }
 
 /* 3. Handle the tapped state for mobile feedback */
@@ -1488,6 +1485,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
