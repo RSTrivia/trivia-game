@@ -193,37 +193,32 @@ let isDailyMode = false;
 async function syncDailyButton() {
     if (!dailyBtn) return;
 
-    // 1. Check local storage FIRST (Instant logic - NO AWAIT)
     const localPlayedDate = localStorage.getItem('dailyPlayedDate');
     const hasCachedSession = localStorage.getItem('cached_xp') !== null;
 
-    // If they already played or aren't logged in, lock immediately.
+    // 1. If they played today OR aren't logged in, LOCK and EXIT.
     if (localPlayedDate === todayStr || !hasCachedSession) {
-        lockDailyButton();
-        // If they are a guest (no cached XP), we can stop entirely right now.
-        if (!hasCachedSession) return;
-    }
-
-    // 2. NOW we do the slow network checks
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (!session) {
         lockDailyButton();
         return; 
     }
 
-    const played = await hasUserCompletedDaily(session);
+    // 2. If we reach here, they ARE logged in and haven't played locally.
+    // We check the DB one last time to be sure.
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+        lockDailyButton();
+        return;
+    }
 
-    if (!played) {
-        // Only NOW do we switch it to the Gold state
-        dailyBtn.classList.add('is-active');
-        dailyBtn.classList.remove('disabled'); // Just in case
-        dailyBtn.style.pointerEvents = 'auto'; 
-        dailyBtn.style.opacity = '1';         
-    } else {
-        // Update local storage so the NEXT refresh is even faster
+    const played = await hasUserCompletedDaily(session);
+    if (played) {
         localStorage.setItem('dailyPlayedDate', todayStr);
         lockDailyButton();
+    } else {
+        // UNLOCK
+        dailyBtn.classList.add('is-active');
+        dailyBtn.style.opacity = '1';
+        dailyBtn.style.pointerEvents = 'auto';
     }
 }
 
@@ -231,9 +226,15 @@ let isRefreshing = false;
 
 // ====== INITIALIZATION ======
 async function init() {
+    // 1. Immediately sync the button based on CACHE only (Instant)
+    // This stops the flicker because the button starts in the 'locked' state 
+    // if they played, before any network request happens.
+    const localPlayedDate = localStorage.getItem('dailyPlayedDate');
+    const hasCachedSession = localStorage.getItem('cached_xp') !== null;
+    if (localPlayedDate === todayStr || !hasCachedSession) {
+        lockDailyButton();
+    }
   
-   // Ensure the daily button is correctly synced after the profile is loaded
-    syncDailyButton();
   // 1. Set up the listener FIRST
       supabase.auth.onAuthStateChange((event, session) => {
           console.log("Auth Event:", event);
@@ -492,6 +493,7 @@ async function handleAuthChange(event, session) {
         syncChannel = setupRealtimeSync(session.user.id);
     }
     updateLevelUI();
+    syncDailyButton();
 }
 
 async function hasUserCompletedDaily(session) {
@@ -573,7 +575,7 @@ async function fetchDailyStatus(userId) {
         }
     }
     // Always sync button states after checking DB
-    await syncDailyButton();
+    //await syncDailyButton();
     await updateShareButtonState();
 }
 
@@ -2043,6 +2045,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
