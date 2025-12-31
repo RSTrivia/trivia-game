@@ -854,6 +854,32 @@ input.input-field:-webkit-autofill:active {
     transition: background 0.5s ease, border-color 0.5s ease, color 0.5s ease, transform 0.2s ease !important;
   }
 
+  /* 1. Prevent icons from flickering between gold and grey on touch */
+  #shareBtn, #muteBtn, #logBtn {
+    -webkit-tap-highlight-color: transparent;
+    /* Disable transitions for filters on mobile to stop the "flash" */
+    transition: transform 0.1s ease !important; 
+  }
+
+  /* 2. Force consistent filter behavior */
+  #muteBtn:not(.is-muted) {
+    filter: sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85) !important;
+    opacity: 1 !important;
+  }
+
+  /* 3. Handle the active (pressed) state without filter jumping */
+  #muteBtn:active {
+    transform: scale(0.9) !important;
+    opacity: 0.7 !important;
+    /* Keep the filter exactly the same so only opacity/scale changes */
+  }
+
+  /* 4. Fix the positioning logic that was shifting icons left */
+  #shareBtn, #muteBtn, #logBtn {
+    left: 0 !important; 
+    margin-right: 8px !important;
+  }
+
   /* 4. Disable system gray boxes */
   * {
     -webkit-tap-highlight-color: transparent !important;
@@ -1499,6 +1525,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
