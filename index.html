@@ -9,6 +9,7 @@
         document.documentElement.style.setProperty("--bg-image", `url('${bg}')`);
       }
     })();
+
   </script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -43,10 +44,33 @@
     const helpBtn = document.getElementById('helpBtn');
     const helpModal = document.getElementById('help-modal');
     const closeHelpBtn = document.getElementById('closeHelpBtn');
+    const levelNum = document.getElementById('levelNumber');
+    const xpBracket = document.getElementById('xpBracket');
     
     const hasPlayedToday = localStorage.getItem('dailyPlayedDate') === todayStr;
     const hasScore = localStorage.getItem('lastDailyScore') !== null;
-    
+
+    // 1. Level & XP Calculation (Moved from bottom to here)
+    if (cachedLoggedIn) {
+      const cXp = parseInt(localStorage.getItem('cached_xp')) || 0;
+      let dLvl = 1;
+      if (cXp >= 100000) { dLvl = 99; }
+      else if (cXp > 0) {
+        for (let L = 1; L <= 99; L++) {
+          let threshold = Math.floor(Math.pow((L - 1) / 98, 3.1) * 100000);
+          if (cXp < threshold) {
+            dLvl = Math.max(1, L - 1);
+            break;
+          }
+        }
+      }
+      if (levelNum) levelNum.textContent = dLvl;
+      if (xpBracket) xpBracket.textContent = ` (${cXp.toLocaleString()} XP)`;
+    } else {
+      if (levelNum) levelNum.textContent = '1';
+      if (xpBracket) xpBracket.textContent = ' (0 XP)';
+    }
+
     // 1. Reset everything to locked first (Safety)
     if (dailyBtn) {
         dailyBtn.classList.remove('is-active');
@@ -221,35 +245,6 @@
  </div>
 
   <!-- Scripts -->
-  <script>
-  // This runs instantly, BEFORE the page finishes loading
-  (function() {
-    const cXp = parseInt(localStorage.getItem('cached_xp')) || 0;
-    const cLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
-    const cUser = localStorage.getItem('cachedUsername') || 'Guest';
-    
-    document.getElementById('usernameSpan').textContent = ' ' + cUser;
-
-    if (cLoggedIn) {
-      let dLvl = 1;
-      if (cXp >= 100000) { dLvl = 99; }
-      else if (cXp > 0) {
-        for (let L = 1; L <= 99; L++) {
-          let threshold = Math.floor(Math.pow((L - 1) / 98, 3.1) * 100000);
-          if (cXp < threshold) {
-            dLvl = Math.max(1, L - 1);
-            break;
-          }
-        }
-      }
-      document.getElementById('levelNumber').textContent = dLvl;
-      document.getElementById('xpBracket').textContent = '(' + cXp.toLocaleString() + ' XP)';
-    } else {
-      document.getElementById('levelNumber').textContent = '1';
-      document.getElementById('xpBracket').textContent = '(0 XP)';
-    }
-  })();
-</script>
   <script type="module" src="supabase.js"></script>
   <script type="module" src="app.js"></script>
   <script src="background.js" defer></script>
@@ -275,6 +270,7 @@
     
 </body>
 </html>
+
 
 
 
