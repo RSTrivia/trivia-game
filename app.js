@@ -412,7 +412,7 @@ async function handleAuthChange(event, session) {
         // and not just a slow connection.
         if (event === 'SIGNED_OUT') {
             username = 'Guest';
-          
+            currentProfileXp = 0;
             if (span) span.textContent = ' Guest';
             if (label) label.textContent = 'Log In';
             // Clear all session-specific UI and storage
@@ -420,26 +420,23 @@ async function handleAuthChange(event, session) {
             localStorage.removeItem('dailyPlayedDate');
             localStorage.removeItem('cached_xp');
             localStorage.removeItem('cachedUsername');
-            localStorage.removeItem('lastDailyMessage');
-            currentProfileXp = 0;
+            localStorage.removeItem('lastDailyMessage');   
+             [dailyBtn, shareBtn, logBtn].forEach(btn => {
+                      if (btn) {
+                          // Only update if it's NOT already disabled to prevent the filter flicker
+                            if (!btn.classList.contains('is-disabled')) {
+                                  btn.classList.add('is-disabled');
+                                  btn.style.opacity = '0.5';
+                                  btn.style.pointerEvents = 'none';
+                              }
+                            if(btn.tagName === 'A') btn.setAttribute('tabindex', '-1');
+                        }
+                    });
         }
         if (span) span.textContent = ' Guest';
         if (label) label.textContent = 'Log In';
-        // Replace the loop inside handleAuthChange with this:
-        [dailyBtn, shareBtn, logBtn].forEach(btn => {
-            if (btn) {
-                // Only update if it's NOT already disabled to prevent the filter flicker
-                  if (!btn.classList.contains('is-disabled')) {
-                        btn.classList.add('is-disabled');
-                        btn.style.opacity = '0.5';
-                        btn.style.pointerEvents = 'none';
-                    }
-                  if(btn.tagName === 'A') btn.setAttribute('tabindex', '-1');
-              }
-          });
-          
-          updateLevelUI()
-          return; // Stop here for guests
+        updateLevelUI()
+        return; // Stop here for guests
     }
     // 1. Immediately sync with local cache so we don't overwrite the HTML script's work
     username = localStorage.getItem('cachedUsername') || 'Player';
@@ -2041,6 +2038,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
