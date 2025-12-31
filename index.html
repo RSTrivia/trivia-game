@@ -18,20 +18,20 @@
     const hasScore = localStorage.getItem('lastDailyScore') !== null;
 
     if (loggedIn) {
-      let css = "";
-      // We use !important to ensure we override the 'is-disabled' class from style.css
-      css += "#logBtn.is-disabled { opacity: 1 !important; pointer-events: auto !important; filter: none !important; } ";
+      // Use "body #" to ensure higher CSS specificity
+      let css = `
+        body #logBtn { opacity: 1 !important; pointer-events: auto !important; filter: none !important; }
+      `;
       
       if (!played) {
-        css += "#dailyBtn.is-disabled { opacity: 1 !important; pointer-events: auto !important; filter: none !important; } ";
+        css += `body #dailyBtn { opacity: 1 !important; pointer-events: auto !important; filter: none !important; } `;
       }
       
       if (hasScore) {
-        css += "#shareBtn.is-disabled { opacity: 1 !important; pointer-events: auto !important; filter: none !important; } ";
+        css += `body #shareBtn { opacity: 1 !important; pointer-events: auto !important; filter: none !important; } `;
       }
 
       const style = document.createElement('style');
-      style.id = "force-gold-logic";
       style.innerHTML = css;
       document.head.appendChild(style);
     }
@@ -285,6 +285,7 @@
 </script>
 </body>
 </html>
+
 
 
 
