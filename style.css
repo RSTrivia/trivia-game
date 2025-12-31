@@ -452,7 +452,7 @@ h1 {
   }
 
   #shareBtn, #muteBtn, #logBtn {
-    left: -15px !important; /* Smaller shift for small screens */
+    left: -10px !important; /* Smaller shift for small screens change here*/
   }
 
   #userDisplay {
@@ -939,6 +939,7 @@ input.input-field:-webkit-autofill:active {
     padding-right: 0 !important;
     margin-bottom: 15px !important;
     width: 100%;
+    gap: 5px !important;
   }
   
 
@@ -1525,6 +1526,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
