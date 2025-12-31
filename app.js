@@ -231,6 +231,9 @@ let isRefreshing = false;
 
 // ====== INITIALIZATION ======
 async function init() {
+  
+   // Ensure the daily button is correctly synced after the profile is loaded
+    syncDailyButton();
   // 1. Set up the listener FIRST
       supabase.auth.onAuthStateChange((event, session) => {
           console.log("Auth Event:", event);
@@ -252,9 +255,6 @@ async function init() {
         // No session on this device, user is a guest
         await handleAuthChange('SIGNED_OUT', null);
     }
-
-   // Ensure the daily button is correctly synced after the profile is loaded
-    await syncDailyButton();
       
     // 2. Auth Button (Log In / Log Out)
     authBtn.onclick = async () => {
@@ -429,8 +429,9 @@ async function handleAuthChange(event, session) {
             localStorage.removeItem('dailyPlayedDate');
             localStorage.removeItem('cached_xp');
             localStorage.removeItem('cachedUsername');
-            localStorage.removeItem('lastDailyMessage');   
-             [dailyBtn, shareBtn, logBtn].forEach(btn => {
+            localStorage.removeItem('lastDailyMessage'); 
+            lockDailyButton();
+             [shareBtn, logBtn].forEach(btn => {
                       if (btn) {
                     btn.classList.add('is-disabled');
                     btn.style.opacity = '0.5';
@@ -440,7 +441,8 @@ async function handleAuthChange(event, session) {
         }
         if (span) span.textContent = ' Guest';
         if (label) label.textContent = 'Log In';
-        syncDailyButton();
+       // syncDailyButton();
+        lockDailyButton();
         updateLevelUI()
         return; // Stop here for guests
     }
@@ -2041,6 +2043,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
