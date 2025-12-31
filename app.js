@@ -200,14 +200,24 @@ async function syncDailyButton() {
         return; 
     }
 
+    // 2. CHECK LOCAL STORAGE FIRST (Instant - No Flicker)
+    const localPlayedDate = localStorage.getItem('dailyPlayedDate');
+    if (localPlayedDate === todayStr) {
+        lockDailyButton();
+        return;
+    }
+
     const played = await hasUserCompletedDaily(session);
 
     if (!played) {
+        // Only NOW do we switch it to the Gold state
         dailyBtn.classList.add('is-active');
         dailyBtn.classList.remove('disabled');
         dailyBtn.style.pointerEvents = 'auto'; // UNLOCK physically
         dailyBtn.style.opacity = '1';          // Ensure it looks clickable
     } else {
+      // Save to local storage so the NEXT refresh is instant
+      localStorage.setItem('dailyPlayedDate', todayStr);
       lockDailyButton();
     }
 }
@@ -2031,6 +2041,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
