@@ -191,43 +191,39 @@ let isDailyMode = false;
 // Replace your existing refreshAuthUI with this:
 
 async function syncDailyButton() {
-    const { data: { session } } = await supabase.auth.getSession();
     if (!dailyBtn) return;
 
-    // 1. Check local storage FIRST (Instant logic)
+    // 1. Check local storage FIRST (Instant logic - NO AWAIT)
     const localPlayedDate = localStorage.getItem('dailyPlayedDate');
     const hasCachedSession = localStorage.getItem('cached_xp') !== null;
 
-    // If they already played today OR aren't logged in, force-lock and EXIT.
+    // If they already played or aren't logged in, lock immediately.
     if (localPlayedDate === todayStr || !hasCachedSession) {
         lockDailyButton();
-        // If they are a guest, we stop here.
+        // If they are a guest (no cached XP), we can stop entirely right now.
         if (!hasCachedSession) return;
     }
-    // 2. CHECK LOCAL STORAGE FIRST (Instant - No Flicker)
-    const localPlayedDate = localStorage.getItem('dailyPlayedDate');
-    if (localPlayedDate === todayStr) {
-        lockDailyButton();
-        return;
-    }
-  
+
+    // 2. NOW we do the slow network checks
+    const { data: { session } } = await supabase.auth.getSession();
+    
     if (!session) {
         lockDailyButton();
         return; 
     }
-  
+
     const played = await hasUserCompletedDaily(session);
 
     if (!played) {
         // Only NOW do we switch it to the Gold state
         dailyBtn.classList.add('is-active');
-        dailyBtn.classList.remove('disabled');
-        dailyBtn.style.pointerEvents = 'auto'; // UNLOCK physically
-        dailyBtn.style.opacity = '1';          // Ensure it looks clickable
+        dailyBtn.classList.remove('disabled'); // Just in case
+        dailyBtn.style.pointerEvents = 'auto'; 
+        dailyBtn.style.opacity = '1';         
     } else {
-      // Save to local storage so the NEXT refresh is instant
-      localStorage.setItem('dailyPlayedDate', todayStr);
-      lockDailyButton();
+        // Update local storage so the NEXT refresh is even faster
+        localStorage.setItem('dailyPlayedDate', todayStr);
+        lockDailyButton();
     }
 }
 
@@ -2045,6 +2041,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
