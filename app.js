@@ -193,35 +193,37 @@ let isDailyMode = false;
 async function syncDailyButton() {
     if (!dailyBtn) return;
 
+    // --- STEP 1: FORCE RESET IMMEDIATELY ---
+    // This kills the flicker because it happens before any network 'await'
+    dailyBtn.classList.remove('is-active'); 
+    dailyBtn.style.opacity = '0.5';
+    dailyBtn.style.pointerEvents = 'none';
+
     const localPlayedDate = localStorage.getItem('dailyPlayedDate');
     const hasCachedSession = localStorage.getItem('cached_xp') !== null;
 
-    // 1. If they played locally TODAY, lock immediately and stop.
+    // 1. If they played locally TODAY, stay locked and stop.
     if (localPlayedDate === todayStr) {
-        lockDailyButton();
+        // lockDailyButton() is already effectively done by Step 1
         return; 
     }
 
-    // 2. If they aren't logged in, lock it (Daily is for users).
+    // 2. If they aren't logged in, stay locked.
     if (!hasCachedSession) {
-        lockDailyButton();
         return;
     }
 
-    // 3. IMPORTANT: While we check the DB, keep it locked or in a "loading" state
-    // so it doesn't flash gold.
+    // 3. Now we do the slow network checks
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-        lockDailyButton();
-        return;
-    }
+    if (!session) return;
 
     const played = await hasUserCompletedDaily(session);
+    
     if (played) {
         localStorage.setItem('dailyPlayedDate', todayStr);
-        lockDailyButton();
+        // Keep it locked
     } else {
-        // ONLY unlock if we are 100% sure they are logged in AND haven't played
+        // ONLY NOW, after all checks, do we turn it gold
         dailyBtn.classList.add('is-active');
         dailyBtn.style.opacity = '1';
         dailyBtn.style.pointerEvents = 'auto';
@@ -2051,6 +2053,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
