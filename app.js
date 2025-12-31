@@ -227,9 +227,9 @@ async function syncDailyButton() {
         // Keep it locked
     } else {
         // ONLY NOW, after all checks, do we turn it gold
-        //dailyBtn.classList.add('is-active');
-        //dailyBtn.style.opacity = '1';
-        //dailyBtn.style.pointerEvents = 'auto';
+        dailyBtn.classList.add('is-active');
+        dailyBtn.style.opacity = '1';
+        dailyBtn.style.pointerEvents = 'auto';
     }
 }
 
@@ -2065,6 +2065,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
