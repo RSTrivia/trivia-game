@@ -192,8 +192,10 @@
 
     // 2. Instant Button State Sync (Anti-Flicker)
     if (cachedLoggedIn) {
+      // Check if the Head Script already did the work
+      const isAlreadyActive = dailyBtn && dailyBtn.style.opacity === '1';
       // 2. ONLY unlock if they are logged in AND haven't played
-      if (!hasPlayedToday && dailyBtn) {
+      if (!hasPlayedToday && dailyBtn && !isAlreadyActive) {
           dailyBtn.classList.add('is-active');
           dailyBtn.classList.remove('is-disabled');
           dailyBtn.style.opacity = '1';
@@ -271,6 +273,7 @@
   </script>
 </body>
 </html>
+
 
 
 
