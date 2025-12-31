@@ -392,6 +392,7 @@ h1 {
   border-color: #555 !important;
   color: #888 !important;
   background: rgba(0, 0, 0, 0.4) !important;
+  transition: none !important;
 }
 
 /* 4. Hover Logic: Slight Glow */
@@ -827,7 +828,12 @@ input.input-field:-webkit-autofill:active {
     border-color: #d4af37 !important;
     color: #d4af37 !important;
   }
-
+  /* Prevent the 'Slow Glow' return specifically for buttons that are now grey */
+  #muteBtn.is-muted, 
+  #shareBtn.is-disabled, 
+  #dailyBtn.is-disabled {
+    transition: none !important;
+  }
   /* 2. THE PRESS (Finger Down) */
   .btn:not(.is-disabled):active, 
   .btn-small:not(.is-disabled):active,
@@ -1499,6 +1505,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
