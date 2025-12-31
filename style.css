@@ -1457,14 +1457,19 @@ input.input-field:-webkit-autofill:active {
     pointer-events: auto !important;
 }
 
-/* Mobile Center Fix */
+/* Mobile rop of the screen*/
 @media screen and (max-width: 480px) {
     #achievement-modal {
-        top: 50% !important;
-        transform: translate(-50%, -50%) scale(0.8) !important;
+        /* Anchor to top, override the 50% you had before */
+        top: 20px !important;
+        left: 50% !important;
+        /* Only translate X to center horizontally, keep scale at 0.8 for the pop-in */
+        transform: translateX(-50%) scale(0.8) !important;
     }
+    
     #achievement-modal.active {
-        transform: translate(-50%, -50%) scale(1) !important;
+        /* Maintain horizontal center while scaling to 1 */
+        transform: translateX(-50%) scale(1) !important;
     }
 }
 
@@ -1485,6 +1490,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
