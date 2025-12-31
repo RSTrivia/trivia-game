@@ -9,8 +9,41 @@
         document.documentElement.style.setProperty("--bg-image", `url('${bg}')`);
       }
     })();
-
   </script>
+  <script>
+  (function () {
+    // 1. Background Logic
+    const bg = localStorage.getItem("bg_current");
+    if (bg) {
+      document.documentElement.style.setProperty("--bg-image", `url('${bg}')`);
+    }
+
+    // 2. Anti-Flicker Logic (Pre-empting your body logic)
+    const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
+    const todayStr = new Date().toISOString().split('T')[0];
+    const hasPlayedToday = localStorage.getItem('dailyPlayedDate') === todayStr;
+    const hasScore = localStorage.getItem('lastDailyScore') !== null;
+
+    if (cachedLoggedIn) {
+      let css = "";
+      // Pre-unlock Daily
+      if (!hasPlayedToday) {
+        css += "#dailyBtn { opacity: 1 !important; pointer-events: auto !important; } ";
+      }
+      // Pre-unlock Log
+      css += "#logBtn { opacity: 1 !important; pointer-events: auto !important; } ";
+      
+      // Pre-unlock Share
+      if (hasScore) {
+        css += "#shareBtn { opacity: 1 !important; pointer-events: auto !important; } ";
+      }
+
+      const style = document.createElement('style');
+      style.innerHTML = css;
+      document.head.appendChild(style);
+    }
+  })();
+</script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>OSRS Trivia</title>
@@ -190,34 +223,25 @@
       if (xpBracket) xpBracket.textContent = ' (0 XP)';
     }
 
-    // 2. Instant Button State Sync (Anti-Flicker)
-    if (cachedLoggedIn) {
-      // Check if the Head Script already did the work
-      const isAlreadyActive = dailyBtn && dailyBtn.style.opacity === '1';
-      // 2. ONLY unlock if they are logged in AND haven't played
-      if (!hasPlayedToday && dailyBtn && !isAlreadyActive) {
-          dailyBtn.classList.add('is-active');
-          dailyBtn.classList.remove('is-disabled');
-          dailyBtn.style.opacity = '1';
-          dailyBtn.style.pointerEvents = 'auto';
-      }
-      [shareBtn, logBtn].forEach(btn => {
-        if (btn && (btn === logBtn || hasScore)) {
-          btn.classList.remove('is-disabled');
-          btn.style.opacity = '1';
-          btn.style.pointerEvents = 'auto';
-        }
-      });
-    } else {
-      // If not logged in, ensure these stay locked
-      [dailyBtn, shareBtn, logBtn].forEach(btn => {
+   // 2. State Sync 
+// We only run this IF the head script didn't already handle it 
+// (or to handle the 'Guest' logic)
+if (!cachedLoggedIn) {
+    [dailyBtn, shareBtn, logBtn].forEach(btn => {
         if (btn) {
-          btn.classList.add('is-disabled');
-          btn.style.opacity = '0.5';
-          btn.style.pointerEvents = 'none';
+            btn.classList.add('is-disabled');
+            btn.style.opacity = '0.5';
+            btn.style.pointerEvents = 'none';
         }
-      });
-    }
+    });
+} else {
+    // If logged in, only update classes, don't touch .style.opacity 
+    // unless necessary, to avoid fighting the <head> CSS.
+    if (!hasPlayedToday && dailyBtn) dailyBtn.classList.add('is-active');
+    
+    // Set the text
+    if (dailyBtn && hasPlayedToday) dailyBtn.textContent = 'Daily Done';
+}
     
     // 1. Instant Text/Emoji Sync
     if (span) span.textContent = ' ' + cachedUsername;
@@ -253,6 +277,7 @@
 </script>
 </body>
 </html>
+
 
 
 
