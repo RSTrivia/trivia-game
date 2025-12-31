@@ -959,38 +959,34 @@ input.input-field:-webkit-autofill:active {
 
 
 /* 1. The "Off" state - This is the default when the page loads */
-#dailyBtn {
+/* 1. The BASE state (Locked/Loading) */
+#dailyBtn.daily-btn {
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 14px 0 !important;
     width: 100%;
-    box-sizing: border-box;
-    pointer-events: none !important; /* Disable clicks immediately */
+    border-radius: 8px;
+    font-size: 1.1rem;
     
-    /* VISUAL LOCKED STATE */
-    filter: grayscale(1) brightness(0.7) !important;
-    opacity: 0.5 !important;
+    /* FORCE GRAY IMMEDIATELY */
+    background: rgba(0, 0, 0, 0.4) !important;
     border: 2px solid #444 !important;
     color: #666 !important;
-    background: rgba(0, 0, 0, 0.4) !important;
-    
-    text-align: center;
-    transition: none; /* No transition while loading to prevent "fading" into view */
+    filter: grayscale(1) !important;
+    opacity: 0.5 !important;
+    pointer-events: none !important;
 }
 
-/* 2. The "Gold" state - ONLY triggers when .is-active is added */
-#dailyBtn.is-active {
-    filter: none !important;
-    opacity: 1 !important;
-    pointer-events: auto !important;
-    
+/* 2. The ACTIVE state (Unlocked) */
+#dailyBtn.daily-btn.is-active {
     background: rgba(0, 0, 0, 0.6) !important;
     border: 2px solid #d4af37 !important;
     color: #d4af37 !important;
-    
+    filter: none !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
     cursor: pointer;
-    transition: 0.2s;
 }
 
 #dailyBtn.is-active:hover {
@@ -1490,6 +1486,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
