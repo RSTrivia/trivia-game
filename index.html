@@ -16,41 +16,37 @@
     const loggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
     const todayStr = new Date().toISOString().split('T')[0];
     const playedToday = localStorage.getItem('dailyPlayedDate') === todayStr;
-    
-    // Check if a score exists AND if it was earned today
     const scoreDate = localStorage.getItem('lastDailyScoreDate'); 
     const hasScoreToday = (localStorage.getItem('lastDailyScore') !== null && scoreDate === todayStr);
 
     if (loggedIn) {
-      let css = "";
-      const targets = [];
-      
-      // Collection Log is always available if logged in
-      targets.push("#logBtn"); 
-      
-      // Daily Mode available only if NOT played today
+      let targets = ["#logBtn"]; // Log is always gold if logged in
       if (!playedToday) targets.push("#dailyBtn");
-      
-      // Share Button available ONLY if you have a score FROM TODAY
       if (hasScoreToday) targets.push("#shareBtn");
 
-     if (targets.length > 0) {
-        // We target the IDs specifically to override the "disabled" grayscale
-        const selector = targets.join(", "); 
-        css = `
-          ${selector} { 
-            opacity: 1 !important; 
-            pointer-events: auto !important; 
-            filter: sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85) !important;
-            color: #d4af37 !important;
-            border-color: #d4af37 !important;
-          }
-        `;
-      }
+      // Create the style to force Gold
+      const selector = targets.join(", ");
+      const css = `
+        ${selector} { 
+          opacity: 1 !important; 
+          pointer-events: auto !important; 
+          filter: sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85) !important;
+          color: #d4af37 !important;
+          border-color: #d4af37 !important;
+        }
+      `;
 
       const style = document.createElement('style');
       style.innerHTML = css;
       document.head.appendChild(style);
+
+      // Crucial: Remove the 'is-disabled' class so the CSS grayscale stops fighting
+      document.addEventListener('DOMContentLoaded', () => {
+        targets.forEach(id => {
+          const el = document.querySelector(id);
+          if (el) el.classList.remove('is-disabled');
+        });
+      });
     }
   })();
 </script>
@@ -302,6 +298,7 @@
 </script>
 </body>
 </html>
+
 
 
 
