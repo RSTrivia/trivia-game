@@ -219,18 +219,20 @@ let isRefreshing = false;
 
 // ====== INITIALIZATION ======
 async function init() {
-  // 2. Listen for changes (like logging out)
-    supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT') {
-              // Only redirect or wipe if the user EXPLICITLY signed out 
-              // or if the session is truly gone.
-              handleAuthChange('SIGNED_OUT', null);
-          } else if (event === 'TOKEN_REFRESHED') {
-              console.log("Token refreshed successfully");
-          } else if (session) {
+  // 1. Set up the listener FIRST
+      supabase.auth.onAuthStateChange((event, session) => {
+          console.log("Auth Event:", event);
+          
+          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
               handleAuthChange(event, session);
+          } 
+          
+          // ONLY wipe data if the user explicitly clicks LOG OUT 
+          // or if the session is null AND it's not the initial load.
+          if (event === 'SIGNED_OUT') {
+              handleAuthChange('SIGNED_OUT', null);
           }
-      });
+    });
   
     // 1. Get the current session
     const { data: { session }, error } = await supabase.auth.getSession();
@@ -406,30 +408,38 @@ async function handleAuthChange(event, session) {
 
     // 1. Logged Out State
     if (!session) {
-        username = 'Guest';
-        currentProfileXp = 0; // Reset this for guests!
+        // IMPORTANT: Only wipe if we are CERTAIN this is an intentional logout
+        // and not just a slow connection.
+        if (event === 'SIGNED_OUT') {
+            username = 'Guest';
+          
+            if (span) span.textContent = ' Guest';
+            if (label) label.textContent = 'Log In';
+            // Clear all session-specific UI and storage
+            localStorage.removeItem('lastDailyScore');
+            localStorage.removeItem('dailyPlayedDate');
+            localStorage.removeItem('cached_xp');
+            localStorage.removeItem('cachedUsername');
+            localStorage.removeItem('lastDailyMessage');
+            currentProfileXp = 0;
+        }
         if (span) span.textContent = ' Guest';
         if (label) label.textContent = 'Log In';
-
-        // Clear all session-specific UI and storage
-        localStorage.removeItem('lastDailyScore');
-        localStorage.removeItem('dailyPlayedDate');
-        
-       // Replace the loop inside handleAuthChange with this:
+        // Replace the loop inside handleAuthChange with this:
         [dailyBtn, shareBtn, logBtn].forEach(btn => {
             if (btn) {
                 // Only update if it's NOT already disabled to prevent the filter flicker
-                if (!btn.classList.contains('is-disabled')) {
-                    btn.classList.add('is-disabled');
-                    btn.style.opacity = '0.5';
-                    btn.style.pointerEvents = 'none';
-                }
-                if(btn.tagName === 'A') btn.setAttribute('tabindex', '-1');
-            }
-        });
-      
-        updateLevelUI()
-        return; // Stop here for guests
+                  if (!btn.classList.contains('is-disabled')) {
+                        btn.classList.add('is-disabled');
+                        btn.style.opacity = '0.5';
+                        btn.style.pointerEvents = 'none';
+                    }
+                  if(btn.tagName === 'A') btn.setAttribute('tabindex', '-1');
+              }
+          });
+          
+          updateLevelUI()
+          return; // Stop here for guests
     }
     // 1. Immediately sync with local cache so we don't overwrite the HTML script's work
     username = localStorage.getItem('cachedUsername') || 'Player';
@@ -437,6 +447,7 @@ async function handleAuthChange(event, session) {
     
     // 2. Update the UI with the cached values right now
     if (span) span.textContent = ' ' + username;
+    if (label) label.textContent = 'Log Out';
     updateLevelUI();
   
     // 2. Logged In State
@@ -447,10 +458,24 @@ async function handleAuthChange(event, session) {
         .eq('id', session.user.id)
         .single();
 
-    username = profile?.username || 'Player';
-    currentProfileXp = profile?.xp || 0; // Set the global variable
-    if (span) span.textContent = ' ' + username;
-    if (label) label.textContent = 'Log Out';
+    if (profile) {
+        username = profile.username || 'Player';
+        currentProfileXp = profile.xp || 0;
+        
+        // Save to cache
+        localStorage.setItem('cachedUsername', username);
+        localStorage.setItem('cached_xp', currentProfileXp);
+        
+        // UI Update
+        if (span) span.textContent = ' ' + username;
+        
+        // Handle Achievement: Best Daily Streak
+        // This ensures your streak is kept in the Supabase profile as requested
+        if (profile.best_daily_streak) {
+            localStorage.setItem('best_streak', profile.best_daily_streak);
+        }
+    }
+   
 
   // ENABLE the Log Button for users
     if (logBtn) {
@@ -2016,6 +2041,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
