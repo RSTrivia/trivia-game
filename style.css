@@ -973,8 +973,8 @@ input.input-field:-webkit-autofill:active {
     background: rgba(0, 0, 0, 0.4) !important;
     border: 2px solid #444 !important;
     color: #666 !important;
-    filter: grayscale(1) !important;
-    opacity: 0.5 !important;
+    /*filter: grayscale(1) !important;*/
+    /*opacity: 0.5 !important;*/
     pointer-events: none !important;
 }
 
@@ -1486,6 +1486,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
