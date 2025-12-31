@@ -194,19 +194,28 @@ async function syncDailyButton() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!dailyBtn) return;
 
-    // 1. Handle Guests (Force Lock)
-    if (!session) {
-        lockDailyButton();
-        return; 
-    }
+    // 1. Check local storage FIRST (Instant logic)
+    const localPlayedDate = localStorage.getItem('dailyPlayedDate');
+    const hasCachedSession = localStorage.getItem('cached_xp') !== null;
 
+    // If they already played today OR aren't logged in, force-lock and EXIT.
+    if (localPlayedDate === todayStr || !hasCachedSession) {
+        lockDailyButton();
+        // If they are a guest, we stop here.
+        if (!hasCachedSession) return;
+    }
     // 2. CHECK LOCAL STORAGE FIRST (Instant - No Flicker)
     const localPlayedDate = localStorage.getItem('dailyPlayedDate');
     if (localPlayedDate === todayStr) {
         lockDailyButton();
         return;
     }
-
+  
+    if (!session) {
+        lockDailyButton();
+        return; 
+    }
+  
     const played = await hasUserCompletedDaily(session);
 
     if (!played) {
@@ -573,7 +582,7 @@ async function fetchDailyStatus(userId) {
 
 function lockDailyButton() {
     if (!dailyBtn) return;
-    dailyBtn.classList.add('disabled');
+    //dailyBtn.classList.add('disabled');
     dailyBtn.classList.remove('is-active');
     dailyBtn.style.opacity = '0.5';
     dailyBtn.style.pointerEvents = 'none'; // Makes it ignore all clicks/touches
@@ -2036,6 +2045,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
