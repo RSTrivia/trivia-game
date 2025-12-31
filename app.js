@@ -467,11 +467,6 @@ async function handleAuthChange(event, session) {
         // UI Update
         if (span) span.textContent = ' ' + username;
         
-        // Handle Achievement: Best Daily Streak
-        // This ensures your streak is kept in the Supabase profile as requested
-        if (profile.best_daily_streak) {
-            localStorage.setItem('best_streak', profile.best_daily_streak);
-        }
     }
    
 
@@ -2041,6 +2036,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
