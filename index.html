@@ -20,19 +20,17 @@
     const hasScoreToday = (localStorage.getItem('lastDailyScore') !== null && scoreDate === todayStr);
 
     if (loggedIn) {
-      let targets = ["#logBtn"]; // Log is always gold if logged in
+      let targets = ["#logBtn"]; 
       if (!playedToday) targets.push("#dailyBtn");
       if (hasScoreToday) targets.push("#shareBtn");
 
-      // Create the style to force Gold
+      // We only force visibility and pointer events here.
+      // The COLOR and HOVER will be handled by the CSS file.
       const selector = targets.join(", ");
       const css = `
         ${selector} { 
           opacity: 1 !important; 
           pointer-events: auto !important; 
-          filter: sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85) !important;
-          color: #d4af37 !important;
-          border-color: #d4af37 !important;
         }
       `;
 
@@ -40,11 +38,14 @@
       style.innerHTML = css;
       document.head.appendChild(style);
 
-      // Crucial: Remove the 'is-disabled' class so the CSS grayscale stops fighting
       document.addEventListener('DOMContentLoaded', () => {
         targets.forEach(id => {
           const el = document.querySelector(id);
-          if (el) el.classList.remove('is-disabled');
+          // Adding 'is-active' ensures it gets the gold theme from your CSS
+          if (el) {
+            el.classList.remove('is-disabled');
+            if (id === "#dailyBtn") el.classList.add('is-active');
+          }
         });
       });
     }
@@ -298,6 +299,7 @@
 </script>
 </body>
 </html>
+
 
 
 
