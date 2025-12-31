@@ -219,19 +219,7 @@ let isRefreshing = false;
 
 // ====== INITIALIZATION ======
 async function init() {
- 
-    // 1. Get the current session
-    const { data: { session }, error } = await supabase.auth.getSession();
-
-    if (session) {
-        // User is logged in on this device!
-        handleAuthChange('INITIAL_LOAD', session);
-    } else {
-        // No session on this device, user is a guest
-        handleAuthChange('SIGNED_OUT', null);
-    }
-
-    // 2. Listen for changes (like logging out)
+  // 2. Listen for changes (like logging out)
     supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT') {
               // Only redirect or wipe if the user EXPLICITLY signed out 
@@ -243,6 +231,19 @@ async function init() {
               handleAuthChange(event, session);
           }
       });
+  
+    // 1. Get the current session
+    const { data: { session }, error } = await supabase.auth.getSession();
+
+    if (session) {
+        // User is logged in on this device!
+        handleAuthChange('INITIAL_LOAD', session);
+    } else {
+        // No session on this device, user is a guest
+        handleAuthChange('SIGNED_OUT', null);
+    }
+
+   
       
     // 2. Auth Button (Log In / Log Out)
     authBtn.onclick = async () => {
@@ -2015,6 +2016,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
