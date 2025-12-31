@@ -11,24 +11,31 @@
     })();
   </script>
   
-  <script>
+ <script>
   (function () {
     const loggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
     const played = localStorage.getItem('dailyPlayedDate') === new Date().toISOString().split('T')[0];
     const hasScore = localStorage.getItem('lastDailyScore') !== null;
 
     if (loggedIn) {
-      // "html body #" is higher specificity than just "#"
-      let css = `
-        html body #logBtn.is-disabled { opacity: 1 !important; pointer-events: auto !important; filter: none !important; }
-      `;
+      let css = "";
       
-      if (!played) {
-        css += `html body #dailyBtn.is-disabled { opacity: 1 !important; pointer-events: auto !important; filter: none !important; } `;
-      }
-      
-      if (hasScore) {
-        css += `html body #shareBtn.is-disabled { opacity: 1 !important; pointer-events: auto !important; filter: none !important; } `;
+      // Selectors for buttons we want to force GOLD
+      const targets = [];
+      targets.push("#logBtn");
+      if (!played) targets.push("#dailyBtn");
+      if (hasScore) targets.push("#shareBtn");
+
+      if (targets.length > 0) {
+        // We target the ID with body to ensure highest specificity
+        const selector = targets.map(id => `body ${id}.is-disabled`).join(", ");
+        css = `
+          ${selector} { 
+            opacity: 1 !important; 
+            pointer-events: auto !important; 
+            filter: sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85) !important; 
+          }
+        `;
       }
 
       const style = document.createElement('style');
@@ -285,6 +292,7 @@
 </script>
 </body>
 </html>
+
 
 
 
