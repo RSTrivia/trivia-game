@@ -448,7 +448,7 @@ h1 {
   #user-controls {
     justify-content: center;
     width: 100%;
-    gap: 5px; /* Tighten the icon gap */
+    gap: 3px; /* Tighten the icon gap */
   }
 
   #shareBtn, #muteBtn, #logBtn {
@@ -1525,6 +1525,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
