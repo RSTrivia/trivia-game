@@ -185,7 +185,7 @@
         // STATE 1: ACTIVE (Gold)
         dailyBtn.classList.remove('is-disabled');
         dailyBtn.classList.add('is-active');
-        dailyBtn.textContent = "Daily Mode";
+        //dailyBtn.textContent = "Daily Mode";
         dailyBtn.style.opacity = "1";
         dailyBtn.style.pointerEvents = "auto";
       } 
@@ -193,7 +193,7 @@
         // STATE 2: DAILY DONE (Grey - exactly like Logged Out)
         dailyBtn.classList.add('is-disabled');
         dailyBtn.classList.remove('is-active'); // Remove gold!
-        dailyBtn.textContent = "Daily Done";
+        //dailyBtn.textContent = "Daily Mode";
         dailyBtn.style.opacity = "0.5";
         dailyBtn.style.pointerEvents = "none";
       } 
@@ -201,7 +201,7 @@
         // STATE 3: LOGGED OUT (Grey)
         dailyBtn.classList.add('is-disabled');
         dailyBtn.classList.remove('is-active');
-        dailyBtn.textContent = "Daily Mode";
+        //dailyBtn.textContent = "Daily Mode";
         dailyBtn.style.opacity = "0.5";
         dailyBtn.style.pointerEvents = "none";
       }
@@ -253,6 +253,7 @@
 </script>
 </body>
 </html>
+
 
 
 
