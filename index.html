@@ -11,7 +11,7 @@
     })();
   </script>
   
-    <script>
+  <script>
   (function () {
     const loggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
     const played = localStorage.getItem('dailyPlayedDate') === new Date().toISOString().split('T')[0];
@@ -19,12 +19,19 @@
 
     if (loggedIn) {
       let css = "";
-      // Force Log and Daily (if not played) to be gold immediately
-      css += "#logBtn { opacity: 1 !important; pointer-events: auto !important; } ";
-      if (!played) css += "#dailyBtn { opacity: 1 !important; pointer-events: auto !important; } ";
-      if (hasScore) css += "#shareBtn { opacity: 1 !important; pointer-events: auto !important; } ";
+      // We use !important to ensure we override the 'is-disabled' class from style.css
+      css += "#logBtn.is-disabled { opacity: 1 !important; pointer-events: auto !important; filter: none !important; } ";
+      
+      if (!played) {
+        css += "#dailyBtn.is-disabled { opacity: 1 !important; pointer-events: auto !important; filter: none !important; } ";
+      }
+      
+      if (hasScore) {
+        css += "#shareBtn.is-disabled { opacity: 1 !important; pointer-events: auto !important; filter: none !important; } ";
+      }
 
       const style = document.createElement('style');
+      style.id = "force-gold-logic";
       style.innerHTML = css;
       document.head.appendChild(style);
     }
@@ -58,13 +65,13 @@
     </button>
       <h1 id="main-title">OSRS Trivia</h1>
 
-      <!-- First row: User + Mute   -->
+      <!-- First row: User + Mute  style="opacity: 0.5; pointer-events: none;-->
       <div id="user-controls" class="row">
         <div class="icon-group">
-        <button id="shareBtn" class="is-disabled" type="button" style="opacity: 0.5; pointer-events: none;"> 
+        <button id="shareBtn" class="is-disabled" type="button"> 
           <span id="shareIcon">🔗</span>
         </button>
-        <a href="coll-log.html" id="logBtn" class="is-disabled" style="opacity: 0.5; pointer-events: none;">
+        <a href="coll-log.html" id="logBtn" class="is-disabled">
             <span id="logIcon">🏆</span>
         </a>
         <button id="muteBtn" type="button">
@@ -99,12 +106,12 @@
 
       <!-- Start Screen -->
       <div id="start-screen">
-        <!-- Second row: Start button -->
+        <!-- Second row: Start button  style="opacity: 0.5; pointer-events: none;"-->
         <div class="row">
           <button id="startBtn" class="btn">Normal Mode</button>
         </div>
        <div class="row">
-        <button id="dailyBtn" class="daily-btn is-disabled" style="opacity: 0.5; pointer-events: none;">Daily Mode</button>
+        <button id="dailyBtn" class="daily-btn is-disabled">Daily Mode</button>
       </div>
         <!-- Third row: Login + Leaderboard -->
         <div class="row">
@@ -278,6 +285,7 @@
 </script>
 </body>
 </html>
+
 
 
 
