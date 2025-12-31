@@ -385,7 +385,7 @@ h1 {
 #muteBtn.is-muted,
 #shareBtn.is-disabled, 
 #logBtn.is-disabled {
-  filter: grayscale(1) brightness(0.5) !important;
+  filter: grayscale(1) brightness(0.5);
   opacity: 0.5;
 }
 
@@ -1486,6 +1486,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
