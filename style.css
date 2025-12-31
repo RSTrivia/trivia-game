@@ -391,6 +391,7 @@ h1 {
   /* Add these two lines: */
   border-color: #555 !important;
   color: #888 !important;
+  background: rgba(0, 0, 0, 0.4) !important;
 }
 
 /* 4. Hover Logic: Slight Glow */
@@ -993,11 +994,11 @@ input.input-field:-webkit-autofill:active {
 
 /* 2. The ACTIVE state (Logged in & Ready) */
 #dailyBtn.daily-btn.is-active {
-    background: rgba(0, 0, 0, 0.6);
-    border: 2px solid #d4af37;
-    color: #d4af37;
-    opacity: 1;
-    pointer-events: auto;
+    background: rgba(0, 0, 0, 0.6) !important;
+    border: 2px solid #d4af37 !important;
+    color: #d4af37 !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
 }
 
 /* 3. The HOVER state (The highlight you were missing) */
@@ -1498,6 +1499,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
