@@ -18,17 +18,17 @@
     const hasScore = localStorage.getItem('lastDailyScore') !== null;
 
     if (loggedIn) {
-      // Use "body #" to ensure higher CSS specificity
+      // "html body #" is higher specificity than just "#"
       let css = `
-        body #logBtn { opacity: 1 !important; pointer-events: auto !important; filter: none !important; }
+        html body #logBtn.is-disabled { opacity: 1 !important; pointer-events: auto !important; filter: none !important; }
       `;
       
       if (!played) {
-        css += `body #dailyBtn { opacity: 1 !important; pointer-events: auto !important; filter: none !important; } `;
+        css += `html body #dailyBtn.is-disabled { opacity: 1 !important; pointer-events: auto !important; filter: none !important; } `;
       }
       
       if (hasScore) {
-        css += `body #shareBtn { opacity: 1 !important; pointer-events: auto !important; filter: none !important; } `;
+        css += `html body #shareBtn.is-disabled { opacity: 1 !important; pointer-events: auto !important; filter: none !important; } `;
       }
 
       const style = document.createElement('style');
@@ -285,6 +285,7 @@
 </script>
 </body>
 </html>
+
 
 
 
