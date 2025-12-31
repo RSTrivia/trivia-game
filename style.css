@@ -828,12 +828,7 @@ input.input-field:-webkit-autofill:active {
     border-color: #d4af37 !important;
     color: #d4af37 !important;
   }
-  /* Prevent the 'Slow Glow' return specifically for buttons that are now grey */
-  #muteBtn.is-muted, 
-  #shareBtn.is-disabled, 
-  #dailyBtn.is-disabled {
-    transition: none !important;
-  }
+  
   /* 2. THE PRESS (Finger Down) */
   .btn:not(.is-disabled):active, 
   .btn-small:not(.is-disabled):active,
@@ -854,12 +849,19 @@ input.input-field:-webkit-autofill:active {
     border-color: #555 !important;
   }
   
-  /* 3. THE RELEASE (Finger Up - The "Slow Glow" Return) */
+  /* 3. THE RELEASE (Finger Up) */
   .btn, .btn-small, #dailyBtn.is-active {
-    /* We use 0.5s here so you can actually see the gold highlight fade away */
     transition: background 0.5s ease, border-color 0.5s ease, color 0.5s ease, transform 0.2s ease !important;
   }
-
+/* >>> ADD THIS SPECIFIC FIX HERE <<< */
+  /* This kills the "lightning flash" when turning the mic off or logging out */
+  #muteBtn.is-muted, 
+  #shareBtn.is-disabled, 
+  #logBtn.is-disabled,
+  #dailyBtn:not(.is-active) {
+    transition: none !important;
+    transform: none !important;
+  }
   /* 4. Disable system gray boxes */
   * {
     -webkit-tap-highlight-color: transparent !important;
@@ -1505,6 +1507,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
