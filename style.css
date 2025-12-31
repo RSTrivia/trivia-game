@@ -971,9 +971,9 @@ input.input-field:-webkit-autofill:active {
     font-size: 1.1rem;
     
     /* FORCE GRAY IMMEDIATELY */
-    background: rgba(0, 0, 0, 0.4) !important;
-    border: 2px solid #444 !important;
-    color: #666 !important;
+    background: rgba(0, 0, 0, 0.4);
+    border: 2px solid #444;
+    color: #666;
     /*filter: grayscale(1) !important;*/
     /*opacity: 0.5 !important;*/
     pointer-events: none !important;
@@ -990,8 +990,9 @@ input.input-field:-webkit-autofill:active {
     cursor: pointer;
 }
 
+/* Ensure hover matches other gold buttons */
 #dailyBtn.is-active:hover {
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 0.85) !important;
     border-color: #ffea8a !important;
     color: #ffea8a !important;
 }
@@ -1487,6 +1488,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
