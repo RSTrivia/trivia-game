@@ -44,8 +44,16 @@
     const helpModal = document.getElementById('help-modal');
     const closeHelpBtn = document.getElementById('closeHelpBtn');
     
-    const hasPlayed = localStorage.getItem('dailyPlayedDate') === todayStr;
+    const hasPlayedToday = localStorage.getItem('dailyPlayedDate') === todayStr;
     const hasScore = localStorage.getItem('lastDailyScore') !== null;
+    
+    // 1. Reset everything to locked first (Safety)
+    if (dailyBtn) {
+        dailyBtn.classList.remove('is-active');
+        dailyBtn.classList.add('is-disabled');
+        dailyBtn.style.opacity = '0.5';
+        dailyBtn.style.pointerEvents = 'none';
+    }
     
     // 1. Instant Text/Emoji Sync
     if (span) span.textContent = ' ' + cachedUsername;
@@ -56,11 +64,15 @@
       if (cachedMuted) muteBtn.classList.add('is-muted');
     }
 
+    
     // 2. Instant Button State Sync (Anti-Flicker)
     if (cachedLoggedIn) {
-      if (!hasPlayed && dailyBtn) {
-        dailyBtn.classList.add('is-active');
-        dailyBtn.classList.remove('disabled');
+      // 2. ONLY unlock if they are logged in AND haven't played
+      if (!hasPlayedToday && dailyBtn) {
+          dailyBtn.classList.add('is-active');
+          dailyBtn.classList.remove('is-disabled');
+          dailyBtn.style.opacity = '1';
+          dailyBtn.style.pointerEvents = 'auto';
       }
       [shareBtn, logBtn].forEach(btn => {
         if (btn && (btn === logBtn || hasScore)) {
@@ -70,6 +82,7 @@
         }
       });
     } else {
+      // If not logged in, ensure these stay locked
       [dailyBtn, shareBtn, logBtn].forEach(btn => {
         if (btn) {
           btn.classList.add('is-disabled');
@@ -262,6 +275,7 @@
     
 </body>
 </html>
+
 
 
 
