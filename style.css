@@ -388,6 +388,9 @@ h1 {
 #dailyBtn.is-disabled {
   filter: grayscale(1) brightness(0.5) !important;;
   opacity: 0.5 !important;
+  /* Add these two lines: */
+  border-color: #555 !important;
+  color: #888 !important;
 }
 
 /* 4. Hover Logic: Slight Glow */
@@ -816,24 +819,34 @@ input.input-field:-webkit-autofill:active {
 /* ====== MOBILE NO-FLICKER BUTTONS ====== */
 @media (pointer: coarse) {
   /* 1. Reset all hover/active for the big .btn and .btn-small */
-  .btn:hover, .btn-small:hover, 
-  #dailyBtn.is-active:hover {
+ .btn:not(.is-disabled):hover, 
+  .btn-small:not(.is-disabled):hover,
+  #dailyBtn.is-active:not(.is-disabled):hover {
     background: rgba(0, 0, 0, 0.6) !important;
     border-color: #d4af37 !important;
     color: #d4af37 !important;
   }
 
   /* 2. THE PRESS (Finger Down) */
-  .btn:active, .btn-small:active,
-  .btn.tapped, .btn-small.tapped,
-  #dailyBtn.is-active:active {
+  .btn:not(.is-disabled):active, 
+  .btn-small:not(.is-disabled):active,
+  .btn.tapped:not(.is-disabled), 
+  .btn-small.tapped:not(.is-disabled),
+  #dailyBtn.is-active:not(.is-disabled):active {
     background-color: #000000 !important;
     border-color: #ffea8a !important;
     color: #ffea8a !important;
     transition: 0s !important; /* Force instant highlight */
     transform: scale(0.97);     /* Physical "click" feel */
   }
-
+  
+/* Ensure disabled buttons on mobile stay flat and grey */
+  .is-disabled {
+    transform: none !important;
+    background: rgba(20, 20, 20, 0.5) !important;
+    border-color: #555 !important;
+  }
+  
   /* 3. THE RELEASE (Finger Up - The "Slow Glow" Return) */
   .btn, .btn-small, #dailyBtn.is-active {
     /* We use 0.5s here so you can actually see the gold highlight fade away */
@@ -1485,6 +1498,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
