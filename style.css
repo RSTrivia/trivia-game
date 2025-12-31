@@ -1425,11 +1425,60 @@ input.input-field:-webkit-autofill:active {
     scrollbar-color: #c28f0c rgba(30, 30, 30, 0.8);
 }
 
-/* 3. Mobile Specific Override */
-/* This forces the scrollbar to stay "gold" even when the mobile OS tries to hide/style it */
+
+
+
+
+
+
+*::-webkit-scrollbar {
+  width: 6px !important;  /* Thinner for mobile aesthetics */
+  height: 6px !important;
+  display: block !important; /* Forces it to exist */
+}
+
+/* 2. The Track (The "Gutter") */
+*::-webkit-scrollbar-track {
+  background: rgba(15, 15, 15, 0.9) !important;
+  border-radius: 10px !important;
+}
+
+/* 3. The Thumb (The Gold Bar) */
+*::-webkit-scrollbar-thumb {
+  background: #c28f0c !important; /* Your base gold */
+  background-image: linear-gradient(180deg, #d4af37 0%, #c28f0c 100%) !important;
+  border: 1px solid rgba(0, 0, 0, 0.5) !important;
+  border-radius: 10px !important;
+}
+
+/* 4. Active state for mobile touches */
+*::-webkit-scrollbar-thumb:active {
+  background: #ffdd44 !important;
+}
+
+/* 5. Firefox Support */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #c28f0c rgba(15, 15, 15, 0.9);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+/* 6. SPECIAL MOBILE OVERRIDE */
+/* Some mobile browsers hide scrollbars by default. This forces them to be visible */
 @media (max-width: 480px) {
-  ::-webkit-scrollbar-thumb {
-    background: #d4af37; /* Solid gold for better mobile visibility */
+  .leaderboard-list, #achievementList, .modal-content {
+    /* Prevents iOS from hiding the custom bar */
+    -webkit-overflow-scrolling: touch; 
   }
 }
 
@@ -1498,6 +1547,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
