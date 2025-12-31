@@ -195,23 +195,23 @@ async function syncDailyButton() {
 
     // --- STEP 1: FORCE RESET IMMEDIATELY ---
     // This kills the flicker because it happens before any network 'await'
-    dailyBtn.classList.remove('is-active'); 
-    dailyBtn.style.opacity = '0.5';
-    dailyBtn.style.pointerEvents = 'none';
+    //dailyBtn.classList.remove('is-active'); 
+    //dailyBtn.style.opacity = '0.5';
+    //dailyBtn.style.pointerEvents = 'none';
 
-    const localPlayedDate = localStorage.getItem('dailyPlayedDate');
-    const hasCachedSession = localStorage.getItem('cached_xp') !== null;
+    //const localPlayedDate = localStorage.getItem('dailyPlayedDate');
+    //const hasCachedSession = localStorage.getItem('cached_xp') !== null;
 
     // 1. If they played locally TODAY, stay locked and stop.
-    if (localPlayedDate === todayStr) {
-        // lockDailyButton() is already effectively done by Step 1
-        return; 
-    }
+    //if (localPlayedDate === todayStr) {
+        //// lockDailyButton() is already effectively done by Step 1
+        //return; 
+  //}
 
     // 2. If they aren't logged in, stay locked.
-    if (!hasCachedSession) {
-        return;
-    }
+    //if (!hasCachedSession) {
+        //return;
+    //}
 
     // 3. Now we do the slow network checks
     const { data: { session } } = await supabase.auth.getSession();
@@ -221,12 +221,15 @@ async function syncDailyButton() {
     
     if (played) {
         localStorage.setItem('dailyPlayedDate', todayStr);
+        dailyBtn.style.opacity = '0.5';
+        dailyBtn.style.pointerEvents = 'none';
+        dailyBtn.textContent = "Daily Done";
         // Keep it locked
     } else {
         // ONLY NOW, after all checks, do we turn it gold
-        dailyBtn.classList.add('is-active');
-        dailyBtn.style.opacity = '1';
-        dailyBtn.style.pointerEvents = 'auto';
+        //dailyBtn.classList.add('is-active');
+        //dailyBtn.style.opacity = '1';
+        //dailyBtn.style.pointerEvents = 'auto';
     }
 }
 
@@ -2053,6 +2056,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
