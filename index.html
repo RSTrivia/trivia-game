@@ -10,40 +10,7 @@
       }
     })();
   </script>
-  <script>
-  (function () {
-    // 1. Background Logic
-    const bg = localStorage.getItem("bg_current");
-    if (bg) {
-      document.documentElement.style.setProperty("--bg-image", `url('${bg}')`);
-    }
-
-    // 2. Anti-Flicker Logic (Pre-empting your body logic)
-    const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
-    const todayStr = new Date().toISOString().split('T')[0];
-    const hasPlayedToday = localStorage.getItem('dailyPlayedDate') === todayStr;
-    const hasScore = localStorage.getItem('lastDailyScore') !== null;
-
-    if (cachedLoggedIn) {
-      let css = "";
-      // Pre-unlock Daily
-      if (!hasPlayedToday) {
-        css += "#dailyBtn { opacity: 1 !important; pointer-events: auto !important; } ";
-      }
-      // Pre-unlock Log
-      css += "#logBtn { opacity: 1 !important; pointer-events: auto !important; } ";
-      
-      // Pre-unlock Share
-      if (hasScore) {
-        css += "#shareBtn { opacity: 1 !important; pointer-events: auto !important; } ";
-      }
-
-      const style = document.createElement('style');
-      style.innerHTML = css;
-      document.head.appendChild(style);
-    }
-  })();
-</script>
+ 
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>OSRS Trivia</title>
@@ -290,6 +257,7 @@
 </script>
 </body>
 </html>
+
 
 
 
