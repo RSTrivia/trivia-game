@@ -192,7 +192,13 @@ let isDailyMode = false;
 
 async function syncDailyButton() {
     const { data: { session } } = await supabase.auth.getSession();
-    if (!dailyBtn || !session) return; // Do nothing if guest, handleAuthChange handles guests
+    if (!dailyBtn) return;
+
+    // 1. Handle Guests (Force Lock)
+    if (!session) {
+        lockDailyButton();
+        return; 
+    }
 
     const played = await hasUserCompletedDaily(session);
 
@@ -214,29 +220,26 @@ async function init() {
       supabase.auth.onAuthStateChange((event, session) => {
           console.log("Auth Event:", event);
           
-          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-              handleAuthChange(event, session);
-          } 
+         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'SIGNED_OUT') {
+          handleAuthChange(event, session);
+      }
           
-          // ONLY wipe data if the user explicitly clicks LOG OUT 
-          // or if the session is null AND it's not the initial load.
-          if (event === 'SIGNED_OUT') {
-              handleAuthChange('SIGNED_OUT', null);
-          }
     });
   
     // 1. Get the current session
     const { data: { session }, error } = await supabase.auth.getSession();
-
+  
+    // 2. Run the UI sync once
     if (session) {
         // User is logged in on this device!
-        handleAuthChange('INITIAL_LOAD', session);
+        await handleAuthChange('INITIAL_LOAD', session);
     } else {
         // No session on this device, user is a guest
-        handleAuthChange('SIGNED_OUT', null);
+        await handleAuthChange('SIGNED_OUT', null);
     }
 
-   
+   // Ensure the daily button is correctly synced after the profile is loaded
+    await syncDailyButton();
       
     // 2. Auth Button (Log In / Log Out)
     authBtn.onclick = async () => {
@@ -422,6 +425,7 @@ async function handleAuthChange(event, session) {
         }
         if (span) span.textContent = ' Guest';
         if (label) label.textContent = 'Log In';
+        syncDailyButton();
         updateLevelUI()
         return; // Stop here for guests
     }
@@ -2027,6 +2031,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
