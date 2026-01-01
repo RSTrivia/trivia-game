@@ -96,12 +96,28 @@
             color: #888;
         }
 
-        /* --- HIGH-FIDELITY UNLOCKED STATES --- */
+        /* Styling for the equipped pet slot */
+        .pet-slot.equipped {
+            border: 2px solid #00ff00 !important; /* Bright OSRS green */
+            background: rgba(0, 255, 0, 0.1) !important;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+        }
         
-        /* --- FLAT GOLD UNLOCKED STATES --- */
-
-        /* --- 1. BASE UNLOCKED STATE (Common Tier - Row 1) --- */
-       /* --- 1. BASE UNLOCKED STATE (Common Tier - Row 1) --- */
+        .pet-slot.unlocked {
+            cursor: pointer; /* Show it's clickable */
+        }
+        
+        /* Subtle "Equipped" text tag */
+        .pet-slot.equipped::after {
+            content: "EQUIPPED";
+            position: absolute;
+            top: 5px;
+            font-size: 0.6rem;
+            color: #00ff00;
+            font-weight: bold;
+        }
+        /* Styling for the equipped pet slot */
+       
        /* --- 1. BASE UNLOCKED STATE (Common Tier - Row 1) --- */
         .unlocked { 
             /* Very subtle gold tint */
