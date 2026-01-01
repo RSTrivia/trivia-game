@@ -103,35 +103,37 @@
         /* 1. Base Green State for ALL Rows */
        /* --- EQUIPPED STATE (Perfect Achievement Green Match) --- */
 
+    /* --- EQUIPPED STATE (Muted OSRS Green) --- */
+
     /* 1. Base Green State for ALL Rows */
     #logGrid .pet-slot.unlocked.equipped,
     #logGrid .pet-slot:nth-child(n+3):nth-child(-n+4).unlocked.equipped,
     #logGrid .pet-slot:nth-child(n+5):nth-child(-n+6).unlocked.equipped,
     #logGrid .pet-slot:nth-child(n+7):nth-child(-n+8).unlocked.equipped {
-        border: 2px solid #00ff00 !important; /* Pure Green like achievement border */
-        background: rgba(0, 150, 0, 0.15) !important; /* EXACT match to .achieve-item.completed */
-        box-shadow: 0 0 12px rgba(0, 255, 0, 0.2), inset 0 0 12px rgba(0, 0, 0, 0.4) !important;
+        border: 2px solid #44bb44 !important; /* Muted Sage Green - no neon glow */
+        background: rgba(0, 150, 0, 0.15) !important; /* Keep Background as requested */
+        box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5) !important; /* Darker inner shadow for depth */
     }
     
-    /* 2. Hover Green State for ALL Rows */
+    /* 2. Hover Green State (Slightly brighter but still soft) */
     #logGrid .pet-slot.unlocked.equipped:hover,
     #logGrid .pet-slot:nth-child(n+3):nth-child(-n+4).unlocked.equipped:hover,
     #logGrid .pet-slot:nth-child(n+5):nth-child(-n+6).unlocked.equipped:hover,
     #logGrid .pet-slot:nth-child(n+7):nth-child(-n+8).unlocked.equipped:hover {
-        border-color: #55ff55 !important; /* Brighter highlight */
-        background: rgba(0, 180, 0, 0.25) !important;
-        box-shadow: 0 0 18px rgba(0, 255, 0, 0.3) !important;
+        border-color: #66cc66 !important;
+        background: rgba(0, 150, 0, 0.2) !important;
+        box-shadow: 0 0 10px rgba(68, 187, 68, 0.2) !important;
     }
     
-    /* 3. Text and Image Styling */
+    /* 3. Text and Image Styling (Muted Green) */
     #logGrid .pet-slot.equipped .pet-name {
-        color: #00ff00 !important; /* Match border */
+        color: #44bb44 !important;
         font-weight: bold;
-        text-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
     }
     
     #logGrid .pet-slot.equipped .pet-img {
-        filter: drop-shadow(0 0 5px rgba(0, 255, 0, 0.5)) !important;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6)) !important; /* Standard shadow, no green glow */
     }
     
     /* 4. Tiered Gold Hover (Only triggers if NOT equipped) */
