@@ -191,40 +191,30 @@ let isDailyMode = false;
 // Replace your existing refreshAuthUI with this:
 
 async function syncDailyButton() {
-    if (!dailyBtn) return;
-
-    // 1. FORCE RESET IMMEDIATELY (Prevents flicker)
-    dailyBtn.classList.remove('is-active'); 
-    dailyBtn.style.opacity = '0.5';
-    dailyBtn.style.pointerEvents = 'none';
-
-    // 2. GET DATA
-    const localPlayedDate = localStorage.getItem('dailyPlayedDate');
-    const hasCachedSession = localStorage.getItem('cached_xp') !== null;
-
-    // 3. LOGIC CHECKS
-    // If they played today, LOCK and STOP. Don't even try the network.
-    if (localPlayedDate === todayStr) {
-        lockDailyButton();
-        return; 
-    }
-
-    // 4. NETWORK CHECK (Double check the database)
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
+    if (!dailyBtn) return;
+  
+    // Explicitly lock if no one is logged in
+    if (!session) {
+        lockDailyButton();
+      // Add visual guest feedback
+        dailyBtn.style.opacity = '0.5';
+        dailyBtn.style.pointerEvents = 'none';
+        return;
+    }
 
     const played = await hasUserCompletedDaily(session);
-    
-    if (played) {
-        localStorage.setItem('dailyPlayedDate', todayStr);
-        // Stay locked
-    } else {
-        // TURN GOLD
+
+    if (!played) {
         dailyBtn.classList.add('is-active');
-        dailyBtn.style.opacity = '1';
-        dailyBtn.style.pointerEvents = 'auto';
+        dailyBtn.classList.remove('disabled');
+        dailyBtn.style.pointerEvents = 'auto'; // UNLOCK physically
+        dailyBtn.style.opacity = '1';          // Ensure it looks clickable
+    } else {
+      lockDailyButton();
     }
 }
+
 
 let isRefreshing = false;
 
@@ -2055,6 +2045,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
