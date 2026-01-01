@@ -15,6 +15,7 @@ let notificationQueue = [];
 let isShowingNotification = false;
 let currentMode = 'score'; // 'score' or 'xp'
 
+const number_of_questions = 510;
 const leaderboardRows = document.querySelectorAll('#leaderboard li');
 const scoreTab = document.getElementById('scoreTab');
 const xpTab = document.getElementById('xpTab');
@@ -1217,7 +1218,7 @@ async function saveNormalScore(currentUsername, finalScore) {
     if (finalScore >= 10 && oldBest < 10) showAchievementNotification("Reach 10 Score");
     if (finalScore >= 50 && oldBest < 50) showAchievementNotification("Reach 50 Score");
     if (finalScore >= 100 && oldBest < 100) showAchievementNotification("Reach 100 Score");
-    if (finalScore >= 510 && oldBest < 510) showAchievementNotification("Reach Max Score");
+    if (finalScore >= number_of_questions && oldBest < number_of_questions) showAchievementNotification("Reach Max Score");
 
     // --- 3. LEADERBOARD UPDATE (Matches your original logic exactly) ---
     if (!record || finalScore > record.score) {
@@ -2046,6 +2047,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
