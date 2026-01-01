@@ -272,9 +272,70 @@
     <button id="closeHelpBtn" class="btn" style="margin-top: 25px;">Close</button>
   </div>
 </div>
-    
+    <script type="module">
+    import { supabase } from './supabase.js';
+
+    // 1. Function to update the visual pet on the menu
+    function updatePetDisplay(petId) {
+        const petImg = document.getElementById('equipped-pet-display');
+        if (!petImg) return;
+
+        if (petId && petId !== "null") {
+            const fileName = petId.replace('pet_', '') + '.png';
+            petImg.src = `pets/${fileName}`;
+            petImg.style.display = 'inline-block';
+            petImg.style.marginLeft = '5px';
+            petImg.style.verticalAlign = 'middle';
+        } else {
+            petImg.style.display = 'none';
+        }
+    }
+
+    // 2. Fetch fresh data from Supabase
+    async function syncEquippedPet() {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('equipped_pet')
+            .eq('id', session.user.id)
+            .single();
+
+        if (data && !error) {
+            const remotePet = data.equipped_pet;
+            localStorage.setItem('equipped_pet_id', remotePet);
+            updatePetDisplay(remotePet);
+        }
+    }
+
+    // 3. Real-time listener: Auto-update if changed on phone while PC is open
+    async function setupRealtime() {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+
+        supabase
+            .channel('public:profiles')
+            .on('postgres_changes', { 
+                event: 'UPDATE', 
+                schema: 'public', 
+                table: 'profiles',
+                filter: `id=eq.${session.user.id}` 
+            }, payload => {
+                const newPet = payload.new.equipped_pet;
+                localStorage.setItem('equipped_pet_id', newPet);
+                updatePetDisplay(newPet);
+            })
+            .subscribe();
+    }
+
+    // Run on load
+    syncEquippedPet();
+    setupRealtime();
+</script>
 </body>
 </html>
+
 
 
 
