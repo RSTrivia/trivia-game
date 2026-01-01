@@ -455,7 +455,7 @@ h1 {
   }
   .icon-group {
       gap: 2px !important; /* Reduced from 8px to 4px */
-      flex: 0 1 auto !important; /* Stop it from taking up 1/3 of the screen */
+     /*flex: 0 1 auto !important;  Stop it from taking up 1/3 of the screen */
     }
   #userDisplay {
     margin-left: 5px !important;
@@ -1528,6 +1528,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
