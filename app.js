@@ -398,8 +398,8 @@ supabase
   // This will check if a user is logged in and lock the button if they aren't
   await syncDailyButton();
   // This will check if a user has played daily mode already and will unlock it if they did
-  //await updateShareButtonState();
-  //loadCollection();
+  await updateShareButtonState();
+  loadCollection();
 }
 
 // Replace your existing handleAuthChange with this:
@@ -2045,6 +2045,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
