@@ -524,7 +524,7 @@ async function equipPet(petId) {
     
     // 2. Update Local UI immediately
     currentEquippedPet = newPetId;
-    localStorage.setItem('equipped_pet_id', newPetId || "");
+    localStorage.setItem('equipped_pet_id', newPetId);
     
     // Refresh the grid display
     const cachedPets = JSON.parse(localStorage.getItem('cached_pets') || '[]');
