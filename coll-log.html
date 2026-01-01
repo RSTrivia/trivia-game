@@ -519,27 +519,27 @@ function applyUnlocks(unlockedList) {
     document.querySelector('.container').classList.add('loaded');
 }
 async function equipPet(petId) {
-    // 1. If clicking the same pet, unequip it
     const newPetId = (currentEquippedPet === petId) ? null : petId;
-    
-    // 2. Update Local UI immediately
     currentEquippedPet = newPetId;
-    localStorage.setItem('equipped_pet_id', newPetId);
     
-    // Refresh the grid display
-    const cachedPets = JSON.parse(localStorage.getItem('cached_pets') || '[]');
-    applyUnlocks(cachedPets);
+    // Update Local Storage
+    if (newPetId) {
+        localStorage.setItem('equipped_pet_id', newPetId);
+    } else {
+        localStorage.removeItem('equipped_pet_id');
+    }
+    
+    // UI Refresh
+    applyUnlocks(JSON.parse(localStorage.getItem('cached_pets') || '[]'));
 
-    // 3. Save to Supabase
+    // Database Update
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
-
-    await supabase
-        .from('profiles')
-        .update({ equipped_pet: newPetId })
-        .eq('id', session.user.id);
-    
-    console.log("Pet preference saved:", newPetId);
+    if (session) {
+        await supabase
+            .from('profiles')
+            .update({ equipped_pet: newPetId }) // Direct update!
+            .eq('id', session.user.id);
+    }
 }
         
 async function loadCollection() {
@@ -553,7 +553,7 @@ async function loadCollection() {
 
     // --- UPDATED: Now fetching the highest score from daily_attempts as well ---
     const [profileRes, scoreRes, attemptsRes] = await Promise.all([
-        supabase.from('profiles').select('collection_log, achievements, xp').eq('id', session.user.id).single(),
+        supabase.from('profiles').select('collection_log, achievements, xp, equipped_pet').eq('id', session.user.id).single(),
         supabase.from('scores').select('score').eq('user_id', session.user.id).maybeSingle(),
         // Get the count AND check if a score of 10 exists
         supabase.from('daily_attempts').select('score').eq('user_id', session.user.id)
@@ -591,7 +591,11 @@ async function loadCollection() {
         localStorage.setItem('stat_fastest', (a.fastest_guess || false).toString());
         localStorage.setItem('stat_just_in_time', (a.just_in_time || false).toString());
         currentEquippedPet = profileData.equipped_pet || null;
-        localStorage.setItem('equipped_pet_id', currentEquippedPet || "");
+        if (currentEquippedPet) {
+            localStorage.setItem('equipped_pet_id', currentEquippedPet);
+        } else {
+            localStorage.removeItem('equipped_pet_id');
+        }
         
         // Update Pets and UI
         const freshPets = profileData.collection_log || [];
