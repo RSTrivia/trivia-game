@@ -97,42 +97,37 @@
         }
 
         /* Styling for the equipped pet slot */
-        /* 1. Base Equipped Style (Works for Rows 1, 2, 3) */
-        #logGrid .pet-slot.unlocked.equipped {
-            border: 2px solid #4ade80 !important; /* Muted Soft Green */
-            background: rgba(20, 40, 20, 0.6) !important; /* Darker, deeper background */
-            box-shadow: 0 0 8px rgba(74, 222, 128, 0.2), inset 0 0 6px rgba(0, 0, 0, 0.5) !important;
-        }
-        
-        /* 2. SPECIFIC OVERRIDE FOR ROW 4 (The Legendary Row Fix) */
-        #logGrid .pet-slot:nth-child(n+7):nth-child(-n+8).unlocked.equipped {
+
+        #logGrid .pet-slot.unlocked.equipped:nth-child(n) {
             border: 2px solid #4ade80 !important; 
-            background: rgba(20, 40, 20, 0.6) !important;
+            background: rgba(20, 40, 20, 0.7) !important;
+            box-shadow: 0 0 10px rgba(74, 222, 128, 0.2), inset 0 0 8px rgba(0, 0, 0, 0.5) !important;
         }
         
-        /* 3. Hover state for equipped pets (Reduced glare) */
-        #logGrid .pet-slot.unlocked.equipped:hover,
-        #logGrid .pet-slot:nth-child(n+7):nth-child(-n+8).unlocked.equipped:hover {
-            border-color: #6ee7b7 !important; /* Slightly brighter but still soft */
-            background: rgba(30, 50, 30, 0.7) !important;
-            box-shadow: 0 0 12px rgba(74, 222, 128, 0.3) !important;
+        /* 2. Hover state override for all rows */
+        #logGrid .pet-slot.unlocked.equipped:nth-child(n):hover {
+            border-color: #6ee7b7 !important;
+            background: rgba(30, 55, 30, 0.8) !important;
+            box-shadow: 0 0 15px rgba(74, 222, 128, 0.3), inset 0 0 10px rgba(0, 0, 0, 0.6) !important;
         }
         
-        /* 4. Text and Image styling */
-        #logGrid .pet-slot.equipped .pet-name {
-            color: #4ade80 !important; /* Matches border */
+        /* 3. Text and Image styling for equipped pet */
+        #logGrid .pet-slot.equipped:nth-child(n) .pet-name {
+            color: #4ade80 !important;
+            font-weight: bold;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
         }
         
-        #logGrid .pet-slot.equipped .pet-img {
-            /* Subtle glow rather than a bright neon drop-shadow */
-            filter: drop-shadow(0 0 3px rgba(74, 222, 128, 0.4)) !important;
+        #logGrid .pet-slot.equipped:nth-child(n) .pet-img {
+            filter: drop-shadow(0 0 4px rgba(74, 222, 128, 0.4)) !important;
         }
         
         /* --- TIERED GOLD HOVER --- */
+        /* Ensures non-equipped gold pets keep their gold highlight on hover */
         #logGrid .pet-slot.unlocked:not(.equipped):hover {
             border-color: #ffea8a !important;
         }
+        
         /* Styling for the equipped pet slot */
        
        /* --- 1. BASE UNLOCKED STATE (Common Tier - Row 1) --- */
