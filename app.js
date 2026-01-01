@@ -502,27 +502,28 @@ async function hasUserCompletedDaily(session) {
 
 
 async function updateShareButtonState() {
-    if (!shareBtn) return;
+   if (!shareBtn) return;
 
     const { data: { session } } = await supabase.auth.getSession();
   
-    // Guest = Always disabled
+    // 1. Guest = Always disabled
     if (!session) {
-        shareBtn.classList.add('is-disabled');
-        shareBtn.classList.remove('is-active');
-        shareBtn.style.opacity = "0.5";
-        shareBtn.style.pointerEvents = "none";
+        disableShareButton();
         return;
     }
 
-  
-    // Check localStorage (just finished playing) OR DB (played earlier)
-    const localScore = localStorage.getItem('lastDailyScore');
+    // 2. Check both Local Storage and Database
     const savedDate = localStorage.getItem('dailyPlayedDate');
+    const localScore = localStorage.getItem('lastDailyScore');
+    
+    // Check DB for the source of truth
     const hasPlayedToday = await hasUserCompletedDaily(session);
-    const isScoreFromToday = (localScore !== null && savedDate === todayStr);
+    
+    // The button should be active ONLY if the DB says they played 
+    // AND we actually have a score to share from today.
+    const isScoreValid = (localScore !== null && savedDate === todayStr);
   
-    if (isScoreFromToday || hasPlayedToday) {
+    if (hasPlayedToday && isScoreValid) {
         shareBtn.classList.remove('is-disabled');
         shareBtn.classList.add('is-active'); 
         shareBtn.style.opacity = "1";
@@ -2045,6 +2046,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
