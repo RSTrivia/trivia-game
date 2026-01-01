@@ -368,6 +368,10 @@ h1 {
   padding: 0;
   transition: opacity 0.2s ease;
   filter: sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85);
+
+  /* DEFAULT TO GREY: This ensures they start grey */
+  filter: grayscale(1) brightness(0.5);
+  opacity: 0.5;
 }
 /* Space between the icons themselves */
 #shareBtn { margin-right: 4px; }
@@ -385,12 +389,9 @@ h1 {
 #muteBtn.is-muted,
 #shareBtn.is-disabled, 
 #logBtn.is-disabled {
-  filter: grayscale(1) brightness(0.5) !important;;
+  filter: grayscale(1) brightness(0.5) !important;
   opacity: 0.5 !important;
-  /* Add these two lines: */
-  border-color: #555 !important;
-  color: #888 !important;
-  background: rgba(0, 0, 0, 0.4) !important;
+  pointer-events: none;
 }
 
 /* 4. Hover Logic: Slight Glow */
@@ -1528,6 +1529,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
