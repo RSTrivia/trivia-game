@@ -521,6 +521,8 @@ function applyUnlocks(unlockedList) {
         // Add Click Listener for Unlocked Pets
         if (isUnlocked) {
             slot.onclick = () => equipPet(pet.id);
+        }else {
+            slot.onclick = null; // Important: Clear any old listeners
         }
     });
     document.getElementById('logGrid').classList.add('ready');
