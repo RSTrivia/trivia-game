@@ -97,32 +97,33 @@
         }
 
         /* Styling for the equipped pet slot */
-        /* 1. Use high specificity so this overrides the Row/Tier colors */
         #logGrid .pet-slot.unlocked.equipped {
             border: 2px solid #00ff00 !important; 
             background: rgba(0, 255, 0, 0.15) !important;
             box-shadow: 0 0 15px rgba(0, 255, 0, 0.3), inset 0 0 10px rgba(0, 255, 0, 0.2) !important;
         }
         
-        /* 2. Fix the "EQUIPPED" text tag positioning */
-        .pet-slot.equipped::after {
-            content: "EQUIPPED";
-            position: absolute;
-            top: 8px; /* Adjusted so it doesn't hug the very edge */
-            left: 50%;
-            transform: translateX(-50%); /* Centers the text horizontally */
-            font-size: 0.6rem;
-            color: #00ff00;
-            font-weight: bold;
-            letter-spacing: 1px;
-            text-shadow: 0 0 5px black;
-            pointer-events: none; /* Ensures text doesn't block clicks */
+        /* 2. The hover state ONLY for the equipped pet */
+        #logGrid .pet-slot.unlocked.equipped:hover {
+            border-color: #55ff55 !important; /* Slightly brighter green on hover */
+            background: rgba(0, 255, 0, 0.25) !important;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.4), inset 0 0 12px rgba(0, 255, 0, 0.3) !important;
         }
         
-        /* 3. Ensure the image is fully visible when equipped */
+        /* 3. Ensure the equipped text and image stay green/bright */
+        .pet-slot.equipped::after {
+            color: #00ff00 !important;
+        }
+        
         .pet-slot.equipped .pet-img {
             filter: drop-shadow(0 0 5px rgba(0, 255, 0, 0.5)) !important;
-            opacity: 1 !important;
+        }
+        
+        /* --- TIERED GOLD HOVER (Keeps the rest gold) --- */
+        /* This ensures that when you hover over regular unlocked pets, they stay gold */
+        #logGrid .pet-slot.unlocked:not(.equipped):hover {
+            border-color: #ffea8a !important;
+            /* Keeps the gold theme for non-equipped pets */
         }
         /* Styling for the equipped pet slot */
        
