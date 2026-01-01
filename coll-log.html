@@ -478,20 +478,54 @@ async function renderAchievements(calculatedLevel) {
         });
     });
 }
-       
+// Add this to your script variables
+let currentEquippedPet = localStorage.getItem('equipped_pet_id') || null;
+        
 function applyUnlocks(unlockedList) {
     PET_DATA.forEach(pet => {
         const slot = document.getElementById(`slot-${pet.id}`);
         if (!slot) return;
+        
         const isUnlocked = unlockedList.includes(pet.id);
+        const isEquipped = currentEquippedPet === pet.id;
         const nameSpan = slot.querySelector('.pet-name');
-        slot.className = `pet-slot ${isUnlocked ? 'unlocked' : ''}`;
+        
+        // Update Classes
+        slot.className = `pet-slot ${isUnlocked ? 'unlocked' : ''} ${isEquipped ? 'equipped' : ''}`;
         nameSpan.textContent = isUnlocked ? pet.name : "???";
+
+        // Add Click Listener for Unlocked Pets
+        if (isUnlocked) {
+            slot.onclick = () => equipPet(pet.id);
+        }
     });
     document.getElementById('logGrid').classList.add('ready');
     document.querySelector('.container').classList.add('loaded');
 }
+async function equipPet(petId) {
+    // 1. If clicking the same pet, unequip it
+    const newPetId = (currentEquippedPet === petId) ? null : petId;
+    
+    // 2. Update Local UI immediately
+    currentEquippedPet = newPetId;
+    localStorage.setItem('equipped_pet_id', newPetId || "");
+    
+    // Refresh the grid display
+    const cachedPets = JSON.parse(localStorage.getItem('cached_pets') || '[]');
+    applyUnlocks(cachedPets);
 
+    // 3. Save to Supabase
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    await supabase
+        .from('profiles')
+        .update({ equipped_pet: newPetId })
+        .eq('id', session.user.id);
+    
+    console.log("Pet preference saved:", newPetId);
+}
+        
 async function loadCollection() {
     // 1. Initial UI from LocalStorage
     const cachedPets = JSON.parse(localStorage.getItem('cached_pets') || '[]');
@@ -540,7 +574,9 @@ async function loadCollection() {
         localStorage.setItem('stat_max_streak', a.max_streak || 0);
         localStorage.setItem('stat_fastest', (a.fastest_guess || false).toString());
         localStorage.setItem('stat_just_in_time', (a.just_in_time || false).toString());
-
+        currentEquippedPet = profileData.equipped_pet || null;
+        localStorage.setItem('equipped_pet_id', currentEquippedPet || "");
+        
         // Update Pets and UI
         const freshPets = profileData.collection_log || [];
         localStorage.setItem('cached_pets', JSON.stringify(freshPets));
