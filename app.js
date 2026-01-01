@@ -233,11 +233,8 @@ async function init() {
     // 1. Immediately sync the button based on CACHE only (Instant)
     // This stops the flicker because the button starts in the 'locked' state 
     // if they played, before any network request happens.
-    const localPlayedDate = localStorage.getItem('dailyPlayedDate');
-    const hasCachedSession = localStorage.getItem('cached_xp') !== null;
-    if (localPlayedDate === todayStr || !hasCachedSession) {
-        lockDailyButton();
-    }
+    lockDailyButton();
+    
   
   // 1. Set up the listener FIRST
       supabase.auth.onAuthStateChange((event, session) => {
@@ -2058,6 +2055,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
