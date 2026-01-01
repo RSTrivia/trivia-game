@@ -203,8 +203,11 @@ async function syncDailyButton() {
     const hasCachedSession = localStorage.getItem('cached_xp') !== null;
 
     // 3. LOGIC CHECKS
-    if (localPlayedDate === todayStr) return; // Already played today
-    if (!hasCachedSession) return; // Not logged in
+    // If they played today, LOCK and STOP. Don't even try the network.
+    if (localPlayedDate === todayStr) {
+        lockDailyButton();
+        return; 
+    }
 
     // 4. NETWORK CHECK (Double check the database)
     const { data: { session } } = await supabase.auth.getSession();
@@ -494,7 +497,7 @@ async function handleAuthChange(event, session) {
         syncChannel = setupRealtimeSync(session.user.id);
     }
     updateLevelUI();
-    syncDailyButton();
+    await syncDailyButton();
 }
 
 async function hasUserCompletedDaily(session) {
@@ -2055,6 +2058,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
