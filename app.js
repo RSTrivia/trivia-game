@@ -193,27 +193,20 @@ let isDailyMode = false;
 async function syncDailyButton() {
     if (!dailyBtn) return;
 
-    // --- STEP 1: FORCE RESET IMMEDIATELY ---
-    // This kills the flicker because it happens before any network 'await'
+    // 1. FORCE RESET IMMEDIATELY (Prevents flicker)
     dailyBtn.classList.remove('is-active'); 
     dailyBtn.style.opacity = '0.5';
     dailyBtn.style.pointerEvents = 'none';
 
-    //const localPlayedDate = localStorage.getItem('dailyPlayedDate');
-    //const hasCachedSession = localStorage.getItem('cached_xp') !== null;
+    // 2. GET DATA
+    const localPlayedDate = localStorage.getItem('dailyPlayedDate');
+    const hasCachedSession = localStorage.getItem('cached_xp') !== null;
 
-     //1.If they played locally TODAY, stay locked and stop.
-    if (localPlayedDate === todayStr) {
-        // lockDailyButton() is already effectively done by Step 1
-        return; 
-  }
+    // 3. LOGIC CHECKS
+    if (localPlayedDate === todayStr) return; // Already played today
+    if (!hasCachedSession) return; // Not logged in
 
-    // 2. If they aren't logged in, stay locked.
-    if (!hasCachedSession) {
-        return;
-    }
-
-    // 3. Now we do the slow network checks
+    // 4. NETWORK CHECK (Double check the database)
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
 
@@ -221,11 +214,9 @@ async function syncDailyButton() {
     
     if (played) {
         localStorage.setItem('dailyPlayedDate', todayStr);
-        dailyBtn.style.opacity = '0.5';
-        dailyBtn.style.pointerEvents = 'none';
-        // Keep it locked
+        // Stay locked
     } else {
-        // ONLY NOW, after all checks, do we turn it gold
+        // TURN GOLD
         dailyBtn.classList.add('is-active');
         dailyBtn.style.opacity = '1';
         dailyBtn.style.pointerEvents = 'auto';
@@ -415,7 +406,7 @@ supabase
 }
 
   // This will check if a user is logged in and lock the button if they aren't
-  //await syncDailyButton();
+  await syncDailyButton();
   // This will check if a user has played daily mode already and will unlock it if they did
   //await updateShareButtonState();
   //loadCollection();
@@ -2064,6 +2055,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
