@@ -172,7 +172,7 @@ const dailyMessages = {
   ]
 };
 
-let correctBuffer, wrongBuffer, tickBuffer, levelUpBuffer, bonusBuffer, petBuffer;
+let correctBuffer, wrongBuffer, tickBuffer, levelUpBuffer, bonusBuffer, petBuffer, achieveBuffer;
 let activeTickSource = null; // To track the running sound
 let muted = cachedMuted;
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1834,8 +1834,8 @@ function showAchievementNotification(achievementName) {
     modal.classList.remove('active');
   
     // Play sound if available
-    if (typeof playSound === "function" && typeof bonusBuffer !== 'undefined' && bonusBuffer) {
-        playSound(bonusBuffer);
+    if (typeof playSound === "function" && typeof achieveBuffer !== 'undefined' && achieveBuffer) {
+        playSound(achieveBuffer);
     }
 
     modal.innerHTML = `
@@ -1871,6 +1871,7 @@ async function loadSounds() {
     if (!levelUpBuffer) levelUpBuffer = await loadAudio('./sounds/level.mp3');
     if (!bonusBuffer) bonusBuffer = await loadAudio('./sounds/bonus.mp3');
     if (!petBuffer) petBuffer = await loadAudio('./sounds/pet.mp3');
+    if (!achieveBuffer) achieveBuffer = await loadAudio('./sounds/achievement.mp3');
 }
 
 async function loadAudio(url) {
@@ -2045,6 +2046,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
