@@ -100,47 +100,57 @@
 
        /* --- EQUIPPED STATE (Multi-Tier Specificity Fix) --- */
 
-        /* 1. Base Style (Row 1) */
-        #logGrid .pet-slot.unlocked.equipped {
+       /* --- 1. EQUIPPED STATE (Dominant Override) --- */
+
+        /* Base & Row-Specific Strengths */
+        #logGrid .pet-slot.unlocked.equipped,
+        #logGrid .pet-slot:nth-child(n+3).equipped,
+        #logGrid .pet-slot:nth-child(n+5).equipped,
+        #logGrid .pet-slot:nth-child(n+7).equipped {
             border: 2px solid #2ecc71 !important; 
             background: rgba(20, 45, 25, 0.8) !important;
             box-shadow: 0 0 12px rgba(46, 204, 113, 0.3), inset 0 0 12px rgba(0, 0, 0, 0.4) !important;
         }
         
-        /* 2. Specific Overrides for Rows 2, 3, and 4 (Ensures background/border changes) */
-        #logGrid .pet-slot:nth-child(n+3):nth-child(-n+4).unlocked.equipped, /* Row 2 */
-        #logGrid .pet-slot:nth-child(n+5):nth-child(-n+6).unlocked.equipped, /* Row 3 */
-        #logGrid .pet-slot:nth-child(n+7):nth-child(-n+8).unlocked.equipped  /* Row 4 */ {
-            border: 2px solid #2ecc71 !important; 
-            background: rgba(20, 45, 25, 0.8) !important;
-        }
-        
-        /* 3. Global Hover State for Equipped (All Rows) */
-        #logGrid .pet-slot.unlocked.equipped:hover,
-        #logGrid .pet-slot:nth-child(n+3):hover.equipped,
-        #logGrid .pet-slot:nth-child(n+5):hover.equipped,
-        #logGrid .pet-child:nth-child(n+7):hover.equipped {
+        /* Hover State for Equipped - MUST use nth-child to beat gold hovers */
+        #logGrid .pet-slot.equipped:hover,
+        #logGrid .pet-slot:nth-child(n+3).equipped:hover,
+        #logGrid .pet-slot:nth-child(n+5).equipped:hover,
+        #logGrid .pet-slot:nth-child(n+7).equipped:hover {
             border-color: #40ff8d !important;
             background: rgba(25, 55, 30, 0.9) !important;
-            box-shadow: 0 0 18px rgba(46, 204, 113, 0.4), inset 0 0 10px rgba(0, 0, 0, 0.5) !important;
+            box-shadow: 0 0 18px rgba(46, 204, 113, 0.4) !important;
         }
         
-        /* 4. Text and Image Styling */
-        #logGrid .pet-slot.equipped .pet-name {
-            color: #2ecc71 !important;
-            font-weight: bold;
-            text-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
-        }
+        /* --- 2. TIERED GOLD HOVER (The "Not Equipped" Fix) --- */
         
-        #logGrid .pet-slot.equipped .pet-img {
-            filter: drop-shadow(0 0 5px rgba(46, 204, 113, 0.5)) !important;
-        }
+        /* We add :not(.equipped) to your gold hover rules. 
+           This tells the browser: "Only turn gold on hover IF the pet is NOT equipped."
+        */
         
-        /* --- TIERED GOLD HOVER --- */
+        /* Row 1 Hover */
         #logGrid .pet-slot.unlocked:not(.equipped):hover {
             border-color: #ffea8a !important;
         }
-                
+        
+        /* Row 2 Hover */
+        #logGrid .pet-slot:nth-child(n+3):nth-child(-n+4).unlocked:not(.equipped):hover {
+            border-color: #ffea8a !important;
+        }
+        
+        /* Row 3 Hover */
+        #logGrid .pet-slot:nth-child(n+5):nth-child(-n+6).unlocked:not(.equipped):hover {
+            border-color: #ffea8a !important;
+        }
+        
+        /* Row 4 Hover */
+        #logGrid .pet-slot:nth-child(n+7):nth-child(-n+8).unlocked:not(.equipped):hover {
+            border-color: #ffea8a !important;
+        }
+        
+        /* --- 3. Text and Image (Stay Green) --- */
+        #logGrid .pet-slot.equipped .pet-name { color: #2ecc71 !important; }
+        #logGrid .pet-slot.equipped .pet-img { filter: drop-shadow(0 0 5px rgba(46, 204, 113, 0.5)) !important; }
         /* Styling for the equipped pet slot */
        
        /* --- 1. BASE UNLOCKED STATE (Common Tier - Row 1) --- */
