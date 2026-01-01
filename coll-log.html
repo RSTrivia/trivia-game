@@ -98,37 +98,45 @@
 
         /* Styling for the equipped pet slot */
         
-        /* --- CLEANED EQUIPPED & HOVER LOGIC --- */
-        
-        /* 1. The Green State (Applies to all rows) */
-        #logGrid .pet-slot.equipped,
-        #logGrid .pet-slot:nth-child(n).unlocked.equipped {
+        /* --- EQUIPPED STATE (Multi-Tier Final Fix) --- */
+
+        /* 1. Base Green State for ALL Rows */
+        #logGrid .pet-slot.unlocked.equipped,
+        #logGrid .pet-slot:nth-child(n+3):nth-child(-n+4).unlocked.equipped,
+        #logGrid .pet-slot:nth-child(n+5):nth-child(-n+6).unlocked.equipped,
+        #logGrid .pet-slot:nth-child(n+7):nth-child(-n+8).unlocked.equipped {
             border: 2px solid #2ecc71 !important; 
             background: rgba(20, 45, 25, 0.8) !important;
             box-shadow: 0 0 12px rgba(46, 204, 113, 0.3), inset 0 0 12px rgba(0, 0, 0, 0.4) !important;
         }
         
-        /* 2. The Green Hover (Stays green on all rows) */
-        #logGrid .pet-slot.equipped:hover,
-        #logGrid .pet-slot:nth-child(n).unlocked.equipped:hover {
+        /* 2. Hover Green State for ALL Rows (Overriding Gold Hover) */
+        #logGrid .pet-slot.unlocked.equipped:hover,
+        #logGrid .pet-slot:nth-child(n+3):nth-child(-n+4).unlocked.equipped:hover,
+        #logGrid .pet-slot:nth-child(n+5):nth-child(-n+6).unlocked.equipped:hover,
+        #logGrid .pet-slot:nth-child(n+7):nth-child(-n+8).unlocked.equipped:hover {
             border-color: #40ff8d !important;
             background: rgba(25, 55, 30, 0.9) !important;
             box-shadow: 0 0 18px rgba(46, 204, 113, 0.4) !important;
         }
         
-        /* 3. The Gold Hover (Only works if NOT equipped) */
-        #logGrid .pet-slot.unlocked:not(.equipped):hover,
-        #logGrid .pet-slot:nth-child(n).unlocked:not(.equipped):hover {
-            border-color: #ffea8a !important;
+        /* 3. Text and Image Styling */
+        #logGrid .pet-slot.equipped .pet-name {
+            color: #2ecc71 !important;
+            font-weight: bold;
+            text-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
         }
         
-        /* 4. Text & Image Styling */
-        #logGrid .pet-slot.equipped .pet-name { 
-            color: #2ecc71 !important; 
-            font-weight: bold;
+        #logGrid .pet-slot.equipped .pet-img {
+            filter: drop-shadow(0 0 5px rgba(46, 204, 113, 0.5)) !important;
         }
-        #logGrid .pet-slot.equipped .pet-img { 
-            filter: drop-shadow(0 0 5px rgba(46, 204, 113, 0.5)) !important; 
+        
+        /* 4. Tiered Gold Hover (Only triggers if NOT equipped) */
+        #logGrid .pet-slot.unlocked:not(.equipped):hover,
+        #logGrid .pet-slot:nth-child(n+3):nth-child(-n+4).unlocked:not(.equipped):hover,
+        #logGrid .pet-slot:nth-child(n+5):nth-child(-n+6).unlocked:not(.equipped):hover,
+        #logGrid .pet-slot:nth-child(n+7):nth-child(-n+8).unlocked:not(.equipped):hover {
+            border-color: #ffea8a !important;
         }
      
         /* Styling for the equipped pet slot */
