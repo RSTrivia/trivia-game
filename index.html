@@ -81,6 +81,22 @@
     
     // 1. Instant Text/Emoji Sync
     if (span) span.textContent = ' ' + cachedUsername;
+
+    // --- ADD THE PET LOGIC HERE ---
+    const petId = localStorage.getItem('equipped_pet_id'); // We will ensure this is saved in Step 2
+    const petImg = document.getElementById('equipped-pet-display');
+    
+    if (petId && petId !== "null" && petImg) {
+        const fileName = petId.replace('pet_', '') + '.png'; 
+        petImg.src = `pets/${fileName}`;
+        petImg.style.display = 'inline-block';
+        petImg.style.marginLeft = '5px'; // Add a little space from the name
+        petImg.style.verticalAlign = 'middle'; // Center it with the text
+    } else if (petImg) {
+        petImg.style.display = 'none';
+    }
+    // ------------------------------
+    
     if (authLabel) authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
 
     if (muteIcon && muteBtn) {
@@ -259,6 +275,7 @@
     
 </body>
 </html>
+
 
 
 
