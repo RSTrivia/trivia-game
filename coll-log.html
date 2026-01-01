@@ -99,21 +99,31 @@
         /* Styling for the equipped pet slot */
       /* --- EQUIPPED STATE (Max Strength) --- */
 
-        /* By repeating .pet-slot.pet-slot, we make this rule stronger than the row rules */
-        #logGrid .pet-slot.pet-slot.unlocked.equipped {
+       /* --- EQUIPPED STATE (Global Fix) --- */
+
+        /* 1. Base Equipped Style (Works for Rows 1, 2, 3) */
+        #logGrid .pet-slot.unlocked.equipped {
             border: 2px solid #00ff00 !important; 
             background: rgba(0, 255, 0, 0.2) !important;
             box-shadow: 0 0 15px rgba(0, 255, 0, 0.3), inset 0 0 10px rgba(0, 255, 0, 0.2) !important;
         }
         
-        /* Hover state for equipped - specifically targeting to beat row hovers */
-        #logGrid .pet-slot.pet-slot.unlocked.equipped:hover {
+        /* 2. SPECIFIC OVERRIDE FOR ROW 4 (The Legendary Row Fix) */
+        /* This matches the strength of your Row 4 gold rule exactly */
+        #logGrid .pet-slot:nth-child(n+7):nth-child(-n+8).unlocked.equipped {
+            border: 2px solid #00ff00 !important; 
+            background: rgba(0, 255, 0, 0.2) !important;
+        }
+        
+        /* 3. Hover state for equipped pets (All rows) */
+        #logGrid .pet-slot.unlocked.equipped:hover,
+        #logGrid .pet-slot:nth-child(n+7):nth-child(-n+8).unlocked.equipped:hover {
             border-color: #55ff55 !important;
             background: rgba(0, 255, 0, 0.3) !important;
             box-shadow: 0 0 20px rgba(0, 255, 0, 0.4), inset 0 0 12px rgba(0, 255, 0, 0.3) !important;
         }
         
-        /* Text and Image */
+        /* 4. Text and Image styling */
         #logGrid .pet-slot.equipped .pet-name {
             color: #00ff00 !important;
         }
