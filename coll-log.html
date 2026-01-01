@@ -331,11 +331,15 @@
             }
     
             h1#main-title {
-                font-size: 2.4rem !important; /* Significantly smaller title */
-                margin: 0px 0 5px 0 !important; /* Tighten vertical space */
+                font-size: 2rem !important; /* Significantly smaller title */
+                margin: 5px 0 10px 0 !important; /*0px 0 5px 0 !important;  Tighten vertical space */
                 letter-spacing: 1px !important;
             }
-        
+
+            /* Add this to ensure the buttons aren't cramped against the title */
+            .leaderboard-tabs {
+                margin-bottom: 15px !important;
+            }
             /* This ensures the button stays the small size and goes to the bottom */
             .btn-small {
                 width: 175px !important; /* Force the exact same width as PC */
