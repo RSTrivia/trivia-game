@@ -7,6 +7,7 @@ const cachedMuted = localStorage.getItem('muted') === 'true';
 let dailySubscription = null; // Track this globally to prevent duplicates
 let streak = 0;              // Tracking for normal game bonus
 let dailyQuestionCount = 0;   // Tracking for daily bonus
+let currentDailyStreak = 0; 
 let currentProfileXp = parseInt(localStorage.getItem('cached_xp')) || 0;    // Store the player's current XP locally
 let syncChannel;
 let username = 'Guest';
@@ -458,7 +459,7 @@ async function handleAuthChange(event, session) {
     if (profile) {
         username = profile.username || 'Player';
         currentProfileXp = profile.xp || 0;
-        
+      
         // Save to cache
         localStorage.setItem('cachedUsername', username);
         localStorage.setItem('cached_xp', currentProfileXp);
@@ -1075,6 +1076,8 @@ async function endGame() {
     const scoreKey = Math.min(Math.max(score, 0), 10);
     const options = dailyMessages[scoreKey] || ["Game Over!"];
     const randomMsg = options[Math.floor(Math.random() * options.length)];
+    const streakContainer = document.getElementById('dailyStreakContainer');
+    const streakCount = document.getElementById('streakCount');
     
     // 2. WIPE GAME UI IMMEDIATELY 
     // This prevents seeing old questions/answers behind the transition
@@ -1106,6 +1109,11 @@ async function endGame() {
         localStorage.setItem('lastDailyScore',  score);
         localStorage.setItem('lastDailyScoreDate', new Date().toISOString().split('T')[0]);
         await updateDailyStreak(score);
+        // Show the streak container
+        if (streakContainer && streakCount) {
+            streakContainer.style.display = 'block';
+            streakCount.textContent = currentDailyStreak;
+        }
       const shareBtn = document.getElementById('shareBtn');
       if (shareBtn && isDailyMode) {
           shareBtn.classList.remove('is-disabled');
@@ -1114,7 +1122,8 @@ async function endGame() {
           shareBtn.style.pointerEvents = "auto";
       }
        
-    } else {
+    } else { 
+        if (streakContainer) streakContainer.style.display = 'none';
         if (playAgainBtn) playAgainBtn.classList.remove('hidden');
         // Trigger the high-score save
         if (session && score > 0) {
@@ -1652,6 +1661,7 @@ async function saveAchievement(key, value) {
         const storageKey = key === 'fastest_guess' ? 'stat_fastest' : 'stat_just_in_time';
         localStorage.setItem(storageKey, value.toString());
     }
+    currentDailyStreak = updatedAchieve.daily_streak || 0;
 }
 
 
@@ -2047,6 +2057,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
