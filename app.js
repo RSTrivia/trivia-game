@@ -460,13 +460,16 @@ async function handleAuthChange(event, session) {
         username = profile.username || 'Player';
         currentProfileXp = profile.xp || 0;
       
+        currentDailyStreak = profile.achievements?.daily_streak || 0;
+      
         // Save to cache
         localStorage.setItem('cachedUsername', username);
         localStorage.setItem('cached_xp', currentProfileXp);
+        localStorage.setItem('cached_daily_streak', currentDailyStreak); // Also cache it
         
         // UI Update
         if (span) span.textContent = ' ' + username;
-        
+      
     }
    
 
@@ -1602,6 +1605,7 @@ async function updateDailyStreak(currentScore) {
     localStorage.setItem('stat_max_streak', updatedAchieve.max_streak);
     localStorage.setItem('cached_daily_total', updatedAchieve.daily_total);
     localStorage.setItem('stat_daily_perfect', updatedAchieve.daily_perfect.toString());
+    currentDailyStreak = updatedAchieve.daily_streak || 0;
 }
 
 async function saveAchievement(key, value) {
@@ -1661,7 +1665,6 @@ async function saveAchievement(key, value) {
         const storageKey = key === 'fastest_guess' ? 'stat_fastest' : 'stat_just_in_time';
         localStorage.setItem(storageKey, value.toString());
     }
-    currentDailyStreak = updatedAchieve.daily_streak || 0;
 }
 
 
@@ -2057,6 +2060,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
