@@ -1311,7 +1311,7 @@ if (shareBtn) {
                 scale: 2, 
                 useCORS: true,
                 onclone: (clonedDoc) => {
-                  const idsToHide = ['muteBtn', 'shareBtn', 'logBtn', 'collection-log', 'helpBtn'];
+                  const idsToHide = ['muteBtn', 'shareBtn', 'logBtn', 'collection-log', 'helpBtn', 'dailyStreakContainer'];
                     idsToHide.forEach(id => {
                         const el = clonedDoc.getElementById(id);
                         if (el) el.style.display = 'none';
@@ -2060,6 +2060,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
