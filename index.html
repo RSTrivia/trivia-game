@@ -25,6 +25,7 @@
   function handleAuthAction() {
     const isLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
     if (isLoggedIn) {
+      await supabase.auth.signOut(); // 🔑 THIS WAS MISSING
       localStorage.clear(); // Clear all to be safe
       window.location.reload();
     } else {
@@ -340,6 +341,7 @@
 </script>
 </body>
 </html>
+
 
 
 
