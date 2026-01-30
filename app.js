@@ -1485,7 +1485,7 @@ if (shareBtn) {
         // So the user doesn't see their score change on the actual screen
         finalScore.textContent = originalScore;
         document.getElementById('game-over-title').textContent = originalMsg;
-        
+        shareBtn.blur();  // <---- ADD THIS LINE
         //shareBtn.style.opacity = '1';
         //if (muteBtn) muteBtn.style.opacity = '1';
     }
@@ -2060,6 +2060,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
