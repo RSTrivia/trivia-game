@@ -1482,28 +1482,25 @@ if (shareBtn) {
             const muteBtn = document.getElementById('muteBtn');
             if (muteBtn) muteBtn.style.opacity = '1';
         } finally {
-    // 3. RESTORE ORIGINAL STATE 
         finalScore.textContent = originalScore;
         document.getElementById('game-over-title').textContent = originalMsg;
     
-        // Remove lingering shiny/tapped effect
+        // Remove tapped class
         shareBtn.classList.remove('tapped');
-        shareBtn.blur();
     
-        // Temporarily disable transition
-        const prevTransition = shareBtn.style.transition;
-        shareBtn.style.transition = 'none';
+        // Temporarily disable pointer events to cancel :active
+        shareBtn.style.pointerEvents = 'none';
+        shareBtn.blur();
     
         // Force repaint
         void shareBtn.offsetWidth;
     
-        // Restore transition (next tick)
+        // Restore pointer events next frame
         requestAnimationFrame(() => {
-            shareBtn.style.transition = prevTransition;
+            shareBtn.style.pointerEvents = '';
         });
-            //shareBtn.style.opacity = '1';
-            //if (muteBtn) muteBtn.style.opacity = '1';
-        }
+    }
+
       
     };
 }
@@ -2075,6 +2072,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
