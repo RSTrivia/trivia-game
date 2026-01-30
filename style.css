@@ -381,7 +381,13 @@ h1 {
   opacity: 0.5;
 }
 /* Space between the icons themselves */
-#shareBtn { margin-right: 4px; }
+#shareBtn { margin-right: 4px; transition: filter 0.2s ease, transform 0.1s ease; }
+/* This triggers only WHILE the finger is touching the screen */
+#shareBtn:active {
+  filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.3) drop-shadow(0 0 5px #ffea8a) !important;
+  transform: scale(0.9); /* Slight shrink makes it feel physical */
+  opacity: 1 !important;
+}
 #logBtn { margin-right: 4px; }
 
 /* 2. Standard State: Your Original Gold */
@@ -1530,6 +1536,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
