@@ -1277,12 +1277,16 @@ gameEnding = false;
 
 if (shareBtn) {
     shareBtn.onclick = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+    // Immediately remove focus, but let click finish visually
+    setTimeout(() => shareBtn.blur(), 0);
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
         alert("Please log in to share your score!");
         updateShareButtonState(); // Force it to stay grey
         return;
     }
+      
       // 1. CAPTURE CURRENT STATE (To restore later)
       const originalScore = finalScore.textContent;
       const originalMsg = document.getElementById('game-over-title').textContent;
@@ -1485,7 +1489,6 @@ if (shareBtn) {
         // So the user doesn't see their score change on the actual screen
         finalScore.textContent = originalScore;
         document.getElementById('game-over-title').textContent = originalMsg;
-        shareBtn.blur();  // <---- ADD THIS LINE
         //shareBtn.style.opacity = '1';
         //if (muteBtn) muteBtn.style.opacity = '1';
     }
@@ -2060,6 +2063,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
