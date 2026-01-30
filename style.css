@@ -406,8 +406,7 @@ h1 {
   opacity: 0.5 !important;
 }
 
-/* 4. Hover Logic: ONLY for Desktop Mice */
-@media (hover: hover) {
+/* 4. Hover Logic: Slight Glow */
 #shareBtn:not(.is-disabled):hover,
 #logBtn:not(.is-disabled):hover,
 #muteBtn:not(.is-muted):hover {
@@ -464,28 +463,9 @@ h1 {
     gap: 3px; /* Tighten the icon gap */
   }
 
-  /* 1. Prevent icons from sticking or flickering */
   #shareBtn, #muteBtn, #logBtn {
-    -webkit-tap-highlight-color: transparent;
-    transition: filter 0.3s ease, transform 0.1s ease !important; 
+    left: -10px !important; /* Smaller shift for small screens change here*/
   }
-
-  /* 2. Force reset to standard gold after tap */
-  #shareBtn:not(.is-disabled), 
-  #logBtn:not(.is-disabled), 
-  #muteBtn:not(.is-muted) {
-    filter: sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85) !important;
-    opacity: 0.9 !important;
-  }
-
-  /* 3. The Actual Press (The Flash) */
-  #shareBtn:active, #logBtn:active, #muteBtn:active {
-    filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.3) !important;
-    transform: scale(0.9) !important;
-    opacity: 1 !important;
-    transition: 0s !important; /* Flash instantly on touch */
-  }
-  
   .icon-group {
       gap: 2px !important; /* Reduced from 8px to 4px */
      /*flex: 0 1 auto !important;  Stop it from taking up 1/3 of the screen */
@@ -1556,8 +1536,6 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
-
-
 
 
 
