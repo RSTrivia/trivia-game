@@ -1485,28 +1485,6 @@ if (shareBtn) {
       // Restore text
       finalScore.textContent = originalScore;
       document.getElementById('game-over-title').textContent = originalMsg;
-  
-      // Remove tapped/shiny classes
-      shareBtn.classList.remove('tapped');
-  
-      // Blur to remove focus
-      shareBtn.blur();
-  
-      // Force the button to normal style immediately
-      Object.assign(shareBtn.style, {
-          transition: 'none',          // temporarily disable transition
-          background: '',              // reset background if shiny effect uses it
-          boxShadow: '',               // reset box-shadow
-          transform: '',               // reset any transform
-      });
-  
-      // Force repaint
-      void shareBtn.offsetWidth;
-  
-      // Restore transitions next frame
-      requestAnimationFrame(() => {
-          shareBtn.style.transition = ''; // restore original CSS transitions
-      });
   }
 
 
@@ -2081,6 +2059,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
