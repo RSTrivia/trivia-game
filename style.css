@@ -82,16 +82,18 @@ a, button {
 /* ====== CONTAINER ====== */
 .container {
   background: rgba(0, 0, 0, 0.85);
-  padding: 25px;            /* Increased padding for better breathing room */
-  border-radius: 10px; 
+  padding: 25px;
+  border-radius: 10px;
   box-shadow: 0 0 30px rgba(0,0,0,0.5);
-  width: 440px;             /* Increased width as requested (+40px total) */
+  width: 440px;
   max-width: 95%;
+  min-height: 300px; /* <-- set a safe minimum */
+  display: flex;
+  flex-direction: column; /* ensures child rows stack vertically */
+  justify-content: flex-start; /* avoids shrinking gaps */
   text-align: center;
   position: relative;
   box-sizing: border-box;
-  /* Remove fixed height: let it be natural */
-  min-height: 300px;
 }
 
 /* Login row spacing */
@@ -1528,6 +1530,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
