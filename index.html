@@ -300,7 +300,12 @@
     // 2. Fetch fresh data from Supabase
     async function syncEquippedPet() {
         const { data: { session } } = await supabase.auth.getSession();
-        if (!session) return;
+       if (!session) {
+          localStorage.removeItem('equipped_pet_id');
+          updatePetDisplay(null);
+          return;
+        }
+
 
         const { data, error } = await supabase
             .from('profiles')
@@ -318,7 +323,12 @@
     // 3. Real-time listener: Auto-update if changed on phone while PC is open
     async function setupRealtime() {
         const { data: { session } } = await supabase.auth.getSession();
-        if (!session) return;
+        if (!session) {
+          localStorage.removeItem('equipped_pet_id');
+          updatePetDisplay(null);
+          return;
+        }
+
 
         supabase
             .channel('public:profiles')
@@ -341,6 +351,7 @@
 </script>
 </body>
 </html>
+
 
 
 
