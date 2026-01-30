@@ -416,6 +416,12 @@
     <script src="background.js"></script>
     <script type="module">
        import { supabase } from './supabase.js';
+        /* 🔐 LISTEN FOR LOGOUT ON THIS PAGE */
+        supabase.auth.onAuthStateChange((event) => {
+            if (event === 'SIGNED_OUT') {
+                resetCollectionUI();
+            }
+        });
 
 const PET_DATA = [
     { id: 'pet_mole', name: 'Baby Mole', rarity: 'common', file: 'mole.png' },
@@ -428,6 +434,24 @@ const PET_DATA = [
     { id: 'pet_jad', name: 'TzRek-Jad', rarity: 'legendary', file: 'jad.png' }
 ];
 
+function resetCollectionUI() {
+    localStorage.removeItem('cached_pets');
+    localStorage.removeItem('equipped_pet_id');
+
+    currentEquippedPet = null;
+
+    PET_DATA.forEach(pet => {
+        const slot = document.getElementById(`slot-${pet.id}`);
+        if (!slot) return;
+
+        slot.className = 'pet-slot';
+        slot.onclick = null;
+
+        const nameSpan = slot.querySelector('.pet-name');
+        nameSpan.textContent = '???';
+    });
+}
+        
 const ACHIEVEMENT_SCHEMA = [
     { cat: 'Levels', tasks: [
         { id: 'lvl10', text: 'Reach Level 10', check: (d) => d.level >= 10 },
