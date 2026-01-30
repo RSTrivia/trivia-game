@@ -91,7 +91,7 @@ a, button {
   position: relative;
   box-sizing: border-box;
   /* Remove fixed height: let it be natural */
-  min-height: auto; 
+  min-height: 300px;
 }
 
 /* Login row spacing */
@@ -1528,6 +1528,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
