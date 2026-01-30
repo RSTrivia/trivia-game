@@ -1482,24 +1482,33 @@ if (shareBtn) {
             const muteBtn = document.getElementById('muteBtn');
             if (muteBtn) muteBtn.style.opacity = '1';
         } finally {
-        finalScore.textContent = originalScore;
-        document.getElementById('game-over-title').textContent = originalMsg;
-    
-        // Remove tapped class
-        shareBtn.classList.remove('tapped');
-    
-        // Temporarily disable pointer events to cancel :active
-        shareBtn.style.pointerEvents = 'none';
-        shareBtn.blur();
-    
-        // Force repaint
-        void shareBtn.offsetWidth;
-    
-        // Restore pointer events next frame
-        requestAnimationFrame(() => {
-            shareBtn.style.pointerEvents = '';
-        });
-    }
+      // Restore text
+      finalScore.textContent = originalScore;
+      document.getElementById('game-over-title').textContent = originalMsg;
+  
+      // Remove tapped/shiny classes
+      shareBtn.classList.remove('tapped');
+  
+      // Blur to remove focus
+      shareBtn.blur();
+  
+      // Force the button to normal style immediately
+      Object.assign(shareBtn.style, {
+          transition: 'none',          // temporarily disable transition
+          background: '',              // reset background if shiny effect uses it
+          boxShadow: '',               // reset box-shadow
+          transform: '',               // reset any transform
+      });
+  
+      // Force repaint
+      void shareBtn.offsetWidth;
+  
+      // Restore transitions next frame
+      requestAnimationFrame(() => {
+          shareBtn.style.transition = ''; // restore original CSS transitions
+      });
+  }
+
 
       
     };
@@ -2072,6 +2081,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
