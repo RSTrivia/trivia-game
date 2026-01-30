@@ -1277,11 +1277,8 @@ gameEnding = false;
 
 if (shareBtn) {
     shareBtn.onclick = async () => {
-    // Immediately remove focus, but let click finish visually
-    setTimeout(() => shareBtn.blur(), 0);
-
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
+      if (!session) {
         alert("Please log in to share your score!");
         updateShareButtonState(); // Force it to stay grey
         return;
@@ -1489,6 +1486,13 @@ if (shareBtn) {
         // So the user doesn't see their score change on the actual screen
         finalScore.textContent = originalScore;
         document.getElementById('game-over-title').textContent = originalMsg;
+
+        // Remove lingering shiny/tapped effect
+        shareBtn.classList.remove('tapped');
+        shareBtn.blur();
+
+        // Force repaint (helps iOS/Android clear :active highlight)
+        void shareBtn.offsetWidth; // reading offsetWidth forces layout recalculation
         //shareBtn.style.opacity = '1';
         //if (muteBtn) muteBtn.style.opacity = '1';
     }
@@ -2063,6 +2067,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
