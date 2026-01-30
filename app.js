@@ -1482,20 +1482,28 @@ if (shareBtn) {
             const muteBtn = document.getElementById('muteBtn');
             if (muteBtn) muteBtn.style.opacity = '1';
         } finally {
-        // 3. RESTORE ORIGINAL STATE 
-        // So the user doesn't see their score change on the actual screen
+    // 3. RESTORE ORIGINAL STATE 
         finalScore.textContent = originalScore;
         document.getElementById('game-over-title').textContent = originalMsg;
-
+    
         // Remove lingering shiny/tapped effect
         shareBtn.classList.remove('tapped');
         shareBtn.blur();
-
-        // Force repaint (helps iOS/Android clear :active highlight)
-        void shareBtn.offsetWidth; // reading offsetWidth forces layout recalculation
-        //shareBtn.style.opacity = '1';
-        //if (muteBtn) muteBtn.style.opacity = '1';
-    }
+    
+        // Temporarily disable transition
+        const prevTransition = shareBtn.style.transition;
+        shareBtn.style.transition = 'none';
+    
+        // Force repaint
+        void shareBtn.offsetWidth;
+    
+        // Restore transition (next tick)
+        requestAnimationFrame(() => {
+            shareBtn.style.transition = prevTransition;
+        });
+            //shareBtn.style.opacity = '1';
+            //if (muteBtn) muteBtn.style.opacity = '1';
+        }
       
     };
 }
@@ -2067,6 +2075,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
