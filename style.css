@@ -68,10 +68,11 @@ a, button {
 #app {
   min-height: 100vh;
   display: flex;
-  justify-content: center;  /* horizontal */
-  align-items: center;      /* vertical */
-  padding: 20px;
-  box-sizing: border-box;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 20px; /*40px;*/
+  position: relative;
+  z-index: 10; /* above the background */
 }
 
 
@@ -1519,6 +1520,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
