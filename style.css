@@ -564,10 +564,12 @@ h1 {
 
 /* Text can change freely */
 .btn-label {
-  display: inline-block;
-  min-width: 7ch;     /* fits "Log Out" */
-  text-align: center;
-  white-space: nowrap;
+    display: flex !important;           /* use flex instead of inline-block */
+    align-items: center !important;     /* vertical centering */
+    justify-content: center !important; /* horizontal centering */
+    width: 100% !important;             /* fill the button width */
+    text-align: center !important;      /* fallback */
+    white-space: nowrap !important;     /* prevent wrapping */
 }
 
 /* ====== LOGIN PAGE SPECIFIC (CLEAN & SNUG) ====== */
@@ -1525,6 +1527,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
