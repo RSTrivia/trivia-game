@@ -22,16 +22,12 @@
   const cachedMuted = localStorage.getItem('muted') === 'true';
   const todayStr = new Date().toISOString().split('T')[0];
  
-  function handleAuthAction() {
+  async function handleAuthAction() {
     const isLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
     if (isLoggedIn) {
-      await supabase.auth.signOut(); // 🔑 THIS WAS MISSING
+      supabase.auth.signOut(); // 🔑 THIS WAS MISSING
       //localStorage.clear(); // Clear all to be safe
       //window.location.reload();
-      localStorage.removeItem('cachedLoggedIn');
-      localStorage.removeItem('cachedUsername');
-      localStorage.removeItem('cached_xp');
-      localStorage.removeItem('equipped_pet_id');
     } else {
       window.location.href = 'login.html';
     }
@@ -355,6 +351,7 @@
 </script>
 </body>
 </html>
+
 
 
 
