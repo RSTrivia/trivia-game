@@ -1485,9 +1485,27 @@ if (shareBtn) {
       // Restore text
       finalScore.textContent = originalScore;
       document.getElementById('game-over-title').textContent = originalMsg;
+
+      // Remove tapped class
+      shareBtn.classList.remove('tapped');
+  
+      // Blur to remove focus
+      shareBtn.blur();
+  
+      // Force reset on the next tick (gives browser time to clear :active)
+      setTimeout(() => {
+          shareBtn.style.transition = 'none';    // temporarily disable transitions
+          shareBtn.style.background = '';        // reset shiny background
+          shareBtn.style.boxShadow = '';         // reset any box-shadow
+          shareBtn.style.transform = '';         // reset transforms
+  
+          void shareBtn.offsetWidth;             // force repaint
+  
+          // restore transitions
+          shareBtn.style.transition = '';
+      }, 50);  // 50ms is usually enough for browser to clear active state
   }
-
-
+  }
       
     };
 }
@@ -2059,6 +2077,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
