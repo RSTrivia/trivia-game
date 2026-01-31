@@ -1289,12 +1289,11 @@ if (shareBtn) {
         tooltip.className = 'copy-tooltip';
         tooltip.innerText = 'Copied!';
         
-        // Ensure the parent container can hold the absolute tooltip
-        shareBtn.parentElement.style.position = 'relative';
-        shareBtn.parentElement.appendChild(tooltip);
+       // Append it TO the button, not the parent
+        shareBtn.appendChild(tooltip);
 
         // Remove tooltip after animation finishes
-        setTimeout(() => tooltip.remove(), 500);
+        setTimeout(() => tooltip.remove(), 400);
     }
     
       const { data: { session } } = await supabase.auth.getSession();
@@ -2077,6 +2076,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
