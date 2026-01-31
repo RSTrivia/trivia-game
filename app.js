@@ -1276,11 +1276,18 @@ async function saveDailyScore(session, msg) {
 gameEnding = false;
 
 if (shareBtn) {
-   // 1. Trigger the gold linger (STAYS ON FOR BOTH MOBILE & PC)
+// A. UI FEEDBACK (Both Mobile & PC)
     shareBtn.classList.add('tapped');
-    setTimeout(() => {
-        shareBtn.classList.remove('tapped');
-    }, 300);
+    setTimeout(() => shareBtn.classList.remove('tapped'), 300);
+
+    // B. DESKTOP ONLY: TOOLTIP
+    if (window.matchMedia("(hover: hover)").matches) {
+        const tooltip = document.createElement('div');
+        tooltip.className = 'copy-tooltip';
+        tooltip.innerText = 'Copied!';
+        shareBtn.parentElement.appendChild(tooltip);
+        setTimeout(() => tooltip.remove(), 300);
+    }
 
     // 2. DESKTOP ONLY: Create the "Copied!" Tooltip
     if (window.matchMedia("(hover: hover)").matches) {
@@ -1293,7 +1300,7 @@ if (shareBtn) {
         shareBtn.parentElement.appendChild(tooltip);
 
         // Remove tooltip after animation finishes
-        setTimeout(() => tooltip.remove(), 800);
+        setTimeout(() => tooltip.remove(), 300);
     }
       
     const { data: { session } } = await supabase.auth.getSession();
@@ -2076,6 +2083,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
