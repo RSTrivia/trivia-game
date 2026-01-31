@@ -386,7 +386,7 @@ h1 {
 /* This triggers only WHILE the finger is touching the screen */
 #shareBtn:active {
   filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.3) drop-shadow(0 0 5px #ffea8a) !important;
-  transform: scale(0.9); / Slight shrink makes it feel physical */
+  transform: scale(0.9); /* Slight shrink makes it feel physical */
   opacity: 1 !important;
 }
 #logBtn { margin-right: 4px; }
@@ -1578,6 +1578,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
