@@ -1277,44 +1277,44 @@ gameEnding = false;
 
 if (shareBtn) {
     shareBtn.onclick = async () => {
-        // 1. Instant Class Toggle
+        // 1. SHOW IMMEDIATELY
         shareBtn.classList.add('show-tooltip', 'tapped');
         
-        // 2. Immediate Clipboard Copy (Before the Async DB fetch)
-        // This makes the "Copied" feel real because the copy happens NOW
+        // Hide it after a short delay (shorter than before to feel snappier)
+        setTimeout(() => shareBtn.classList.remove('show-tooltip', 'tapped'), 1000);
+
+        // 2. CLIPBOARD (Instant)
+        // We do a quick copy of what we have now so it's instant
         const currentScore = parseInt(localStorage.getItem('lastDailyScore') || "0");
         const grid = "🟩".repeat(currentScore) + "🟥".repeat(10 - currentScore);
-        const tempText = `OSRS Trivia • Score: ${currentScore}/10\n${grid}`;
         
-        // Quick copy so the user gets what they want immediately
-        if (!navigator.share) {
-            navigator.clipboard.writeText(tempText);
-        }
-
-        // 3. Background Data Fetching
-        // We fetch the "Real" text with the streak for the final share/copy
+        // 3. FETCH STREAK (Background)
         let liveStreak = localStorage.getItem('cached_daily_streak') || 0;
         try {
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
-                const { data: profile } = await supabase.from('profiles').select('achievements').eq('id', session.user.id).single();
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('achievements')
+                    .eq('id', session.user.id)
+                    .single();
                 if (profile?.achievements?.daily_streak) {
                     liveStreak = profile.achievements.daily_streak;
+                    localStorage.setItem('cached_daily_streak', liveStreak);
                 }
             }
-        } catch (e) { /* fallback to cached */ }
+        } catch (e) { console.error(e); }
 
-        const finalShareText = `OSRS Trivia • Score: ${currentScore}/10\n${grid}\nStreak: ${liveStreak} 🔥\nhttps://osrstrivia.pages.dev/`;
+        const dateStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        const finalShareText = `OSRS Trivia • ${dateStr} ⚔️\nScore: ${currentScore}/10\n${grid}\nStreak: ${liveStreak} 🔥\nhttps://osrstrivia.pages.dev/`;
 
-        // 4. Final Share/Copy Action
-        if (navigator.share && /Android|iPhone|iPad/i.test(navigator.userAgent)) {
+        // 4. FINAL SHARE/COPY
+        const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+        if (isMobile && navigator.share) {
             try { await navigator.share({ text: finalShareText }); } catch (err) {}
         } else {
             navigator.clipboard.writeText(finalShareText);
         }
-
-        // Cleanup tooltip
-        setTimeout(() => shareBtn.classList.remove('show-tooltip', 'tapped'), 800);
     };
 }
 
@@ -1884,6 +1884,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
