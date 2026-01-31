@@ -440,7 +440,7 @@ h1 {
     pointer-events: none;
     z-index: 1000;
     white-space: nowrap;
-    animation: tooltip-float 0.8s ease-out forwards;
+    animation: tooltip-float 0.4s ease-out forwards;
 }
 
 @keyframes tooltip-float {
@@ -1572,6 +1572,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
