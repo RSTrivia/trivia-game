@@ -1315,7 +1315,17 @@ if (shareBtn) {
             const tooltip = document.createElement('div');
             tooltip.className = 'copy-tooltip';
             tooltip.innerText = 'Copied!';
-            shareBtn.appendChild(tooltip);
+            
+            // Get the button's exact position on the screen
+            const rect = shareBtn.getBoundingClientRect();
+            
+            // Place it relative to the viewport, not the button
+            tooltip.style.position = 'fixed';
+            tooltip.style.top = (rect.top - 30) + 'px'; // 30px above the button
+            tooltip.style.left = (rect.left + rect.width / 2) + 'px';
+            
+            document.body.appendChild(tooltip); // Attach to body, NOT shareBtn
+            
             setTimeout(() => tooltip.remove(), 500);
         }
 
@@ -1905,6 +1915,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
