@@ -1276,6 +1276,7 @@ async function saveDailyScore(session, msg) {
 gameEnding = false;
 
 if (shareBtn) {
+  shareBtn.onclick = async () => {
 // A. UI FEEDBACK (Both Mobile & PC)
     shareBtn.classList.add('tapped');
     setTimeout(() => shareBtn.classList.remove('tapped'), 300);
@@ -1302,14 +1303,24 @@ if (shareBtn) {
         // Remove tooltip after animation finishes
         setTimeout(() => tooltip.remove(), 300);
     }
-      
-    const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        alert("Please log in to share your score!");
-        updateShareButtonState(); // Force it to stay grey
-        return;
+  
+   const shareUrl = window.location.href;
+    try {
+        await navigator.clipboard.writeText(shareUrl);
+        
+        // D. NOW check session for database updates
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+            console.log("Copied, but user not logged in for achievements.");
+             updateShareButtonState(); // Force it to stay grey
+            return;
+        }   
+
+      } catch (err) {
+        console.error("Failed to copy:", err);
     }
-      
+  }; 
+  
       // 1. CAPTURE CURRENT STATE (To restore later)
       const originalScore = finalScore.textContent;
       const originalMsg = document.getElementById('game-over-title').textContent;
@@ -2083,6 +2094,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
