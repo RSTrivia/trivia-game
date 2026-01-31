@@ -435,28 +435,28 @@ h1 {
     bottom: 130%;
     left: 50%;
     
-    /* Fixed centering without fuzzy math */
-    width: 70px;
-    margin-left: -35px;
+    /* Center using transform, but add backface-visibility to snap pixels */
+    transform: translateX(-50%);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
     
+    width: 70px;
     background: #000000;
     color: #ffea8a;
     border: 1px solid #d4af37;
     
-    /* CRITICAL: Force the browser to ignore parent filters */
-    filter: none !important;
-    backdrop-filter: none !important;
-    transform: none !important;
-    
-    /* Pixel-perfect text rendering */
+    /* Text Sharpness Fixes */
     font-family: Arial, sans-serif;
-    font-size: 11px; /* Fixed px is often sharper than rem for tooltips */
+    font-size: 11px;
     font-weight: bold;
     text-align: center;
     padding: 3px 0;
     border-radius: 3px;
     
-    /* Visibility */
+    /* Antialiasing for light text on dark background */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    
     display: none;
     pointer-events: none;
     z-index: 9999;
@@ -1588,6 +1588,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
