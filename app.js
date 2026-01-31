@@ -1314,7 +1314,7 @@ if (shareBtn) {
         if (window.matchMedia("(hover: hover)").matches) {
             const tooltip = document.createElement('div');
             tooltip.className = 'copy-tooltip';
-            tooltip.innerText = 'Copied to Clipboard!';
+            tooltip.innerText = 'Copied!';
             shareBtn.appendChild(tooltip);
             setTimeout(() => tooltip.remove(), 1000);
         }
@@ -1906,6 +1906,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
