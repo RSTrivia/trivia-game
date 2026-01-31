@@ -1319,19 +1319,6 @@ if (shareBtn) {
                           `${grid}\n` +
                           `Streak: ${currentStreak} 🔥\n` +
                           `https://osrstrivia.pages.dev/`;
-
-        // 5. Desktop Tooltip Logic (Body-Append version to stop the "growing")
-        if (window.matchMedia("(hover: hover)").matches) {
-            const tooltip = document.createElement('div');
-            tooltip.className = 'copy-tooltip';
-            tooltip.innerText = 'Copied!';
-            const rect = shareBtn.getBoundingClientRect();
-            tooltip.style.position = 'fixed';
-            tooltip.style.top = (rect.top - 30) + 'px';
-            tooltip.style.left = (rect.left + rect.width / 2) + 'px';
-            document.body.appendChild(tooltip);
-            setTimeout(() => tooltip.remove(), 500);
-        }
       
         // 5. Desktop Tooltip Logic
         if (window.matchMedia("(hover: hover)").matches) {
@@ -1938,6 +1925,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
