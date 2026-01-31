@@ -1277,39 +1277,46 @@ gameEnding = false;
 
 if (shareBtn) {
     shareBtn.onclick = async () => {
-        // 1. UI Feedback
+        // --- 1. IMMEDIATE UI FEEDBACK (Before any 'await' calls) ---
+        // This stops the button from growing/glitching because the 
+        // tooltip is handled before the browser pauses for data.
         shareBtn.classList.add('tapped');
         setTimeout(() => shareBtn.classList.remove('tapped'), 300);
 
-        // 2. Auth Check
+        // Show Tooltip immediately for Desktop
+        if (window.matchMedia("(hover: hover)").matches) {
+            const tooltip = document.createElement('div');
+            tooltip.className = 'copy-tooltip';
+            tooltip.innerText = 'Copied!';
+            shareBtn.appendChild(tooltip);
+            setTimeout(() => tooltip.remove(), 400);
+        }
+
+        // --- 2. DATA FETCHING ---
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
             alert("Please log in to share your score!");
             return;
         }
 
-        // 3. FETCH LIVE STREAK FROM SUPABASE (Profiles -> Achievements -> daily_streak)
         let liveStreak = 0;
         try {
-            const { data: profile, error } = await supabase
+            const { data: profile } = await supabase
                 .from('profiles')
                 .select('achievements')
                 .eq('id', session.user.id)
                 .single();
 
             if (profile && profile.achievements) {
-                // Accessing the daily_streak inside your JSONB column
                 liveStreak = profile.achievements.daily_streak || 0;
-                // Sync it back to cache while we are at it
                 localStorage.setItem('cached_daily_streak', liveStreak);
             }
         } catch (err) {
             console.error("Error fetching streak:", err);
-            // Fallback to cache if DB fetch fails
             liveStreak = localStorage.getItem('cached_daily_streak') || 0;
         }
 
-        // 4. Get Score Data
+        // --- 3. PREPARE SHARE TEXT ---
         const currentScore = parseInt(localStorage.getItem('lastDailyScore') || "0");
         const dateStr = new Date().toLocaleDateString('en-US', { 
             month: 'short', 
@@ -1317,7 +1324,6 @@ if (shareBtn) {
             year: 'numeric' 
         });
 
-        // 5. Build the Grid (Using your preferred ⬛)
         const totalQs = 10;
         const grid = "🟩".repeat(currentScore) + "⬛".repeat(totalQs - currentScore);
 
@@ -1327,16 +1333,7 @@ if (shareBtn) {
                           `Streak: ${liveStreak} 🔥\n` +
                           `https://osrstrivia.pages.dev/`;
 
-        // 6. Desktop Tooltip
-        if (window.matchMedia("(hover: hover)").matches) {
-            const tooltip = document.createElement('div');
-            tooltip.className = 'copy-tooltip';
-            tooltip.innerText = 'Copied!';
-            shareBtn.appendChild(tooltip);
-            setTimeout(() => tooltip.remove(), 400);
-        }
-
-        // 7. Share Execution
+        // --- 4. EXECUTION ---
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
         if (isMobile && navigator.share) {
@@ -1923,6 +1920,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
