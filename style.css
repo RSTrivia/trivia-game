@@ -429,47 +429,51 @@ h1 {
 
 .copy-tooltip {
     position: absolute;
-    bottom: 125%; /* Lifted slightly more for breathing room */
+    /* Fixed position above the button */
+    bottom: 40px; 
     left: 50%;
+    transform: translateX(-50%); 
     
-    /* Force hardware acceleration and prevent sub-pixel blurring */
-    transform: translate3d(-50%, 0, 0); 
-    will-change: transform, opacity;
-    
-    background: rgba(12, 12, 12, 0.95); /* Slightly darker for better contrast */
-    color: #ffea8a; 
-    border: 1px solid #d4af37;
-
-    /* Text Rendering Fixes */
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
+    /* Hardware acceleration without the "growing" side effect */
     backface-visibility: hidden;
+    will-change: opacity;
 
-    /* KILL all inherited button filters */
+    background: rgba(0, 0, 0, 0.95);
+    color: #ffea8a;
+    border: 1px solid #d4af37;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    z-index: 1000;
+    pointer-events: none;
+
+    /* Clean up rendering */
+    -webkit-font-smoothing: antialiased;
     filter: none !important;
     text-shadow: none !important;
 
-    padding: 4px 10px; /* Slightly more padding helps the eye focus */
-    border-radius: 4px;
-    
-    /* Use PX for tiny text to ensure it hits the pixel grid perfectly */
-    font-size: 12px; 
-    line-height: 1;
-    font-weight: 700;
-    
-    pointer-events: none;
-    z-index: 1000;
-    white-space: nowrap;
-    
-    animation: tooltip-float 0.5s ease-out forwards;
+    /* Simplified animation */
+    animation: tooltip-pop 0.5s ease-out forwards;
 }
 
-@keyframes tooltip-float {
-    0% { opacity: 0; transform: translate3d(-50%, 5px, 0); }
-    20% { opacity: 1; transform: translate3d(-50%, 0, 0); }
-    80% { opacity: 1; transform: translate3d(-50%, 0, 0); }
-    100% { opacity: 0; transform: translate3d(-50%, 0, 0); }
+@keyframes tooltip-pop {
+    0% { 
+        opacity: 0;
+        /* Start exactly where it ends to stop the "growing/moving" look */
+        margin-bottom: -5px; 
+    }
+    20% { 
+        opacity: 1;
+        margin-bottom: 0;
+    }
+    80% { 
+        opacity: 1;
+    }
+    100% { 
+        opacity: 0;
+    }
 }
 
 /* Position the Help Button in the top right corner of the .container */
@@ -1594,6 +1598,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
