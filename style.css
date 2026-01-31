@@ -432,36 +432,36 @@ h1 {
 
 .copy-tooltip {
     position: absolute;
-    /* Adjust this to move it higher/lower manually */
-    top: -35px; 
-    left: 15px; /* Adjust this to center it over the share icon */
-    
-    width: 74px;
-    background: #000000;
-    color: #ffea8a;
+    bottom: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.9);
+
+    /* Keep your bright gold colors */
+    color: #ffea8a; 
     border: 1px solid #d4af37;
-    
-    font-family: Arial, sans-serif;
-    font-size: 11px;
+
+    /* THE FIX: This kills the "shine/glow" inherited from the button */
+    filter: none !important;
+    text-shadow: none !important;
+
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
     font-weight: bold;
-    text-align: center;
-    padding: 4px 0;
-    border-radius: 3px;
-    
-    /* Ensure it's above EVERYTHING */
-    z-index: 100000 !important;
     pointer-events: none;
-    
-    /* Logic for showing/hiding */
-    display: none; 
-    opacity: 0;
+    z-index: 1000;
+    white-space: nowrap;
+    animation: tooltip-float 0.4s ease-out forwards;
 }
 
-#shareBtn.show-tooltip ~ .copy-tooltip {
-    display: block !important;
-    opacity: 1 !important;
-    visibility: visible !important;
+@keyframes tooltip-float {
+    0% { opacity: 0; transform: translate(-50%, 2px); }
+    15% { opacity: 1; transform: translate(-50%, 0); }
+    80% { opacity: 1; }
+    100% { opacity: 0; transform: translate(-50%, -3px); }
 }
+
 
 /* Position the Help Button in the top right corner of the .container */
 #helpBtn {
@@ -1585,6 +1585,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
