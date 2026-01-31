@@ -428,32 +428,38 @@ h1 {
 }
 
 .copy-tooltip {
+    /* 1. Positioning Fix: Stop using 50% transforms */
     position: absolute;
-    bottom: 125%; /* Fixed position */
+    bottom: 125%; 
     left: 50%;
-    transform: translateX(-50%); /* Only simple centering */
+    width: 64px;       /* Fixed even width */
+    margin-left: -32px; /* Exactly half of width (Whole number) */
     
-    background: #000000; /* Solid black for max contrast */
-    color: #ffea8a; 
+    /* 2. Style (OSRS Theme) */
+    background: #000000; 
+    color: #ffea8a;  
     border: 1px solid #d4af37;
     
-    padding: 3px 8px;
+    /* 3. Rendering Fixes: Force pixel-perfection */
+    padding: 3px 0;    /* Vertical only to keep width exact */
+    text-align: center;
     border-radius: 4px;
     font-size: 0.7rem;
     font-weight: bold;
     white-space: nowrap;
     z-index: 1000;
 
-    /* THE SHARPNESS FIX: Remove all animation "tricks" */
-    display: none; /* Hide with display none to prevent pre-render blur */
+    display: none;    /* Stay hidden until triggered */
+    
+    /* THE "SHARP" PROPERTIES */
+    transform: none !important; /* KILL THE TRANSFORM */
     filter: none !important;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: none; /* Stops the browser from "softening" edges */
 }
 
-/* Simply show it when active */
+/* Simply show it when active - no animation to prevent motion blur */
 #shareBtn.show-tooltip .copy-tooltip {
-    display: block; /* Native rendering, no animation blur */
+    display: block; 
 }
 
 @keyframes tooltip-snap {
@@ -1586,6 +1592,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
