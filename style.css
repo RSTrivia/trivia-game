@@ -406,12 +406,14 @@ h1 {
   opacity: 0.5 !important;
 }
 
-/* 4. Hover Logic: Slight Glow */
-#shareBtn:not(.is-disabled):hover,
-#logBtn:not(.is-disabled):hover,
-#muteBtn:not(.is-muted):hover {
-  opacity: 1;
-  filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.1);
+/* 4. Hover Logic: ONLY for Desktop/Mouse users */
+@media (hover: hover) {
+  #shareBtn:not(.is-disabled):hover,
+  #logBtn:not(.is-disabled):hover,
+  #muteBtn:not(.is-muted):hover {
+    opacity: 1;
+    filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.1);
+  }
 }
 
 /* Position the Help Button in the top right corner of the .container */
@@ -1536,6 +1538,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
