@@ -1276,236 +1276,69 @@ async function saveDailyScore(session, msg) {
 gameEnding = false;
 
 if (shareBtn) {
-  shareBtn.onclick = async () => {
-    // 1. Trigger the gold linger (STAYS ON FOR BOTH MOBILE & PC)
-    shareBtn.classList.add('tapped');
-    setTimeout(() => {
-        shareBtn.classList.remove('tapped');
-    }, 300);
+    shareBtn.onclick = async () => {
+        // 1. UI Feedback (Tapped state)
+        shareBtn.classList.add('tapped');
+        setTimeout(() => shareBtn.classList.remove('tapped'), 300);
 
-    // 2. DESKTOP ONLY: Create the "Copied!" Tooltip
-    if (window.matchMedia("(hover: hover)").matches) {
-        const tooltip = document.createElement('div');
-        tooltip.className = 'copy-tooltip';
-        tooltip.innerText = 'Copied!';
-        
-       // Append it TO the button, not the parent
-        shareBtn.appendChild(tooltip);
+        // 2. Auth Check (Must be logged in to share)
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+            alert("Please log in to share your score!");
+            if (typeof updateShareButtonState === "function") updateShareButtonState();
+            return;
+        }
 
-        // Remove tooltip after animation finishes
-        setTimeout(() => tooltip.remove(), 400);
-    }
-    
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        alert("Please log in to share your score!");
-        updateShareButtonState(); // Force it to stay grey
-        return;
-    }
-  
-      // 1. CAPTURE CURRENT STATE (To restore later)
-      const originalScore = finalScore.textContent;
-      const originalMsg = document.getElementById('game-over-title').textContent;
+        // 3. Get Data from LocalStorage
+        const currentScore = parseInt(localStorage.getItem('lastDailyScore') || "0");
+        const currentStreak = localStorage.getItem('userDailyStreak') || "0";
+        const dateStr = new Date().toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric', 
+            year: 'numeric' 
+        });
 
-      // 2. INJECT DAILY DATA (Just for the photo)
-      const dailyScore = localStorage.getItem('lastDailyScore') || "0";
-      const dailyMsg = localStorage.getItem('lastDailyMessage') || "Daily Challenge";
-      
-        if (shareBtn.classList.contains('is-disabled')) return;
-        // FORCE the daily values regardless of what is on screen
-        const currentScore = localStorage.getItem('lastDailyScore') || "0";
-        const currentMessage = localStorage.getItem('lastDailyMessage') || "Daily Challenge";
-       // get the saved score from our fetchDailyStatus sync
-        //let currentScore = localStorage.getItem('lastDailyScore') || "0";
-      // If the screen is empty (e.g. user refreshed), fall back to storage
+        // 4. Build the Wordle-style Text
+        // Creates the grid: e.g., 🟩🟩🟩🟩🟩⬛⬛⬛⬛⬛
+        const totalQs = 10;
+        const grid = "🟩".repeat(currentScore) + "⬛".repeat(totalQs - currentScore);
 
-        try {
-            const target = document.querySelector('.container');
-            const muteBtn = document.getElementById('muteBtn');
-            const helpBtn = document.getElementById('helpBtn');
-            //shareBtn.style.opacity = '0';
-            //if (muteBtn) muteBtn.style.opacity = '0';
+        const shareText = `OSRS Trivia • ${dateStr} ⚔️\n` +
+                          `Score: ${currentScore}/${totalQs}\n` +
+                          `${grid}\n` +
+                          `Streak: ${currentStreak} 🔥\n` +
+                          `https://osrstrivia.pages.dev/`;
 
-            const canvas = await html2canvas(target, {
-                backgroundColor: '#0a0a0a', 
-                scale: 2, 
-                useCORS: true,
-                onclone: (clonedDoc) => {
-                  const idsToHide = ['muteBtn', 'shareBtn', 'logBtn', 'collection-log', 'helpBtn', 'dailyStreakContainer'];
-                    idsToHide.forEach(id => {
-                        const el = clonedDoc.getElementById(id);
-                        if (el) el.style.display = 'none';
-                    });
-                    // --- A. FORCE DIMENSIONS (Prevents Mobile Shrinking) ---
-                    const clonedContainer = clonedDoc.querySelector('.container');
-                    // 1. FORCE THE VIEWPORT (The "Magic" fix for mobile)
-                    const clonedBody = clonedDoc.body;
-                    clonedBody.style.width = '450px';
-                    clonedBody.style.height = '600px';
-                    //clonedBody.style.overflow = 'hidden';
+        // 5. Desktop Tooltip Logic
+        if (window.matchMedia("(hover: hover)").matches) {
+            const tooltip = document.createElement('div');
+            tooltip.className = 'copy-tooltip';
+            tooltip.innerText = 'Copied to Clipboard!';
+            shareBtn.appendChild(tooltip);
+            setTimeout(() => tooltip.remove(), 1000);
+        }
 
-                    if (clonedContainer) {
-                        // Reset all container styles to be a fixed "card"
-                        Object.assign(clonedContainer.style, {
-                            width: '450px',
-                            height: '600px', 
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            padding: '40px',
-                            margin: '0',
-                            border: 'none',   // Ensure no border is adding width
-                            position: 'relative',
-                            transform: 'none', // Remove mobile scaling
-                            boxSizing: 'border-box'
-                        });
-                    }
+        // 6. Execution (Mobile Share vs PC Clipboard)
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-                    const startScreen = clonedDoc.getElementById('start-screen');
-                    const endScreen = clonedDoc.getElementById('end-screen');
-                    const playAgain = clonedDoc.getElementById('playAgainBtn');
-                    const mainMenu = clonedDoc.getElementById('mainMenuBtn');
-                    const title = clonedDoc.getElementById('main-title');
-                  // --- NEW: SCREEN VISIBILITY FIX ---
-                  const gameScreen = clonedDoc.getElementById('game');
-                  //const startScreenRef = clonedDoc.getElementById('start-screen');
-                  
-                  // 1. Force the Game and Start screens to HIDE in the picture
-                  if (gameScreen) {
-                      gameScreen.style.setProperty('display', 'none', 'important');
-                  }
-                  //if (startScreenRef) startScreenRef.style.display = 'none';
-                  // 2. Force the End Screen to SHOW in the picture
-                  // ----------------------------------
-                    if (endScreen) {
-                        endScreen.classList.remove('hidden');
-                        Object.assign(endScreen.style, {
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            width: '100%',
-                            gap: '20px' // Even spacing between score and message
-                        });
-                      // --- B. VISIBILITY & LAYOUT ---
-                       if (startScreen) startScreen.style.display = 'none'; // Use display none
-                        if (playAgain) playAgain.style.display = 'none';
-                        if (mainMenu) mainMenu.style.display = 'none';
-                      
-                        // Forced Text Sizes for high-res output
-                        const finalScoreElem = clonedDoc.getElementById('finalScore');
-                        const msgTitleElem = clonedDoc.getElementById('game-over-title');
-                        // 1. Get the message: First from the actual screen, then fallback to storage
-                                              
-                        if (finalScoreElem) {
-                            finalScoreElem.textContent = currentScore;
-                            //finalScoreElem.style.fontSize = '80px'; 
-                        }
-
-                        if (msgTitleElem) {
-                          // 2. Force the content and remove any hiding classes
-                            msgTitleElem.textContent = currentMessage;
-                            msgTitleElem.classList.remove('hidden');
-                            msgTitleElem.style.fontSize = '24px';
-                            msgTitleElem.style.textAlign = 'center';
-                            // 3. Force absolute visibility for the canvas renderer
-                              Object.assign(msgTitleElem.style, {
-                                  display: 'block', 
-                                  visibility: 'visible',
-                                  opacity: '1',
-                                  fontSize: '24px',
-                                  textAlign: 'center',
-                                  color: '#ffffff',
-                                  marginTop: '10px',
-                                  marginBottom: '10px',
-                                  width: '100%'
-                              });
-                        }
-                        // Date
-                        const dateTag = clonedDoc.createElement('div');
-                        dateTag.textContent = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-                        Object.assign(dateTag.style, {
-                            marginTop: '30px', fontSize: '18px', color: '#a77b0a',
-                            fontFamily: "'Cinzel', serif", textAlign: 'center',
-                            opacity: '0.8', letterSpacing: '2px', textTransform: 'uppercase'
-                        });
-                        endScreen.appendChild(dateTag);
-                    }
-                  // --- D. TITLE FIX (Locked Pixel Size) ---
-                    if (title) {
-                        Object.assign(title.style, {
-                            display: 'block',             // <--- ADD THIS
-                            visibility: 'visible',       // <--- ADD THIS
-                            opacity: '1',                // <--- ADD THIS
-                            width: '100%',               // <--- ADD THIS (ensures centering)
-                            background: 'none',
-                            backgroundImage: 'none',
-                            webkitBackgroundClip: 'initial',
-                            color: '#000000',
-                            webkitTextFillColor: '#000000',
-                            fontFamily: "'Cinzel', serif",
-                            fontWeight: "700",
-                            fontSize: "48px",
-                            textAlign: "center",
-                            textShadow: `
-                                0 0 4px rgba(0,0,0,0.8),
-                                1px 1px 0 #000,
-                                2px 2px 2px rgba(0,0,0,0.6),
-                                0 0 12px rgba(212, 175, 55, 0.95),
-                                0 0 30px rgba(212, 175, 55, 0.75),
-                                0 0 55px rgba(212, 175, 55, 0.45)`
-                        });
-                      // 3. Final safety: Force display none override
-                      title.style.setProperty('display', 'block', 'important');
-                    }
-                }
-            });
-
-            shareBtn.style.opacity = '1';
-            if (muteBtn) muteBtn.style.opacity = '1';
-
-           canvas.toBlob(async (blob) => {
-                if (!blob) return;
-                
-                // 1. Detect if the user is on a mobile device
-                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-                const file = new File([blob], "OSRS_Daily_Score.png", { type: "image/png" });
-
-                // 2. Mobile Logic: Use the native Share Menu
-                if (isMobile && navigator.canShare && navigator.canShare({ files: [file] })) {
-                    try {
-                        await navigator.share({ 
-                            files: [file], 
-                            title: 'OSRS Trivia', 
-                            text: `I scored ${currentScore}/10 on today's OSRS Trivia! ⚔️`
-                        });
-                    } catch (err) {
-                        console.log("Share cancelled");
-                    }
-                } 
-                // 3. PC Logic: Copy to clipboard directly, NO share menu
-               else {
-                    try {
-                        const data = [new ClipboardItem({ [blob.type]: blob })];
-                        await navigator.clipboard.write(data);
-                        //alert("Daily Score Card copied to clipboard! ⚔️");
-                    } catch (clipErr) {
-                        console.error("Clipboard failed:", clipErr);
-                        //alert("Sharing not supported. Please long-press the image to save.");
-                    }
-                }
-            }, 'image/png');
-        } catch (err) {
-            console.error("Canvas error:", err);
-            shareBtn.style.opacity = '1';
-            const muteBtn = document.getElementById('muteBtn');
-            if (muteBtn) muteBtn.style.opacity = '1';
-        } finally {
-      // Restore text
-      finalScore.textContent = originalScore;
-      document.getElementById('game-over-title').textContent = originalMsg;
-  }
-      
+        if (isMobile && navigator.share) {
+            try {
+                await navigator.share({
+                    title: 'OSRS Trivia Result',
+                    text: shareText
+                });
+            } catch (err) {
+                console.log("Share cancelled or failed");
+            }
+        } else {
+            try {
+                await navigator.clipboard.writeText(shareText);
+                // Tooltip provides the visual feedback for PC
+            } catch (clipErr) {
+                console.error("Clipboard failed:", clipErr);
+                alert("Failed to copy. Try again!");
+            }
+        }
     };
 }
 
@@ -2076,6 +1909,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
