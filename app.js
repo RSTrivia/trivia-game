@@ -1929,6 +1929,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+const logBtn = document.getElementById('logBtn');
+
+logBtn.addEventListener('click', () => {
+    // Add the class to trigger the CSS "Shine"
+    logBtn.classList.add('tapped');
+    
+    // Remove it after a short delay to create the "linger" effect
+    setTimeout(() => {
+        logBtn.classList.remove('tapped');
+    }, 300); // 300ms matches the visual feel of OSRS interface clicks
+});
 
 
 
