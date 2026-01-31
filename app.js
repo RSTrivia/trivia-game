@@ -1277,27 +1277,13 @@ gameEnding = false;
 
 if (shareBtn) {
     shareBtn.onclick = async () => {
-        // --- 1. IMMEDIATE UI FEEDBACK (Before any 'await' calls) ---
-        // This stops the button from growing/glitching because the 
-        // tooltip is handled before the browser pauses for data.
-        shareBtn.classList.add('tapped');
-        setTimeout(() => shareBtn.classList.remove('tapped'), 300);
+        // 1. Instant UI Feedback - Just trigger the animation class
+        shareBtn.classList.add('show-tooltip', 'tapped');
+        setTimeout(() => shareBtn.classList.remove('show-tooltip', 'tapped'), 600);
 
-        // Show Tooltip immediately for Desktop
-        if (window.matchMedia("(hover: hover)").matches) {
-            const tooltip = document.createElement('div');
-            tooltip.className = 'copy-tooltip';
-            tooltip.innerText = 'Copied!';
-            shareBtn.appendChild(tooltip);
-            setTimeout(() => tooltip.remove(), 400);
-        }
-
-        // --- 2. DATA FETCHING ---
+        // 2. Heavy Data Fetching (Happens in background while animation plays)
         const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-            alert("Please log in to share your score!");
-            return;
-        }
+        if (!session) return;
 
         let liveStreak = 0;
         try {
@@ -1307,52 +1293,24 @@ if (shareBtn) {
                 .eq('id', session.user.id)
                 .single();
 
-            if (profile && profile.achievements) {
+            if (profile?.achievements) {
                 liveStreak = profile.achievements.daily_streak || 0;
-                localStorage.setItem('cached_daily_streak', liveStreak);
             }
-        } catch (err) {
-            console.error("Error fetching streak:", err);
-            liveStreak = localStorage.getItem('cached_daily_streak') || 0;
-        }
+        } catch (e) { liveStreak = localStorage.getItem('cached_daily_streak') || 0; }
 
-        // --- 3. PREPARE SHARE TEXT ---
+        // 3. Prepare text
         const currentScore = parseInt(localStorage.getItem('lastDailyScore') || "0");
-        const dateStr = new Date().toLocaleDateString('en-US', { 
-            month: 'short', 
-            day: 'numeric', 
-            year: 'numeric' 
-        });
+        const grid = "🟩".repeat(currentScore) + "🟥".repeat(10 - currentScore);
+        const shareText = `OSRS Trivia • Score: ${currentScore}/10\n${grid}\nStreak: ${liveStreak} 🔥`;
 
-        const totalQs = 10;
-        const grid = "🟩".repeat(currentScore) + "🟥".repeat(totalQs - currentScore);
-
-        const shareText = `OSRS Trivia • ${dateStr} ⚔️\n` +
-                          `Score: ${currentScore}/${totalQs}\n` +
-                          `${grid}\n` +
-                          `Streak: ${liveStreak} 🔥\n` +
-                          `https://osrstrivia.pages.dev/`;
-
-        // --- 4. EXECUTION ---
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-        if (isMobile && navigator.share) {
-            try {
-                await navigator.share({
-                    title: 'OSRS Trivia',
-                    text: shareText
-                });
-            } catch (err) { console.log("Share cancelled"); }
+        // 4. Copy/Share
+        if (navigator.share && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+            try { await navigator.share({ text: shareText }); } catch (err) {}
         } else {
-            try {
-                await navigator.clipboard.writeText(shareText);
-            } catch (clipErr) {
-                console.error("Clipboard failed:", clipErr);
-            }
+            navigator.clipboard.writeText(shareText);
         }
     };
 }
-
 
 async function calculateStreakFromHistory(userId) {
     const { data, error } = await supabase
@@ -1920,6 +1878,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
