@@ -361,7 +361,7 @@ h1 {
 
 
 /* ====== USER CONTROLS (FIXED PLACEMENT & COLORS) ====== *
-/* 3. The Icons: Clean up the individual buttons /
+/* 3. The Icons: Clean up the individual buttons */
 #shareBtn, #muteBtn, #logBtn {
   width: 32px;
   height: 32px;
@@ -375,21 +375,21 @@ h1 {
   padding: 0;
   transition: opacity 0.2s ease;
 
-  / DEFAULT TO GREY: This ensures they start grey /
+  /* DEFAULT TO GREY: This ensures they start grey */
   filter: grayscale(1) brightness(0.5);
   opacity: 0.5;
 }
-/ Space between the icons themselves /
+/* Space between the icons themselves */
 #shareBtn { margin-right: 4px; transition: filter 1.5s ease, opacity 1.5s ease, transform 0.2s ease; }
-/ This triggers only WHILE the finger is touching the screen /
+/* This triggers only WHILE the finger is touching the screen */
 #shareBtn:active {
   filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.3) drop-shadow(0 0 5px #ffea8a) !important;
-  transform: scale(0.9); / Slight shrink makes it feel physical /
+  transform: scale(0.9); / Slight shrink makes it feel physical */
   opacity: 1 !important;
 }
 #logBtn { margin-right: 4px; }
 
-/ 2. Standard State: Your Original Gold /
+/* 2. Standard State: Your Original Gold */
 #shareBtn:not(.is-disabled), 
 #logBtn:not(.is-disabled), 
 #muteBtn:not(.is-muted) {
@@ -397,17 +397,17 @@ h1 {
   opacity: 0.9;
 }
 
-/ 3. The "Linger" Gold Effect (Class added by JS) /
-/ We also keep :active so the click feels instant /
+/* 3. The "Linger" Gold Effect (Class added by JS) */
+/* We also keep :active so the click feels instant */
 #shareBtn.tapped, #shareBtn:active {
   filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.3) drop-shadow(0 0 8px #ffea8a) !important;
   transform: scale(0.9);
   opacity: 1 !important;
-  transition: 0s; / No delay when clicking; makes it feel responsive /
+  transition: 0s; / No delay when clicking; makes it feel responsive */
 }
 
 
-/ 4. Muted/Disabled State: Grey /
+/* 4. Muted/Disabled State: Grey */
 #muteBtn.is-muted,
 #shareBtn.is-disabled, 
 #logBtn.is-disabled {
@@ -415,7 +415,7 @@ h1 {
   opacity: 0.5 !important;
 }
 
-/ 5. Hover Logic: ONLY for Desktop/Mouse users */
+/* 5. Hover Logic: ONLY for Desktop/Mouse users */
 @media (hover: hover) {
   #shareBtn:not(.is-disabled):hover,
   #logBtn:not(.is-disabled):hover,
@@ -1573,6 +1573,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
