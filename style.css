@@ -428,51 +428,42 @@ h1 {
 }
 
 .copy-tooltip {
-    /* 1. Layout: Use fixed values to prevent 'growing' */
+    /* 1. RESET: Stop inheriting button transitions/filters */
+    all: revert; 
     position: absolute;
-    bottom: 110%; /* Starting position */
+    bottom: 125%;
     left: 50%;
-    transform: translateX(-50%); /* Centered and STAYS centered */
+    /* Forced centering that won't be overridden by button scaling */
+    transform: translate3d(-50%, 0, 0) scale(1) !important;
     
-    /* 2. Style */
+    /* 2. STYLE: Keep your gold theme */
     background: rgba(10, 10, 10, 0.95);
     color: #ffea8a;
     border: 1px solid #d4af37;
-    padding: 4px 8px;
+    padding: 4px 10px;
     border-radius: 4px;
+    font-family: sans-serif; /* Ensure it doesn't inherit weird fonts */
     font-size: 12px;
     font-weight: bold;
     white-space: nowrap;
+    z-index: 9999;
     pointer-events: none;
-    z-index: 1000;
 
-    /* 3. Rendering: Lock the pixels */
+    /* 3. CLARITY: No blur, no pixelation */
     -webkit-font-smoothing: antialiased;
-    will-change: opacity, bottom; 
     filter: none !important;
     text-shadow: none !important;
+    transition: none !important; /* Stop the "growing" transition */
 
-    /* 4. The Animation: No transforms allowed here! */
-    animation: tooltip-steady 0.5s ease-out forwards;
+    /* 4. ANIMATION: Simple fade in/out only */
+    animation: tooltip-simple-fade 0.5s ease-out forwards;
 }
 
-@keyframes tooltip-steady {
-    0% { 
-        opacity: 0;
-        bottom: 105%; /* Slight slide up from here... */
-    }
-    20% { 
-        opacity: 1;
-        bottom: 120%; /* ...to here */
-    }
-    80% { 
-        opacity: 1;
-        bottom: 120%; /* Stay perfectly still */
-    }
-    100% { 
-        opacity: 0;
-        bottom: 120%; /* Do NOT move while fading out */
-    }
+@keyframes tooltip-simple-fade {
+    0%   { opacity: 0; }
+    20%  { opacity: 1; }
+    80%  { opacity: 1; }
+    100% { opacity: 0; }
 }
 
 /* Position the Help Button in the top right corner of the .container */
@@ -1597,6 +1588,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
