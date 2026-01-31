@@ -433,23 +433,23 @@ h1 {
     bottom: 120%;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(10, 10, 10, 0.95); /* Slightly darker, more solid bg */
+    background: rgba(0, 0, 0, 0.9);
     
-    /* MODIFIED COLORS */
-    color: #c5a545; /* Muted, flatter gold (less "neon") */
-    border: 1px solid #8b6508; /* Darker bronze-gold border */
+    /* Keep your bright gold colors */
+    color: #ffea8a; 
+    border: 1px solid #d4af37;
+    
+    /* THE FIX: This kills the "shine/glow" inherited from the button */
+    filter: none !important;
+    text-shadow: none !important;
     
     padding: 3px 8px;
     border-radius: 4px;
     font-size: 0.7rem;
-    font-weight: 600; /* Slightly thinner than 'bold' for a cleaner look */
+    font-weight: bold;
     pointer-events: none;
     z-index: 1000;
     white-space: nowrap;
-    
-    /* Remove any global text-shadows if they exist */
-    text-shadow: none !important; 
-    
     animation: tooltip-float 0.4s ease-out forwards;
 }
 
@@ -1582,6 +1582,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
