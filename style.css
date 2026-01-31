@@ -435,35 +435,38 @@ h1 {
     bottom: 130%;
     left: 50%;
     
-    /* Center using transform, but add backface-visibility to snap pixels */
-    transform: translateX(-50%);
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    
-    width: 70px;
+    /* Using a fixed width and margin-left is the most stable way to center 
+       without using transform, which is a main cause of blur */
+    width: 74px; 
+    margin-left: -37px; 
+
     background: #000000;
     color: #ffea8a;
     border: 1px solid #d4af37;
     
-    /* Text Sharpness Fixes */
+    /* Force high-quality text rendering */
     font-family: Arial, sans-serif;
     font-size: 11px;
     font-weight: bold;
+    line-height: 1.2;
     text-align: center;
-    padding: 3px 0;
+    padding: 4px 0;
     border-radius: 3px;
     
-    /* Antialiasing for light text on dark background */
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    /* The Magic Fix: Stop parent filters/transforms from affecting the tooltip layer */
+    transform: translateZ(0); 
+    will-change: transform;
     
     display: none;
     pointer-events: none;
     z-index: 9999;
 }
 
+/* Ensure the text is readable on the dark background */
 #shareBtn.show-tooltip .copy-tooltip {
     display: block !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 /* Position the Help Button in the top right corner of the .container */
@@ -1588,6 +1591,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
