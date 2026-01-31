@@ -428,47 +428,33 @@ h1 {
 }
 
 .copy-tooltip {
-    /* 1. SEPARATE FROM BUTTON LAYOUT */
-    position: absolute;
-    /* Use a fixed pixel distance from the bottom of the button */
-    bottom: 38px; 
-    left: 50%;
-    /* Keep centering static - do not animate this */
-    transform: translateX(-50%) !important;
-    
-    /* 2. LOCK DIMENSIONS (Stops the "Growing") */
-    height: 14px;
-    line-height: 14px;
-    padding: 4px 10px;
-    white-space: nowrap;
-    
-    /* 3. STYLE & THEME */
+    position: fixed; /* Matches the JS */
+    transform: translateX(-50%); /* Horizontal centering only */
     background: rgba(10, 10, 10, 0.95);
     color: #ffea8a;
     border: 1px solid #d4af37;
+    padding: 4px 10px;
     border-radius: 4px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: bold;
+    white-space: nowrap;
     z-index: 10000;
     pointer-events: none;
-
-    /* 4. STOP INHERITANCE (Stops the "Exploding") */
-    transition: none !important;
-    filter: none !important;
-    text-shadow: none !important;
+    
+    /* Pixel-perfect rendering */
     -webkit-font-smoothing: antialiased;
-
-    /* 5. FADE ONLY */
-    animation: tooltip-fade-only 0.5s ease-in-out forwards;
+    filter: none !important;
+    
+    /* Fade only - no movement, no growth */
+    animation: tooltip-fade-only 0.5s ease-out forwards;
 }
 
 @keyframes tooltip-fade-only {
-    0%   { opacity: 0; }
-    15%  { opacity: 1; }
-    85%  { opacity: 1; }
+    0% { opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 1; }
     100% { opacity: 0; }
 }
-
 
 /* Position the Help Button in the top right corner of the .container */
 #helpBtn {
@@ -1592,6 +1578,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
