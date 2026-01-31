@@ -374,7 +374,8 @@ h1 {
   cursor: pointer;
   padding: 0;
   /* This transition handles the slow "fade back" to grey or dull gold */
-  transition: filter 1.5s ease, opacity 1.5s ease, transform 0.2s ease;
+  /* Reduced from 1.5s to 0.4s for a quicker reset */
+  transition: filter 0.4s ease, opacity 0.4s ease, transform 0.2s ease;
   filter: grayscale(1) brightness(0.5);
   opacity: 0.5;
 }
@@ -1538,6 +1539,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
