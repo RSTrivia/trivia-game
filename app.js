@@ -1277,18 +1277,11 @@ gameEnding = false;
 
 if (shareBtn) {
   shareBtn.onclick = async () => {
-// A. UI FEEDBACK (Both Mobile & PC)
+    // 1. Trigger the gold linger (STAYS ON FOR BOTH MOBILE & PC)
     shareBtn.classList.add('tapped');
-    setTimeout(() => shareBtn.classList.remove('tapped'), 300);
-
-    // B. DESKTOP ONLY: TOOLTIP
-    if (window.matchMedia("(hover: hover)").matches) {
-        const tooltip = document.createElement('div');
-        tooltip.className = 'copy-tooltip';
-        tooltip.innerText = 'Copied!';
-        shareBtn.parentElement.appendChild(tooltip);
-        setTimeout(() => tooltip.remove(), 300);
-    }
+    setTimeout(() => {
+        shareBtn.classList.remove('tapped');
+    }, 300);
 
     // 2. DESKTOP ONLY: Create the "Copied!" Tooltip
     if (window.matchMedia("(hover: hover)").matches) {
@@ -1301,25 +1294,15 @@ if (shareBtn) {
         shareBtn.parentElement.appendChild(tooltip);
 
         // Remove tooltip after animation finishes
-        setTimeout(() => tooltip.remove(), 300);
+        setTimeout(() => tooltip.remove(), 500);
     }
-  
-   const shareUrl = window.location.href;
-    try {
-        await navigator.clipboard.writeText(shareUrl);
-        
-        // D. NOW check session for database updates
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-            console.log("Copied, but user not logged in for achievements.");
-             updateShareButtonState(); // Force it to stay grey
-            return;
-        }   
-
-      } catch (err) {
-        console.error("Failed to copy:", err);
+    
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        alert("Please log in to share your score!");
+        updateShareButtonState(); // Force it to stay grey
+        return;
     }
-  }; 
   
       // 1. CAPTURE CURRENT STATE (To restore later)
       const originalScore = finalScore.textContent;
@@ -2094,6 +2077,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
