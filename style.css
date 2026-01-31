@@ -361,7 +361,7 @@ h1 {
 }
 
 
-/* ====== USER CONTROLS (FIXED PLACEMENT & COLORS) ====== *
+/* ====== USER CONTROLS (FIXED PLACEMENT & COLORS) ====== */
 /* 3. The Icons: Clean up the individual buttons */
 #shareBtn, #muteBtn, #logBtn {
   position: relative; /* Add this! This anchors the tooltip to the button, not the group */
@@ -1578,6 +1578,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
