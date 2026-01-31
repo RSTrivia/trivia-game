@@ -374,7 +374,6 @@ h1 {
   cursor: pointer;
   padding: 0;
   transition: opacity 0.2s ease;
-  filter: sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85);
 
   /* DEFAULT TO GREY: This ensures they start grey */
   filter: grayscale(1) brightness(0.5);
@@ -1538,6 +1537,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
