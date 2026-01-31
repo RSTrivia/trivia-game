@@ -428,57 +428,45 @@ h1 {
 }
 
 .copy-tooltip {
-    /* 1. LOCK DIMENSIONS: This stops the 'growing' effect */
-    all: revert;
+    /* 1. SEPARATE FROM BUTTON LAYOUT */
     position: absolute;
-    bottom: 130%; /* Higher up to avoid clashing with button scale */
+    /* Use a fixed pixel distance from the bottom of the button */
+    bottom: 38px; 
     left: 50%;
-    width: 60px;  /* Fixed width */
-    height: 20px; /* Fixed height */
+    /* Keep centering static - do not animate this */
+    transform: translateX(-50%) !important;
     
-    /* 2. CENTER & LOCK: Static transform prevents scaling issues */
-    transform: translate3d(-50%, 0, 0) !important;
+    /* 2. LOCK DIMENSIONS (Stops the "Growing") */
+    height: 14px;
+    line-height: 14px;
+    padding: 4px 10px;
+    white-space: nowrap;
     
-    /* 3. STYLE: OSRS Theme */
-    background: rgba(10, 10, 10, 0.98);
+    /* 3. STYLE & THEME */
+    background: rgba(10, 10, 10, 0.95);
     color: #ffea8a;
     border: 1px solid #d4af37;
     border-radius: 4px;
-    
-    /* 4. TEXT: Locked pixel size for clarity */
-    display: flex;
-    align-items: center;
-    justify-content: center;
     font-size: 11px;
     font-weight: bold;
-    font-family: Arial, sans-serif;
-    white-space: nowrap;
-    
-    /* 5. RENDERING: No blur */
-    -webkit-font-smoothing: antialiased;
-    pointer-events: none;
     z-index: 10000;
+    pointer-events: none;
+
+    /* 4. STOP INHERITANCE (Stops the "Exploding") */
+    transition: none !important;
     filter: none !important;
     text-shadow: none !important;
-    transition: none !important;
+    -webkit-font-smoothing: antialiased;
 
-    animation: tooltip-fade-only 0.6s ease-in-out forwards;
+    /* 5. FADE ONLY */
+    animation: tooltip-fade-only 0.5s ease-in-out forwards;
 }
 
 @keyframes tooltip-fade-only {
-    0% { 
-        opacity: 0; 
-    }
-    15% { 
-        opacity: 1; 
-    }
-    85% { 
-        opacity: 1; 
-    }
-    100% { 
-        opacity: 0; 
-        /* No movement here stops the 'exploding' look */
-    }
+    0%   { opacity: 0; }
+    15%  { opacity: 1; }
+    85%  { opacity: 1; }
+    100% { opacity: 0; }
 }
 
 
@@ -1604,6 +1592,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
