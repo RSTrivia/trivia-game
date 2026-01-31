@@ -361,7 +361,7 @@ h1 {
 
 
 /* ====== USER CONTROLS (FIXED PLACEMENT & COLORS) ====== *
-/* 1. Base Styles */
+/* 3. The Icons: Clean up the individual buttons /
 #shareBtn, #muteBtn, #logBtn {
   width: 32px;
   height: 32px;
@@ -373,17 +373,23 @@ h1 {
   font-size: 1.3rem;
   cursor: pointer;
   padding: 0;
-  /* This transition handles the slow "fade back" to grey or dull gold */
-  /* Reduced from 1.5s to 0.4s for a quicker reset */
-  transition: filter 0.4s ease, opacity 0.4s ease, transform 0.2s ease;
+  transition: opacity 0.2s ease;
+
+  / DEFAULT TO GREY: This ensures they start grey /
   filter: grayscale(1) brightness(0.5);
   opacity: 0.5;
 }
-
-#shareBtn { margin-right: 4px; }
+/ Space between the icons themselves /
+#shareBtn { margin-right: 4px; transition: filter 1.5s ease, opacity 1.5s ease, transform 0.2s ease; }
+/ This triggers only WHILE the finger is touching the screen /
+#shareBtn:active {
+  filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.3) drop-shadow(0 0 5px #ffea8a) !important;
+  transform: scale(0.9); / Slight shrink makes it feel physical /
+  opacity: 1 !important;
+}
 #logBtn { margin-right: 4px; }
 
-/* 2. Standard State (Unlocked) */
+/ 2. Standard State: Your Original Gold /
 #shareBtn:not(.is-disabled), 
 #logBtn:not(.is-disabled), 
 #muteBtn:not(.is-muted) {
@@ -391,29 +397,31 @@ h1 {
   opacity: 0.9;
 }
 
-/* 3. The "Linger" Gold Effect (Class added by JS) */
-/* We also keep :active so the click feels instant */
+/ 3. The "Linger" Gold Effect (Class added by JS) /
+/ We also keep :active so the click feels instant /
 #shareBtn.tapped, #shareBtn:active {
   filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.3) drop-shadow(0 0 8px #ffea8a) !important;
   transform: scale(0.9);
   opacity: 1 !important;
-  transition: 0s; /* No delay when clicking; makes it feel responsive */
+  transition: 0s; / No delay when clicking; makes it feel responsive /
 }
 
-/* 4. Muted/Disabled State */
-#muteBtn.is-muted, #shareBtn.is-disabled, #logBtn.is-disabled {
+
+/ 4. Muted/Disabled State: Grey /
+#muteBtn.is-muted,
+#shareBtn.is-disabled, 
+#logBtn.is-disabled {
   filter: grayscale(1) brightness(0.5) !important;
   opacity: 0.5 !important;
 }
 
-/* 5. Hover Logic (Desktop Only) */
+/ 5. Hover Logic: ONLY for Desktop/Mouse users */
 @media (hover: hover) {
   #shareBtn:not(.is-disabled):hover,
   #logBtn:not(.is-disabled):hover,
   #muteBtn:not(.is-muted):hover {
     opacity: 1;
     filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.1);
-    transition: 0.2s;
   }
 }
 
@@ -1565,6 +1573,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
