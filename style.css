@@ -428,51 +428,50 @@ h1 {
 }
 
 .copy-tooltip {
+    /* 1. Layout: Use fixed values to prevent 'growing' */
     position: absolute;
-    /* Fixed position above the button */
-    bottom: 40px; 
+    bottom: 110%; /* Starting position */
     left: 50%;
-    transform: translateX(-50%); 
+    transform: translateX(-50%); /* Centered and STAYS centered */
     
-    /* Hardware acceleration without the "growing" side effect */
-    backface-visibility: hidden;
-    will-change: opacity;
-
-    background: rgba(0, 0, 0, 0.95);
+    /* 2. Style */
+    background: rgba(10, 10, 10, 0.95);
     color: #ffea8a;
     border: 1px solid #d4af37;
-    padding: 4px 10px;
+    padding: 4px 8px;
     border-radius: 4px;
     font-size: 12px;
-    font-weight: 700;
+    font-weight: bold;
     white-space: nowrap;
-    z-index: 1000;
     pointer-events: none;
+    z-index: 1000;
 
-    /* Clean up rendering */
+    /* 3. Rendering: Lock the pixels */
     -webkit-font-smoothing: antialiased;
+    will-change: opacity, bottom; 
     filter: none !important;
     text-shadow: none !important;
 
-    /* Simplified animation */
-    animation: tooltip-pop 0.5s ease-out forwards;
+    /* 4. The Animation: No transforms allowed here! */
+    animation: tooltip-steady 0.5s ease-out forwards;
 }
 
-@keyframes tooltip-pop {
+@keyframes tooltip-steady {
     0% { 
         opacity: 0;
-        /* Start exactly where it ends to stop the "growing/moving" look */
-        margin-bottom: -5px; 
+        bottom: 105%; /* Slight slide up from here... */
     }
     20% { 
         opacity: 1;
-        margin-bottom: 0;
+        bottom: 120%; /* ...to here */
     }
     80% { 
         opacity: 1;
+        bottom: 120%; /* Stay perfectly still */
     }
     100% { 
         opacity: 0;
+        bottom: 120%; /* Do NOT move while fading out */
     }
 }
 
@@ -1598,6 +1597,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
