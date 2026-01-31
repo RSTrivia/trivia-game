@@ -428,20 +428,26 @@ h1 {
 
 .copy-tooltip {
     position: absolute;
-    bottom: 120%; /* Sits just above the button */
-    
+    bottom: 120%;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.9);
-    color: #ffea8a; /* Bright Gold */
-    border: 1px solid #d4af37;
+    background: rgba(10, 10, 10, 0.95); /* Slightly darker, more solid bg */
+    
+    /* MODIFIED COLORS */
+    color: #c5a545; /* Muted, flatter gold (less "neon") */
+    border: 1px solid #8b6508; /* Darker bronze-gold border */
+    
     padding: 3px 8px;
     border-radius: 4px;
     font-size: 0.7rem;
-    font-weight: bold;
+    font-weight: 600; /* Slightly thinner than 'bold' for a cleaner look */
     pointer-events: none;
     z-index: 1000;
     white-space: nowrap;
+    
+    /* Remove any global text-shadows if they exist */
+    text-shadow: none !important; 
+    
     animation: tooltip-float 0.4s ease-out forwards;
 }
 
@@ -1574,6 +1580,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
