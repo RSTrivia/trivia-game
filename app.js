@@ -1277,38 +1277,44 @@ gameEnding = false;
 
 if (shareBtn) {
     shareBtn.onclick = async () => {
-        // 1. Instant UI Feedback - Just trigger the animation class
+        // 1. Instant Class Toggle
         shareBtn.classList.add('show-tooltip', 'tapped');
-        setTimeout(() => shareBtn.classList.remove('show-tooltip', 'tapped'), 600);
-
-        // 2. Heavy Data Fetching (Happens in background while animation plays)
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) return;
-
-        let liveStreak = 0;
-        try {
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('achievements')
-                .eq('id', session.user.id)
-                .single();
-
-            if (profile?.achievements) {
-                liveStreak = profile.achievements.daily_streak || 0;
-            }
-        } catch (e) { liveStreak = localStorage.getItem('cached_daily_streak') || 0; }
-
-        // 3. Prepare text
+        
+        // 2. Immediate Clipboard Copy (Before the Async DB fetch)
+        // This makes the "Copied" feel real because the copy happens NOW
         const currentScore = parseInt(localStorage.getItem('lastDailyScore') || "0");
         const grid = "🟩".repeat(currentScore) + "🟥".repeat(10 - currentScore);
-        const shareText = `OSRS Trivia • Score: ${currentScore}/10\n${grid}\nStreak: ${liveStreak} 🔥`;
-
-        // 4. Copy/Share
-        if (navigator.share && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-            try { await navigator.share({ text: shareText }); } catch (err) {}
-        } else {
-            navigator.clipboard.writeText(shareText);
+        const tempText = `OSRS Trivia • Score: ${currentScore}/10\n${grid}`;
+        
+        // Quick copy so the user gets what they want immediately
+        if (!navigator.share) {
+            navigator.clipboard.writeText(tempText);
         }
+
+        // 3. Background Data Fetching
+        // We fetch the "Real" text with the streak for the final share/copy
+        let liveStreak = localStorage.getItem('cached_daily_streak') || 0;
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                const { data: profile } = await supabase.from('profiles').select('achievements').eq('id', session.user.id).single();
+                if (profile?.achievements?.daily_streak) {
+                    liveStreak = profile.achievements.daily_streak;
+                }
+            }
+        } catch (e) { /* fallback to cached */ }
+
+        const finalShareText = `OSRS Trivia • Score: ${currentScore}/10\n${grid}\nStreak: ${liveStreak} 🔥\nhttps://osrstrivia.pages.dev/`;
+
+        // 4. Final Share/Copy Action
+        if (navigator.share && /Android|iPhone|iPad/i.test(navigator.userAgent)) {
+            try { await navigator.share({ text: finalShareText }); } catch (err) {}
+        } else {
+            navigator.clipboard.writeText(finalShareText);
+        }
+
+        // Cleanup tooltip
+        setTimeout(() => shareBtn.classList.remove('show-tooltip', 'tapped'), 800);
     };
 }
 
@@ -1878,6 +1884,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
