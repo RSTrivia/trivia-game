@@ -380,6 +380,9 @@ h1 {
   filter: grayscale(1) brightness(0.5);
   opacity: 0.5;
 }
+#shareBtn {
+    isolation: isolate; /* Creates a new stacking context to stop filter bleeding */
+}
 /* Space between the icons themselves */
 #shareBtn { margin-right: 4px; transition: filter 0.2s ease, opacity 0.2s ease, transform 0.2s ease; }
 /* This triggers only WHILE the finger is touching the screen */
@@ -428,47 +431,40 @@ h1 {
 }
 
 .copy-tooltip {
-    /* 1. Positioning Fix: Stop using 50% transforms */
     position: absolute;
-    bottom: 125%; 
+    bottom: 130%;
     left: 50%;
-    width: 64px;       /* Fixed even width */
-    margin-left: -32px; /* Exactly half of width (Whole number) */
     
-    /* 2. Style (OSRS Theme) */
-    background: #000000; 
-    color: #ffea8a;  
+    /* Fixed centering without fuzzy math */
+    width: 70px;
+    margin-left: -35px;
+    
+    background: #000000;
+    color: #ffea8a;
     border: 1px solid #d4af37;
     
-    /* 3. Rendering Fixes: Force pixel-perfection */
-    padding: 3px 0;    /* Vertical only to keep width exact */
-    text-align: center;
-    border-radius: 4px;
-    font-size: 0.7rem;
-    font-weight: bold;
-    white-space: nowrap;
-    z-index: 1000;
-
-    display: none;    /* Stay hidden until triggered */
-    
-    /* THE "SHARP" PROPERTIES */
-    transform: none !important; /* KILL THE TRANSFORM */
+    /* CRITICAL: Force the browser to ignore parent filters */
     filter: none !important;
-    -webkit-font-smoothing: none; /* Stops the browser from "softening" edges */
+    backdrop-filter: none !important;
+    transform: none !important;
+    
+    /* Pixel-perfect text rendering */
+    font-family: Arial, sans-serif;
+    font-size: 11px; /* Fixed px is often sharper than rem for tooltips */
+    font-weight: bold;
+    text-align: center;
+    padding: 3px 0;
+    border-radius: 3px;
+    
+    /* Visibility */
+    display: none;
+    pointer-events: none;
+    z-index: 9999;
 }
 
-/* Simply show it when active - no animation to prevent motion blur */
 #shareBtn.show-tooltip .copy-tooltip {
-    display: block; 
+    display: block !important;
 }
-
-@keyframes tooltip-snap {
-    0% { opacity: 0; }
-    10% { opacity: 1; }
-    90% { opacity: 1; }
-    100% { opacity: 0; }
-}
-
 
 /* Position the Help Button in the top right corner of the .container */
 #helpBtn {
@@ -1592,6 +1588,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
