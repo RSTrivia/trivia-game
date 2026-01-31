@@ -1282,7 +1282,7 @@ if (shareBtn) {
     // Remove it after 2 seconds (starts the 1.5s CSS fade)
     setTimeout(() => {
         shareBtn.classList.remove('tapped');
-    }, 2000);
+    }, 800);
       
     const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -2064,6 +2064,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
