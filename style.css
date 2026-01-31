@@ -363,6 +363,7 @@ h1 {
 /* ====== USER CONTROLS (FIXED PLACEMENT & COLORS) ====== *
 /* 3. The Icons: Clean up the individual buttons */
 #shareBtn, #muteBtn, #logBtn {
+  position: relative; /* Add this! This anchors the tooltip to the button, not the group */
   width: 32px;
   height: 32px;
   display: flex;
@@ -427,7 +428,8 @@ h1 {
 
 .copy-tooltip {
     position: absolute;
-    top: -30px; /* Position it above the share icon */
+    bottom: 120%; /* Sits just above the button */
+    
     left: 50%;
     transform: translateX(-50%);
     background: rgba(0, 0, 0, 0.9);
@@ -1572,6 +1574,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
