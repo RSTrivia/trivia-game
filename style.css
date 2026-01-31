@@ -432,39 +432,35 @@ h1 {
 
 .copy-tooltip {
     position: absolute;
-    bottom: 130%;
-    left: 50%;
+    /* Adjust this to move it higher/lower manually */
+    top: -35px; 
+    left: 15px; /* Adjust this to center it over the share icon */
     
-    /* Using a fixed width and margin-left is the most stable way to center 
-       without using transform, which is a main cause of blur */
-    width: 74px; 
-    margin-left: -37px; 
-
+    width: 74px;
     background: #000000;
     color: #ffea8a;
     border: 1px solid #d4af37;
     
-    /* Force high-quality text rendering */
     font-family: Arial, sans-serif;
     font-size: 11px;
     font-weight: bold;
-    line-height: 1.2;
     text-align: center;
     padding: 4px 0;
     border-radius: 3px;
     
-    /* The Magic Fix: Stop parent filters/transforms from affecting the tooltip layer */
-    transform: translateZ(0); 
-    will-change: transform;
-    
-    display: none;
+    /* Ensure it's above EVERYTHING */
+    z-index: 100000 !important;
     pointer-events: none;
-    z-index: 9999;
+    
+    /* Logic for showing/hiding */
+    display: none; 
+    opacity: 0;
 }
 
-#shareBtn.show-tooltip + .copy-tooltip { 
-    display: block !important; 
+#shareBtn.show-tooltip ~ .copy-tooltip {
+    display: block !important;
     opacity: 1 !important;
+    visibility: visible !important;
 }
 
 /* Position the Help Button in the top right corner of the .container */
@@ -1589,6 +1585,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
