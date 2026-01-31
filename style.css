@@ -417,6 +417,31 @@ h1 {
   }
 }
 
+.copy-tooltip {
+    position: absolute;
+    top: -30px; /* Position it above the share icon */
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: #ffea8a; /* Bright Gold */
+    border: 1px solid #d4af37;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    pointer-events: none;
+    z-index: 1000;
+    white-space: nowrap;
+    animation: tooltip-float 0.8s ease-out forwards;
+}
+
+@keyframes tooltip-float {
+    0% { opacity: 0; transform: translate(-50%, 5px); }
+    15% { opacity: 1; transform: translate(-50%, 0); }
+    80% { opacity: 1; }
+    100% { opacity: 0; transform: translate(-50%, -10px); }
+}
+
 /* Position the Help Button in the top right corner of the .container */
 #helpBtn {
   position: absolute !important;
@@ -1539,6 +1564,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
