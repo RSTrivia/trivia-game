@@ -404,7 +404,7 @@ h1 {
   filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.3) drop-shadow(0 0 8px #ffea8a) !important;
   transform: scale(0.9);
   opacity: 1 !important;
-  transition: 0s; / No delay when clicking; makes it feel responsive */
+  transition: 0s; /* No delay when clicking; makes it feel responsive */
 }
 
 
@@ -424,7 +424,6 @@ h1 {
     opacity: 1; !important;
     filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.2) drop-shadow(0 0 5px #ffea8a) !important;
     /* filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.1);*/
-    transition: filter 0.2s ease, opacity 0.2s ease;
   }
 }
 
@@ -1582,6 +1581,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
