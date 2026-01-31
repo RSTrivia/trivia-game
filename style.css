@@ -432,18 +432,18 @@ h1 {
     transform: translateX(-50%);
     background: rgba(10, 10, 10, 0.95);
     border: 1px solid #d4af37;
-    border-radius: 4px;
+    border-radius: 3px;
     z-index: 10000;
     pointer-events: none;
     white-space: nowrap;
     
-    /* Button Text Matching */
-    color: #d4af37;          /* Matches .btn-small color */
-    font-size: 1rem;         /* Matches .btn-small font-size */
-    font-family: Arial, sans-serif; 
-    padding: 6px 12px;       /* Balanced padding for the larger text */
+    /* Small but matching button style */
+    color: #d4af37;          /* Button Gold */
+    font-size: 0.75rem;      /* Scaled down from 1rem */
+    padding: 3px 8px;        /* Very tight box */
+    font-family: Arial, sans-serif;
     
-    /* Animation */
+    /* Quality of life */
     -webkit-font-smoothing: antialiased;
     filter: none !important;
     animation: tooltip-fade-only 0.5s ease-out forwards;
@@ -1578,6 +1578,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
