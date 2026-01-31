@@ -1333,7 +1333,7 @@ if (shareBtn) {
             tooltip.className = 'copy-tooltip';
             tooltip.innerText = 'Copied!';
             shareBtn.appendChild(tooltip);
-            setTimeout(() => tooltip.remove(), 1000);
+            setTimeout(() => tooltip.remove(), 400);
         }
 
         // 7. Share Execution
@@ -1923,6 +1923,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
