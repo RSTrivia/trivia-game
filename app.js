@@ -1277,43 +1277,64 @@ gameEnding = false;
 
 if (shareBtn) {
     shareBtn.onclick = async () => {
-        // 1. SHOW IMMEDIATELY
-        shareBtn.classList.add('show-tooltip', 'tapped');
-        
-        // Hide it after a short delay (shorter than before to feel snappier)
-        setTimeout(() => shareBtn.classList.remove('show-tooltip', 'tapped'), 1000);
+        // 1. UI Feedback
+        shareBtn.classList.add('tapped');
+        setTimeout(() => shareBtn.classList.remove('tapped'), 300);
 
-        // 2. CLIPBOARD (Instant)
-        // We do a quick copy of what we have now so it's instant
+        // 2. Auth Check
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+            alert("Please log in to share your score!");
+            return;
+        }
+
+        // 3. Get Data (Using your specific logic names)
         const currentScore = parseInt(localStorage.getItem('lastDailyScore') || "0");
-        const grid = "🟩".repeat(currentScore) + "🟥".repeat(10 - currentScore);
         
-        // 3. FETCH STREAK (Background)
-        let liveStreak = localStorage.getItem('cached_daily_streak') || 0;
-        try {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('achievements')
-                    .eq('id', session.user.id)
-                    .single();
-                if (profile?.achievements?.daily_streak) {
-                    liveStreak = profile.achievements.daily_streak;
-                    localStorage.setItem('cached_daily_streak', liveStreak);
-                }
-            }
-        } catch (e) { console.error(e); }
+        // This matches the key you used in your handleAuthChange function
+        const currentStreak = localStorage.getItem('cached_daily_streak') || "0";
 
-        const dateStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-        const finalShareText = `OSRS Trivia • ${dateStr} ⚔️\nScore: ${currentScore}/10\n${grid}\nStreak: ${liveStreak} 🔥\nhttps://osrstrivia.pages.dev/`;
+        const dateStr = new Date().toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric', 
+            year: 'numeric' 
+        });
 
-        // 4. FINAL SHARE/COPY
-        const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+        // 4. Build the Grid (Using the 🟥🟩 Red & Green Squares)
+        const totalQs = 10;
+        const grid = "🟩".repeat(currentScore) + "🟥".repeat(totalQs - currentScore);
+
+        const shareText = `OSRS Trivia • ${dateStr} ⚔️\n` +
+                          `Score: ${currentScore}/${totalQs}\n` +
+                          `${grid}\n` +
+                          `Streak: ${currentStreak} 🔥\n` +
+                          `https://osrstrivia.pages.dev/`;
+
+        // 5. Desktop Tooltip Logic
+        if (window.matchMedia("(hover: hover)").matches) {
+            const tooltip = document.createElement('div');
+            tooltip.className = 'copy-tooltip';
+            tooltip.innerText = 'Copied to Clipboard!';
+            shareBtn.appendChild(tooltip);
+            setTimeout(() => tooltip.remove(), 1000);
+        }
+
+        // 6. Execution
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
         if (isMobile && navigator.share) {
-            try { await navigator.share({ text: finalShareText }); } catch (err) {}
+            try {
+                await navigator.share({
+                    title: 'OSRS Trivia',
+                    text: shareText
+                });
+            } catch (err) { console.log("Share cancelled"); }
         } else {
-            navigator.clipboard.writeText(finalShareText);
+            try {
+                await navigator.clipboard.writeText(shareText);
+            } catch (clipErr) {
+                console.error("Clipboard failed:", clipErr);
+            }
         }
     };
 }
@@ -1884,6 +1905,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
