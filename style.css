@@ -429,31 +429,40 @@ h1 {
 
 .copy-tooltip {
     position: absolute;
-    bottom: 120%;
+    bottom: 125%; /* Lifted slightly more for breathing room */
     left: 50%;
-    /* Added translateZ(0) to trigger GPU rendering and improved the centering math */
-    transform: translate3d(-50%, 0, 0); 
     
-    background: rgba(0, 0, 0, 0.9);
+    /* Force hardware acceleration and prevent sub-pixel blurring */
+    transform: translate3d(-50%, 0, 0); 
+    will-change: transform, opacity;
+    
+    background: rgba(12, 12, 12, 0.95); /* Slightly darker for better contrast */
     color: #ffea8a; 
     border: 1px solid #d4af37;
 
-    /* These 3 lines are the magic for text clarity */
+    /* Text Rendering Fixes */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
     backface-visibility: hidden;
 
+    /* KILL all inherited button filters */
     filter: none !important;
     text-shadow: none !important;
 
-    padding: 3px 8px;
+    padding: 4px 10px; /* Slightly more padding helps the eye focus */
     border-radius: 4px;
-    font-size: 0.7rem;
-    font-weight: bold;
+    
+    /* Use PX for tiny text to ensure it hits the pixel grid perfectly */
+    font-size: 12px; 
+    line-height: 1;
+    font-weight: 700;
+    
     pointer-events: none;
     z-index: 1000;
     white-space: nowrap;
-    animation: tooltip-float 0.4s ease-out forwards;
+    
+    animation: tooltip-float 0.5s ease-out forwards;
 }
 
 @keyframes tooltip-float {
@@ -1585,6 +1594,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
