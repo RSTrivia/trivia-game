@@ -429,39 +429,42 @@ h1 {
 
 .copy-tooltip {
     position: absolute;
-    bottom: 120%;
+    bottom: 130%;
     left: 50%;
-    /* Added translate3d to force hardware acceleration for smoother/sharper text */
-    transform: translate3d(-50%, 0, 0); 
+    transform: translateX(-50%);
     
     background: rgba(0, 0, 0, 0.9);
     color: #ffea8a; 
     border: 1px solid #d4af37;
-
-    /* Force the browser to render text clearly */
-    image-rendering: pixelated;
-    backface-visibility: hidden;
-    -webkit-font-smoothing: none; /* Stops the "fuzzy" anti-aliasing on some browsers */
-
-    filter: none !important;
-    text-shadow: none !important;
-
+    
     padding: 3px 8px;
     border-radius: 4px;
     font-size: 0.7rem;
     font-weight: bold;
-    pointer-events: none;
-    z-index: 1000;
     white-space: nowrap;
+    
+    /* HIDE BY DEFAULT */
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+    
+    /* This forces the browser to keep the text sharp */
+    will-change: transform, opacity;
+}
+
+/* Only animate when the class is added */
+#shareBtn.show-tooltip .copy-tooltip {
+    visibility: visible;
     animation: tooltip-float 0.4s ease-out forwards;
 }
 
 @keyframes tooltip-float {
-    0% { opacity: 0; transform: translate(-50%, 2px); }
-    15% { opacity: 1; transform: translate(-50%, 0); }
-    80% { opacity: 1; }
-    100% { opacity: 0; transform: translate(-50%, -3px); }
+    0% { opacity: 0; transform: translate(-50%, 5px); }
+    20% { opacity: 1; transform: translate(-50%, 0px); }
+    80% { opacity: 1; transform: translate(-50%, 0px); }
+    100% { opacity: 0; transform: translate(-50%, -5px); }
 }
+
 
 /* Position the Help Button in the top right corner of the .container */
 #helpBtn {
@@ -1585,6 +1588,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
