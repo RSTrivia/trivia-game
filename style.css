@@ -380,9 +380,6 @@ h1 {
   filter: grayscale(1) brightness(0.5);
   opacity: 0.5;
 }
-#shareBtn {
-    isolation: isolate; /* Creates a new stacking context to stop filter bleeding */
-}
 /* Space between the icons themselves */
 #shareBtn { margin-right: 4px; transition: filter 0.2s ease, opacity 0.2s ease, transform 0.2s ease; }
 /* This triggers only WHILE the finger is touching the screen */
@@ -461,7 +458,6 @@ h1 {
     80% { opacity: 1; }
     100% { opacity: 0; transform: translate(-50%, -3px); }
 }
-
 
 /* Position the Help Button in the top right corner of the .container */
 #helpBtn {
@@ -1585,20 +1581,6 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
