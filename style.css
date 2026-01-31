@@ -428,43 +428,59 @@ h1 {
 }
 
 .copy-tooltip {
-    /* 1. RESET: Stop inheriting button transitions/filters */
-    all: revert; 
+    /* 1. LOCK DIMENSIONS: This stops the 'growing' effect */
+    all: revert;
     position: absolute;
-    bottom: 125%;
+    bottom: 130%; /* Higher up to avoid clashing with button scale */
     left: 50%;
-    /* Forced centering that won't be overridden by button scaling */
-    transform: translate3d(-50%, 0, 0) scale(1) !important;
+    width: 60px;  /* Fixed width */
+    height: 20px; /* Fixed height */
     
-    /* 2. STYLE: Keep your gold theme */
-    background: rgba(10, 10, 10, 0.95);
+    /* 2. CENTER & LOCK: Static transform prevents scaling issues */
+    transform: translate3d(-50%, 0, 0) !important;
+    
+    /* 3. STYLE: OSRS Theme */
+    background: rgba(10, 10, 10, 0.98);
     color: #ffea8a;
     border: 1px solid #d4af37;
-    padding: 4px 10px;
     border-radius: 4px;
-    font-family: sans-serif; /* Ensure it doesn't inherit weird fonts */
-    font-size: 12px;
+    
+    /* 4. TEXT: Locked pixel size for clarity */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
     font-weight: bold;
+    font-family: Arial, sans-serif;
     white-space: nowrap;
-    z-index: 9999;
-    pointer-events: none;
-
-    /* 3. CLARITY: No blur, no pixelation */
+    
+    /* 5. RENDERING: No blur */
     -webkit-font-smoothing: antialiased;
+    pointer-events: none;
+    z-index: 10000;
     filter: none !important;
     text-shadow: none !important;
-    transition: none !important; /* Stop the "growing" transition */
+    transition: none !important;
 
-    /* 4. ANIMATION: Simple fade in/out only */
-    animation: tooltip-simple-fade 0.5s ease-out forwards;
+    animation: tooltip-fade-only 0.6s ease-in-out forwards;
 }
 
-@keyframes tooltip-simple-fade {
-    0%   { opacity: 0; }
-    20%  { opacity: 1; }
-    80%  { opacity: 1; }
-    100% { opacity: 0; }
+@keyframes tooltip-fade-only {
+    0% { 
+        opacity: 0; 
+    }
+    15% { 
+        opacity: 1; 
+    }
+    85% { 
+        opacity: 1; 
+    }
+    100% { 
+        opacity: 0; 
+        /* No movement here stops the 'exploding' look */
+    }
 }
+
 
 /* Position the Help Button in the top right corner of the .container */
 #helpBtn {
@@ -1588,6 +1604,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
