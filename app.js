@@ -1277,29 +1277,30 @@ gameEnding = false;
 
 if (shareBtn) {
     shareBtn.onclick = async () => {
-        // 1. UI Feedback (Tapped state)
+        // 1. UI Feedback
         shareBtn.classList.add('tapped');
         setTimeout(() => shareBtn.classList.remove('tapped'), 300);
 
-        // 2. Auth Check (Must be logged in to share)
+        // 2. Auth Check
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
             alert("Please log in to share your score!");
-            if (typeof updateShareButtonState === "function") updateShareButtonState();
             return;
         }
 
-        // 3. Get Data from LocalStorage
+        // 3. Get Data (Using your specific logic names)
         const currentScore = parseInt(localStorage.getItem('lastDailyScore') || "0");
-        const currentStreak = localStorage.getItem('userDailyStreak') || "0";
+        
+        // This matches the key you used in your handleAuthChange function
+        const currentStreak = localStorage.getItem('cached_daily_streak') || "0";
+
         const dateStr = new Date().toLocaleDateString('en-US', { 
             month: 'short', 
             day: 'numeric', 
             year: 'numeric' 
         });
 
-        // 4. Build the Wordle-style Text
-        // Creates the grid: e.g., 🟩🟩🟩🟩🟩⬛⬛⬛⬛⬛
+        // 4. Build the Grid (Using the ⬛ Black Square)
         const totalQs = 10;
         const grid = "🟩".repeat(currentScore) + "⬛".repeat(totalQs - currentScore);
 
@@ -1318,25 +1319,21 @@ if (shareBtn) {
             setTimeout(() => tooltip.remove(), 1000);
         }
 
-        // 6. Execution (Mobile Share vs PC Clipboard)
+        // 6. Execution
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
         if (isMobile && navigator.share) {
             try {
                 await navigator.share({
-                    title: 'OSRS Trivia Result',
+                    title: 'OSRS Trivia',
                     text: shareText
                 });
-            } catch (err) {
-                console.log("Share cancelled or failed");
-            }
+            } catch (err) { console.log("Share cancelled"); }
         } else {
             try {
                 await navigator.clipboard.writeText(shareText);
-                // Tooltip provides the visual feedback for PC
             } catch (clipErr) {
                 console.error("Clipboard failed:", clipErr);
-                alert("Failed to copy. Try again!");
             }
         }
     };
@@ -1909,6 +1906,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
