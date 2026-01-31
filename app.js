@@ -452,7 +452,7 @@ async function handleAuthChange(event, session) {
     // Fetch profile
     const { data: profile } = await supabase
         .from('profiles')
-        .select('username, xp')
+        .select('username, xp, achievements')
         .eq('id', session.user.id)
         .single();
 
@@ -460,6 +460,7 @@ async function handleAuthChange(event, session) {
         username = profile.username || 'Player';
         currentProfileXp = profile.xp || 0;
       
+        // Access the daily_streak inside the achievements JSONB
         currentDailyStreak = profile.achievements?.daily_streak || 0;
       
         // Save to cache
@@ -1288,10 +1289,10 @@ if (shareBtn) {
             return;
         }
 
-        // 3. Get Data (Using your specific logic names)
+        // 3. Get Data
         const currentScore = parseInt(localStorage.getItem('lastDailyScore') || "0");
         
-        // This matches the key you used in your handleAuthChange function
+        // Pull the streak we just saved in handleAuthChange
         const currentStreak = localStorage.getItem('cached_daily_streak') || "0";
 
         const dateStr = new Date().toLocaleDateString('en-US', { 
@@ -1300,7 +1301,7 @@ if (shareBtn) {
             year: 'numeric' 
         });
 
-        // 4. Build the Grid (Using the 🟥🟩 Red & Green Squares)
+        // 4. Build the Grid
         const totalQs = 10;
         const grid = "🟩".repeat(currentScore) + "🟥".repeat(totalQs - currentScore);
 
@@ -1310,6 +1311,19 @@ if (shareBtn) {
                           `Streak: ${currentStreak} 🔥\n` +
                           `https://osrstrivia.pages.dev/`;
 
+        // 5. Desktop Tooltip Logic (Body-Append version to stop the "growing")
+        if (window.matchMedia("(hover: hover)").matches) {
+            const tooltip = document.createElement('div');
+            tooltip.className = 'copy-tooltip';
+            tooltip.innerText = 'Copied!';
+            const rect = shareBtn.getBoundingClientRect();
+            tooltip.style.position = 'fixed';
+            tooltip.style.top = (rect.top - 30) + 'px';
+            tooltip.style.left = (rect.left + rect.width / 2) + 'px';
+            document.body.appendChild(tooltip);
+            setTimeout(() => tooltip.remove(), 500);
+        }
+      
         // 5. Desktop Tooltip Logic
         if (window.matchMedia("(hover: hover)").matches) {
             const tooltip = document.createElement('div');
@@ -1915,6 +1929,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
