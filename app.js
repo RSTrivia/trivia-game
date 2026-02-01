@@ -340,7 +340,11 @@ async function init() {
         isDailyMode = false;
         isWeeklyMode = true; // Set our new flag
         weeklyQuestionCount = 0; // Reset counter
-        
+        score = 0; // Always reset score for a new run
+      
+        // 3. Record the start time for the leaderboard
+        weeklyStartTime = Date.now();
+      
         startGame(); // Reuse your existing startGame logic
     };
   }
@@ -1168,7 +1172,7 @@ async function endGame() {
             gameOverTitle.textContent = "Weekly Challenge Complete!";
             gameOverTitle.classList.remove('hidden');
         }
-
+        
         // Display Score and Time
         if (finalScore) {
             // The backticks `` allow us to drop the variable directly into the string
@@ -1179,7 +1183,7 @@ async function endGame() {
         if (session) {
             await saveWeeklyScore(session.user.id, username, score, timeInSeconds);
         }
-
+    }
     else if (isDailyMode) {
         if (playAgainBtn) playAgainBtn.classList.add('hidden');
         if (gameOverTitle) {
@@ -1246,18 +1250,39 @@ async function endGame() {
     });
 }
   
-async function saveWeeklyScore(userId, displayUsername, correctCount, seconds) {
-    const { error } = await supabase
-        .from('weekly_scores')
-        .insert([{ 
-            user_id: userId, 
-            username: displayUsername, 
-            score: correctCount, 
-            time_taken: seconds,
-            week_number: getWeekNumber(new Date()) // Optional: track which week
-        }]);
+async function saveWeeklyScore(userId, currentScore, timeInSeconds) {
+    // 1. Fetch current best weekly score first
+    const { data, error: fetchError } = await supabase
+        .from('scores')
+        .select('weekly_data')
+        .eq('user_id', userId)
+        .single();
 
-    if (error) console.error("Error saving weekly score:", error);
+    if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 is "not found"
+        console.error("Error fetching weekly data:", fetchError);
+        return;
+    }
+
+    const bestWeekly = data?.weekly_data || { score: 0, time: 9999 };
+
+    // 2. Tie-breaker logic: 
+    // Save if score is higher OR if score is same but time is faster
+    const isHigherScore = currentScore > bestWeekly.score;
+    const isFasterTime = (currentScore === bestWeekly.score && timeInSeconds < bestWeekly.time);
+
+    if (isHigherScore || isFasterTime) {
+        const { error: updateError } = await supabase
+            .from('scores')
+            .update({ 
+                weekly_data: { 
+                    score: currentScore, 
+                    time: timeInSeconds 
+                } 
+            })
+            .eq('user_id', userId);
+
+        if (updateError) console.error("Error updating weekly score:", updateError);
+    }
 }
   
 // new for xp drops 
@@ -1914,6 +1939,7 @@ async function startDailyChallenge() {
 
     // 4. UI Transition
     isDailyMode = true;
+    isWeeklyMode = false;
     preloadQueue = []; // Clear the "Standard" questions out
     resetGame();
     remainingQuestions = dailyIds; // Assign the specific 10 IDs
@@ -2025,6 +2051,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
