@@ -328,8 +328,8 @@ async function init() {
     await loadSounds();
     isDailyMode = true;
     startDailyChallenge(); 
-};
-    }
+  };
+}
 
   if (weeklyBtn) {
     weeklyBtn.onclick = async () => {
@@ -343,7 +343,7 @@ async function init() {
         
         startGame(); // Reuse your existing startGame logic
     };
-
+  }
         if (playAgainBtn) {
         playAgainBtn.onclick = async () => {
         isDailyMode = false;
@@ -2025,6 +2025,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
