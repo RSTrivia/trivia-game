@@ -1169,7 +1169,7 @@ async function endGame() {
     gameEnding = true;
     clearInterval(timer);
     stopTickSound();
-  
+
     // 1. PREPARE DATA FIRST (Quietly in background)
     const { data: { session } } = await supabase.auth.getSession();
     const scoreKey = Math.min(Math.max(score, 0), 10);
@@ -1199,7 +1199,7 @@ async function endGame() {
        // Calculate total seconds spent
         const endTime = Date.now();
         const timeInSeconds = Math.floor((endTime - weeklyStartTime) / 1000);
-        
+      
         if (playAgainBtn) playAgainBtn.classList.remove('hidden'); // Allow replay
         if (streakContainer) streakContainer.style.display = 'none';
 
@@ -2085,6 +2085,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
