@@ -1313,8 +1313,9 @@ async function endGame() {
 }
   
 
-async function saveWeeklyScore(userId, username, currentScore, timeInSeconds) {
-    // 1. Fetch current best weekly score
+async function saveWeeklyScore(userId, username, currentScore, timeInMs) {
+    console.log("Attempting save:", { currentScore, timeInMs });
+
     const { data, error: fetchError } = await supabase
         .from('scores')
         .select('weekly_data')
@@ -1322,35 +1323,39 @@ async function saveWeeklyScore(userId, username, currentScore, timeInSeconds) {
         .maybeSingle();
 
     if (fetchError) {
-        console.error("Error fetching weekly data:", fetchError);
+        console.error("Fetch error:", fetchError);
         return;
     }
 
-    // Default values if no record exists yet
-    const bestWeekly = data?.weekly_data || { score: -1, time: 999999 };
+    // Default values if no record exists
+    const bestWeekly = data?.weekly_data || { score: -1, time: 999999999 };
+    
+    console.log("Current Best in DB:", bestWeekly);
 
-    // 2. Logic: Save if higher score OR same score with faster time
     const isHigherScore = currentScore > bestWeekly.score;
-    const isFasterTime = (currentScore === bestWeekly.score && timeInSeconds < bestWeekly.time);
+    const isFasterTime = (currentScore === bestWeekly.score && timeInMs < bestWeekly.time);
 
     if (isHigherScore || isFasterTime) {
-        // 3. Use UPSERT to handle both new and existing records
+        console.log("New record detected! Saving...");
+        
         const { error: upsertError } = await supabase
             .from('scores')
             .upsert({ 
                 user_id: userId,
-                username: username, // Now you can save the username too!
+                username: username,
                 weekly_data: { 
                     score: currentScore, 
-                    time: timeInSeconds 
+                    time: timeInMs 
                 } 
             }, { onConflict: 'user_id' });
 
         if (upsertError) {
-            console.error("Error saving weekly score:", upsertError);
+            console.error("Upsert error:", upsertError);
         } else {
-            console.log("Weekly score updated for", username);
+            console.log("Weekly score saved successfully!");
         }
+    } else {
+        console.log("Not a new record. Score/Time not better.");
     }
 }
   
@@ -2120,6 +2125,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
