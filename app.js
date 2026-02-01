@@ -29,6 +29,8 @@ const mainMenuBtn = document.getElementById('mainMenuBtn');
 const game = document.getElementById('game');
 const endScreen = document.getElementById('end-screen');
 const finalScore = document.getElementById('finalScore');
+const finalTimeEl = document.getElementById('finalTime');
+const weeklyTimeContainer = document.getElementById('weeklyTimeContainer');
 const scoreDisplay = document.getElementById('score');
 const questionText = document.getElementById('questionText');
 const questionImage = document.getElementById('questionImage');
@@ -1184,7 +1186,11 @@ async function endGame() {
     answersBox.innerHTML = '';
     questionImage.style.display = 'none';
     questionImage.src = ''; 
-
+  
+    // RESET WEEKLY UI (Crucial Fix)
+    // We hide this immediately so it doesn't leak into Normal/Daily modes
+    if (weeklyTimeContainer) weeklyTimeContainer.style.display = 'none';
+  
     // 3. POPULATE END SCREEN BEFORE SHOWING IT
     if (finalScore) finalScore.textContent = score;
     const gameOverTitle = document.getElementById('game-over-title');
@@ -1195,29 +1201,37 @@ async function endGame() {
     if (gzTitle) gzTitle.classList.add('hidden');
 
     if (isWeeklyMode) {
-        // --- NEW WEEKLY LOGIC ---
-       // Calculate total seconds spent
-        const endTime = Date.now();
-        const timeInSeconds = Math.floor((endTime - weeklyStartTime) / 1000);
-      
-        if (playAgainBtn) playAgainBtn.classList.remove('hidden'); // Allow replay
-        if (streakContainer) streakContainer.style.display = 'none';
+    // 1. Calculate time
+    const endTime = Date.now();
+    const timeInSeconds = Math.floor((endTime - weeklyStartTime) / 1000);
 
-        if (gameOverTitle) {
-            gameOverTitle.textContent = "Weekly Challenge Complete!";
-            gameOverTitle.classList.remove('hidden');
-        }
-        
-        // Display Score and Time
-        if (finalScore) {
-            // The backticks `` allow us to drop the variable directly into the string
-            finalScore.innerHTML = `${score}/${WEEKLY_LIMIT} <br><span style="font-size: 0.8em; color: #ffde00;">Time: ${timeInSeconds}s</span>`;
-        }
+    // 2. UI Visibility resets
+    if (playAgainBtn) playAgainBtn.classList.remove('hidden');
+    if (dailyStreakContainer) dailyStreakContainer.style.display = 'none';
 
-        // SAVE TO SUPABASE (New function needed)
-        if (session) {
-            await saveWeeklyScore(session.user.id, username, score, timeInSeconds);
-        }
+    // 3. Update Titles
+    if (gameOverTitle) {
+        gameOverTitle.textContent = "Weekly Challenge Complete!";
+        gameOverTitle.classList.remove('hidden');
+    }
+
+    // 4. Update Score (Simple text, no extra HTML injected here)
+    if (finalScore) {
+        finalScore.textContent = `${score}/${WEEKLY_LIMIT}`;
+    }
+
+    // 5. Update and Show the HTML Time elements we added earlier
+    const finalTimeEl = document.getElementById('finalTime');
+    const weeklyTimeContainer = document.getElementById('weeklyTimeContainer');
+    
+    if (finalTimeEl) finalTimeEl.textContent = timeInSeconds + "s";
+    if (weeklyTimeContainer) weeklyTimeContainer.style.display = 'block';
+
+    // 6. Save to Supabase
+    if (session) {
+        // Included username here as per your function call
+        await saveWeeklyScore(session.user.id, username, score, timeInSeconds);
+    } 
     } else if (isDailyMode) {
         if (playAgainBtn) playAgainBtn.classList.add('hidden');
         if (gameOverTitle) {
@@ -2085,6 +2099,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
