@@ -287,6 +287,7 @@ async function init() {
     if (startBtn) {
         startBtn.onclick = async () => {
             isDailyMode = false;
+            isWeeklyMode = false;
             if (audioCtx.state === 'suspended') await audioCtx.resume();
             await loadSounds();
             startGame();
@@ -349,7 +350,10 @@ async function init() {
   }
         if (playAgainBtn) {
         playAgainBtn.onclick = async () => {
-        isDailyMode = false;
+        // If we were in weekly mode, keep it true!
+        // Only force Daily to false because that's the only one with a real limit.
+        isDailyMode = false; 
+        // isWeeklyMode will remain whatever it was (true or false)
         await startGame();
     };
 }
@@ -2049,6 +2053,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
