@@ -240,20 +240,18 @@ scoreTab.onclick = () => handleTabClick('score', scoreTab);
 xpTab.onclick = () => handleTabClick('xp', xpTab);
 if(weeklyTab) weeklyTab.onclick = () => handleTabClick('weekly', weeklyTab);
 
-// Initial Run - Simplified and tightened
-(function instantLoad() {
-    const cachedString = localStorage.getItem(`leaderboard_${currentMode}`);
-    if (cachedString) {
-        // We don't await anything here; we want this on the screen NOW
-        updateLeaderboard(JSON.parse(cachedString));
-    }
+// Initial Run
+(async () => {
+  const cachedString = localStorage.getItem(`leaderboard_${currentMode}`);
+  if (cachedString) {
+    updateLeaderboard(JSON.parse(cachedString));
+  }
+  await fetchLeaderboard();
 })();
-
-// Then fetch the fresh data from the server
-fetchLeaderboard();
 </script>
 </body>
 </html>
+
 
 
 
