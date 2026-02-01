@@ -883,10 +883,13 @@ async function handleTimeout() {
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
     playSound(wrongBuffer);
     await highlightCorrectAnswer();
-    
-    if (isDailyMode) {
+    if (isWeeklyMode) weeklyQuestionCount++; // Count the "skip/fail" towards the 50
+  
+    if (isDailyMode || isWeeklyMode) {
+        // Continue the game
         setTimeout(loadQuestion, 1500);
     } else {
+        // End the game
         setTimeout(endGame, 1000);
     }
 }
@@ -909,6 +912,8 @@ async function checkAnswer(choiceId, btn) {
     if (isCorrect) {
         playSound(correctBuffer);
         btn.classList.add('correct');
+        // increment weekly count
+        if (isWeeklyMode) weeklyQuestionCount++;
         // 1. Get the session
         const { data: { session } } = await supabase.auth.getSession();
         
@@ -965,6 +970,10 @@ async function checkAnswer(choiceId, btn) {
         streak = 0; // Reset streak on wrong answer in normal mode
         btn.classList.add('wrong');
         await highlightCorrectAnswer();
+      
+        // Increment here for wrong answers so we don't play forever!
+        if (isWeeklyMode) weeklyQuestionCount++;
+      
         if (isDailyMode || isWeeklyMode) {
             // Keep going to the next question
             setTimeout(loadQuestion, 1500);
@@ -1980,6 +1989,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
