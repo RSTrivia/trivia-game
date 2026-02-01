@@ -763,6 +763,7 @@ async function startGame() {
         }
 
         if (isWeeklyMode) {
+            weeklyStartTime = Date.now(); // Always start the clock here
             const sliceIndex = getWeeklySliceIndex(masterQuestionPool.length, WEEKLY_LIMIT);
             const startPoint = sliceIndex * WEEKLY_LIMIT;
             
@@ -2084,6 +2085,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
