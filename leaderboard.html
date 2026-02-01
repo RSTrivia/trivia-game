@@ -126,7 +126,7 @@ import { supabase } from './supabase.js';
 
 const leaderboardRows = document.querySelectorAll('#leaderboard li');
 const scoreTab = document.getElementById('scoreTab');
-const weeklyTab = document.getElementById('weeklyTab'); // Ensure this ID exists in HTML
+const weeklyTab = document.getElementById('weeklyTab');
 const xpTab = document.getElementById('xpTab');
 
 let currentMode = 'score'; 
@@ -142,97 +142,74 @@ function getLevel(xp) {
 }
 
 function updateLeaderboard(data) {
-    leaderboardRows.forEach((row, i) => {
-        const entry = data[i];
-        const userTxt = row.querySelector('.user-txt');
-        const scoreSpan = row.querySelector('.score-part');
+  leaderboardRows.forEach((row, i) => {
+    const entry = data[i] || { username: '', val: '', weekly_data: null };
+    const userTxt = row.querySelector('.user-txt');
+    const scoreSpan = row.querySelector('.score-part');
 
-        // Prepare our "Target" values
-        let targetName = '';
-        let targetScoreHTML = '';
+    if (!entry.username) {
+      userTxt.textContent = '';
+      scoreSpan.textContent = '';
+      return;
+    }
 
-        if (entry && entry.username) {
-            targetName = entry.username;
+    // 1. Username Part (Direct text content)
+    if (userTxt.textContent !== entry.username) {
+        userTxt.textContent = entry.username;
+    }
 
-            if (currentMode === 'xp') {
-                const level = getLevel(entry.val);
-                const formattedXp = entry.val.toLocaleString();
-                targetScoreHTML = `${formattedXp} <span style="font-size: 0.85em; opacity: 0.6;">(Lvl ${level})</span>`;
-            } 
-            else if (currentMode === 'weekly') {
-                const s = entry.weekly_data?.score || 0;
-                const t = entry.weekly_data?.time || 0;
-                const totalSeconds = t / 1000;
-                const timeStr = totalSeconds < 60 ? totalSeconds.toFixed(2) + "s" : `${Math.floor(totalSeconds / 60)}:${(totalSeconds % 60).toFixed(2).toString().padStart(5, '0')}`;
-                targetScoreHTML = `${s} <span style="font-size: 0.85em; opacity: 0.6;">(${timeStr})</span>`;
-            } 
-            else {
-                targetScoreHTML = entry.val !== undefined ? entry.val.toLocaleString() : '0';
-            }
-        }
+    // 2. Score/XP Part (Calculate Target first)
+    let finalHTML = "";
+    if (currentMode === 'xp') {
+      const level = getLevel(entry.val);
+      finalHTML = `${entry.val.toLocaleString()} <span style="font-size: 0.85em; opacity: 0.6;">(Lvl ${level})</span>`;
+    } else if (currentMode === 'weekly') {
+      const s = entry.weekly_data?.score || 0;
+      const t = entry.weekly_data?.time || 0;
+      const totalSeconds = t / 1000;
+      const timeStr = totalSeconds < 60 ? totalSeconds.toFixed(2) + "s" : `${Math.floor(totalSeconds / 60)}:${(totalSeconds % 60).toFixed(2).toString().padStart(5, '0')}`;
+      finalHTML = `${s.toLocaleString()} <span style="font-size: 0.85em; opacity: 0.6;">(${timeStr})</span>`;
+    } else {
+      finalHTML = (entry.val || 0).toLocaleString();
+    }
 
-        // 🔥 THE ANTI-FLICKER FIX: 
-        // Only update the DOM if the content is actually different from the current state.
-        if (userTxt.textContent !== targetName) {
-            userTxt.textContent = targetName;
-        }
-
-        if (scoreSpan.innerHTML !== targetScoreHTML) {
-            scoreSpan.innerHTML = targetScoreHTML;
-        }
-    });
+    // Anti-flicker: Only update if different
+    if (scoreSpan.innerHTML !== finalHTML) {
+      scoreSpan.innerHTML = finalHTML;
+    }
+  });
 }
 
 async function fetchLeaderboard() {
-    let query;
-    
-    if (currentMode === 'score') {
-        query = supabase.from('scores')
-            .select('username, val:score')
-            .gt('score', 0) // Prevents 0-score "weekly-only" accounts from appearing
-            .order('score', { ascending: false });
-    } else if (currentMode === 'weekly') {
-        query = supabase.from('scores')
-            .select('username, weekly_data')
-            .not('weekly_data', 'is', null) 
-            .gt('weekly_data->score', 0) 
-            .order('weekly_data->score', { ascending: false })
-            .order('weekly_data->time', { ascending: true });
-    } else {
-        query = supabase.from('profiles')
-            .select('username, val:xp')
-            .gt('xp', 0) 
-            .order('xp', { ascending: false });
-    }
+  let query;
+  if (currentMode === 'score') {
+    query = supabase.from('scores').select('username, val:score').gt('score', 0).order('score', { ascending: false });
+  } else if (currentMode === 'weekly') {
+    query = supabase.from('scores').select('username, weekly_data').not('weekly_data', 'is', null).gt('weekly_data->score', 0).order('weekly_data->score', { ascending: false }).order('weekly_data->time', { ascending: true });
+  } else {
+    query = supabase.from('profiles').select('username, val:xp').gt('xp', 0).order('xp', { ascending: false });
+  }
 
-    const { data, error } = await query.limit(10);
+  const { data, error } = await query.limit(10);
+  if (error) return console.error(error);
 
-    if (error) {
-        console.error('Supabase Error:', error.message);
-        return;
-    }
-
-    if (data) {
-        // We save the RAW data to cache so switching tabs is instant
-        localStorage.setItem(`leaderboard_${currentMode}`, JSON.stringify(data));
-        updateLeaderboard(data);
-    }
+  if (data) {
+    localStorage.setItem(`leaderboard_${currentMode}`, JSON.stringify(data));
+    updateLeaderboard(data);
+  }
 }
 
-// Tab Click Logic (Identical to your "fine" version)
+// Unified Tab Click Logic
 function handleTabClick(mode, btn) {
-    if (currentMode === mode) return;
+    if (currentMode === mode || !btn) return;
     currentMode = mode;
 
-    // Update UI active states
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
 
-    // Load from cache IMMEDIATELY (No flicker)
     const cached = localStorage.getItem(`leaderboard_${mode}`);
     if (cached) updateLeaderboard(JSON.parse(cached));
 
-    // Refresh with fresh data
     fetchLeaderboard();
 }
 
@@ -240,7 +217,7 @@ scoreTab.onclick = () => handleTabClick('score', scoreTab);
 xpTab.onclick = () => handleTabClick('xp', xpTab);
 if(weeklyTab) weeklyTab.onclick = () => handleTabClick('weekly', weeklyTab);
 
-// Initial Run
+// Initial Run (Immediately pull from Score cache)
 (async () => {
   const cachedString = localStorage.getItem(`leaderboard_${currentMode}`);
   if (cachedString) {
@@ -249,8 +226,10 @@ if(weeklyTab) weeklyTab.onclick = () => handleTabClick('weekly', weeklyTab);
   await fetchLeaderboard();
 })();
 </script>
+</script>
 </body>
 </html>
+
 
 
 
