@@ -147,33 +147,38 @@ function updateLeaderboard(data) {
         const userTxt = row.querySelector('.user-txt');
         const scoreSpan = row.querySelector('.score-part');
 
-        // 1. If no data, clear but keep row visible
-        if (!entry || !entry.username) {
-            userTxt.textContent = '';
-            scoreSpan.textContent = '';
-            return;
+        // Prepare our "Target" values
+        let targetName = '';
+        let targetScoreHTML = '';
+
+        if (entry && entry.username) {
+            targetName = entry.username;
+
+            if (currentMode === 'xp') {
+                const level = getLevel(entry.val);
+                const formattedXp = entry.val.toLocaleString();
+                targetScoreHTML = `${formattedXp} <span style="font-size: 0.85em; opacity: 0.6;">(Lvl ${level})</span>`;
+            } 
+            else if (currentMode === 'weekly') {
+                const s = entry.weekly_data?.score || 0;
+                const t = entry.weekly_data?.time || 0;
+                const totalSeconds = t / 1000;
+                const timeStr = totalSeconds < 60 ? totalSeconds.toFixed(2) + "s" : `${Math.floor(totalSeconds / 60)}:${(totalSeconds % 60).toFixed(2).toString().padStart(5, '0')}`;
+                targetScoreHTML = `${s} <span style="font-size: 0.85em; opacity: 0.6;">(${timeStr})</span>`;
+            } 
+            else {
+                targetScoreHTML = entry.val !== undefined ? entry.val.toLocaleString() : '0';
+            }
         }
 
-        // Always put the username in the name slot
-        userTxt.textContent = entry.username;
+        // 🔥 THE ANTI-FLICKER FIX: 
+        // Only update the DOM if the content is actually different from the current state.
+        if (userTxt.textContent !== targetName) {
+            userTxt.textContent = targetName;
+        }
 
-        // 2. Handle XP Mode (XP + Level in brackets)
-        if (currentMode === 'xp') {
-            const level = getLevel(entry.val);
-            const formattedXp = entry.val.toLocaleString();
-            scoreSpan.innerHTML = `${formattedXp} <span style="font-size: 0.85em; opacity: 0.6;">(Lvl ${level})</span>`;
-        } 
-        // 3. Handle Weekly Mode (Score + Time in brackets)
-        else if (currentMode === 'weekly') {
-            const s = entry.weekly_data?.score || 0;
-            const t = entry.weekly_data?.time || 0;
-            const totalSeconds = t / 1000;
-            const timeStr = totalSeconds < 60 ? totalSeconds.toFixed(2) + "s" : `${Math.floor(totalSeconds / 60)}:${(totalSeconds % 60).toFixed(2).toString().padStart(5, '0')}`;
-            scoreSpan.innerHTML = `${s} <span style="font-size: 0.85em; opacity: 0.6;">(${timeStr})</span>`;
-        } 
-        // 4. Handle Normal Score Mode (Just the number)
-        else {
-            scoreSpan.textContent = entry.val !== undefined ? entry.val.toLocaleString() : '0';
+        if (scoreSpan.innerHTML !== targetScoreHTML) {
+            scoreSpan.innerHTML = targetScoreHTML;
         }
     });
 }
@@ -244,6 +249,7 @@ if(weeklyTab) weeklyTab.onclick = () => handleTabClick('weekly', weeklyTab);
 </script>
 </body>
 </html>
+
 
 
 
