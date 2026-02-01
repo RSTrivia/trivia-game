@@ -1219,28 +1219,33 @@ async function endGame() {
     if (finalScore) {
         finalScore.textContent = `${score}/${WEEKLY_LIMIT}`;
     }
-
+    
     // 5. Format and Show the Time
-    const finalTimeEl = document.getElementById('finalTime');
-    const weeklyTimeContainer = document.getElementById('weeklyTimeContainer');
-    
-    if (finalTimeEl) {
-        // Calculate minutes and remaining seconds
-        const mins = Math.floor(timeInSeconds / 60);
-        const secs = timeInSeconds % 60;
-        
-        // Use padStart(2, '0') to ensure it shows "05" instead of "5"
-        const formattedTime = `${mins}:${secs.toString().padStart(2, '0')}`;
-        
-        finalTimeEl.textContent = formattedTime;
-    }
-    
-    if (weeklyTimeContainer) weeklyTimeContainer.style.display = 'block';
+    // Use raw milliseconds for precision
+      const totalMs = endTime - weeklyStartTime; 
+      const totalSeconds = totalMs / 1000;
+
+      let formattedTime;
+      if (totalSeconds < 60) {
+          // --- Format: SECONDS:MILLISECONDS ---
+          // .toFixed(2) gives you two decimals (e.g., 12.05)
+          // We replace the dot with a colon to match your request
+          formattedTime = totalSeconds.toFixed(2).replace('.', ':');
+      } else {
+          // --- Format: MINUTES:SECONDS ---
+          const mins = Math.floor(totalSeconds / 60);
+          const secs = Math.floor(totalSeconds % 60);
+          // Standard M:SS format
+          formattedTime = `${mins}:${secs.toString().padStart(2, '0')}`;
+      }
+  
+      if (finalTimeEl) finalTimeEl.textContent = formattedTime;
+      if (weeklyTimeContainer) weeklyTimeContainer.style.display = 'block';
 
     // 6. Save to Supabase
     if (session) {
         // Included username here as per your function call
-        await saveWeeklyScore(session.user.id, username, score, timeInSeconds);
+        await saveWeeklyScore(session.user.id, username, score, totalMs);
     } 
     } else if (isDailyMode) {
         if (playAgainBtn) playAgainBtn.classList.add('hidden');
@@ -2116,6 +2121,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
