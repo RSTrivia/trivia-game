@@ -728,7 +728,7 @@ async function startGame() {
         }
 
         if (isWeeklyMode) {
-            const perWeek = 50;
+            const perWeek = 10;
             const sliceIndex = getWeeklySliceIndex(masterQuestionPool.length, perWeek);
             const startPoint = sliceIndex * perWeek;
             
@@ -776,7 +776,7 @@ async function startGame() {
 
 async function loadQuestion() {
    // Check for Weekly End Condition
-    if (isWeeklyMode && weeklyQuestionCount >= 50) {
+    if (isWeeklyMode && weeklyQuestionCount >= 10) {
         await endGame();
         return;
     }
@@ -1989,6 +1989,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
