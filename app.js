@@ -1227,18 +1227,13 @@ async function endGame() {
 
       let formattedTime;
       if (totalSeconds < 60) {
-          // --- Format: SECONDS:MILLISECONDS ---
-          // .toFixed(2) gives you two decimals (e.g., 12.05)
-          // We replace the dot with a colon to match your request
-          formattedTime = totalSeconds.toFixed(2).replace('.', ':');
+        formattedTime = totalSeconds.toFixed(2) + "s";
       } else {
-          // --- Format: MINUTES:SECONDS ---
-          const mins = Math.floor(totalSeconds / 60);
-          const secs = Math.floor(totalSeconds % 60);
-          // Standard M:SS format
-          formattedTime = `${mins}:${secs.toString().padStart(2, '0')}`;
+            const mins = Math.floor(totalSeconds / 60);
+            const secs = (totalSeconds % 60).toFixed(2); // Keeps the .00
+            formattedTime = `${mins}:${secs.toString().padStart(5, '0')}`; 
+            // padStart(5) accounts for "05.00" (5 characters)
       }
-
       // --- RE-FETCH ELEMENTS LOCALLY TO BE SAFE ---
         const localFinalTimeEl = document.getElementById('finalTime');
         const localWeeklyTimeContainer = document.getElementById('weeklyTimeContainer');
@@ -2125,6 +2120,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
