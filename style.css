@@ -1585,24 +1585,38 @@ input.input-field:-webkit-autofill:active {
 #start-screen .row:nth-child(3),
 #start-screen .row:nth-child(4) {
     display: flex !important;
-    gap: 20px !important;      /* Matches your existing gap */
+    gap: 20px !important;      
     align-items: stretch !important;
     margin: 0 !important;
 }
 
-/* Force the buttons inside those specific rows to be full-sized */
+/* Force the buttons AND the text inside them to be full-sized */
 #start-screen .row:nth-child(3) button,
 #start-screen .row:nth-child(3) a,
 #start-screen .row:nth-child(4) button,
 #start-screen .row:nth-child(4) a {
     flex: 1 !important;
-    height: 54px !important;    /* Matches standard big button height */
+    height: 54px !important;    
     min-height: 54px !important;
-    flex-shrink: 0 !important;   /* Prevents the 'squishing' */
+    flex-shrink: 0 !important;   
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;       
+    
+    /* TEXT FIXES: This makes the text match the big buttons */
+    font-size: 1.1rem !important; 
+    line-height: 1 !important;
+    text-decoration: none;
+}
+
+/* Extra safety for spans inside these buttons */
+#start-screen .row:nth-child(4) .btn-label,
+#start-screen .row:nth-child(3) .btn-label {
+    font-size: 1.1rem !important;
     display: flex !important;
     align-items: center;
     justify-content: center;
-    padding: 0 !important;       /* Clean slate for height control */
 }
 
 
