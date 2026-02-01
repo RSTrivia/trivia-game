@@ -805,7 +805,7 @@ async function startGame() {
         const end = start + WEEKLY_LIMIT;
         
         remainingQuestions = permanentRandomPool.slice(start, end);
-    }
+    
     } else {
         // Normal Mode logic (Full random deck)
         // Step B: Every time a NEW GAME starts, we refill remainingQuestions from the pool
@@ -2164,6 +2164,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
