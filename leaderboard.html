@@ -123,14 +123,14 @@
 <script src="config.js"></script>
 <script type="module">
 import { supabase } from './supabase.js';
+
 const weeklyTab = document.getElementById('weeklyTab');
 const leaderboardRows = document.querySelectorAll('#leaderboard li');
 const scoreTab = document.getElementById('scoreTab');
 const xpTab = document.getElementById('xpTab');
 
-let currentMode = 'score'; // Default mode
+let currentMode = 'score'; 
 
-// Use your specific tuned formula
 function getLevel(xp) {
     if (!xp || xp <= 0) return 1;
     if (xp >= 100000) return 99;
@@ -142,34 +142,32 @@ function getLevel(xp) {
 }
 
 function updateLeaderboard(data) {
-  leaderboardRows.forEach((row, i) => {
-    const entry = data[i];
-    const userTxt = row.querySelector('.user-txt');
-    const scoreSpan = row.querySelector('.score-part');
-    
-    // CRITICAL: If no data exists for this rank (e.g. only 3 players exist)
-    // we MUST clear the text so the 4th-10th rows look empty.
-    if (!entry) {
-        userTxt.textContent = ""; 
-        scoreSpan.innerHTML = "";
-        return;
-    }
+    leaderboardRows.forEach((row, i) => {
+        const entry = data[i];
+        const userTxt = row.querySelector('.user-txt');
+        const scoreSpan = row.querySelector('.score-part');
+        
+        // If no data for this rank, clear the row
+        if (!entry) {
+            userTxt.textContent = ""; 
+            scoreSpan.innerHTML = "";
+            return;
+        }
 
-    userTxt.textContent = entry.username;
-    
-    if (currentMode === 'xp') {
-        const level = getLevel(entry.val);
-        scoreSpan.innerHTML = `${entry.val.toLocaleString()} <span style="font-size: 0.8em; opacity: 0.7;">(Lvl ${level})</span>`;
-    } else if (currentMode === 'weekly') {
-        const totalSeconds = (entry.time || 0) / 1000;
-        let timeStr = totalSeconds < 60 ? totalSeconds.toFixed(2) + "s" : `${Math.floor(totalSeconds / 60)}:${(totalSeconds % 60).toFixed(2).toString().padStart(5, '0')}`;
-        scoreSpan.innerHTML = `${(entry.val || 0)} <span style="font-size: 0.8em; opacity: 0.7;">(${timeStr})</span>`;
-    } else {
-        // Normal Score Mode
-        // We use innerHTML here too just to be safe and overwrite any old <span> tags
-        scoreSpan.innerHTML = (entry.val || 0).toLocaleString();
-    }
-  });
+        userTxt.textContent = entry.username;
+        
+        if (currentMode === 'xp') {
+            const level = getLevel(entry.val);
+            scoreSpan.innerHTML = `${entry.val.toLocaleString()} <span style="font-size: 0.8em; opacity: 0.7;">(Lvl ${level})</span>`;
+        } else if (currentMode === 'weekly') {
+            const totalSeconds = (entry.time || 0) / 1000;
+            let timeStr = totalSeconds < 60 ? totalSeconds.toFixed(2) + "s" : `${Math.floor(totalSeconds / 60)}:${(totalSeconds % 60).toFixed(2).toString().padStart(5, '0')}`;
+            scoreSpan.innerHTML = `${(entry.val || 0)} <span style="font-size: 0.8em; opacity: 0.7;">(${timeStr})</span>`;
+        } else {
+            // Normal Score Mode
+            scoreSpan.innerHTML = (entry.val || 0).toLocaleString();
+        }
+    });
 }
 
 async function fetchLeaderboard() {
@@ -210,7 +208,6 @@ async function fetchLeaderboard() {
                     time: entry.weekly_data?.time || 0
                 };
             }
-            // For Score and XP, the 'val' is already mapped in the .select()
             return entry; 
         });
         
@@ -218,25 +215,21 @@ async function fetchLeaderboard() {
         updateLeaderboard(formattedData);
     }
 }
-  
+
 function setActiveTab(activeBtn) {
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     activeBtn.classList.add('active');
 }
-  
-// Function to instantly wipe the board before loading new data
-function clearLeaderboardUI() {
-    leaderboardRows.forEach(row => {
-        //row.querySelector('.user-txt').textContent = 'Loading...';
-        row.querySelector('.score-part').innerHTML = '';
-    });
-}
 
+// TAB CLICKS: Load cache first, then fetch
 scoreTab.onclick = () => {
     if (currentMode === 'score') return;
     currentMode = 'score';
     setActiveTab(scoreTab);
-    clearLeaderboardUI(); // Clear immediately
+    
+    const cached = localStorage.getItem('leaderboard_score');
+    if (cached) updateLeaderboard(JSON.parse(cached));
+    
     fetchLeaderboard();
 };
 
@@ -244,7 +237,10 @@ weeklyTab.onclick = () => {
     if (currentMode === 'weekly') return;
     currentMode = 'weekly';
     setActiveTab(weeklyTab);
-    clearLeaderboardUI(); // Clear immediately
+    
+    const cached = localStorage.getItem('leaderboard_weekly');
+    if (cached) updateLeaderboard(JSON.parse(cached));
+    
     fetchLeaderboard();
 };
 
@@ -252,43 +248,25 @@ xpTab.onclick = () => {
     if (currentMode === 'xp') return;
     currentMode = 'xp';
     setActiveTab(xpTab);
-    clearLeaderboardUI(); // Clear immediately
+    
+    const cached = localStorage.getItem('leaderboard_xp');
+    if (cached) updateLeaderboard(JSON.parse(cached));
+    
     fetchLeaderboard();
 };
-  
-// Realtime Sync for both tables
-supabase
-  .channel('public-leaderboard-changes')
-  // Listen for changes in the 'scores' table
-  .on('postgres_changes', { event: '*', schema: 'public', table: 'scores' }, () => {
-      if (currentMode === 'score') fetchLeaderboard();
-  })
-  // listen for changes in the 'profiles' table (XP)
-  .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
-      if (currentMode === 'xp') fetchLeaderboard();
-  })
-  .subscribe();
 
 // Initial Run
 (async () => {
-  const cachedString = localStorage.getItem(`leaderboard_${currentMode}`);
-  if (cachedString) {
-    updateLeaderboard(JSON.parse(cachedString));
-  }
-  await fetchLeaderboard();
+    const cachedString = localStorage.getItem(`leaderboard_${currentMode}`);
+    if (cachedString) {
+        updateLeaderboard(JSON.parse(cachedString));
+    }
+    await fetchLeaderboard();
 })();
-</script>
-
-  <script>
-  // Mobile Flash for Leaderboard Main Menu Button
-  const mainMenu = document.querySelector('.btn-small');
-  if (mainMenu) {
-    mainMenu.addEventListener('touchstart', () => mainMenu.classList.add('tapped'), {passive: true});
-    mainMenu.addEventListener('touchend', () => setTimeout(() => mainMenu.classList.remove('tapped'), 150));
-  }
 </script>
 </body>
 </html>
+
 
 
 
