@@ -227,7 +227,7 @@ function setActiveTab(activeBtn) {
 // Function to instantly wipe the board before loading new data
 function clearLeaderboardUI() {
     leaderboardRows.forEach(row => {
-        row.querySelector('.user-txt').textContent = 'Loading...';
+        //row.querySelector('.user-txt').textContent = 'Loading...';
         row.querySelector('.score-part').innerHTML = '';
     });
 }
@@ -289,6 +289,7 @@ supabase
 </script>
 </body>
 </html>
+
 
 
 
