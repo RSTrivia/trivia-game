@@ -192,12 +192,13 @@ async function fetchLeaderboard() {
       .select('username, val:score')
       .order('score', { ascending: false });
   } else if (currentMode === 'weekly') {
-    // Fetch the weekly_data JSONB object
     query = supabase.from('scores')
       .select('username, weekly_data')
-      .not('weekly_data', 'is', null) // Only users who have played weekly
-      .order('weekly_data->score', { ascending: false }) // Sort by score
-      .order('weekly_data->time', { ascending: true });   // Tie-break with time
+      // Ensure the object exists AND the score inside is greater than 0
+      .not('weekly_data', 'is', null) 
+      .gt('weekly_data->score', 0) 
+      .order('weekly_data->score', { ascending: false })
+      .order('weekly_data->time', { ascending: true });
   } else {
     // 🔥 Added .gt('xp', 0) to hide 0 XP users
     query = supabase.from('profiles')
@@ -230,38 +231,41 @@ async function fetchLeaderboard() {
   }
 }
   
+// Helper to manage tab UI
+function setActiveTab(activeBtn) {
+    // Remove active class from ALL buttons in the tabs container
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    // Add to the one we just clicked
+    activeBtn.classList.add('active');
+}  
+  
 // Tab Click Handlers
 scoreTab.onclick = () => {
-  if (currentMode === 'score') return;
-  currentMode = 'score';
-  scoreTab.classList.add('active');
-  xpTab.classList.remove('active');
-  
-  // Load cache immediately for speed, then fetch fresh
-  const cached = localStorage.getItem('leaderboard_score');
-  if (cached) updateLeaderboard(JSON.parse(cached));
-  fetchLeaderboard();
+    if (currentMode === 'score') return;
+    currentMode = 'score';
+    setActiveTab(scoreTab); // Use the helper
+    
+    const cached = localStorage.getItem('leaderboard_score');
+    if (cached) updateLeaderboard(JSON.parse(cached));
+    fetchLeaderboard();
 };
 
-xpTab.onclick = () => {
-  if (currentMode === 'xp') return;
-  currentMode = 'xp';
-  xpTab.classList.add('active');
-  scoreTab.classList.remove('active');
-  
-  const cached = localStorage.getItem('leaderboard_xp');
-  if (cached) updateLeaderboard(JSON.parse(cached));
-  fetchLeaderboard();
-};
-  
 weeklyTab.onclick = () => {
     if (currentMode === 'weekly') return;
     currentMode = 'weekly';
-    weeklyTab.classList.add('active');
-    scoreTab.classList.remove('active');
-    xpTab.classList.remove('active');
+    setActiveTab(weeklyTab); // Use the helper
     
     const cached = localStorage.getItem('leaderboard_weekly');
+    if (cached) updateLeaderboard(JSON.parse(cached));
+    fetchLeaderboard();
+};
+
+xpTab.onclick = () => {
+    if (currentMode === 'xp') return;
+    currentMode = 'xp';
+    setActiveTab(xpTab); // Use the helper
+    
+    const cached = localStorage.getItem('leaderboard_xp');
     if (cached) updateLeaderboard(JSON.parse(cached));
     fetchLeaderboard();
 };
@@ -299,6 +303,7 @@ supabase
 </script>
 </body>
 </html>
+
 
 
 
