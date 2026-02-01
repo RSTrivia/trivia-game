@@ -188,6 +188,8 @@ let preloadQueue = [];
 let timer;
 let timeLeft = 15;
 let isDailyMode = false;
+let isWeeklyMode = false;
+let weeklyQuestionCount = 0;
 
 // ====== INITIAL UI SYNC ======
 // Replace your existing refreshAuthUI with this:
@@ -305,7 +307,20 @@ async function init() {
         window.location.href = '/login.html';
         return;
     }
+          
+    if (weeklyBtn) {
+    weeklyBtn.onclick = async () => {
+        // Resume audio context for OSRS sounds
+        if (audioCtx.state === 'suspended') await audioCtx.resume();
+        await loadSounds();
 
+        isDailyMode = false;
+        isWeeklyMode = true; // Set our new flag
+        weeklyQuestionCount = 0; // Reset counter
+        
+        startGame(); // Reuse your existing startGame logic
+    };
+}
     // 4. Proceed with game logic
     const played = await hasUserCompletedDaily(session);
     //if (played) return alert("You've already played today!");
@@ -701,13 +716,29 @@ async function startGame() {
 
         // --- THE POOL FIX ---
         
-        // Step A: If we've NEVER fetched questions (first load), get all 510 IDs
+        // Step A: Fetch IDs (Ensure they are sorted by ID for consistency!)
         if (masterQuestionPool.length === 0) {
-            const { data: idList, error } = await supabase.from('questions').select('id');
+            const { data: idList, error } = await supabase
+                .from('questions')
+                .select('id')
+                .order('id', { ascending: true }); // CRITICAL: Everyone must have the same order
             if (error) throw error;
             masterQuestionPool = idList.map(q => q.id);
         }
 
+        if (isWeeklyMode) {
+            const perWeek = 50;
+            const sliceIndex = getWeeklySliceIndex(masterQuestionPool.length, perWeek);
+            const startPoint = sliceIndex * perWeek;
+            
+            // Pick the 50 questions for THIS week globally
+            remainingQuestions = masterQuestionPool.slice(startPoint, startPoint + perWeek);
+            
+            // Optional: Shuffle these 50 so the order isn't the same every time they play 
+            // BUT the pool remains the same 50 for the whole week.
+            remainingQuestions.sort(() => Math.random() - 0.5);
+    } else {
+        // Normal Mode logic (Full random deck)
         // Step B: Every time a NEW GAME starts, we refill remainingQuestions from the pool
         // This ensures Game 2 starts with a full deck of 510 again.
         remainingQuestions = [...masterQuestionPool].sort(() => Math.random() - 0.5);
@@ -717,12 +748,13 @@ async function startGame() {
         // so they don't appear twice in the same game.
         const bufferedIds = preloadQueue.map(q => q.id);
         remainingQuestions = remainingQuestions.filter(id => !bufferedIds.includes(id));
-
-        // Standard Reset
+        }
+       // Standard Reset
         clearInterval(timer);
         score = 0;
         streak = 0;              // Reset streak
         dailyQuestionCount = 0;  // Reset daily count
+        weeklyQuestionCount = 0; // Reset for the new session
         currentQuestion = null;
         updateScore();
         
@@ -738,10 +770,16 @@ async function startGame() {
 
     } catch (err) {
         console.error("startGame error:", err);
-    }
+    }     
 }
 
 async function loadQuestion() {
+   // Check for Weekly End Condition
+    if (isWeeklyMode && weeklyQuestionCount >= 50) {
+        await endGame();
+        return;
+    }
+  
     // A. IMMEDIATE CLEANUP
     questionImage.style.display = 'none';
     questionImage.style.opacity = '0';
@@ -759,7 +797,7 @@ async function loadQuestion() {
         await endGame();
         return;
     }
-
+  
     // E. PULL QUESTION & F. BACKGROUND PRELOAD
     currentQuestion = preloadQueue.shift();
     preloadNextQuestions();
@@ -864,7 +902,9 @@ async function checkAnswer(choiceId, btn) {
     });
 
     if (error) return console.error("RPC Error:", error);
-
+  
+    if (isWeeklyMode) weeklyQuestionCount++;
+  
     if (isCorrect) {
         playSound(correctBuffer);
         btn.classList.add('correct');
@@ -1267,6 +1307,18 @@ async function saveNormalScore(currentUsername, finalScore) {
                 .eq('id', userId);
         }
     }
+}
+
+function getWeeklySliceIndex(totalQuestions, perWeek = 50) {
+    const now = new Date();
+    const startOfYear = new Date(now.getFullYear(), 0, 1);
+    const days = Math.floor((now - startOfYear) / (24 * 60 * 60 * 1000));
+    const weekNumber = Math.ceil((days + startOfYear.getDay() + 1) / 7);
+    
+    // This calculates which "chunk" of 50 we are on. 
+    // The % ensures it loops back to the start if we exceed the total questions.
+    const maxChunks = Math.floor(totalQuestions / perWeek);
+    return (weekNumber % maxChunks); 
 }
 
 // Helper to keep endGame clean
@@ -1925,6 +1977,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
