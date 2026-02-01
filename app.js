@@ -16,6 +16,7 @@ let notificationQueue = [];
 let isShowingNotification = false;
 let currentMode = 'score'; // 'score' or 'xp'
 
+const WEEKLY_LIMIT = 10; // Change to 50 when ready to go live
 const number_of_questions = 610;
 const leaderboardRows = document.querySelectorAll('#leaderboard li');
 const scoreTab = document.getElementById('scoreTab');
@@ -728,12 +729,11 @@ async function startGame() {
         }
 
         if (isWeeklyMode) {
-            const perWeek = 10;
-            const sliceIndex = getWeeklySliceIndex(masterQuestionPool.length, perWeek);
-            const startPoint = sliceIndex * perWeek;
+            const sliceIndex = getWeeklySliceIndex(masterQuestionPool.length, WEEKLY_LIMIT);
+            const startPoint = sliceIndex * WEEKLY_LIMIT;
             
             // Pick the 50 questions for THIS week globally
-            remainingQuestions = masterQuestionPool.slice(startPoint, startPoint + perWeek);
+            remainingQuestions = masterQuestionPool.slice(startPoint, startPoint + WEEKLY_LIMIT);
             
             // Optional: Shuffle these 50 so the order isn't the same every time they play 
             // BUT the pool remains the same 50 for the whole week.
@@ -776,7 +776,7 @@ async function startGame() {
 
 async function loadQuestion() {
    // Check for Weekly End Condition
-    if (isWeeklyMode && weeklyQuestionCount >= 10) {
+    if (isWeeklyMode && weeklyQuestionCount >= WEEKLY_LIMIT) {
         await endGame();
         return;
     }
@@ -1156,7 +1156,31 @@ async function endGame() {
     if (gameOverTitle) gameOverTitle.classList.add('hidden');
     if (gzTitle) gzTitle.classList.add('hidden');
 
-    if (isDailyMode) {
+    if (isWeeklyMode) {
+        // --- NEW WEEKLY LOGIC ---
+        const endTime = Date.now();
+        const timeInSeconds = Math.floor((endTime - weeklyStartTime) / 1000);
+        
+        if (playAgainBtn) playAgainBtn.classList.remove('hidden'); // Allow replay
+        if (streakContainer) streakContainer.style.display = 'none';
+
+        if (gameOverTitle) {
+            gameOverTitle.textContent = "Weekly Challenge Complete!";
+            gameOverTitle.classList.remove('hidden');
+        }
+
+        // Display Score and Time
+        if (finalScore) {
+            // The backticks `` allow us to drop the variable directly into the string
+            finalScore.innerHTML = `${score}/${WEEKLY_LIMIT} <br><span style="font-size: 0.8em; color: #ffde00;">Time: ${timeInSeconds}s</span>`;
+        }
+
+        // SAVE TO SUPABASE (New function needed)
+        if (session) {
+            await saveWeeklyScore(session.user.id, username, score, timeInSeconds);
+        }
+
+    else if (isDailyMode) {
         if (playAgainBtn) playAgainBtn.classList.add('hidden');
         if (gameOverTitle) {
             gameOverTitle.textContent = randomMsg;
@@ -1221,7 +1245,21 @@ async function endGame() {
         gameEnding = false;
     });
 }
+  
+async function saveWeeklyScore(userId, displayUsername, correctCount, seconds) {
+    const { error } = await supabase
+        .from('weekly_scores')
+        .insert([{ 
+            user_id: userId, 
+            username: displayUsername, 
+            score: correctCount, 
+            time_taken: seconds,
+            week_number: getWeekNumber(new Date()) // Optional: track which week
+        }]);
 
+    if (error) console.error("Error saving weekly score:", error);
+}
+  
 // new for xp drops 
 function triggerXpDrop(amount) {
     const gameContainer = document.getElementById('game'); 
@@ -1317,7 +1355,7 @@ async function saveNormalScore(currentUsername, finalScore) {
     }
 }
 
-function getWeeklySliceIndex(totalQuestions, perWeek = 50) {
+function getWeeklySliceIndex(totalQuestions, WEEKLY_LIMIT) {
     const now = new Date();
     const startOfYear = new Date(now.getFullYear(), 0, 1);
     const days = Math.floor((now - startOfYear) / (24 * 60 * 60 * 1000));
@@ -1325,7 +1363,9 @@ function getWeeklySliceIndex(totalQuestions, perWeek = 50) {
     
     // This calculates which "chunk" of 50 we are on. 
     // The % ensures it loops back to the start if we exceed the total questions.
-    const maxChunks = Math.floor(totalQuestions / perWeek);
+    const maxChunks = Math.floor(totalQuestions / WEEKLY_LIMIT);
+    // Safety: If database is smaller than the limit, always return the first chunk
+    if (maxChunks <= 0) return 0;
     return (weekNumber % maxChunks); 
 }
 
@@ -1985,6 +2025,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
