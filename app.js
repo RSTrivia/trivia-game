@@ -237,7 +237,7 @@ async function init() {
   
   // 1. Set up the listener FIRST
       supabase.auth.onAuthStateChange((event, session) => {
-          console.log("Auth Event:", event);
+          //console.log("Auth Event:", event);
           
          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'SIGNED_OUT') {
           handleAuthChange(event, session);
@@ -342,7 +342,7 @@ async function init() {
   if (weeklyBtn) {
     weeklyBtn.onclick = async () => {
 
-        console.log("Weekly Button Clicked"); // Debug check
+        //console.log("Weekly Button Clicked"); // Debug check
         
         // 1. Force UI Reset
         resetGame();
@@ -1314,7 +1314,7 @@ async function endGame() {
   
 
 async function saveWeeklyScore(userId, username, currentScore, timeInMs) {
-    console.log("Attempting save:", { currentScore, timeInMs });
+    //console.log("Attempting save:", { currentScore, timeInMs });
 
     const { data, error: fetchError } = await supabase
         .from('scores')
@@ -1393,7 +1393,7 @@ function setupRealtimeSync(userId) {
 
     channel
         .on('broadcast', { event: 'lock-daily' }, (payload) => {
-            console.log("Broadcast received! Locking daily button.");
+            //console.log("Broadcast received! Locking daily button.");
             lockDailyButton();
             // Also sync the score/message data so the "Share" button appears
             fetchDailyStatus(userId);
@@ -1440,7 +1440,7 @@ async function saveNormalScore(currentUsername, finalScore) {
         if (scoreError) {
             console.error("Leaderboard Save Error:", scoreError.message);
         } else {
-            console.log("Personal best updated on leaderboard!");
+            //console.log("Personal best updated on leaderboard!");
             
             // --- 4. PROFILE SYNC ---
             // We update the profiles table only when a new high score is hit
@@ -1547,7 +1547,9 @@ if (shareBtn) {
                     title: 'OSRS Trivia',
                     text: shareText
                 });
-            } catch (err) { console.log("Share cancelled"); }
+            } catch (err) { 
+              //console.log("Share cancelled"); 
+            }
         } else {
             try {
                 await navigator.clipboard.writeText(shareText);
@@ -2051,7 +2053,7 @@ function subscribeToDailyChanges(userId) {
             table: 'daily_attempts',
             filter: `user_id=eq.${userId}`
         }, () => {
-            console.log('Daily challenge sync: locking button.');
+            //console.log('Daily challenge sync: locking button.');
             lockDailyButton();
         })
         .subscribe();
@@ -2125,6 +2127,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
