@@ -329,7 +329,6 @@ async function init() {
     isDailyMode = true;
     startDailyChallenge(); 
   };
-}
 
   if (weeklyBtn) {
     weeklyBtn.onclick = async () => {
@@ -1183,8 +1182,7 @@ async function endGame() {
         if (session) {
             await saveWeeklyScore(session.user.id, username, score, timeInSeconds);
         }
-    }
-    else if (isDailyMode) {
+    } else if (isDailyMode) {
         if (playAgainBtn) playAgainBtn.classList.add('hidden');
         if (gameOverTitle) {
             gameOverTitle.textContent = randomMsg;
@@ -2051,6 +2049,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
