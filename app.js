@@ -1989,6 +1989,7 @@ async function startWeeklyChallenge() {
     isDailyMode = false;
     isWeeklyMode = true;
     preloadQueue = [];
+    weeklyStartTime = Date.now();
     resetGame();
     remainingQuestions = weeklyIds; // Set the 50 Weekly IDs
     
@@ -2146,6 +2147,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
