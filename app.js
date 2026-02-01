@@ -746,6 +746,9 @@ async function preloadNextQuestions() {
 
 async function startGame() {
     try {
+      // Add this inside startGame() delete later
+      window.masterQuestionPool = masterQuestionPool; 
+      console.log("Master Pool is now public for debugging!");
         document.body.classList.add('game-active');
         gameEnding = false;
         game.classList.remove('hidden');
@@ -2135,6 +2138,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
