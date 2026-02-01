@@ -766,7 +766,19 @@ async function startGame() {
             if (error) throw error;
             masterQuestionPool = idList.map(q => q.id);
         }
-
+      // --- TEST LOG START --- delete later
+          const testLimit = 300;
+          const maxChunks = Math.floor(masterQuestionPool.length / testLimit);
+          const currentIdx = getWeeklySliceIndex(masterQuestionPool.length, testLimit);
+          const loopIdx = (currentIdx + 2) % maxChunks;
+      
+          console.log("--- WEEKLY LOOP TEST ---");
+          console.log("Total Questions:", masterQuestionPool.length);
+          console.log("Week 1 Index:", currentIdx);
+          console.log("Week 3 Index:", loopIdx);
+          console.log("Loop Works?:", currentIdx === loopIdx ? "✅ YES" : "❌ NO");
+          // --- TEST LOG END ---
+      
         if (isWeeklyMode) {
             weeklyStartTime = Date.now(); // Always start the clock here
             const sliceIndex = getWeeklySliceIndex(masterQuestionPool.length, WEEKLY_LIMIT);
@@ -2138,6 +2150,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
