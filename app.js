@@ -307,19 +307,6 @@ async function init() {
         window.location.href = '/login.html';
         return;
     }
-          
-    if (weeklyBtn) {
-    weeklyBtn.onclick = async () => {
-        // Resume audio context for OSRS sounds
-        if (audioCtx.state === 'suspended') await audioCtx.resume();
-        await loadSounds();
-
-        isDailyMode = false;
-        isWeeklyMode = true; // Set our new flag
-        weeklyQuestionCount = 0; // Reset counter
-        
-        startGame(); // Reuse your existing startGame logic
-    };
 }
     // 4. Proceed with game logic
     const played = await hasUserCompletedDaily(session);
@@ -342,6 +329,20 @@ async function init() {
     startDailyChallenge(); 
 };
     }
+
+  if (weeklyBtn) {
+    weeklyBtn.onclick = async () => {
+        // Resume audio context for OSRS sounds
+        if (audioCtx.state === 'suspended') await audioCtx.resume();
+        await loadSounds();
+
+        isDailyMode = false;
+        isWeeklyMode = true; // Set our new flag
+        weeklyQuestionCount = 0; // Reset counter
+        
+        startGame(); // Reuse your existing startGame logic
+    };
+
         if (playAgainBtn) {
         playAgainBtn.onclick = async () => {
         isDailyMode = false;
@@ -1977,6 +1978,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
