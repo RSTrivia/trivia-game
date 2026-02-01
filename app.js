@@ -15,6 +15,7 @@ let gameEnding = false;
 let notificationQueue = [];
 let isShowingNotification = false;
 let currentMode = 'score'; // 'score' or 'xp'
+let masterQuestionPool = [];
 
 const WEEKLY_LIMIT = 300; // Change to 50 when ready to go live
 const number_of_questions = 610;
@@ -184,7 +185,7 @@ let muted = cachedMuted;
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 const todayStr = new Date().toISOString().split('T')[0];
 let score = 0;
-let masterQuestionPool = []; // This holds ALL 510 IDs from Supabase
+//let masterQuestionPool = []; // This holds ALL 510 IDs from Supabase
 let remainingQuestions = []; // This holds what's left for the CURRENT SESSION
 let currentQuestion = null;
 let currentQuestionIndex = 0;
@@ -2164,6 +2165,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
