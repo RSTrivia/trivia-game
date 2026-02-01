@@ -360,20 +360,28 @@ async function init() {
 }
 if (playAgainBtn) {
     playAgainBtn.onclick = async () => {
-        score = 0;
-        weeklyQuestionCount = 0;
-        
-        if (isWeeklyMode) {
-            // Re-run the weekly setup to get the same 50 IDs
-            await startWeeklyChallenge(); 
-        } else if (isDailyMode) {
-            // Usually Daily is locked after 1 play, but for safety:
-            await startDailyChallenge();
-        } else {
-            // Normal Mode
-            await startGame();
-        }
-    };
+    // 1. Reset numerical state
+    score = 0;
+    weeklyQuestionCount = 0;
+    streak = 0;
+      
+    // 2. UI RESET (The missing part)
+        document.getElementById('end-screen').classList.add('hidden'); // Hide End
+        document.getElementById('game').classList.remove('hidden');    // Show Game
+        document.body.classList.add('game-active');                   // Add background class   
+      
+    // 3. Start the correct game engine 
+    if (isWeeklyMode) {
+           // Re-run the weekly setup to get the same 50 IDs
+          await startWeeklyChallenge(); 
+    } else if (isDailyMode) {
+           // Usually Daily is locked after 1 play, but for safety:
+           await startDailyChallenge();
+    } else {
+          // Normal Mode
+          await startGame();
+    }
+  };
 }
   if (mainMenuBtn) {  
         mainMenuBtn.onclick = async () => {
@@ -2147,6 +2155,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
