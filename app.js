@@ -16,7 +16,7 @@ let notificationQueue = [];
 let isShowingNotification = false;
 let currentMode = 'score'; // 'score' or 'xp'
 
-const WEEKLY_LIMIT = 10; // Change to 50 when ready to go live
+const WEEKLY_LIMIT = 4; // Change to 50 when ready to go live
 const number_of_questions = 610;
 const leaderboardRows = document.querySelectorAll('#leaderboard li');
 const scoreTab = document.getElementById('scoreTab');
@@ -2025,6 +2025,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
