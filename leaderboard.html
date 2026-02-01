@@ -143,19 +143,19 @@ function getLevel(xp) {
 
 function updateLeaderboard(data) {
   leaderboardRows.forEach((row, i) => {
-    const entry = data[i]; // No default object here
+    // Look for data for this specific row index
+    const entry = data[i]; 
     const userTxt = row.querySelector('.user-txt');
     const scoreSpan = row.querySelector('.score-part');
     
-    // If no data for this rank, clear text and hide the row
-    if (!entry || !entry.username) {
-        userTxt.textContent = '';
-        scoreSpan.textContent = '';
-        row.style.visibility = 'hidden'; // Hide the row visually
+    // IF NO DATA: Clear the text but keep the row visible
+    if (!entry) {
+        userTxt.textContent = ''; 
+        scoreSpan.innerHTML = '';
         return;
     }
 
-    row.style.visibility = 'visible';
+    // IF DATA EXISTS: Fill it in based on the mode
     userTxt.textContent = entry.username;
     
     if (currentMode === 'xp') {
@@ -164,11 +164,15 @@ function updateLeaderboard(data) {
     } else if (currentMode === 'weekly') {
         const score = entry.val;
         const totalSeconds = entry.time / 1000;
-        let timeStr = totalSeconds < 60 ? totalSeconds.toFixed(2) + "s" : `${Math.floor(totalSeconds / 60)}:${(totalSeconds % 60).toFixed(2).toString().padStart(5, '0')}`;
+        let timeStr = totalSeconds < 60 
+            ? totalSeconds.toFixed(2) + "s" 
+            : `${Math.floor(totalSeconds / 60)}:${(totalSeconds % 60).toFixed(2).toString().padStart(5, '0')}`;
+        
         scoreSpan.innerHTML = `${score} <span style="font-size: 0.8em; opacity: 0.7;">(${timeStr})</span>`;
     } else {
         // Normal Score Mode
-        scoreSpan.textContent = entry.val.toLocaleString();
+        // Ensure val exists before calling toLocaleString to prevent errors
+        scoreSpan.textContent = entry.val !== undefined ? entry.val.toLocaleString() : '0';
     }
   });
 }
@@ -179,18 +183,16 @@ async function fetchLeaderboard() {
   if (currentMode === 'score') {
     query = supabase.from('scores')
       .select('username, val:score')
-      .gt('score', 0) // 🔥 ONLY pull players who have a score > 0
+      .gt('score', 0) // 🛡️ FILTER: Ignore accounts with no Normal Mode score
       .order('score', { ascending: false });
   } else if (currentMode === 'weekly') {
     query = supabase.from('scores')
       .select('username, weekly_data')
-      // Ensure the object exists AND the score inside is greater than 0
       .not('weekly_data', 'is', null) 
       .gt('weekly_data->score', 0) 
       .order('weekly_data->score', { ascending: false })
       .order('weekly_data->time', { ascending: true });
   } else {
-    // 🔥 Added .gt('xp', 0) to hide 0 XP users
     query = supabase.from('profiles')
       .select('username, val:xp')
       .gt('xp', 0) 
@@ -293,4 +295,5 @@ supabase
 </script>
 </body>
 </html>
+
 
