@@ -1298,8 +1298,6 @@ async function endGame() {
   
 
 async function saveWeeklyScore(userId, username, currentScore, timeInMs) {
-    //console.log("Attempting save:", { currentScore, timeInMs });
-
     const { data, error: fetchError } = await supabase
         .from('scores')
         .select('weekly_data')
@@ -1308,20 +1306,16 @@ async function saveWeeklyScore(userId, username, currentScore, timeInMs) {
 
     if (fetchError) {
         console.error("Fetch error:", fetchError);
-        return;
+        return false; // Return false so UI doesn't show "PB" on error
     }
 
     // Default values if no record exists
     const bestWeekly = data?.weekly_data || { score: -1, time: 999999999 };
     
-    //console.log("Current Best in DB:", bestWeekly);
-
     const isHigherScore = currentScore > bestWeekly.score;
     const isFasterTime = (currentScore === bestWeekly.score && timeInMs < bestWeekly.time);
 
     if (isHigherScore || isFasterTime) {
-        //console.log("New record detected! Saving...");
-        
         const { error: upsertError } = await supabase
             .from('scores')
             .upsert({ 
@@ -1335,12 +1329,13 @@ async function saveWeeklyScore(userId, username, currentScore, timeInMs) {
 
         if (upsertError) {
             console.error("Upsert error:", upsertError);
-        } else {
-            //console.log("Weekly score saved successfully!");
+            return false;
         }
-    } else {
-        //console.log("Not a new record. Score/Time not better.");
-    }
+        
+        return true; // SUCCESS: This tells endGame to show "New PB achieved!"
+    } 
+
+    return false; // Not a new record
 }
   
 // new for xp drops 
@@ -2159,6 +2154,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
