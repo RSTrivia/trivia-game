@@ -780,18 +780,25 @@ async function startGame() {
           // --- TEST LOG END ---
       
         if (isWeeklyMode) {
-            weeklyStartTime = Date.now(); // Always start the clock here
-            const sliceIndex = getWeeklySliceIndex(masterQuestionPool.length, WEEKLY_LIMIT);
-            const startPoint = sliceIndex * WEEKLY_LIMIT;
+            weeklyStartTime = Date.now();
             
-            // Pick the 50 questions for THIS week globally
-            remainingQuestions = masterQuestionPool.slice(startPoint, startPoint + WEEKLY_LIMIT);
+            // 1. Generate the Week Seed (e.g., Week 5 of 2026 = 2031)
+            const now = new Date();
+            const startOfYear = new Date(now.getFullYear(), 0, 1);
+            const days = Math.floor((now - startOfYear) / (24 * 60 * 60 * 1000));
+            const weekNumber = Math.ceil((days + startOfYear.getDay() + 1) / 7);
+            const weekSeed = weekNumber + now.getFullYear(); 
+        
+            // 2. Shuffle the ENTIRE 610-question pool using that week's seed
+            // This creates a unique "random" order that lasts for 7 days
+            const weeklyShuffledPool = shuffleWithSeed(masterQuestionPool, weekSeed);
+        
+            // 3. Take the first 50 from this unique shuffle
+            remainingQuestions = weeklyShuffledPool.slice(0, WEEKLY_LIMIT);
             
-           // True Shuffle (Fisher-Yates)
-          for (let i = remainingQuestions.length - 1; i > 0; i--) {
-              const j = Math.floor(Math.random() * (i + 1));
-              [remainingQuestions[i], remainingQuestions[j]] = [remainingQuestions[j], remainingQuestions[i]];
-          }
+            // Note: We don't need to shuffle 'remainingQuestions' again 
+            // because shuffleWithSeed already did the work!
+        }
     } else {
         // Normal Mode logic (Full random deck)
         // Step B: Every time a NEW GAME starts, we refill remainingQuestions from the pool
@@ -2150,6 +2157,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
