@@ -965,9 +965,11 @@ async function checkAnswer(choiceId, btn) {
         streak = 0; // Reset streak on wrong answer in normal mode
         btn.classList.add('wrong');
         await highlightCorrectAnswer();
-        if (isDailyMode) {
+        if (isDailyMode || isWeeklyMode) {
+            // Keep going to the next question
             setTimeout(loadQuestion, 1500);
         } else {
+            // Only Normal Mode ends on a wrong answer
             setTimeout(endGame, 1000);
         }
     }
@@ -1978,6 +1980,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
