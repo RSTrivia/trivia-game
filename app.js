@@ -189,6 +189,7 @@ let preloadQueue = [];
 let timer;
 let timeLeft = 15;
 let isDailyMode = false;
+let weeklyStartTime = 0;
 let isWeeklyMode = false;
 let weeklyQuestionCount = 0;
 
@@ -337,19 +338,38 @@ async function init() {
 
   if (weeklyBtn) {
     weeklyBtn.onclick = async () => {
-        // Resume audio context for OSRS sounds
-        if (audioCtx.state === 'suspended') await audioCtx.resume();
-        await loadSounds();
 
+        console.log("Weekly Button Clicked"); // Debug check
+        
+        // 1. Force UI Reset
+        resetGame();
+      
+        // 2. Clear buffers to prevent "carry-over" data
+        preloadQueue = [];
+        remainingQuestions = [];
+      
+       // 3. set flags
         isDailyMode = false;
         isWeeklyMode = true; // Set our new flag
         weeklyQuestionCount = 0; // Reset counter
         score = 0; // Always reset score for a new run
       
-        // 3. Record the start time for the leaderboard
+        // 4. Resume audio context for OSRS sounds
+        if (audioCtx.state === 'suspended') await audioCtx.resume();
+        await loadSounds();
+       
+        // 5. Record the start time for the leaderboard
         weeklyStartTime = Date.now();
       
-        await startGame(); // Reuse your existing startGame logic
+        // 6. Start Game with Error Catching
+        try {
+            await startGame();
+        } catch (err) {
+            console.error("Failed to start weekly mode:", err);
+            // Fallback: If it fails, force the screen to show anyway to see what's wrong
+            document.getElementById('start-screen').classList.add('hidden');
+            game.classList.remove('hidden');
+        }
     };
   }
         if (playAgainBtn) {
@@ -2059,6 +2079,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
