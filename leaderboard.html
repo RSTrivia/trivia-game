@@ -124,9 +124,9 @@
 <script type="module">
 import { supabase } from './supabase.js';
 
-const weeklyTab = document.getElementById('weeklyTab');
 const leaderboardRows = document.querySelectorAll('#leaderboard li');
 const scoreTab = document.getElementById('scoreTab');
+const weeklyTab = document.getElementById('weeklyTab'); // Ensure this ID exists in HTML
 const xpTab = document.getElementById('xpTab');
 
 let currentMode = 'score'; 
@@ -146,26 +146,33 @@ function updateLeaderboard(data) {
         const entry = data[i];
         const userTxt = row.querySelector('.user-txt');
         const scoreSpan = row.querySelector('.score-part');
-        
-        // If no data for this rank, clear the row
-        if (!entry) {
-            userTxt.textContent = ""; 
-            scoreSpan.innerHTML = "";
+
+        // 1. If no data, clear but keep row visible
+        if (!entry || !entry.username) {
+            userTxt.textContent = '';
+            scoreSpan.textContent = '';
             return;
         }
 
-        userTxt.textContent = entry.username;
-        
+        // 2. Handle Username & Levels
         if (currentMode === 'xp') {
             const level = getLevel(entry.val);
-            scoreSpan.innerHTML = `${entry.val.toLocaleString()} <span style="font-size: 0.8em; opacity: 0.7;">(Lvl ${level})</span>`;
-        } else if (currentMode === 'weekly') {
-            const totalSeconds = (entry.time || 0) / 1000;
-            let timeStr = totalSeconds < 60 ? totalSeconds.toFixed(2) + "s" : `${Math.floor(totalSeconds / 60)}:${(totalSeconds % 60).toFixed(2).toString().padStart(5, '0')}`;
-            scoreSpan.innerHTML = `${(entry.val || 0)} <span style="font-size: 0.8em; opacity: 0.7;">(${timeStr})</span>`;
-        } else {
+            userTxt.innerHTML = `${entry.username} <span style="color: inherit; opacity: 0.6; font-size: 0.85em;">- ${level}</span>`;
+            scoreSpan.textContent = entry.val.toLocaleString();
+        } 
+        else if (currentMode === 'weekly') {
+            userTxt.textContent = entry.username;
+            // Weekly logic: use weekly_data object
+            const s = entry.weekly_data?.score || 0;
+            const t = entry.weekly_data?.time || 0;
+            const totalSeconds = t / 1000;
+            const timeStr = totalSeconds < 60 ? totalSeconds.toFixed(2) + "s" : `${Math.floor(totalSeconds / 60)}:${(totalSeconds % 60).toFixed(2).toString().padStart(5, '0')}`;
+            scoreSpan.innerHTML = `${s} <span style="font-size: 0.8em; opacity: 0.7;">(${timeStr})</span>`;
+        } 
+        else {
             // Normal Score Mode
-            scoreSpan.innerHTML = (entry.val || 0).toLocaleString();
+            userTxt.textContent = entry.username;
+            scoreSpan.textContent = entry.val !== undefined ? entry.val.toLocaleString() : '0';
         }
     });
 }
@@ -175,8 +182,8 @@ async function fetchLeaderboard() {
     
     if (currentMode === 'score') {
         query = supabase.from('scores')
-            .select('username, val:score') 
-            .gt('score', 0)
+            .select('username, val:score')
+            .gt('score', 0) // Prevents 0-score "weekly-only" accounts from appearing
             .order('score', { ascending: false });
     } else if (currentMode === 'weekly') {
         query = supabase.from('scores')
@@ -200,72 +207,43 @@ async function fetchLeaderboard() {
     }
 
     if (data) {
-        const formattedData = data.map(entry => {
-            if (currentMode === 'weekly') {
-                return {
-                    username: entry.username,
-                    val: entry.weekly_data?.score || 0,
-                    time: entry.weekly_data?.time || 0
-                };
-            }
-            return entry; 
-        });
-        
-        localStorage.setItem(`leaderboard_${currentMode}`, JSON.stringify(formattedData));
-        updateLeaderboard(formattedData);
+        // We save the RAW data to cache so switching tabs is instant
+        localStorage.setItem(`leaderboard_${currentMode}`, JSON.stringify(data));
+        updateLeaderboard(data);
     }
 }
 
-function setActiveTab(activeBtn) {
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-    activeBtn.classList.add('active');
+// Tab Click Logic (Identical to your "fine" version)
+function handleTabClick(mode, btn) {
+    if (currentMode === mode) return;
+    currentMode = mode;
+
+    // Update UI active states
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    // Load from cache IMMEDIATELY (No flicker)
+    const cached = localStorage.getItem(`leaderboard_${mode}`);
+    if (cached) updateLeaderboard(JSON.parse(cached));
+
+    // Refresh with fresh data
+    fetchLeaderboard();
 }
 
-// TAB CLICKS: Load cache first, then fetch
-scoreTab.onclick = () => {
-    if (currentMode === 'score') return;
-    currentMode = 'score';
-    setActiveTab(scoreTab);
-    
-    const cached = localStorage.getItem('leaderboard_score');
-    if (cached) updateLeaderboard(JSON.parse(cached));
-    
-    fetchLeaderboard();
-};
-
-weeklyTab.onclick = () => {
-    if (currentMode === 'weekly') return;
-    currentMode = 'weekly';
-    setActiveTab(weeklyTab);
-    
-    const cached = localStorage.getItem('leaderboard_weekly');
-    if (cached) updateLeaderboard(JSON.parse(cached));
-    
-    fetchLeaderboard();
-};
-
-xpTab.onclick = () => {
-    if (currentMode === 'xp') return;
-    currentMode = 'xp';
-    setActiveTab(xpTab);
-    
-    const cached = localStorage.getItem('leaderboard_xp');
-    if (cached) updateLeaderboard(JSON.parse(cached));
-    
-    fetchLeaderboard();
-};
+scoreTab.onclick = () => handleTabClick('score', scoreTab);
+xpTab.onclick = () => handleTabClick('xp', xpTab);
+if(weeklyTab) weeklyTab.onclick = () => handleTabClick('weekly', weeklyTab);
 
 // Initial Run
 (async () => {
     const cachedString = localStorage.getItem(`leaderboard_${currentMode}`);
-    if (cachedString) {
-        updateLeaderboard(JSON.parse(cachedString));
-    }
+    if (cachedString) updateLeaderboard(JSON.parse(cachedString));
     await fetchLeaderboard();
 })();
 </script>
 </body>
 </html>
+
 
 
 
