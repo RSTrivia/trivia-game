@@ -143,36 +143,31 @@ function getLevel(xp) {
 
 function updateLeaderboard(data) {
   leaderboardRows.forEach((row, i) => {
-    // Look for data for this specific row index
-    const entry = data[i]; 
+    const entry = data[i];
     const userTxt = row.querySelector('.user-txt');
     const scoreSpan = row.querySelector('.score-part');
     
-    // IF NO DATA: Clear the text but keep the row visible
+    // CRITICAL: If no data exists for this rank (e.g. only 3 players exist)
+    // we MUST clear the text so the 4th-10th rows look empty.
     if (!entry) {
-        userTxt.textContent = ''; 
-        scoreSpan.innerHTML = '';
+        userTxt.textContent = ""; 
+        scoreSpan.innerHTML = "";
         return;
     }
 
-    // IF DATA EXISTS: Fill it in based on the mode
     userTxt.textContent = entry.username;
     
     if (currentMode === 'xp') {
         const level = getLevel(entry.val);
         scoreSpan.innerHTML = `${entry.val.toLocaleString()} <span style="font-size: 0.8em; opacity: 0.7;">(Lvl ${level})</span>`;
     } else if (currentMode === 'weekly') {
-        const score = entry.val;
-        const totalSeconds = entry.time / 1000;
-        let timeStr = totalSeconds < 60 
-            ? totalSeconds.toFixed(2) + "s" 
-            : `${Math.floor(totalSeconds / 60)}:${(totalSeconds % 60).toFixed(2).toString().padStart(5, '0')}`;
-        
-        scoreSpan.innerHTML = `${score} <span style="font-size: 0.8em; opacity: 0.7;">(${timeStr})</span>`;
+        const totalSeconds = (entry.time || 0) / 1000;
+        let timeStr = totalSeconds < 60 ? totalSeconds.toFixed(2) + "s" : `${Math.floor(totalSeconds / 60)}:${(totalSeconds % 60).toFixed(2).toString().padStart(5, '0')}`;
+        scoreSpan.innerHTML = `${(entry.val || 0)} <span style="font-size: 0.8em; opacity: 0.7;">(${timeStr})</span>`;
     } else {
         // Normal Score Mode
-        // Ensure val exists before calling toLocaleString to prevent errors
-        scoreSpan.textContent = entry.val !== undefined ? entry.val.toLocaleString() : '0';
+        // We use innerHTML here too just to be safe and overwrite any old <span> tags
+        scoreSpan.innerHTML = (entry.val || 0).toLocaleString();
     }
   });
 }
@@ -181,10 +176,13 @@ async function fetchLeaderboard() {
   let query;
   
   if (currentMode === 'score') {
+    // We select username and score. 
+    // If scores are 0, they won't show up because of .gt('score', 0)
     query = supabase.from('scores')
-      .select('username, val:score')
-      .gt('score', 0) // 🛡️ FILTER: Ignore accounts with no Normal Mode score
+      .select('username, score') 
+      .gt('score', 0)
       .order('score', { ascending: false });
+  }
   } else if (currentMode === 'weekly') {
     query = supabase.from('scores')
       .select('username, weekly_data')
@@ -207,58 +205,56 @@ async function fetchLeaderboard() {
   }
 
   if (data) {
-    // Map data so updateLeaderboard understands it
     const formattedData = data.map(entry => {
+        if (currentMode === 'score') {
+            return {
+                username: entry.username,
+                val: entry.score // Map 'score' column to 'val'
+            };
+        }
         if (currentMode === 'weekly') {
             return {
                 username: entry.username,
-                val: entry.weekly_data.score,
-                time: entry.weekly_data.time // Pass the time through for formatting
+                val: entry.weekly_data?.score || 0,
+                time: entry.weekly_data?.time || 0
             };
         }
-        return entry;
+        return entry; // XP mode already uses {username, val}
     });
-    localStorage.setItem(`leaderboard_${currentMode}`, JSON.stringify(formattedData));
+    
     updateLeaderboard(formattedData);
   }
 }
   
-// Helper to manage tab UI
-function setActiveTab(activeBtn) {
-    // Remove active class from ALL buttons in the tabs container
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-    // Add to the one we just clicked
-    activeBtn.classList.add('active');
-}  
-  
-// Tab Click Handlers
+// Function to instantly wipe the board before loading new data
+function clearLeaderboardUI() {
+    leaderboardRows.forEach(row => {
+        row.querySelector('.user-txt').textContent = 'Loading...';
+        row.querySelector('.score-part').innerHTML = '';
+    });
+}
+
 scoreTab.onclick = () => {
     if (currentMode === 'score') return;
     currentMode = 'score';
-    setActiveTab(scoreTab); // Use the helper
-    
-    const cached = localStorage.getItem('leaderboard_score');
-    if (cached) updateLeaderboard(JSON.parse(cached));
+    setActiveTab(scoreTab);
+    clearLeaderboardUI(); // Clear immediately
     fetchLeaderboard();
 };
 
 weeklyTab.onclick = () => {
     if (currentMode === 'weekly') return;
     currentMode = 'weekly';
-    setActiveTab(weeklyTab); // Use the helper
-    
-    const cached = localStorage.getItem('leaderboard_weekly');
-    if (cached) updateLeaderboard(JSON.parse(cached));
+    setActiveTab(weeklyTab);
+    clearLeaderboardUI(); // Clear immediately
     fetchLeaderboard();
 };
 
 xpTab.onclick = () => {
     if (currentMode === 'xp') return;
     currentMode = 'xp';
-    setActiveTab(xpTab); // Use the helper
-    
-    const cached = localStorage.getItem('leaderboard_xp');
-    if (cached) updateLeaderboard(JSON.parse(cached));
+    setActiveTab(xpTab);
+    clearLeaderboardUI(); // Clear immediately
     fetchLeaderboard();
 };
   
@@ -295,5 +291,6 @@ supabase
 </script>
 </body>
 </html>
+
 
 
