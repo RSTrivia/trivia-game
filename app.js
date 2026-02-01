@@ -357,6 +357,8 @@ async function init() {
         // If we were in weekly mode, keep it true!
         // Only force Daily to false because that's the only one with a real limit.
         isDailyMode = false; 
+        weeklyQuestionCount = 0;
+        score = 0;              
         // isWeeklyMode will remain whatever it was (true or false)
         await startGame();
     };
@@ -2057,6 +2059,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
