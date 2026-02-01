@@ -100,6 +100,7 @@
       <h1 id="leaderboard-title">Leaderboard</h1>
       <div class="leaderboard-tabs">
     <button id="scoreTab" class="tab-btn active">Score</button>
+    <button id="weeklyTab" class="tab-btn">Weekly</button>   
     <button id="xpTab" class="tab-btn">Total XP</button>
       </div>
       <ul id="leaderboard">
@@ -122,7 +123,7 @@
 <script src="config.js"></script>
 <script type="module">
 import { supabase } from './supabase.js';
-
+const weeklyTab = document.getElementById('weeklyTab');
 const leaderboardRows = document.querySelectorAll('#leaderboard li');
 const scoreTab = document.getElementById('scoreTab');
 const xpTab = document.getElementById('xpTab');
@@ -152,8 +153,7 @@ function updateLeaderboard(data) {
         return;
     }
 
-    // Logic for Username + Level
-   // Inside updateLeaderboard function:
+   // 1. Username formatting
     if (currentMode === 'xp') {
         const level = getLevel(entry.val);
         // Use currentcolor with opacity so it automatically adapts to gold/silver/bronze/grey
@@ -162,9 +162,25 @@ function updateLeaderboard(data) {
         userTxt.textContent = entry.username;
     }
     
-    // Format the number part (Score or XP)
-    const displayVal = entry.val !== undefined ? entry.val.toLocaleString() : '';
-    scoreSpan.textContent = displayVal;
+    // 2. Value/Time formatting
+    if (currentMode === 'weekly') {
+        const score = entry.val;
+        const totalSeconds = entry.time / 1000;
+        
+        let timeStr;
+        if (totalSeconds < 60) {
+            timeStr = totalSeconds.toFixed(2) + "s";
+        } else {
+            const mins = Math.floor(totalSeconds / 60);
+            const secs = (totalSeconds % 60).toFixed(2);
+            timeStr = `${mins}:${secs.toString().padStart(5, '0')}`;
+        }
+        
+        // Show "Score (Time)"
+        scoreSpan.innerHTML = `${score} <span style="font-size: 0.8em; opacity: 0.7;">(${timeStr})</span>`;
+    } else {
+        scoreSpan.textContent = entry.val !== undefined ? entry.val.toLocaleString() : '';
+    }
   });
 }
 
@@ -175,6 +191,13 @@ async function fetchLeaderboard() {
     query = supabase.from('scores')
       .select('username, val:score')
       .order('score', { ascending: false });
+  } else if (currentMode === 'weekly') {
+    // Fetch the weekly_data JSONB object
+    query = supabase.from('scores')
+      .select('username, weekly_data')
+      .not('weekly_data', 'is', null) // Only users who have played weekly
+      .order('weekly_data->score', { ascending: false }) // Sort by score
+      .order('weekly_data->time', { ascending: true });   // Tie-break with time
   } else {
     // 🔥 Added .gt('xp', 0) to hide 0 XP users
     query = supabase.from('profiles')
@@ -191,8 +214,19 @@ async function fetchLeaderboard() {
   }
 
   if (data) {
-    localStorage.setItem(`leaderboard_${currentMode}`, JSON.stringify(data));
-    updateLeaderboard(data);
+    // Map data so updateLeaderboard understands it
+    const formattedData = data.map(entry => {
+        if (currentMode === 'weekly') {
+            return {
+                username: entry.username,
+                val: entry.weekly_data.score,
+                time: entry.weekly_data.time // Pass the time through for formatting
+            };
+        }
+        return entry;
+    });
+    localStorage.setItem(`leaderboard_${currentMode}`, JSON.stringify(formattedData));
+    updateLeaderboard(formattedData);
   }
 }
   
@@ -219,7 +253,19 @@ xpTab.onclick = () => {
   if (cached) updateLeaderboard(JSON.parse(cached));
   fetchLeaderboard();
 };
-
+  
+weeklyTab.onclick = () => {
+    if (currentMode === 'weekly') return;
+    currentMode = 'weekly';
+    weeklyTab.classList.add('active');
+    scoreTab.classList.remove('active');
+    xpTab.classList.remove('active');
+    
+    const cached = localStorage.getItem('leaderboard_weekly');
+    if (cached) updateLeaderboard(JSON.parse(cached));
+    fetchLeaderboard();
+};
+  
 // Realtime Sync for both tables
 supabase
   .channel('public-leaderboard-changes')
@@ -253,6 +299,7 @@ supabase
 </script>
 </body>
 </html>
+
 
 
 
