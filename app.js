@@ -1220,11 +1220,21 @@ async function endGame() {
         finalScore.textContent = `${score}/${WEEKLY_LIMIT}`;
     }
 
-    // 5. Update and Show the HTML Time elements we added earlier
+    // 5. Format and Show the Time
     const finalTimeEl = document.getElementById('finalTime');
     const weeklyTimeContainer = document.getElementById('weeklyTimeContainer');
     
-    if (finalTimeEl) finalTimeEl.textContent = timeInSeconds + "s";
+    if (finalTimeEl) {
+        // Calculate minutes and remaining seconds
+        const mins = Math.floor(timeInSeconds / 60);
+        const secs = timeInSeconds % 60;
+        
+        // Use padStart(2, '0') to ensure it shows "05" instead of "5"
+        const formattedTime = `${mins}:${secs.toString().padStart(2, '0')}`;
+        
+        finalTimeEl.textContent = formattedTime;
+    }
+    
     if (weeklyTimeContainer) weeklyTimeContainer.style.display = 'block';
 
     // 6. Save to Supabase
@@ -2099,6 +2109,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
