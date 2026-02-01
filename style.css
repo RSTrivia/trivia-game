@@ -84,7 +84,7 @@ a, button {
   position: relative; /* THIS IS THE FIX */
   width: 440px;
   max-width: 95%;
-  min-height: 400px;        /* ensures it never shrinks too small */
+  min-height: 500px;        /* ensures it never shrinks too small */
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -1579,6 +1579,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
