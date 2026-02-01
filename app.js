@@ -38,6 +38,7 @@ const timeWrap = document.getElementById('time-wrap');
 const userDisplay = document.getElementById('userDisplay');
 const authBtn = document.getElementById('authBtn');
 const muteBtn = document.getElementById('muteBtn');
+const weeklyBtn = document.getElementById('weeklyBtn');
 const dailyBtn = document.getElementById('dailyBtn');
 const dailyMessages = {
   0: [
@@ -1164,7 +1165,8 @@ async function endGame() {
     if (gameEnding) return;
     gameEnding = true;
     clearInterval(timer);
-
+    stopTickSound();
+  
     // 1. PREPARE DATA FIRST (Quietly in background)
     const { data: { session } } = await supabase.auth.getSession();
     const scoreKey = Math.min(Math.max(score, 0), 10);
@@ -1191,6 +1193,7 @@ async function endGame() {
 
     if (isWeeklyMode) {
         // --- NEW WEEKLY LOGIC ---
+       // Calculate total seconds spent
         const endTime = Date.now();
         const timeInSeconds = Math.floor((endTime - weeklyStartTime) / 1000);
         
@@ -2079,6 +2082,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
