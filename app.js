@@ -16,7 +16,7 @@ let notificationQueue = [];
 let isShowingNotification = false;
 let currentMode = 'score'; // 'score' or 'xp'
 
-const WEEKLY_LIMIT = 4; // Change to 50 when ready to go live
+const WEEKLY_LIMIT = 300; // Change to 50 when ready to go live
 const number_of_questions = 610;
 const leaderboardRows = document.querySelectorAll('#leaderboard li');
 const scoreTab = document.getElementById('scoreTab');
@@ -1467,7 +1467,7 @@ function getWeeklySliceIndex(totalQuestions, WEEKLY_LIMIT) {
     if (maxChunks <= 0) return 0;
   
     // --- TESTING SECTION ---
-    const testOffset = 1; // Change this to 1, 2, 3... to "travel" to future weeks
+    const testOffset = 0; // Change this to 1, 2, 3... to "travel" to future weeks
     return ((weekNumber + testOffset) % maxChunks); 
     // -----------------------
   
@@ -2133,6 +2133,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
