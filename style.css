@@ -84,7 +84,7 @@ a, button {
   position: relative; /* THIS IS THE FIX */
   width: 440px;
   max-width: 95%;
-  min-height: 580px;        /* ensures it never shrinks too small */
+  min-height: 500px;        /* ensures it never shrinks too small */
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -1604,6 +1604,7 @@ input.input-field:-webkit-autofill:active {
     justify-content: center;
     padding: 0 !important;       /* Clean slate for height control */
 }
+
 
 
 
