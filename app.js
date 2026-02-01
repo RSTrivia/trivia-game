@@ -1238,7 +1238,11 @@ async function endGame() {
           // Standard M:SS format
           formattedTime = `${mins}:${secs.toString().padStart(2, '0')}`;
       }
-  
+
+      // --- RE-FETCH ELEMENTS LOCALLY TO BE SAFE ---
+        const localFinalTimeEl = document.getElementById('finalTime');
+        const localWeeklyTimeContainer = document.getElementById('weeklyTimeContainer');
+      
       if (finalTimeEl) finalTimeEl.textContent = formattedTime;
       if (weeklyTimeContainer) weeklyTimeContainer.style.display = 'block';
 
@@ -2121,6 +2125,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
