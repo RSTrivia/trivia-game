@@ -899,7 +899,9 @@ async function checkAnswer(choiceId, btn) {
     if (timeLeft <= 0) return;
     clearInterval(timer);
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
-
+  
+    if (isWeeklyMode) weeklyQuestionCount++;
+  
     const { data: isCorrect, error } = await supabase.rpc('check_my_answer', {
         input_id: currentQuestion.id,
         choice: choiceId
@@ -907,13 +909,10 @@ async function checkAnswer(choiceId, btn) {
 
     if (error) return console.error("RPC Error:", error);
   
-    if (isWeeklyMode) weeklyQuestionCount++;
-  
     if (isCorrect) {
         playSound(correctBuffer);
         btn.classList.add('correct');
         // increment weekly count
-        if (isWeeklyMode) weeklyQuestionCount++;
         // 1. Get the session
         const { data: { session } } = await supabase.auth.getSession();
         
@@ -970,9 +969,6 @@ async function checkAnswer(choiceId, btn) {
         streak = 0; // Reset streak on wrong answer in normal mode
         btn.classList.add('wrong');
         await highlightCorrectAnswer();
-      
-        // Increment here for wrong answers so we don't play forever!
-        if (isWeeklyMode) weeklyQuestionCount++;
       
         if (isDailyMode || isWeeklyMode) {
             // Keep going to the next question
@@ -1989,6 +1985,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
