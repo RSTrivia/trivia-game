@@ -173,57 +173,55 @@ function updateLeaderboard(data) {
 }
 
 async function fetchLeaderboard() {
-  let query;
-  
-  if (currentMode === 'score') {
-    // We select username and score. 
-    // If scores are 0, they won't show up because of .gt('score', 0)
-    query = supabase.from('scores')
-      .select('username, score') 
-      .gt('score', 0)
-      .order('score', { ascending: false });
-  }
-  } else if (currentMode === 'weekly') {
-    query = supabase.from('scores')
-      .select('username, weekly_data')
-      .not('weekly_data', 'is', null) 
-      .gt('weekly_data->score', 0) 
-      .order('weekly_data->score', { ascending: false })
-      .order('weekly_data->time', { ascending: true });
-  } else {
-    query = supabase.from('profiles')
-      .select('username, val:xp')
-      .gt('xp', 0) 
-      .order('xp', { ascending: false });
-  }
-
-  const { data, error } = await query.limit(10);
-
-  if (error) {
-    console.error('Supabase Error:', error.message);
-    return;
-  }
-
-  if (data) {
-    const formattedData = data.map(entry => {
-        if (currentMode === 'score') {
-            return {
-                username: entry.username,
-                val: entry.score // Map 'score' column to 'val'
-            };
-        }
-        if (currentMode === 'weekly') {
-            return {
-                username: entry.username,
-                val: entry.weekly_data?.score || 0,
-                time: entry.weekly_data?.time || 0
-            };
-        }
-        return entry; // XP mode already uses {username, val}
-    });
+    let query;
     
-    updateLeaderboard(formattedData);
-  }
+    if (currentMode === 'score') {
+        query = supabase.from('scores')
+            .select('username, val:score') 
+            .gt('score', 0)
+            .order('score', { ascending: false });
+    } else if (currentMode === 'weekly') {
+        query = supabase.from('scores')
+            .select('username, weekly_data')
+            .not('weekly_data', 'is', null) 
+            .gt('weekly_data->score', 0) 
+            .order('weekly_data->score', { ascending: false })
+            .order('weekly_data->time', { ascending: true });
+    } else {
+        query = supabase.from('profiles')
+            .select('username, val:xp')
+            .gt('xp', 0) 
+            .order('xp', { ascending: false });
+    }
+
+    const { data, error } = await query.limit(10);
+
+    if (error) {
+        console.error('Supabase Error:', error.message);
+        return;
+    }
+
+    if (data) {
+        const formattedData = data.map(entry => {
+            if (currentMode === 'weekly') {
+                return {
+                    username: entry.username,
+                    val: entry.weekly_data?.score || 0,
+                    time: entry.weekly_data?.time || 0
+                };
+            }
+            // For Score and XP, the 'val' is already mapped in the .select()
+            return entry; 
+        });
+        
+        localStorage.setItem(`leaderboard_${currentMode}`, JSON.stringify(formattedData));
+        updateLeaderboard(formattedData);
+    }
+}
+  
+function setActiveTab(activeBtn) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    activeBtn.classList.add('active');
 }
   
 // Function to instantly wipe the board before loading new data
@@ -291,6 +289,7 @@ supabase
 </script>
 </body>
 </html>
+
 
 
 
