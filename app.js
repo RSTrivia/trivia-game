@@ -1465,6 +1465,12 @@ function getWeeklySliceIndex(totalQuestions, WEEKLY_LIMIT) {
     const maxChunks = Math.floor(totalQuestions / WEEKLY_LIMIT);
     // Safety: If database is smaller than the limit, always return the first chunk
     if (maxChunks <= 0) return 0;
+  
+    // --- TESTING SECTION ---
+    const testOffset = 1; // Change this to 1, 2, 3... to "travel" to future weeks
+    return ((weekNumber + testOffset) % maxChunks); 
+    // -----------------------
+  
     return (weekNumber % maxChunks); 
 }
 
@@ -2127,6 +2133,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
