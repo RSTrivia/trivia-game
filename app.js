@@ -295,41 +295,45 @@ async function init() {
     }
 
     if (dailyBtn) {
-        dailyBtn.onclick = async () => {
-    // 1. Get session AND check for potential errors
-    const { data: { session }, error } = await supabase.auth.getSession();
-    
-    // 2. If there's an error or no session, the 'key' is broken
-    if (error || !session) {
-        console.error("Auth error:", error);
-        alert("Your session has expired. Please log in again to save your score.");
+    dailyBtn.onclick = async () => {
+        // 1. Get session
+        const { data: { session }, error } = await supabase.auth.getSession();
         
-        // Cleanup the bugged local state
-        localStorage.removeItem('supabase.auth.token'); 
-        window.location.href = '/login.html';
-        return;
-    }
+        if (error || !session) {
+            console.error("Auth error:", error);
+            alert("Your session has expired. Please log in again.");
+            localStorage.removeItem('supabase.auth.token'); 
+            window.location.href = '/login.html';
+            return;
+        }
+
+        // 2. Double-check "Played" status
+        const played = await hasUserCompletedDaily(session);
+        if (played) return; 
+              
+        // 3. Sync with other tabs
+        if (syncChannel) {
+            syncChannel.send({
+                type: 'broadcast',
+                event: 'lock-daily',
+                payload: { userId: session.user.id }
+            });
+        }
+
+        // 4. Lock button locally 
+        lockDailyButton();     
+          
+        // 5. Setup Audio & Mode
+        if (audioCtx.state === 'suspended') await audioCtx.resume();
+        await loadSounds();
+        
+        isDailyMode = true;
+        isWeeklyMode = false; // Important to reset this here!
+
+        // 6. START THE GAME
+        startDailyChallenge(); 
+    }; 
 }
-    // 4. Proceed with game logic
-    const played = await hasUserCompletedDaily(session);
-    //if (played) return alert("You've already played today!");
-          
-    // 1. Send the signal to other tabs
-    if (syncChannel) {
-        syncChannel.send({
-            type: 'broadcast',
-            event: 'lock-daily',
-            payload: { userId: session.user.id }
-        });
-    }
-    // 2. Lock the button locally
-    lockDailyButton();     
-          
-    if (audioCtx.state === 'suspended') await audioCtx.resume();
-    await loadSounds();
-    isDailyMode = true;
-    startDailyChallenge(); 
-  };
 
   if (weeklyBtn) {
     weeklyBtn.onclick = async () => {
@@ -345,7 +349,7 @@ async function init() {
         // 3. Record the start time for the leaderboard
         weeklyStartTime = Date.now();
       
-        startGame(); // Reuse your existing startGame logic
+        await startGame(); // Reuse your existing startGame logic
     };
   }
         if (playAgainBtn) {
@@ -2053,6 +2057,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
