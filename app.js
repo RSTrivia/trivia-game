@@ -17,7 +17,7 @@ let isShowingNotification = false;
 let currentMode = 'score'; // 'score' or 'xp'
 let masterQuestionPool = [];
 
-const WEEKLY_LIMIT = 300; // Change to 50 when ready to go live
+const WEEKLY_LIMIT = 50; // Change to 50 when ready to go live
 const number_of_questions = 610;
 const leaderboardRows = document.querySelectorAll('#leaderboard li');
 const scoreTab = document.getElementById('scoreTab');
@@ -342,49 +342,37 @@ async function init() {
 
   if (weeklyBtn) {
     weeklyBtn.onclick = async () => {
-
-        //console.log("Weekly Button Clicked"); // Debug check
-        
-        // 1. Force UI Reset
-        resetGame();
-      
-        // 2. Clear buffers to prevent "carry-over" data
-        preloadQueue = [];
-        remainingQuestions = [];
-      
-       // 3. set flags
-        isDailyMode = false;
-        isWeeklyMode = true; // Set our new flag
-        weeklyQuestionCount = 0; // Reset counter
-        score = 0; // Always reset score for a new run
-      
-        // 4. Resume audio context for OSRS sounds
+        // 1. Audio setup
         if (audioCtx.state === 'suspended') await audioCtx.resume();
         await loadSounds();
-       
-        // 5. Record the start time for the leaderboard
-        weeklyStartTime = Date.now();
-      
-        // 6. Start Game with Error Catching
+        
+        // 2. Start the specific weekly logic 
+        // (This function already handles resetGame, flags, and loading)
         try {
-            await startGame();
+            await startWeeklyChallenge();
         } catch (err) {
             console.error("Failed to start weekly mode:", err);
-            // Fallback: If it fails, force the screen to show anyway to see what's wrong
+            // Fallback UI
             document.getElementById('start-screen').classList.add('hidden');
             game.classList.remove('hidden');
         }
     };
-  }
-        if (playAgainBtn) {
-        playAgainBtn.onclick = async () => {
-        // If we were in weekly mode, keep it true!
-        // Only force Daily to false because that's the only one with a real limit.
-        isDailyMode = false; 
+}
+if (playAgainBtn) {
+    playAgainBtn.onclick = async () => {
+        score = 0;
         weeklyQuestionCount = 0;
-        score = 0;              
-        // isWeeklyMode will remain whatever it was (true or false)
-        await startGame();
+        
+        if (isWeeklyMode) {
+            // Re-run the weekly setup to get the same 50 IDs
+            await startWeeklyChallenge(); 
+        } else if (isDailyMode) {
+            // Usually Daily is locked after 1 play, but for safety:
+            await startDailyChallenge();
+        } else {
+            // Normal Mode
+            await startGame();
+        }
     };
 }
   if (mainMenuBtn) {  
@@ -747,9 +735,6 @@ async function preloadNextQuestions() {
 
 async function startGame() {
     try {
-      // Add this inside startGame() delete later
-      //window.masterQuestionPool = masterQuestionPool; 
-      //console.log("Master Pool is now public for debugging!");
         document.body.classList.add('game-active');
         gameEnding = false;
         game.classList.remove('hidden');
@@ -758,45 +743,13 @@ async function startGame() {
 
         // --- THE POOL FIX ---
         
-        // Step A: Fetch IDs (Ensure they are sorted by ID for consistency!)
+        // Step A: If we've NEVER fetched questions (first load), get all 510 IDs
         if (masterQuestionPool.length === 0) {
-            const { data: idList, error } = await supabase
-                .from('questions')
-                .select('id')
-                .order('id', { ascending: true }); // CRITICAL: Everyone must have the same order
+            const { data: idList, error } = await supabase.from('questions').select('id');
             if (error) throw error;
             masterQuestionPool = idList.map(q => q.id);
         }
-    
-        if (isWeeklyMode) {
-        weeklyStartTime = Date.now();
-        
-        // 1. Shuffle the MASTER pool once with a FIXED seed.
-        // This creates the same "Random Lineup" for everyone forever.
-        const permanentRandomPool = shuffleWithSeed(masterQuestionPool, 123); 
-    
-        // 2. Get the current Week and Year
-        const now = new Date();
-        const year = now.getFullYear();
-        const startOfYear = new Date(year, 0, 1);
-        const days = Math.floor((now - startOfYear) / (24 * 60 * 60 * 1000));
-        const weekNumber = Math.ceil((days + startOfYear.getDay() + 1) / 7);
-        
-        // 3. Calculate how many full sets of 50 we can get (610 / 50 = 12)
-        const maxChunks = Math.floor(permanentRandomPool.length / WEEKLY_LIMIT);
-        
-        // 4. THE MAGIC: Adding 'year' to 'weekNumber' ensures that when 
-        // the year rolls over, the "starting chunk" shifts. 
-        const currentChunkIndex = (weekNumber + year) % maxChunks;
-    
-        // 5. Pick the 50 questions for THIS week
-        const start = currentChunkIndex * WEEKLY_LIMIT;
-        const end = start + WEEKLY_LIMIT;
-        
-        remainingQuestions = permanentRandomPool.slice(start, end);
-    
-    } else {
-        // Normal Mode logic (Full random deck)
+
         // Step B: Every time a NEW GAME starts, we refill remainingQuestions from the pool
         // This ensures Game 2 starts with a full deck of 510 again.
         remainingQuestions = [...masterQuestionPool].sort(() => Math.random() - 0.5);
@@ -806,13 +759,12 @@ async function startGame() {
         // so they don't appear twice in the same game.
         const bufferedIds = preloadQueue.map(q => q.id);
         remainingQuestions = remainingQuestions.filter(id => !bufferedIds.includes(id));
-        }
-       // Standard Reset
+
+        // Standard Reset
         clearInterval(timer);
         score = 0;
         streak = 0;              // Reset streak
         dailyQuestionCount = 0;  // Reset daily count
-        weeklyQuestionCount = 0; // Reset for the new session
         currentQuestion = null;
         updateScore();
         
@@ -828,8 +780,9 @@ async function startGame() {
 
     } catch (err) {
         console.error("startGame error:", err);
-    }     
+    }
 }
+
 
 async function loadQuestion() {
    // Check for Weekly End Condition
@@ -983,6 +936,7 @@ async function checkAnswer(choiceId, btn) {
                       isBonusEarned = true; // Daily bonus!
                     }
                 } else {
+                    // NORMAL & WEEKLY both use the 10-streak logic
                     streak++; // Only track streak in normal mode
                     if (streak === 10) { // change this back to 10
                         gained += 30;
@@ -1023,12 +977,12 @@ async function checkAnswer(choiceId, btn) {
         setTimeout(loadQuestion, 1000);
     } else {
         playSound(wrongBuffer);
-        streak = 0; // Reset streak on wrong answer in normal mode
+        streak = 0; // Reset streak on wrong answer in both Normal and Weekly modes
         btn.classList.add('wrong');
         await highlightCorrectAnswer();
       
         if (isDailyMode || isWeeklyMode) {
-            // Keep going to the next question
+            // Challenges keep going until the limit is reached
             setTimeout(loadQuestion, 1500);
         } else {
             // Only Normal Mode ends on a wrong answer
@@ -2003,6 +1957,51 @@ function playSound(buffer, loop = false) {
 function updateScore() { scoreDisplay.textContent = `Score: ${score}`; }
 
 
+async function startWeeklyChallenge() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return alert("Log in to play Weekly Mode!");
+
+    // 1. Load Questions (Same as Daily)
+    const { data: allQuestions } = await supabase.from('questions').select('id').order('id', { ascending: true });
+    if (!allQuestions || allQuestions.length < 50) return alert("Error loading questions.");
+
+    // 2. Deterministic Weekly Selection
+    const now = new Date();
+    const startDate = new Date('2025-12-22'); // Keep this same as Daily for consistency
+    const diffTime = Math.abs(now - startDate);
+    const dayCounter = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    // Convert current day into a Week Index
+    const weekCounter = Math.floor(dayCounter / 7); 
+    
+    const weeksPerCycle = Math.floor(allQuestions.length / WEEKLY_LIMIT);
+    const cycleNumber = Math.floor(weekCounter / weeksPerCycle);
+    const weekInCycle = weekCounter % weeksPerCycle;
+
+    // Use the same shuffle logic
+    const shuffledList = shuffleWithSeed(allQuestions, cycleNumber);
+    const weeklyIds = shuffledList.slice(
+        weekInCycle * WEEKLY_LIMIT, 
+        (weekInCycle * WEEKLY_LIMIT) + WEEKLY_LIMIT
+    ).map(q => q.id);
+
+    // 3. UI Transition
+    isDailyMode = false;
+    isWeeklyMode = true;
+    preloadQueue = [];
+    resetGame();
+    remainingQuestions = weeklyIds; // Set the 50 Weekly IDs
+    
+    document.body.classList.add('game-active'); 
+    document.getElementById('start-screen').classList.add('hidden');
+    game.classList.remove('hidden');
+    
+    await preloadNextQuestions();
+    loadQuestion();
+}
+
+
+
 async function startDailyChallenge() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return alert("Log in to play Daily Mode!");
@@ -2147,6 +2146,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
