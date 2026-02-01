@@ -780,25 +780,32 @@ async function startGame() {
           // --- TEST LOG END ---
       
         if (isWeeklyMode) {
-            weeklyStartTime = Date.now();
-            
-            // 1. Generate the Week Seed (e.g., Week 5 of 2026 = 2031)
-            const now = new Date();
-            const startOfYear = new Date(now.getFullYear(), 0, 1);
-            const days = Math.floor((now - startOfYear) / (24 * 60 * 60 * 1000));
-            const weekNumber = Math.ceil((days + startOfYear.getDay() + 1) / 7);
-            const weekSeed = weekNumber + now.getFullYear(); 
+        weeklyStartTime = Date.now();
         
-            // 2. Shuffle the ENTIRE 610-question pool using that week's seed
-            // This creates a unique "random" order that lasts for 7 days
-            const weeklyShuffledPool = shuffleWithSeed(masterQuestionPool, weekSeed);
+        // 1. Shuffle the MASTER pool once with a FIXED seed.
+        // This creates the same "Random Lineup" for everyone forever.
+        const permanentRandomPool = shuffleWithSeed(masterQuestionPool, 123); 
+    
+        // 2. Get the current Week and Year
+        const now = new Date();
+        const year = now.getFullYear();
+        const startOfYear = new Date(year, 0, 1);
+        const days = Math.floor((now - startOfYear) / (24 * 60 * 60 * 1000));
+        const weekNumber = Math.ceil((days + startOfYear.getDay() + 1) / 7);
         
-            // 3. Take the first 50 from this unique shuffle
-            remainingQuestions = weeklyShuffledPool.slice(0, WEEKLY_LIMIT);
-            
-            // Note: We don't need to shuffle 'remainingQuestions' again 
-            // because shuffleWithSeed already did the work!
-        }
+        // 3. Calculate how many full sets of 50 we can get (610 / 50 = 12)
+        const maxChunks = Math.floor(permanentRandomPool.length / WEEKLY_LIMIT);
+        
+        // 4. THE MAGIC: Adding 'year' to 'weekNumber' ensures that when 
+        // the year rolls over, the "starting chunk" shifts. 
+        const currentChunkIndex = (weekNumber + year) % maxChunks;
+    
+        // 5. Pick the 50 questions for THIS week
+        const start = currentChunkIndex * WEEKLY_LIMIT;
+        const end = start + WEEKLY_LIMIT;
+        
+        remainingQuestions = permanentRandomPool.slice(start, end);
+    }
     } else {
         // Normal Mode logic (Full random deck)
         // Step B: Every time a NEW GAME starts, we refill remainingQuestions from the pool
@@ -2157,6 +2164,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
