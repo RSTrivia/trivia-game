@@ -146,24 +146,25 @@ function updateLeaderboard(data) {
     const entry = data[i] || { username: '', val: '' };
     const userTxt = row.querySelector('.user-txt');
     const scoreSpan = row.querySelector('.score-part');
-
+    
+    // Clear row if no data
     if (!entry.username) {
         userTxt.textContent = '';
         scoreSpan.textContent = '';
         return;
     }
 
-   // 1. Username formatting
+    // 1. Username Part (Keep it clean)
+    userTxt.textContent = entry.username;
+    
+    // 2. Value Part (XP, Score, or Weekly)
     if (currentMode === 'xp') {
         const level = getLevel(entry.val);
-        // Use currentcolor with opacity so it automatically adapts to gold/silver/bronze/grey
-        userTxt.innerHTML = `${entry.username} <span style="color: inherit; opacity: 0.6; font-size: 0.85em;">- ${level}</span>`;
-    } else {
-        userTxt.textContent = entry.username;
-    }
-    
-    // 2. Value/Time formatting
-    if (currentMode === 'weekly') {
+        const formattedXp = entry.val.toLocaleString();
+        // Display: XP (Level)
+        scoreSpan.innerHTML = `${formattedXp} <span style="font-size: 0.8em; opacity: 0.7;">(Lvl ${level})</span>`;
+
+    } else if (currentMode === 'weekly') {
         const score = entry.val;
         const totalSeconds = entry.time / 1000;
         
@@ -175,10 +176,11 @@ function updateLeaderboard(data) {
             const secs = (totalSeconds % 60).toFixed(2);
             timeStr = `${mins}:${secs.toString().padStart(5, '0')}`;
         }
-        
-        // Show "Score (Time)"
+        // Display: Score (Time)
         scoreSpan.innerHTML = `${score} <span style="font-size: 0.8em; opacity: 0.7;">(${timeStr})</span>`;
+
     } else {
+        // Normal Score Mode
         scoreSpan.textContent = entry.val !== undefined ? entry.val.toLocaleString() : '';
     }
   });
@@ -303,6 +305,7 @@ supabase
 </script>
 </body>
 </html>
+
 
 
 
