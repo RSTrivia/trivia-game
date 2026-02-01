@@ -154,24 +154,25 @@ function updateLeaderboard(data) {
             return;
         }
 
-        // 2. Handle Username & Levels
+        // Always put the username in the name slot
+        userTxt.textContent = entry.username;
+
+        // 2. Handle XP Mode (XP + Level in brackets)
         if (currentMode === 'xp') {
             const level = getLevel(entry.val);
-            userTxt.innerHTML = `${entry.username} <span style="color: inherit; opacity: 0.6; font-size: 0.85em;">- ${level}</span>`;
-            scoreSpan.textContent = entry.val.toLocaleString();
+            const formattedXp = entry.val.toLocaleString();
+            scoreSpan.innerHTML = `${formattedXp} <span style="font-size: 0.85em; opacity: 0.6;">(Lvl ${level})</span>`;
         } 
+        // 3. Handle Weekly Mode (Score + Time in brackets)
         else if (currentMode === 'weekly') {
-            userTxt.textContent = entry.username;
-            // Weekly logic: use weekly_data object
             const s = entry.weekly_data?.score || 0;
             const t = entry.weekly_data?.time || 0;
             const totalSeconds = t / 1000;
             const timeStr = totalSeconds < 60 ? totalSeconds.toFixed(2) + "s" : `${Math.floor(totalSeconds / 60)}:${(totalSeconds % 60).toFixed(2).toString().padStart(5, '0')}`;
-            scoreSpan.innerHTML = `${s} <span style="font-size: 0.8em; opacity: 0.7;">(${timeStr})</span>`;
+            scoreSpan.innerHTML = `${s} <span style="font-size: 0.85em; opacity: 0.6;">(${timeStr})</span>`;
         } 
+        // 4. Handle Normal Score Mode (Just the number)
         else {
-            // Normal Score Mode
-            userTxt.textContent = entry.username;
             scoreSpan.textContent = entry.val !== undefined ? entry.val.toLocaleString() : '0';
         }
     });
@@ -243,6 +244,7 @@ if(weeklyTab) weeklyTab.onclick = () => handleTabClick('weekly', weeklyTab);
 </script>
 </body>
 </html>
+
 
 
 
