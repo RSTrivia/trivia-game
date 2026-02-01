@@ -769,9 +769,11 @@ async function startGame() {
             // Pick the 50 questions for THIS week globally
             remainingQuestions = masterQuestionPool.slice(startPoint, startPoint + WEEKLY_LIMIT);
             
-            // Optional: Shuffle these 50 so the order isn't the same every time they play 
-            // BUT the pool remains the same 50 for the whole week.
-            remainingQuestions.sort(() => Math.random() - 0.5);
+           // True Shuffle (Fisher-Yates)
+          for (let i = remainingQuestions.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [remainingQuestions[i], remainingQuestions[j]] = [remainingQuestions[j], remainingQuestions[i]];
+          }
     } else {
         // Normal Mode logic (Full random deck)
         // Step B: Every time a NEW GAME starts, we refill remainingQuestions from the pool
@@ -2082,6 +2084,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
