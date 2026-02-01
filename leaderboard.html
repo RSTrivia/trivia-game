@@ -143,34 +143,45 @@ function getLevel(xp) {
 
 function updateLeaderboard(data) {
   leaderboardRows.forEach((row, i) => {
-    const entry = data[i];
+    const entry = data[i] || { username: '', val: '' };
     const userTxt = row.querySelector('.user-txt');
     const scoreSpan = row.querySelector('.score-part');
     
-    // If no player for this rank, hide the row
-    if (!entry || !entry.username) {
-        row.style.opacity = '0'; // Or row.style.display = 'none'
+    // Clear row if no data
+    if (!entry.username) {
         userTxt.textContent = '';
-        scoreSpan.innerHTML = '';
+        scoreSpan.textContent = '';
         return;
     }
 
-    row.style.opacity = '1';
+    // 1. Username Part (Keep it clean)
     userTxt.textContent = entry.username;
     
+    // 2. Value Part (XP, Score, or Weekly)
     if (currentMode === 'xp') {
         const level = getLevel(entry.val);
-        scoreSpan.innerHTML = `${entry.val.toLocaleString()} <span style="font-size: 0.8em; opacity: 0.7;">(Lvl ${level})</span>`;
+        const formattedXp = entry.val.toLocaleString();
+        // Display: XP (Level)
+        scoreSpan.innerHTML = `${formattedXp} <span style="font-size: 0.8em; opacity: 0.7;">(Lvl ${level})</span>`;
+
     } else if (currentMode === 'weekly') {
+        const score = entry.val;
         const totalSeconds = entry.time / 1000;
-        let timeStr = totalSeconds < 60 
-            ? totalSeconds.toFixed(2) + "s" 
-            : `${Math.floor(totalSeconds / 60)}:${(totalSeconds % 60).toFixed(2).toString().padStart(5, '0')}`;
-            
-        scoreSpan.innerHTML = `${entry.val} <span style="font-size: 0.8em; opacity: 0.7;">(${timeStr})</span>`;
+        
+        let timeStr;
+        if (totalSeconds < 60) {
+            timeStr = totalSeconds.toFixed(2) + "s";
+        } else {
+            const mins = Math.floor(totalSeconds / 60);
+            const secs = (totalSeconds % 60).toFixed(2);
+            timeStr = `${mins}:${secs.toString().padStart(5, '0')}`;
+        }
+        // Display: Score (Time)
+        scoreSpan.innerHTML = `${score} <span style="font-size: 0.8em; opacity: 0.7;">(${timeStr})</span>`;
+
     } else {
-        // NORMAL SCORE: Just the number, clean and simple
-        scoreSpan.innerHTML = entry.val.toLocaleString();
+        // Normal Score Mode
+        scoreSpan.textContent = entry.val !== undefined ? entry.val.toLocaleString() : '';
     }
   });
 }
@@ -179,21 +190,19 @@ async function fetchLeaderboard() {
   let query;
   
   if (currentMode === 'score') {
-    // NORMAL MODE: Pull from 'score' column
     query = supabase.from('scores')
       .select('username, val:score')
-      .gt('score', 0) 
       .order('score', { ascending: false });
   } else if (currentMode === 'weekly') {
-    // WEEKLY MODE: Pull from 'weekly_data' JSON column
     query = supabase.from('scores')
       .select('username, weekly_data')
+      // Ensure the object exists AND the score inside is greater than 0
       .not('weekly_data', 'is', null) 
       .gt('weekly_data->score', 0) 
       .order('weekly_data->score', { ascending: false })
       .order('weekly_data->time', { ascending: true });
   } else {
-    // XP MODE: Pull from 'profiles' table
+    // 🔥 Added .gt('xp', 0) to hide 0 XP users
     query = supabase.from('profiles')
       .select('username, val:xp')
       .gt('xp', 0) 
@@ -208,17 +217,17 @@ async function fetchLeaderboard() {
   }
 
   if (data) {
+    // Map data so updateLeaderboard understands it
     const formattedData = data.map(entry => {
         if (currentMode === 'weekly') {
             return {
                 username: entry.username,
                 val: entry.weekly_data.score,
-                time: entry.weekly_data.time 
+                time: entry.weekly_data.time // Pass the time through for formatting
             };
         }
-        return entry; // Returns {username, val} for Score and XP
+        return entry;
     });
-    
     localStorage.setItem(`leaderboard_${currentMode}`, JSON.stringify(formattedData));
     updateLeaderboard(formattedData);
   }
@@ -296,18 +305,3 @@ supabase
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
