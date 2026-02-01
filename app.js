@@ -1309,37 +1309,44 @@ async function endGame() {
 }
   
 async function saveWeeklyScore(userId, currentScore, timeInSeconds) {
-    // 1. Fetch current best weekly score first
+    // 1. Fetch current best weekly score
     const { data, error: fetchError } = await supabase
         .from('scores')
         .select('weekly_data')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle(); // maybeSingle is cleaner than checking error codes
 
-    if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 is "not found"
+    if (fetchError) {
         console.error("Error fetching weekly data:", fetchError);
         return;
     }
 
-    const bestWeekly = data?.weekly_data || { score: 0, time: 9999 };
+    // Default values if no record exists yet
+    const bestWeekly = data?.weekly_data || { score: -1, time: 999999 };
 
     // 2. Tie-breaker logic: 
-    // Save if score is higher OR if score is same but time is faster
+    // Save if higher score OR (same score AND faster time)
     const isHigherScore = currentScore > bestWeekly.score;
     const isFasterTime = (currentScore === bestWeekly.score && timeInSeconds < bestWeekly.time);
 
     if (isHigherScore || isFasterTime) {
-        const { error: updateError } = await supabase
+        // 3. USE UPSERT
+        // This will create the row if it's missing, or update it if it exists.
+        const { error: upsertError } = await supabase
             .from('scores')
-            .update({ 
+            .upsert({ 
+                user_id: userId, // Upsert requires the unique key (user_id)
                 weekly_data: { 
                     score: currentScore, 
                     time: timeInSeconds 
                 } 
-            })
-            .eq('user_id', userId);
+            }, { onConflict: 'user_id' }); // Ensures it matches based on the user_id
 
-        if (updateError) console.error("Error updating weekly score:", updateError);
+        if (upsertError) {
+            console.error("Error saving weekly score:", upsertError);
+        } else {
+            console.log("Weekly score saved successfully!");
+        }
     }
 }
   
@@ -2109,6 +2116,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
