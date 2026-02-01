@@ -1181,33 +1181,27 @@ async function endGame() {
     if (gzTitle) gzTitle.classList.add('hidden');
 
     if (isWeeklyMode) {
-    // 1. Calculate time
-    const endTime = Date.now();
-    const timeInSeconds = Math.floor((endTime - weeklyStartTime) / 1000);
-
-    // 2. UI Visibility resets
-    if (playAgainBtn) playAgainBtn.classList.remove('hidden');
-    if (dailyStreakContainer) dailyStreakContainer.style.display = 'none';
-
-    // 3. Update Titles
-    if (gameOverTitle) {
-        gameOverTitle.textContent = "Weekly Challenge Complete!";
-        gameOverTitle.classList.remove('hidden');
-    }
-
-    // 4. Update Score (Simple text, no extra HTML injected here)
-    if (finalScore) {
-        finalScore.textContent = `${score}/${WEEKLY_LIMIT}`;
-    }
+        // 1. Calculate time
+        const endTime = Date.now();
+        const timeInSeconds = Math.floor((endTime - weeklyStartTime) / 1000);
     
-    // 5. Format and Show the Time
-    // Use raw milliseconds for precision
-      const totalMs = endTime - weeklyStartTime; 
-      const totalSeconds = totalMs / 1000;
-
-      let formattedTime;
-      if (totalSeconds < 60) {
-        formattedTime = totalSeconds.toFixed(2) + "s";
+        // 2. UI Visibility resets
+        if (playAgainBtn) playAgainBtn.classList.remove('hidden');
+        if (dailyStreakContainer) dailyStreakContainer.style.display = 'none';
+    
+        // 3. Update Score (Simple text, no extra HTML injected here)
+        if (finalScore) {
+            finalScore.textContent = `${score}/${WEEKLY_LIMIT}`;
+        }
+        
+        // 4. Format and Show the Time
+        // Use raw milliseconds for precision
+          const totalMs = endTime - weeklyStartTime; 
+          const totalSeconds = totalMs / 1000;
+    
+          let formattedTime;
+          if (totalSeconds < 60) {
+            formattedTime = totalSeconds.toFixed(2) + "s";
       } else {
             const mins = Math.floor(totalSeconds / 60);
             const secs = (totalSeconds % 60).toFixed(2); // Keeps the .00
@@ -1221,11 +1215,21 @@ async function endGame() {
       if (finalTimeEl) finalTimeEl.textContent = formattedTime;
       if (weeklyTimeContainer) weeklyTimeContainer.style.display = 'block';
 
-    // 6. Save to Supabase
+    // 5. Save Score and Check for PB
+    let isNewPB = false;
     if (session) {
-        // Included username here as per your function call
-        await saveWeeklyScore(session.user.id, username, score, totalMs);
+        // return true if it was a PB
+        isNewPB = await saveWeeklyScore(session.user.id, username, score, totalMs);
     } 
+      // 6. Update Titles
+        if (gameOverTitle) {
+          if (isNewPB) {
+              gameOverTitle.textContent = "New PB achieved!";
+            } else {
+              gameOverTitle.textContent = "Weekly Challenge Complete!";
+          }
+          gameOverTitle.classList.remove('hidden');
+        }
     } else if (isDailyMode) {
         if (playAgainBtn) playAgainBtn.classList.add('hidden');
         if (gameOverTitle) {
@@ -2155,6 +2159,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
