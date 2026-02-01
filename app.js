@@ -1474,6 +1474,8 @@ function getWeeklySliceIndex(totalQuestions, WEEKLY_LIMIT) {
     return (weekNumber % maxChunks); 
 }
 
+window.getWeeklySliceIndex = getWeeklySliceIndex; // delete after testing
+
 // Helper to keep endGame clean
 async function saveDailyScore(session, msg) {
     localStorage.setItem('lastDailyScore', score); 
@@ -2133,6 +2135,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
