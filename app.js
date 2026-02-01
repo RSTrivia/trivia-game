@@ -748,8 +748,8 @@ async function preloadNextQuestions() {
 async function startGame() {
     try {
       // Add this inside startGame() delete later
-      window.masterQuestionPool = masterQuestionPool; 
-      console.log("Master Pool is now public for debugging!");
+      //window.masterQuestionPool = masterQuestionPool; 
+      //console.log("Master Pool is now public for debugging!");
         document.body.classList.add('game-active');
         gameEnding = false;
         game.classList.remove('hidden');
@@ -767,19 +767,7 @@ async function startGame() {
             if (error) throw error;
             masterQuestionPool = idList.map(q => q.id);
         }
-      // --- TEST LOG START --- delete later
-          const testLimit = 300;
-          const maxChunks = Math.floor(masterQuestionPool.length / testLimit);
-          const currentIdx = getWeeklySliceIndex(masterQuestionPool.length, testLimit);
-          const loopIdx = (currentIdx + 2) % maxChunks;
-      
-          console.log("--- WEEKLY LOOP TEST ---");
-          console.log("Total Questions:", masterQuestionPool.length);
-          console.log("Week 1 Index:", currentIdx);
-          console.log("Week 3 Index:", loopIdx);
-          console.log("Loop Works?:", currentIdx === loopIdx ? "✅ YES" : "❌ NO");
-          // --- TEST LOG END ---
-      
+    
         if (isWeeklyMode) {
         weeklyStartTime = Date.now();
         
@@ -1495,12 +1483,6 @@ function getWeeklySliceIndex(totalQuestions, WEEKLY_LIMIT) {
     const maxChunks = Math.floor(totalQuestions / WEEKLY_LIMIT);
     // Safety: If database is smaller than the limit, always return the first chunk
     if (maxChunks <= 0) return 0;
-  
-    // --- TESTING SECTION ---
-    const testOffset = 0; // Change this to 1, 2, 3... to "travel" to future weeks
-    return ((weekNumber + testOffset) % maxChunks); 
-    // -----------------------
-  
     return (weekNumber % maxChunks); 
 }
 
@@ -2165,6 +2147,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
