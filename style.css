@@ -1609,25 +1609,24 @@ input.input-field:-webkit-autofill:active {
     cursor: pointer;
 }
 
-/* 1. The BASE state (Locked/Disabled) */
-/* Combine the ID and Class to make it super strong */
-#weeklyBtn.weekly-btn.is-disabled {
-    background: rgba(0, 0, 0, 0.4) !important; 
-    border: 2px solid #444 !important;
-    color: #666 !important;
-    opacity: 0.5 !important;
-    pointer-events: none !important;
-    filter: grayscale(1);
-}
-
-
-/* 2. The ACTIVE state (Logged in & Ready) */
+/* 1. The ACTIVE state (Only works if the class is present) */
 #weeklyBtn.weekly-btn.is-active {
     background: rgba(0, 0, 0, 0.6) !important;
     border: 2px solid #d4af37 !important;
     color: #d4af37 !important;
     opacity: 1 !important;
     pointer-events: auto !important;
+}
+
+/* 2. The GUEST/DISABLED state (This must be STRONGER) */
+#weeklyBtn.weekly-btn.is-disabled,
+#weeklyBtn.weekly-btn:not(.is-active) {
+    background: rgba(0, 0, 0, 0.4) !important; 
+    border: 2px solid #444 !important;
+    color: #666 !important;
+    opacity: 0.5 !important;
+    pointer-events: none !important;
+    filter: grayscale(1) !important;
 }
 
 /* 3. The HOVER state (The highlight you were missing) */
@@ -1642,6 +1641,7 @@ input.input-field:-webkit-autofill:active {
     background-color: rgba(212, 175, 55, 0.2) !important;
     transform: scale(0.96);
 }
+
 
 
 
