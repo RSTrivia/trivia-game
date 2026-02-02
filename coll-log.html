@@ -635,6 +635,7 @@ async function loadCollection() {
 
     if (profileData) {
         const calculatedLevel = getLevel(profileData.xp || 0);
+        const a = profileData.achievements || {}; // Define 'a' here so it's available below
         
         localStorage.setItem('cached_xp', profileData.xp || 0);
         localStorage.setItem('cached_level', calculatedLevel);
@@ -644,9 +645,6 @@ async function loadCollection() {
         localStorage.setItem('ach_stat_weekly_50', (a.weekly_50 || false).toString());
         localStorage.setItem('ach_stat_weekly_sub_3', (a.weekly_sub_3 || false).toString());
         localStorage.setItem('ach_stat_weekly_sub_2', (a.weekly_sub_2 || false).toString());
-        
-        // --- Sync Achievement Booleans directly from the profile ---        
-        const a = profileData.achievements || {};
         
         // --- SOURCE OF TRUTH OVERRIDES ---
         localStorage.setItem('cached_daily_total', realTotalGames);
