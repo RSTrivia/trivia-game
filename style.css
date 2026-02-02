@@ -1093,21 +1093,6 @@ input.input-field:-webkit-autofill:active {
     color: #ffea8a !important;
 }
 
-/* Force any disabled button to be grey, even if it has other classes */
-.is-disabled, 
-.daily-btn.is-disabled {
-    background: rgba(30, 30, 30, 0.5) !important;
-    border: 2px solid #444 !important;
-    color: #666 !important;
-    opacity: 0.5 !important;
-    filter: grayscale(1) !important;
-    pointer-events: none !important;
-    transform: none !important;
-}
-
-
-
-
 /* 3. Handle the tapped state for mobile feedback */
 #dailyBtn.tapped {
     background-color: rgba(212, 175, 55, 0.2) !important;
@@ -1599,6 +1584,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
