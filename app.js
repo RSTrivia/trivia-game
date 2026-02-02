@@ -1719,11 +1719,11 @@ async function saveAchievement(key, value) {
     }
     else if (key === 'weekly_sub_3' && !achievements[key]) {
         isNewAchievement = true;
-        notificationText = "Speedrunner (sub 3m)";
+        notificationText = "Speedrunner 50/50 sub 3m";
     }
     else if (key === 'weekly_sub_2' && !achievements[key]) {
         isNewAchievement = true;
-        notificationText = "Grandmaster (sub 2m)";
+        notificationText = "GM speedrunner 50/50 sub 2m";
     }
   
     // --- EXECUTE SAVING & NOTIFICATION ---
@@ -2188,6 +2188,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
