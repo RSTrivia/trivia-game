@@ -1228,7 +1228,7 @@ async function endGame() {
         // Update UI Elements
         // Use the elements already defined globally or fetch them specifically
         const finalTimeEl = document.getElementById('finalTime');
-        const localWeeklyTimeContainer = document.getElementById('weeklyTimeContainer');
+        const WeeklyTimeContainer = document.getElementById('weeklyTimeContainer');
       
       if (finalTimeEl) finalTimeEl.textContent = formattedTime;
       if (weeklyTimeContainer) weeklyTimeContainer.style.display = 'block';
@@ -2186,6 +2186,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
