@@ -375,8 +375,10 @@ if (playAgainBtn) {
     score = 0;
     weeklyQuestionCount = 0;
     streak = 0;
+    dailyQuestionCount = 0; // Don't forget this!
       
     // 2. UI RESET (The missing part)
+        resetGame(); // Use your existing resetGame function here!
         document.getElementById('end-screen').classList.add('hidden'); // Hide End
         document.getElementById('game').classList.remove('hidden');    // Show Game
         document.body.classList.add('game-active');                   // Add background class   
@@ -389,7 +391,9 @@ if (playAgainBtn) {
            // Usually Daily is locked after 1 play, but for safety:
            await startDailyChallenge();
     } else {
-          // Normal Mode
+          // Normal Mode - Reset flags just in case
+          isWeeklyMode = false;
+          isDailyMode = false;
           await startGame();
     }
   };
@@ -2197,6 +2201,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
