@@ -131,7 +131,7 @@
       });
     } else {
       // If not logged in, ensure these stay locked 
-      [dailyBtn, shareBtn, logBtn].forEach(btn => {
+      [dailyBtn, shareBtn, logBtn, weeklyBtn].forEach(btn => {
         if (btn) {
           btn.classList.add('is-disabled');
           btn.style.opacity = '0.5';
@@ -380,6 +380,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
 
 
