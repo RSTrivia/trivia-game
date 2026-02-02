@@ -471,6 +471,12 @@ const ACHIEVEMENT_SCHEMA = [
         { id: 'd100t', text: '100 Daily Games', check: (d) => d.dailyTotal >= 100 },
         { id: 'd10d', text: 'Perfect 10/10', check: (d) => d.dailyPerfect === true }
     ]},
+    { cat: 'Weekly Mode', tasks: [
+        { id: 'w25', text: 'Halfway (25/50)', check: (d) => d.weeklyMax >= 25 },
+        { id: 'w50', text: 'Perfect (50/50)', check: (d) => d.weeklyMax >= 50 },
+        { id: 'ws3', text: 'Speedrunner (50/50 sub 3s)', check: (d) => d.weeklyMax >= 50 && d.weeklyTime <= 3 && d.weeklyTime > 0 },
+        { id: 'ws2', text: 'GM Speedrunner (50/50 sub 2s)', check: (d) => d.weeklyMax >= 50 && d.weeklyTime <= 2 && d.weeklyTime > 0 }
+    ]},
     { cat: 'Pets', tasks: [
         { id: 'p1', text: 'Unlock 1 Pet', check: (d) => d.petsUnlocked >= 1 },
         { id: 'pall', text: 'Unlock all Pets', check: (d) => d.petsUnlocked >= 8 }
@@ -527,7 +533,10 @@ async function renderAchievements(calculatedLevel) {
         petsUnlocked: JSON.parse(localStorage.getItem('cached_pets') || '[]').length,
         fastestGuess: localStorage.getItem('stat_fastest') === 'true',
         justInTime: localStorage.getItem('stat_just_in_time') === 'true',
-        dailyPerfect: localStorage.getItem('stat_daily_perfect') === 'true'
+        dailyPerfect: localStorage.getItem('stat_daily_perfect') === 'true',
+        // --- New Weekly Stats ---
+        weeklyMax: parseInt(localStorage.getItem('weekly_max_score')) || 0,
+        weeklyTime: parseFloat(localStorage.getItem('weekly_best_time')) || 0
     };
 
     ACHIEVEMENT_SCHEMA.forEach(category => {
@@ -616,7 +625,14 @@ async function loadCollection() {
 
     const profileData = profileRes.data;
     const maxScore = scoreRes.data?.score || 0;
-    
+
+    // --- New Weekly Data Extraction ---
+    const weeklyData = scoreRes.data?.weekly_data || {};
+    // Note: If your time is stored as milliseconds (167820), 
+    // we divide by 1000 to get seconds for your "sub 3s" check.
+    const weeklyScore = weeklyData.score || 0;
+    const weeklyTimeSeconds = weeklyData.time ? (weeklyData.time / 1000) : 0;
+
     // Calculate total games and check for a perfect 10/10 from the attempts list
     const attempts = attemptsRes.data || [];
     const realTotalGames = attempts.length;
@@ -628,7 +644,10 @@ async function loadCollection() {
         localStorage.setItem('cached_xp', profileData.xp || 0);
         localStorage.setItem('cached_level', calculatedLevel);
         localStorage.setItem('cached_max_score', maxScore);
-
+        // Save Weekly stats to LocalStorage so renderAchievements can see them
+        localStorage.setItem('weekly_max_score', weeklyScore);
+        localStorage.setItem('weekly_best_time', weeklyTimeSeconds);
+        
         const a = profileData.achievements || {};
         
         // --- SOURCE OF TRUTH OVERRIDES ---
