@@ -980,6 +980,11 @@ async function checkAnswer(choiceId, btn) {
         // Update Local State & UI
         score++;
         updateScore();
+        // --- NEW: IMMEDIATE WEEKLY MILESTONE POPUP ---
+        if (isWeeklyMode && score === 25) {
+            saveAchievement('weekly_25', true); // Sync to Supabase
+            showAchievementNotification("Halfway 25/50");
+        }
         // This is where the pet roll happens
         rollForPet();
         setTimeout(loadQuestion, 1000);
@@ -1691,7 +1696,25 @@ async function saveAchievement(key, value) {
             notificationText = "Just in Time";
         }
     }
-
+      
+    // 2. NEW Weekly Achievements (Score & Speed)
+    else if (key === 'weekly_25' && !achievements[key]) {
+        isNewAchievement = true;
+        notificationText = "Halfway 25/50";
+    }
+    else if (key === 'weekly_50' && !achievements[key]) {
+        isNewAchievement = true;
+        notificationText = "Perfect 50/50";
+    }
+    else if (key === 'weekly_sub_3' && !achievements[key]) {
+        isNewAchievement = true;
+        notificationText = "Speedrunner (sub 3m)";
+    }
+    else if (key === 'weekly_sub_2' && !achievements[key]) {
+        isNewAchievement = true;
+        notificationText = "Grandmaster (sub 2m)";
+    }
+  
     // --- EXECUTE SAVING & NOTIFICATION ---
     if (isNewAchievement) {
         // We call the notification here. 
@@ -1708,9 +1731,9 @@ async function saveAchievement(key, value) {
             .update({ achievements: achievements })
             .eq('id', session.user.id);
 
-        // Update local storage for immediate UI sync if needed
-        const storageKey = key === 'fastest_guess' ? 'stat_fastest' : 'stat_just_in_time';
-        localStorage.setItem(storageKey, value.toString());
+     
+        // Update local storage for immediate UI sync
+      localStorage.setItem(`ach_stat_${key}`, value.toString());
     }
 }
 
@@ -2154,6 +2177,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
