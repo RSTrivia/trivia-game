@@ -30,8 +30,8 @@ const mainMenuBtn = document.getElementById('mainMenuBtn');
 const game = document.getElementById('game');
 const endScreen = document.getElementById('end-screen');
 const finalScore = document.getElementById('finalScore');
-const finalTimeEl = document.getElementById('finalTime');
-const weeklyTimeContainer = document.getElementById('weeklyTimeContainer');
+//const finalTimeEl = document.getElementById('finalTime');
+//const weeklyTimeContainer = document.getElementById('weeklyTimeContainer');
 const scoreDisplay = document.getElementById('score');
 const questionText = document.getElementById('questionText');
 const questionImage = document.getElementById('questionImage');
@@ -2186,6 +2186,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
