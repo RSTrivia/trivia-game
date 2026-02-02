@@ -473,13 +473,6 @@ async function handleAuthChange(event, session) {
             localStorage.removeItem('cached_xp');
             localStorage.removeItem('cachedUsername');
             localStorage.removeItem('lastDailyMessage'); 
-            // clear achievements
-            localStorage.removeItem('ach_stat_weekly_25');
-            localStorage.removeItem('ach_stat_weekly_50');
-            localStorage.removeItem('ach_stat_weekly_sub_3');
-            localStorage.removeItem('ach_stat_weekly_sub_2');
-            localStorage.removeItem('stat_fastest');
-            localStorage.removeItem('stat_just_in_time');
           
             lockDailyButton();
              [shareBtn, logBtn].forEach(btn => {
@@ -525,15 +518,6 @@ async function handleAuthChange(event, session) {
         localStorage.setItem('cachedUsername', username);
         localStorage.setItem('cached_xp', currentProfileXp);
         localStorage.setItem('cached_daily_streak', currentDailyStreak); // Also cache it
-      
-        // Grab achievements
-        const a = profile.achievements || {};
-        localStorage.setItem('ach_stat_weekly_25', (a.weekly_25 || false).toString());
-        localStorage.setItem('ach_stat_weekly_50', (a.weekly_50 || false).toString());
-        localStorage.setItem('ach_stat_weekly_sub_3', (a.weekly_sub_3 || false).toString());
-        localStorage.setItem('ach_stat_weekly_sub_2', (a.weekly_sub_2 || false).toString());
-        localStorage.setItem('stat_fastest', (a.fastest_guess || false).toString());
-        localStorage.setItem('stat_just_in_time', (a.just_in_time || false).toString());
       
         // UI Update
         if (span) span.textContent = ' ' + username;
@@ -1760,10 +1744,20 @@ async function saveAchievement(key, value) {
             .eq('id', session.user.id);
 
      
-        // Update local storage for immediate UI sync
-      localStorage.setItem(`ach_stat_${key}`, value.toString());
-    }
-}
+      // Update local storage for immediate UI sync
+      let storageKey;
+      
+      if (key === 'fastest_guess') {
+          storageKey = 'stat_fastest';
+      } else if (key === 'just_in_time') {
+          storageKey = 'stat_just_in_time';
+      } else {
+          // This covers weekly_25, weekly_50, weekly_sub_3, and weekly_sub_2
+          storageKey = `ach_stat_${key}`;
+      }
+      
+      localStorage.setItem(storageKey, value.toString());
+  }
 
 
 async function rollForPet() {
@@ -2205,6 +2199,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
