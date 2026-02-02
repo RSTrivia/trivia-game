@@ -483,21 +483,11 @@ async function handleAuthChange(event, session) {
             if (span) span.textContent = ' Guest';
             if (label) label.textContent = 'Log In';
             // Clear all session-specific UI and storage
-            //localStorage.removeItem('lastDailyScore');
-            //localStorage.removeItem('dailyPlayedDate');
-            //localStorage.removeItem('cached_xp');
-            //localStorage.removeItem('cachedUsername');
-            //localStorage.removeItem('lastDailyMessage'); 
-
-          // Clear caches
-          const keysToRemove = [
-              'cached_xp', 'cachedUsername', 'lastDailyScore', 
-              'dailyPlayedDate', 'lastDailyMessage', 'cached_daily_streak',
-              'ach_stat_weekly_25', 'ach_stat_weekly_50', 
-              'ach_stat_weekly_sub_3', 'ach_stat_weekly_sub_2',
-              'stat_fastest', 'stat_just_in_time'
-          ];
-          keysToRemove.forEach(k => localStorage.removeItem(k));
+            localStorage.removeItem('lastDailyScore');
+            localStorage.removeItem('dailyPlayedDate');
+            localStorage.removeItem('cached_xp');
+            localStorage.removeItem('cachedUsername');
+            localStorage.removeItem('lastDailyMessage'); 
             
             lockDailyButton();
              [shareBtn, logBtn].forEach(btn => {
@@ -545,32 +535,14 @@ async function handleAuthChange(event, session) {
         localStorage.setItem('cached_daily_streak', currentDailyStreak); // Also cache it
 
         // Sync the Achievement data from Profile
-        const a = profile.achievements || {};
-        localStorage.setItem('ach_stat_weekly_25', (a.weekly_25 || false).toString());
-        localStorage.setItem('ach_stat_weekly_50', (a.weekly_50 || false).toString());
-        localStorage.setItem('ach_stat_weekly_sub_3', (a.weekly_sub_3 || false).toString());
-        localStorage.setItem('ach_stat_weekly_sub_2', (a.weekly_sub_2 || false).toString());
-        localStorage.setItem('stat_fastest', (a.fastest_guess || false).toString());
-        localStorage.setItem('stat_just_in_time', (a.just_in_time || false).toString());
-
-        // --- COLLECTION LOG (PETS) LOGIC ---
-            try {
-                // Since it's a TEXT type, we must parse it
-                // If it's empty/null, we use an empty object {}
-                const logData = profile.collection_log ? JSON.parse(profile.collection_log) : {};
-                
-                // Let's assume your pets are stored in logData.pets (an array)
-                userPets = logData.pets || []; 
-                
-                // Cache it so it loads instantly next time
-                localStorage.setItem('user_pets', JSON.stringify(userPets));
-                
-                // Physically draw the pets in the tab
-                renderCollectionLog(); 
-            } catch (e) {
-                console.error("Error parsing collection_log:", e);
-                userPets = [];
-            }
+        //const a = profile.achievements || {};
+        //localStorage.setItem('ach_stat_weekly_25', (a.weekly_25 || false).toString());
+        //localStorage.setItem('ach_stat_weekly_50', (a.weekly_50 || false).toString());
+        //localStorage.setItem('ach_stat_weekly_sub_3', (a.weekly_sub_3 || false).toString());
+        //localStorage.setItem('ach_stat_weekly_sub_2', (a.weekly_sub_2 || false).toString());
+        //localStorage.setItem('stat_fastest', (a.fastest_guess || false).toString());
+        //localStorage.setItem('stat_just_in_time', (a.just_in_time || false).toString());
+      
         // UI Update
         if (span) span.textContent = ' ' + username;
         
@@ -2238,6 +2210,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
