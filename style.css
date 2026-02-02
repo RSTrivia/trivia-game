@@ -1072,6 +1072,7 @@ input.input-field:-webkit-autofill:active {
     border: 2px solid #444 !important;
     color: #666 !important;
     pointer-events: none !important;
+    opacity: 1 !important; /* Force it to be solid, not faded */
     transition: 0.2s;
     cursor: pointer;
 }
@@ -1583,6 +1584,7 @@ daily-btn.is-active:hover {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
