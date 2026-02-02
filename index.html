@@ -121,7 +121,7 @@
           weeklyBtn.classList.add('is-active');
           weeklyBtn.classList.remove('is-disabled');
           // CLEANUP: Remove manual styles so CSS can work
-          btn.style.removeProperty('opacity');
+          weeklyBtn.style.opacity = '1';
           weeklyBtn.style.pointerEvents = 'auto';
         }
       // 2. ONLY unlock if they are logged in AND haven't played
@@ -390,6 +390,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
 
 
