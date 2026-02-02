@@ -1618,15 +1618,14 @@ input.input-field:-webkit-autofill:active {
     pointer-events: auto !important;
 }
 
-/* 2. The GUEST/DISABLED state (This must be STRONGER) */
-#weeklyBtn.weekly-btn.is-disabled,
-#weeklyBtn.weekly-btn:not(.is-active) {
+/* Make sure the disabled state is just as specific as the active one */
+#weeklyBtn.weekly-btn.is-disabled {
     background: rgba(0, 0, 0, 0.4) !important; 
     border: 2px solid #444 !important;
     color: #666 !important;
     opacity: 0.5 !important;
     pointer-events: none !important;
-    filter: grayscale(1) !important;
+    filter: grayscale(1);
 }
 
 /* 3. The HOVER state (The highlight you were missing) */
@@ -1641,6 +1640,7 @@ input.input-field:-webkit-autofill:active {
     background-color: rgba(212, 175, 55, 0.2) !important;
     transform: scale(0.96);
 }
+
 
 
 
