@@ -1187,35 +1187,36 @@ async function endGame() {
     if (gzTitle) gzTitle.classList.add('hidden');
 
     if (isWeeklyMode) {
-        // 1. Calculate time
+        // Calculate time
         const endTime = Date.now();
-        const timeInSeconds = Math.floor((endTime - weeklyStartTime) / 1000);
-        
-        // 2. UI Visibility resets
+        // Format and Show the Time
+        // Use raw milliseconds for precision
+        const totalMs = endTime - weeklyStartTime; 
+        const totalSeconds = totalMs / 1000;
+      
+        // UI Visibility resets
         if (playAgainBtn) playAgainBtn.classList.remove('hidden');
         if (dailyStreakContainer) dailyStreakContainer.style.display = 'none';
     
-        // 3. Update Score (Simple text, no extra HTML injected here)
+        // Update Score (Simple text, no extra HTML injected here)
         if (finalScore) {
             finalScore.textContent = `${score}/${WEEKLY_LIMIT}`;
         }
-        
-        // 4. Format and Show the Time
-        // Use raw milliseconds for precision
-          const totalMs = endTime - weeklyStartTime; 
-          const totalSeconds = totalMs / 1000;
-          // 2. CHECK: Perfect 50/50
-          if (score >= 50) {
-            await saveAchievement('weekly_50', true);
+        // --- ACHIEVEMENTS CHECK ---
+        if (session) {
+            // Check for Perfect + Speedruns
+            if (score >= 50) {
+                await saveAchievement('weekly_50', true);
 
-            // 3. CHECK: Speedruns (Only check if they got 50/50)
-            if (timeSeconds <= 120) {
-                await saveAchievement('weekly_sub_2', true);
-            } else if (timeSeconds <= 180) {
-                await saveAchievement('weekly_sub_3', true);
+                // Use totalSeconds (the variable you actually defined)
+                if (totalSeconds <= 120) {
+                    await saveAchievement('weekly_sub_2', true);
+                } else if (totalSeconds <= 180) {
+                    await saveAchievement('weekly_sub_3', true);
+                }
             }
         }
-      
+         // Format Time
           let formattedTime;
           if (totalSeconds < 60) {
             formattedTime = totalSeconds.toFixed(2) + "s";
@@ -1223,30 +1224,26 @@ async function endGame() {
             const mins = Math.floor(totalSeconds / 60);
             const secs = (totalSeconds % 60).toFixed(2); // Keeps the .00
             formattedTime = `${mins}:${secs.toString().padStart(5, '0')}`; 
-            // padStart(5) accounts for "05.00" (5 characters)
       }
-      // --- RE-FETCH ELEMENTS LOCALLY TO BE SAFE ---
-        const localFinalTimeEl = document.getElementById('finalTime');
+        // Update UI Elements
+        // Use the elements already defined globally or fetch them specifically
+        const finalTimeEl = document.getElementById('finalTime');
         const localWeeklyTimeContainer = document.getElementById('weeklyTimeContainer');
       
       if (finalTimeEl) finalTimeEl.textContent = formattedTime;
       if (weeklyTimeContainer) weeklyTimeContainer.style.display = 'block';
 
-    // 5. Save Score and Check for PB
+    // Save Score and Check for PB
     let isNewPB = false;
     if (session) {
         // return true if it was a PB
         isNewPB = await saveWeeklyScore(session.user.id, username, score, totalMs);
     } 
-      // 6. Update Titles
-        if (gameOverTitle) {
-          if (isNewPB) {
-              gameOverTitle.textContent = "New PB achieved!";
-            } else {
-              gameOverTitle.textContent = "Weekly Challenge Complete!";
-          }
+      // Update Titles
+      if (gameOverTitle) {
+          gameOverTitle.textContent = isNewPB ? "New PB achieved!" : "Weekly Challenge Complete!";
           gameOverTitle.classList.remove('hidden');
-        }
+      }
     } else if (isDailyMode) {
         if (playAgainBtn) playAgainBtn.classList.add('hidden');
         if (gameOverTitle) {
@@ -1693,7 +1690,7 @@ async function saveAchievement(key, value) {
     let isNewAchievement = false;
     let notificationText = "";
 
-    // 3. Logic Checks
+    // 3. Logic Checks (Structure kept exactly as you requested)
     if (key === 'fastest_guess' && !achievements[key]) {
         isNewAchievement = true;
         notificationText = "Lucky Guess";
@@ -1702,6 +1699,7 @@ async function saveAchievement(key, value) {
         isNewAchievement = true;
         notificationText = "Just in Time";
     }
+    // --- Weekly Boolean Achievements ---
     else if (key === 'weekly_25' && !achievements[key]) {
         isNewAchievement = true;
         notificationText = "Halfway 25/50";
@@ -1741,13 +1739,13 @@ async function saveAchievement(key, value) {
         } else if (key === 'just_in_time') {
             storageKey = 'stat_just_in_time';
         } else {
+            // Consistent naming for new weekly and level achievements
             storageKey = `ach_stat_${key}`;
         }
         
         localStorage.setItem(storageKey, value.toString());
     }
-} // <-- This brace closes the function
-
+}
 
 async function rollForPet() {
   // 1. Check if the user is logged in
@@ -2188,6 +2186,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
