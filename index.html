@@ -40,6 +40,7 @@
     const muteIcon = document.getElementById('muteIcon');
     const muteBtn = document.getElementById('muteBtn');
     const dailyBtn = document.getElementById('dailyBtn');
+    const weeklyBtn = document.getElementById('weeklyBtn');
     const shareBtn = document.getElementById('shareBtn');
     const logBtn = document.getElementById('logBtn');
     const helpBtn = document.getElementById('helpBtn');
@@ -108,6 +109,12 @@
     
     // 2. Instant Button State Sync (Anti-Flicker)
     if (cachedLoggedIn) {
+      // Weekly Mode: Always GOLD if logged in (even if they played)
+      if (weeklyBtn) {
+        weeklyBtn.classList.remove('is-disabled');
+        weeklyBtn.style.opacity = '1';
+        weeklyBtn.style.pointerEvents = 'auto';
+      }
       // 2. ONLY unlock if they are logged in AND haven't played
       if (!hasPlayedToday && dailyBtn) {
           dailyBtn.classList.add('is-active');
@@ -373,6 +380,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
 
 
