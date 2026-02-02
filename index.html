@@ -25,13 +25,13 @@
   async function handleAuthAction() {
     const isLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
     if (isLoggedIn) {
-      supabase.auth.signOut(); // 🔑 THIS WAS MISSING
+      await supabase.auth.signOut(); // 🔑 THIS WAS MISSING
       // Clear the cache so the script knows we are GUESTS now
-      localStorage.setItem('cachedLoggedIn', 'false');
-      localStorage.setItem('cachedUsername', 'Guest');
+      //localStorage.setItem('cachedLoggedIn', 'false');
+      //localStorage.setItem('cachedUsername', 'Guest');
       //localStorage.clear(); // Clear all to be safe
       //window.location.reload();
-      window.location.reload(); // Reload to apply the Grey state instantly
+      //window.location.reload(); // Reload to apply the Grey state instantly
     } else {
       window.location.href = 'login.html';
     }
@@ -80,10 +80,10 @@
     // 1. Reset everything to locked first (Safety)
   [dailyBtn, weeklyBtn].forEach(btn => {
     if (btn) {
-        dailyBtn.classList.remove('is-active');
-        dailyBtn.classList.add('is-disabled');
-        dailyBtn.style.opacity = '0.5';
-        dailyBtn.style.pointerEvents = 'none';
+        btn.classList.remove('is-active');
+        btn.classList.add('is-disabled');
+        btn.style.opacity = '0.5';
+        btn.style.pointerEvents = 'none';
     }
    }); 
     // 1. Instant Text/Emoji Sync
@@ -389,6 +389,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
 
 
