@@ -27,8 +27,8 @@
     if (isLoggedIn) {
       await supabase.auth.signOut(); // 🔑 THIS WAS MISSING
       // Clear the cache so the script knows we are GUESTS now
-      localStorage.setItem('cachedLoggedIn', 'false');
-      localStorage.setItem('cachedUsername', 'Guest');
+      //localStorage.setItem('cachedLoggedIn', 'false');
+      //localStorage.setItem('cachedUsername', 'Guest');
       localStorage.removeItem('cached_xp');
       localStorage.removeItem('equipped_pet_id');
       //localStorage.clear(); // Clear all to be safe
@@ -113,9 +113,8 @@
       if (cachedMuted) muteBtn.classList.add('is-muted');
     }
 
-    const isActuallyLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
     // 2. Instant Button State Sync (Anti-Flicker)
-    if (isActuallyLoggedIn) {
+    if (cachedLoggedIn) {
       // Weekly Mode: Always GOLD if logged in (even if they played)
       if (weeklyBtn) {
           // Logged in users always get Gold/Active for Weekly
@@ -391,6 +390,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
 
 
