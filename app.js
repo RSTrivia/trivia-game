@@ -552,7 +552,25 @@ async function handleAuthChange(event, session) {
         localStorage.setItem('ach_stat_weekly_sub_2', (a.weekly_sub_2 || false).toString());
         localStorage.setItem('stat_fastest', (a.fastest_guess || false).toString());
         localStorage.setItem('stat_just_in_time', (a.just_in_time || false).toString());
-      
+
+        // --- COLLECTION LOG (PETS) LOGIC ---
+            try {
+                // Since it's a TEXT type, we must parse it
+                // If it's empty/null, we use an empty object {}
+                const logData = profile.collection_log ? JSON.parse(profile.collection_log) : {};
+                
+                // Let's assume your pets are stored in logData.pets (an array)
+                userPets = logData.pets || []; 
+                
+                // Cache it so it loads instantly next time
+                localStorage.setItem('user_pets', JSON.stringify(userPets));
+                
+                // Physically draw the pets in the tab
+                renderCollectionLog(); 
+            } catch (e) {
+                console.error("Error parsing collection_log:", e);
+                userPets = [];
+            }
         // UI Update
         if (span) span.textContent = ' ' + username;
         
@@ -2220,6 +2238,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
