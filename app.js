@@ -968,6 +968,11 @@ async function checkAnswer(choiceId, btn) {
             if (timeLeft <= 1 && timeLeft > 0) {
                 saveAchievement('just_in_time', true); // 2. Just in Time
             }
+
+            // halfway 25/50 weekly mode score
+            if (isWeeklyMode && score === 25) {
+                saveAchievement('weekly_25', true); // Sync to Supabase
+            }
             // 5. UPDATE DATA
             currentProfileXp += gained; // Add the XP to local state
             localStorage.setItem('cached_xp', currentProfileXp);
@@ -981,11 +986,6 @@ async function checkAnswer(choiceId, btn) {
         // Update Local State & UI
         score++;
         updateScore();
-        // --- NEW: IMMEDIATE WEEKLY MILESTONE POPUP ---
-        if (isWeeklyMode && score === 25) {
-            saveAchievement('weekly_25', true); // Sync to Supabase
-            showAchievementNotification("Halfway 25/50");
-        }
         // This is where the pet roll happens
         rollForPet();
         setTimeout(loadQuestion, 1000);
@@ -2186,6 +2186,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
