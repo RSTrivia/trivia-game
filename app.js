@@ -597,7 +597,10 @@ async function updateShareButtonState() {
   
     // 1. Guest = Always disabled
     if (!session) {
-        disableShareButton();
+        shareBtn.classList.add('is-disabled');
+        shareBtn.classList.remove('is-active');
+        shareBtn.style.opacity = "0.5";
+        shareBtn.style.pointerEvents = "none";
         return;
     }
 
@@ -2210,6 +2213,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
