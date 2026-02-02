@@ -345,7 +345,18 @@ async function init() {
         // 1. Audio setup
         if (audioCtx.state === 'suspended') await audioCtx.resume();
         await loadSounds();
+
+        // 2. WARM UP THE QUEUE (This is the fix)
+        // Refill the pool and buffer the first few questions
+        if (masterQuestionPool.length === 0) {
+            const { data: idList } = await supabase.from('questions').select('id');
+            masterQuestionPool = idList.map(q => q.id);
+        }
+        remainingQuestions = [...masterQuestionPool].sort(() => Math.random() - 0.5);
         
+        // Load the first 3 questions into memory before switching screens
+        await preloadNextQuestions();
+      
         // 2. Start the specific weekly logic 
         // (This function already handles resetGame, flags, and loading)
         try {
@@ -2186,6 +2197,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
