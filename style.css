@@ -635,6 +635,10 @@ h1 {
   box-sizing: border-box;
   /* Add this line to control the gap between ALL rows */
   gap: 20px !important; 
+
+  /* ADD THESE TWO LINES */
+  height: auto !important;
+  min-height: 0 !important;
 }
 
 /* Sharp, thin login fields */
@@ -1579,6 +1583,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
