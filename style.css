@@ -1590,6 +1590,49 @@ input.input-field:-webkit-autofill:active {
 
 
 
+/* 1. The "Off" state - This is the default when the page loads */
+/* 1. The BASE state (Locked/Loading) */
+/* 1. The BASE state (Locked/Disabled) */
+#dailyBtn.daily-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 0 !important;
+    width: 100%;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    background: rgba(0, 0, 0, 0.4); 
+    border: 2px solid #444;
+    color: #666;
+    pointer-events: none;
+    transition: 0.2s;
+    cursor: pointer;
+}
+
+
+/* 2. The ACTIVE state (Logged in & Ready) */
+#weeklyBtn.weekly-btn.is-active {
+    background: rgba(0, 0, 0, 0.6) !important;
+    border: 2px solid #d4af37 !important;
+    color: #d4af37 !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
+/* 3. The HOVER state (The highlight you were missing) */
+#weeklyBtn.weekly-btn.is-active:hover {
+    background: rgba(0, 0, 0, 0.85) !important;
+    border-color: #ffea8a !important;
+    color: #ffea8a !important;
+}
+
+/* 3. Handle the tapped state for mobile feedback */
+#weeklyBtn.tapped {
+    background-color: rgba(212, 175, 55, 0.2) !important;
+    transform: scale(0.96);
+}
+
+
 
 
 
