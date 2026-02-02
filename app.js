@@ -1189,7 +1189,7 @@ async function endGame() {
         // 1. Calculate time
         const endTime = Date.now();
         const timeInSeconds = Math.floor((endTime - weeklyStartTime) / 1000);
-    
+        
         // 2. UI Visibility resets
         if (playAgainBtn) playAgainBtn.classList.remove('hidden');
         if (dailyStreakContainer) dailyStreakContainer.style.display = 'none';
@@ -1203,7 +1203,18 @@ async function endGame() {
         // Use raw milliseconds for precision
           const totalMs = endTime - weeklyStartTime; 
           const totalSeconds = totalMs / 1000;
-    
+          // 2. CHECK: Perfect 50/50
+          if (score >= 50) {
+            await saveAchievement('weekly_50', true);
+
+            // 3. CHECK: Speedruns (Only check if they got 50/50)
+            if (timeSeconds <= 120) {
+                await saveAchievement('weekly_sub_2', true);
+            } else if (timeSeconds <= 180) {
+                await saveAchievement('weekly_sub_3', true);
+            }
+        }
+      
           let formattedTime;
           if (totalSeconds < 60) {
             formattedTime = totalSeconds.toFixed(2) + "s";
@@ -2177,6 +2188,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
