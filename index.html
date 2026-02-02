@@ -82,7 +82,7 @@
     if (btn) {
         btn.classList.remove('is-active');
         btn.classList.add('is-disabled');
-        btn.style.opacity = '0.5';
+        btn.style.setProperty('opacity', '0.5', 'important');
         btn.style.pointerEvents = 'none';
     }
    }); 
@@ -120,7 +120,7 @@
           weeklyBtn.classList.add('is-active');
           weeklyBtn.classList.remove('is-disabled');
           // CLEANUP: Remove manual styles so CSS can work
-          weeklyBtn.style.opacity = '1';
+          weeklyBtn.style.setProperty('opacity', '1', 'important');
           weeklyBtn.style.pointerEvents = 'auto';
         }
       // 2. ONLY unlock if they are logged in AND haven't played
@@ -389,6 +389,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
 
 
