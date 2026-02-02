@@ -1087,7 +1087,7 @@ input.input-field:-webkit-autofill:active {
 }
 
 /* 3. The HOVER state (The highlight you were missing) */
-daily-btn.is-active:hover {
+.daily-btn.is-active:hover {
     background: rgba(0, 0, 0, 0.85) !important;
     border-color: #ffea8a !important;
     color: #ffea8a !important;
@@ -1584,6 +1584,7 @@ daily-btn.is-active:hover {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
