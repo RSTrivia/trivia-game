@@ -1074,12 +1074,6 @@ input.input-field:-webkit-autofill:active {
     pointer-events: none;
     transition: 0.2s;
     cursor: pointer;
-
-  /* This is the specific grey look you like */
-    background: rgba(0, 0, 0, 0.4) !important; 
-    border: 2px solid #444 !important;
-    color: #666 !important;
-    filter: none;
 }
 
 /* 2. The ACTIVE state (Logged in & Ready) */
@@ -1589,6 +1583,7 @@ daily-btn.is-active:hover {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
