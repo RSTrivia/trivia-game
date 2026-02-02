@@ -472,10 +472,10 @@ const ACHIEVEMENT_SCHEMA = [
         { id: 'd10d', text: 'Perfect 10/10', check: (d) => d.dailyPerfect === true }
     ]},
     { cat: 'Weekly Mode', tasks: [
-        { id: 'w25', text: 'Halfway (25/50)', check: (d) => d.weeklyMax >= 25 },
-        { id: 'w50', text: 'Perfect (50/50)', check: (d) => d.weeklyMax >= 50 },
-        { id: 'ws3', text: 'Speedrunner (50/50 sub 3s)', check: (d) => d.weeklyMax >= 50 && d.weeklyTime <= 3 && d.weeklyTime > 0 },
-        { id: 'ws2', text: 'GM Speedrunner (50/50 sub 2s)', check: (d) => d.weeklyMax >= 50 && d.weeklyTime <= 2 && d.weeklyTime > 0 }
+        { id: 'w25', text: 'Halfway 25/50', check: (d) => d.weeklyMax >= 25 },
+        { id: 'w50', text: 'Perfect 50/50', check: (d) => d.weeklyMax >= 50 },
+        { id: 'ws3', text: 'Speedrunner 50/50 sub 3m', check: (d) => d.weeklyMax >= 50 && d.weeklyTime <= 180 && d.weeklyTime > 0 }, // 180 seconds = 3 minutes
+        { id: 'ws2', text: 'GM Speedrunner 50/50 sub 2m', check: (d) => d.weeklyMax >= 50 && d.weeklyTime <= 120 && d.weeklyTime > 0 } // 120 seconds = 2 minutes
     ]},
     { cat: 'Pets', tasks: [
         { id: 'p1', text: 'Unlock 1 Pet', check: (d) => d.petsUnlocked >= 1 },
