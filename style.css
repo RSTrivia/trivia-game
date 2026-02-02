@@ -393,8 +393,8 @@ h1 {
 #logBtn { margin-right: 4px; }
 
 /* 2. Standard State: Your Original Gold */
-#shareBtn:not(), 
-#logBtn:not(), 
+#shareBtn:not(.is-disabled), 
+#logBtn:not(.is-disabled), 
 #muteBtn:not(.is-muted) {
   filter: sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85);
   opacity: 0.9;
@@ -411,7 +411,7 @@ h1 {
 
 /* 4. Muted/Disabled State: Grey */
 #muteBtn.is-muted,
-#shareBtn, 
+#shareBtn.is-disabled, 
 #logBtn.is-disabled {
   filter: grayscale(1) brightness(0.5) !important;
   opacity: 0.5 !important;
@@ -877,20 +877,20 @@ input.input-field:-webkit-autofill:active {
 /* ====== MOBILE NO-FLICKER BUTTONS ====== */
 @media (pointer: coarse) {
   /* 1. Reset all hover/active for the big .btn and .btn-small */
- .btn:not():hover, 
-  .btn-small:not():hover,
-  #dailyBtn.is-active:not():hover {
+ .btn:not(.is-disabled):hover, 
+  .btn-small:not(.is-disabled):hover,
+  #dailyBtn.is-active:not(.is-disabled):hover {
     background: rgba(0, 0, 0, 0.6) !important;
     border-color: #d4af37 !important;
     color: #d4af37 !important;
   }
 
   /* 2. THE PRESS (Finger Down) */
-  .btn:not():active, 
-  .btn-small:not():active,
-  .btn.tapped:not(), 
-  .btn-small.tapped:not(),
-  #dailyBtn.is-active:not():active {
+  .btn:not(.is-disabled):active, 
+  .btn-small:not(.is-disabled):active,
+  .btn.tapped:not(.is-disabled), 
+  .btn-small.tapped:not(.is-disabled),
+  #dailyBtn.is-active:not(.is-disabled):active {
     background-color: #000000 !important;
     border-color: #ffea8a !important;
     color: #ffea8a !important;
@@ -899,7 +899,7 @@ input.input-field:-webkit-autofill:active {
   }
   
 /* Ensure disabled buttons on mobile stay flat and grey */
-   {
+  .is-disabled {
     transform: none !important;
     background: rgba(20, 20, 20, 0.5) !important;
     border-color: #555 !important;
@@ -1060,7 +1060,7 @@ input.input-field:-webkit-autofill:active {
 /* 1. The "Off" state - This is the default when the page loads */
 /* 1. The BASE state (Locked/Loading) */
 /* 1. The BASE state (Locked/Disabled) */
-.daily-btn {
+#dailyBtn.daily-btn {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1068,17 +1068,16 @@ input.input-field:-webkit-autofill:active {
     width: 100%;
     border-radius: 8px;
     font-size: 1.1rem;
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.4); 
     border: 2px solid #444;
     color: #666;
     pointer-events: none;
-    opacity: 0.5;
     transition: 0.2s;
     cursor: pointer;
 }
 
 /* 2. The ACTIVE state (Logged in & Ready) */
-.daily-btn.is-active {
+#dailyBtn.daily-btn.is-active {
     background: rgba(0, 0, 0, 0.6) !important;
     border: 2px solid #d4af37 !important;
     color: #d4af37 !important;
@@ -1087,7 +1086,7 @@ input.input-field:-webkit-autofill:active {
 }
 
 /* 3. The HOVER state (The highlight you were missing) */
-.daily-btn.is-active:hover {
+#dailyBtn.daily-btn.is-active:hover {
     background: rgba(0, 0, 0, 0.85) !important;
     border-color: #ffea8a !important;
     color: #ffea8a !important;
@@ -1584,19 +1583,6 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
