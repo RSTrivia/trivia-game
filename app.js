@@ -483,12 +483,21 @@ async function handleAuthChange(event, session) {
             if (span) span.textContent = ' Guest';
             if (label) label.textContent = 'Log In';
             // Clear all session-specific UI and storage
-            localStorage.removeItem('lastDailyScore');
-            localStorage.removeItem('dailyPlayedDate');
-            localStorage.removeItem('cached_xp');
-            localStorage.removeItem('cachedUsername');
-            localStorage.removeItem('lastDailyMessage'); 
-       
+            //localStorage.removeItem('lastDailyScore');
+            //localStorage.removeItem('dailyPlayedDate');
+            //localStorage.removeItem('cached_xp');
+            //localStorage.removeItem('cachedUsername');
+            //localStorage.removeItem('lastDailyMessage'); 
+
+          // Clear caches
+          const keysToRemove = [
+              'cached_xp', 'cachedUsername', 'lastDailyScore', 
+              'dailyPlayedDate', 'lastDailyMessage', 'cached_daily_streak',
+              'ach_stat_weekly_25', 'ach_stat_weekly_50', 
+              'ach_stat_weekly_sub_3', 'ach_stat_weekly_sub_2'
+          ];
+          keysToRemove.forEach(k => localStorage.removeItem(k));
+            
             lockDailyButton();
              [shareBtn, logBtn].forEach(btn => {
                       if (btn) {
@@ -533,10 +542,16 @@ async function handleAuthChange(event, session) {
         localStorage.setItem('cachedUsername', username);
         localStorage.setItem('cached_xp', currentProfileXp);
         localStorage.setItem('cached_daily_streak', currentDailyStreak); // Also cache it
+
+        // Sync the Weekly Booleans for the Achievement Profile
+        localStorage.setItem('ach_stat_weekly_25', (a.weekly_25 || false).toString());
+        localStorage.setItem('ach_stat_weekly_50', (a.weekly_50 || false).toString());
+        localStorage.setItem('ach_stat_weekly_sub_3', (a.weekly_sub_3 || false).toString());
+        localStorage.setItem('ach_stat_weekly_sub_2', (a.weekly_sub_2 || false).toString());
       
         // UI Update
         if (span) span.textContent = ' ' + username;
-      
+        
     }
    
 
@@ -2201,6 +2216,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
