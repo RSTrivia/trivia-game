@@ -207,6 +207,7 @@ async function syncDailyButton() {
     // Explicitly lock if no one is logged in
     if (!session) {
         lockDailyButton();
+        lockWeeklyButton();
       // Add visual guest feedback
         dailyBtn.style.opacity = '0.5';
         dailyBtn.style.pointerEvents = 'none';
@@ -673,6 +674,14 @@ function lockDailyButton() {
     //dailyBtn.onclick = () => alert("You've already played today!");
 }
 
+function lockWeeklyButton() {
+    if (!weeklyBtn) return;
+    weeklyBtn.classList.add('disabled');
+    weeklyBtn.classList.remove('is-active');
+    weeklyBtn.style.opacity = '0.5';
+    weeklyBtn.style.pointerEvents = 'none'; // Makes it ignore all clicks/touches
+    
+}
 
 // ====== GAME ENGINE ======
 
@@ -2213,6 +2222,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
