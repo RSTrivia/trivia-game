@@ -136,8 +136,7 @@
         if (btn) {
           btn.classList.remove('is-active'); // Remove Gold state
           btn.classList.add('is-disabled');  // Add Grey state
-          //btn.style.opacity = '0.5';         // Force Grey look
-          btn.style.setProperty('opacity', '0.5', 'important');
+          btn.style.opacity = '0.5';         // Force Grey look
           btn.style.pointerEvents = 'none';  // Lock it
         }
       });
@@ -383,6 +382,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
 
 
