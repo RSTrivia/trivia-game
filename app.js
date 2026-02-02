@@ -1689,43 +1689,35 @@ async function updateDailyStreak(currentScore) {
 }
 
 async function saveAchievement(key, value) {
+    // 1. Get session from the current state rather than a slow network call if possible
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
 
-    // Fetch existing achievements from Supabase
+    // 2. Fetch existing achievements
     const { data, error } = await supabase
         .from('profiles')
         .select('achievements')
         .eq('id', session.user.id)
         .single();
 
-    if (error) return console.error("Error fetching achievements:", error);
+    if (error) {
+        console.error("Error fetching achievements:", error);
+        return;
+    }
 
     let achievements = data?.achievements || {};
     let isNewAchievement = false;
     let notificationText = "";
 
-    // 1. LUCKY GUESS (Fastest Guess)
-    if (key === 'fastest_guess') {
-        // If they already have ANY value for fastest_guess, they've been notified before.
-        // Since we only care that they DID it once (answering at 14s/1s elapsed), 
-        // we check if the key exists.
-        if (!achievements[key]) {
-            isNewAchievement = true;
-            notificationText = "Lucky Guess";
-        }
+    // 3. Logic Checks
+    if (key === 'fastest_guess' && !achievements[key]) {
+        isNewAchievement = true;
+        notificationText = "Lucky Guess";
     } 
-    
-    // 2. JUST IN TIME
-    else if (key === 'just_in_time') {
-        // Only trigger if the key doesn't exist yet
-        if (!achievements[key]) {
-            isNewAchievement = true;
-            notificationText = "Just in Time";
-        }
+    else if (key === 'just_in_time' && !achievements[key]) {
+        isNewAchievement = true;
+        notificationText = "Just in Time";
     }
-      
-    // 2. NEW Weekly Achievements (Score & Speed)
     else if (key === 'weekly_25' && !achievements[key]) {
         isNewAchievement = true;
         notificationText = "Halfway 25/50";
@@ -1742,38 +1734,35 @@ async function saveAchievement(key, value) {
         isNewAchievement = true;
         notificationText = "GM speedrunner 50/50 sub 2m";
     }
-  
-    // --- EXECUTE SAVING & NOTIFICATION ---
+
+    // 4. EXECUTE SAVING
     if (isNewAchievement) {
-        // We call the notification here. 
-        // Note: I removed the strict AudioBuffer check so the visual always shows.
         if (typeof showAchievementNotification === "function") {
             showAchievementNotification(notificationText);
         }
 
-        // Update the object and send to Supabase
+        // Update the object
         achievements[key] = value;
         
+        // Push to Supabase
         await supabase
             .from('profiles')
             .update({ achievements: achievements })
             .eq('id', session.user.id);
 
-     
-      // Update local storage for immediate UI sync
-      let storageKey;
-      
-      if (key === 'fastest_guess') {
-          storageKey = 'stat_fastest';
-      } else if (key === 'just_in_time') {
-          storageKey = 'stat_just_in_time';
-      } else {
-          // This covers weekly_25, weekly_50, weekly_sub_3, and weekly_sub_2
-          storageKey = `ach_stat_${key}`;
-      }
-      
-      localStorage.setItem(storageKey, value.toString());
-}
+        // 5. Update local storage for immediate UI sync
+        let storageKey;
+        if (key === 'fastest_guess') {
+            storageKey = 'stat_fastest';
+        } else if (key === 'just_in_time') {
+            storageKey = 'stat_just_in_time';
+        } else {
+            storageKey = `ach_stat_${key}`;
+        }
+        
+        localStorage.setItem(storageKey, value.toString());
+    }
+} // <-- This brace closes the function
 
 
 async function rollForPet() {
@@ -2215,6 +2204,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
