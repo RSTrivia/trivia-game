@@ -111,10 +111,12 @@
     if (cachedLoggedIn) {
       // Weekly Mode: Always GOLD if logged in (even if they played)
       if (weeklyBtn) {
-        weeklyBtn.classList.remove('is-disabled');
-        weeklyBtn.style.opacity = '1';
-        weeklyBtn.style.pointerEvents = 'auto';
-      }
+          weeklyBtn.classList.add('is-active'); // This is the missing piece!
+          weeklyBtn.classList.remove('is-disabled');
+          // Remove manual style overrides so CSS takes over
+          weeklyBtn.style.opacity = '1';
+          weeklyBtn.style.pointerEvents = 'auto';
+        }
       // 2. ONLY unlock if they are logged in AND haven't played
       if (!hasPlayedToday && dailyBtn) {
           dailyBtn.classList.add('is-active');
@@ -380,6 +382,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
 
 
