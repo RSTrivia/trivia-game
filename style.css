@@ -393,8 +393,8 @@ h1 {
 #logBtn { margin-right: 4px; }
 
 /* 2. Standard State: Your Original Gold */
-#shareBtn:not(.is-disabled), 
-#logBtn:not(.is-disabled), 
+#shareBtn:not(), 
+#logBtn:not(), 
 #muteBtn:not(.is-muted) {
   filter: sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85);
   opacity: 0.9;
@@ -411,7 +411,7 @@ h1 {
 
 /* 4. Muted/Disabled State: Grey */
 #muteBtn.is-muted,
-#shareBtn.is-disabled, 
+#shareBtn, 
 #logBtn.is-disabled {
   filter: grayscale(1) brightness(0.5) !important;
   opacity: 0.5 !important;
@@ -877,20 +877,20 @@ input.input-field:-webkit-autofill:active {
 /* ====== MOBILE NO-FLICKER BUTTONS ====== */
 @media (pointer: coarse) {
   /* 1. Reset all hover/active for the big .btn and .btn-small */
- .btn:not(.is-disabled):hover, 
-  .btn-small:not(.is-disabled):hover,
-  #dailyBtn.is-active:not(.is-disabled):hover {
+ .btn:not():hover, 
+  .btn-small:not():hover,
+  #dailyBtn.is-active:not():hover {
     background: rgba(0, 0, 0, 0.6) !important;
     border-color: #d4af37 !important;
     color: #d4af37 !important;
   }
 
   /* 2. THE PRESS (Finger Down) */
-  .btn:not(.is-disabled):active, 
-  .btn-small:not(.is-disabled):active,
-  .btn.tapped:not(.is-disabled), 
-  .btn-small.tapped:not(.is-disabled),
-  #dailyBtn.is-active:not(.is-disabled):active {
+  .btn:not():active, 
+  .btn-small:not():active,
+  .btn.tapped:not(), 
+  .btn-small.tapped:not(),
+  #dailyBtn.is-active:not():active {
     background-color: #000000 !important;
     border-color: #ffea8a !important;
     color: #ffea8a !important;
@@ -899,7 +899,7 @@ input.input-field:-webkit-autofill:active {
   }
   
 /* Ensure disabled buttons on mobile stay flat and grey */
-  .is-disabled {
+   {
     transform: none !important;
     background: rgba(20, 20, 20, 0.5) !important;
     border-color: #555 !important;
@@ -1092,6 +1092,21 @@ input.input-field:-webkit-autofill:active {
     border-color: #ffea8a !important;
     color: #ffea8a !important;
 }
+
+/* Force any disabled button to be grey, even if it has other classes */
+.is-disabled, 
+.daily-btn.is-disabled {
+    background: rgba(30, 30, 30, 0.5) !important;
+    border: 2px solid #444 !important;
+    color: #666 !important;
+    opacity: 0.5 !important;
+    filter: grayscale(1) !important;
+    pointer-events: none !important;
+    transform: none !important;
+}
+
+
+
 
 /* 3. Handle the tapped state for mobile feedback */
 #dailyBtn.tapped {
@@ -1584,6 +1599,7 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 2px 2px 0px #000;
 }
 /* Achievement Modal Base */
+
 
 
 
