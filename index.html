@@ -27,12 +27,12 @@
     if (isLoggedIn) {
       await supabase.auth.signOut(); // 🔑 THIS WAS MISSING
       // Clear the cache so the script knows we are GUESTS now
-      //localStorage.setItem('cachedLoggedIn', 'false');
-      //localStorage.setItem('cachedUsername', 'Guest');
+      localStorage.setItem('cachedLoggedIn', 'false');
+      localStorage.setItem('cachedUsername', 'Guest');
       localStorage.removeItem('cached_xp');
       localStorage.removeItem('equipped_pet_id');
       //localStorage.clear(); // Clear all to be safe
-      //window.location.reload();
+      window.location.reload();
       //window.location.reload(); // Reload to apply the Grey state instantly
     } else {
       window.location.href = 'login.html';
@@ -390,6 +390,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
 
 
