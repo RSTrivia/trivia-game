@@ -812,15 +812,14 @@ async function startGame() {
         streak = 0;              // Reset streak
         dailyQuestionCount = 0;  // Reset daily count
         currentQuestion = null;
+        // ADD THIS LINE HERE:
+        gameStartTime = Date.now();
       
         // UI Clean
         questionText.textContent = '';
         answersBox.innerHTML = '';
         questionImage.style.display = 'none';
         questionImage.src = '';
-      
-        // ADD THIS LINE HERE:
-        gameStartTime = Date.now();
       
         updateScore();
         
@@ -1320,7 +1319,7 @@ async function endGame() {
         // Trigger the high-score save
         if (session && score > 0) {
             // We pass the current username, and the score achieved
-            saveNormalScore(username, score, finalTime);
+            const isNewPB = await saveNormalScore(username, score, finalTime);
         }
       // 2. Check for Gz! (Completion) first
         if (score > 0 && remainingQuestions.length === 0 && preloadQueue.length === 0) {
@@ -1335,10 +1334,10 @@ async function endGame() {
               gameOverTitle.classList.add('hidden');
               gameOverTitle.textContent = "";
             }
-            // 3. Otherwise, show standard Game Over
+            // 3. Otherwise, show standard Game Over, or PB achieved if its PB.
         } else if (gameOverTitle) {
             //if (gzTitle) gzTitle.classList.add('hidden'); // Hide Gz if it was there from before
-            gameOverTitle.textContent = "Game Over!";
+            gameOverTitle.textContent = isNewPB ? "New PB achieved!" : "Game Over!";
             gameOverTitle.classList.remove('hidden');
         }
       }
@@ -1448,20 +1447,17 @@ async function saveNormalScore(currentUsername, finalScore, finalTime) {
     if (!session) return;
     const userId = session.user.id;
 
-    // 1. Fetch current PB to check if this is actually a new record
+   // Fetch existing PB to see if this is a tie-breaker or a new high score
     const { data: record } = await supabase.from('scores')
         .select('score, time_ms')
         .eq('user_id', userId)
         .maybeSingle();
-        
-    const { data: profile } = await supabase.from('profiles')
-        .select('achievements')
-        .eq('id', userId)
-        .maybeSingle();
-    
+
     const oldBest = record?.score || 0;
-    const oldTime = record?.time_ms || NORMAL_TIME_DEFAULT;
-    let achievements = profile?.achievements || {};
+    const oldTime = record?.time_ms || 9999999;
+  
+    // Spread existing achievements so we don't lose them
+    let achievements = { ...(profile?.achievements || {}) };
 
     // --- 2. ACHIEVEMENT MILESTONES (Independent of PB) ---
     if (finalScore >= 10 && oldBest < 10) showAchievementNotification("Reach 10 Score");
@@ -1488,15 +1484,18 @@ async function saveNormalScore(currentUsername, finalScore, finalTime) {
             // We store these here too so the Profile page can show them offline
             achievements.best_score = finalScore;
             achievements.best_time = finalTime;
-            
+          
             await supabase
                 .from('profiles')
                 .update({ achievements })
                 .eq('id', userId);
+
+           return true; // PB achieved
         } else {
             console.error("Leaderboard Save Error:", scoreError.message);
         }
     }
+  return false; //not a PB
 }
 
 
@@ -2239,6 +2238,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
