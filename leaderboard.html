@@ -140,9 +140,21 @@ function getLevel(xp) {
     return 99;
 }
 
+function formatLeaderboardTime(ms) {
+    // Hide if 0, null, 9999 (Weekly default), or 9999999 (Normal default)
+    if (!ms || ms <= 0 || ms === 9999 || ms === 9999999) return "";
+    
+    const totalSeconds = ms / 1000;
+    const timeStr = totalSeconds < 60 
+        ? totalSeconds.toFixed(2) + "s" 
+        : `${Math.floor(totalSeconds / 60)}:${(totalSeconds % 60).toFixed(2).toString().padStart(5, '0')}`;
+    
+    return ` <span style="font-size: 0.85em; opacity: 0.6;">(${timeStr})</span>`;
+}
+
 function updateLeaderboard(data) {
   leaderboardRows.forEach((row, i) => {
-    const entry = data[i] || { username: '', val: '', weekly_data: null };
+    const entry = data[i] || { username: '', val: '', weekly_data: null, time_ms: null };
     const userTxt = row.querySelector('.user-txt');
     const scoreSpan = row.querySelector('.score-part');
 
@@ -152,41 +164,61 @@ function updateLeaderboard(data) {
       return;
     }
 
-    // 1. Username Part (Direct text content)
     if (userTxt.textContent !== entry.username) {
         userTxt.textContent = entry.username;
     }
 
-    // 2. Score/XP Part (Calculate Target first)
     let finalHTML = "";
+    
     if (currentMode === 'xp') {
       const level = getLevel(entry.val);
       finalHTML = `${entry.val.toLocaleString()} <span style="font-size: 0.85em; opacity: 0.6;">(Lvl ${level})</span>`;
+      
     } else if (currentMode === 'weekly') {
       const s = entry.weekly_data?.score || 0;
       const t = entry.weekly_data?.time || 0;
-      const totalSeconds = t / 1000;
-      const timeStr = totalSeconds < 60 ? totalSeconds.toFixed(2) + "s" : `${Math.floor(totalSeconds / 60)}:${(totalSeconds % 60).toFixed(2).toString().padStart(5, '0')}`;
-      finalHTML = `${s.toLocaleString()} <span style="font-size: 0.85em; opacity: 0.6;">(${timeStr})</span>`;
+      // Pass true for isWeekly to check against the 9999 default
+      finalHTML = `${s.toLocaleString()}${formatLeaderboardTime(t, true)}`;
+      
     } else {
-      finalHTML = (entry.val || 0).toLocaleString();
+      // NORMAL MODE (using val and time_ms)
+      const s = entry.val || 0;
+      const t = entry.time_ms || 9999999; 
+      // Pass false for isWeekly to check against the 9999999 default
+      finalHTML = `${s.toLocaleString()}${formatLeaderboardTime(t, false)}`;
     }
-
+    
     // Anti-flicker: Only update if different
     if (scoreSpan.innerHTML !== finalHTML) {
       scoreSpan.innerHTML = finalHTML;
     }
   });
 }
-
 async function fetchLeaderboard() {
   let query;
   if (currentMode === 'score') {
-    query = supabase.from('scores').select('username, val:score').gt('score', 0).order('score', { ascending: false });
+    query = supabase
+      .from('scores')
+      .select('username, val:score, time_ms') // 1. Added time_ms to the selection
+      .gt('score', 0)
+      .order('score', { ascending: false })    // 2. Primary sort: Highest Score
+      .order('time_ms', { ascending: true }); // 3. Tie-breaker: Fastest Time (lowest ms)
+      
   } else if (currentMode === 'weekly') {
-    query = supabase.from('scores').select('username, weekly_data').not('weekly_data', 'is', null).gt('weekly_data->score', 0).order('weekly_data->score', { ascending: false }).order('weekly_data->time', { ascending: true });
+    query = supabase
+      .from('scores')
+      .select('username, weekly_data')
+      .not('weekly_data', 'is', null)
+      .gt('weekly_data->score', 0)
+      .order('weekly_data->score', { ascending: false })
+      .order('weekly_data->time', { ascending: true });
+      
   } else {
-    query = supabase.from('profiles').select('username, val:xp').gt('xp', 0).order('xp', { ascending: false });
+    query = supabase
+      .from('profiles')
+      .select('username, val:xp')
+      .gt('xp', 0)
+      .order('xp', { ascending: false });
   }
 
   const { data, error } = await query.limit(10);
@@ -227,6 +259,7 @@ if(weeklyTab) weeklyTab.onclick = () => handleTabClick('weekly', weeklyTab);
 </script>
 </body>
 </html>
+
 
 
 
