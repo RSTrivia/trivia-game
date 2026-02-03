@@ -717,6 +717,12 @@ function resetGame() {
     if (scoreDisplay) {
         scoreDisplay.textContent = `Score: 0`;
     }
+  
+    // maybe delete?
+    const gameOverTitle = document.getElementById('game-over-title');
+    const gzTitle = document.getElementById('gz-title');
+    if (gameOverTitle) gameOverTitle.classList.add('hidden');
+    if (gzTitle) gzTitle.classList.add('hidden');
 }
 
 async function preloadNextQuestions() {
@@ -1312,10 +1318,12 @@ async function endGame() {
       }
        
     } else { 
+        // --- NORMAL MODE ---
         if (streakContainer) streakContainer.style.display = 'none';
         if (playAgainBtn) playAgainBtn.classList.remove('hidden');
-        // Add 'const' here to define the variable properly
+        // 1. Calculate the time
         const finalTime = Date.now() - gameStartTime;
+        const totalSeconds = finalTime / 1000;
         // Initialize as false first thing
         let isNewPB = false;
         // Trigger the high-score save
@@ -1323,6 +1331,23 @@ async function endGame() {
             // We pass the current username, and the score achieved
             isNewPB = await saveNormalScore(username, score, finalTime);
         }
+
+      // 2. Format and Show the Time (Exactly like weekly mode)
+        let formattedTime;
+        if (totalSeconds < 60) {
+            formattedTime = totalSeconds.toFixed(2) + "s";
+        } else {
+            const mins = Math.floor(totalSeconds / 60);
+            const secs = (totalSeconds % 60).toFixed(2);
+            formattedTime = `${mins}:${secs.toString().padStart(5, '0')}`; 
+        }
+
+        const finalTimeEl = document.getElementById('finalTime');
+        const weeklyTimeContainer = document.getElementById('weeklyTimeContainer');
+        
+        if (finalTimeEl) finalTimeEl.textContent = formattedTime;
+        if (weeklyTimeContainer) weeklyTimeContainer.style.display = 'block'; // SHOW IT HERE
+
       // 2. Check for Gz! (Completion) first
         if (score > 0 && remainingQuestions.length === 0 && preloadQueue.length === 0) {
             if (gzTitle) {
@@ -2244,6 +2269,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
