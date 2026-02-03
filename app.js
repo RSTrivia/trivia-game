@@ -1446,32 +1446,35 @@ function setupRealtimeSync(userId) {
 
 async function saveNormalScore(currentUsername, finalScore, finalTime) {
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
+    if (!session) return false;
     const userId = session.user.id;
 
-   // Fetch existing PB to see if this is a tie-breaker or a new high score
-    const { data: record } = await supabase.from('scores')
-        .select('score, time_ms')
-        .eq('user_id', userId)
-        .maybeSingle();
+    // 1. Fetch both the Leaderboard record AND the Profile data
+    // This fixes the "profile is not defined" error
+    const [recordResponse, profileResponse] = await Promise.all([
+        supabase.from('scores').select('score, time_ms').eq('user_id', userId).maybeSingle(),
+        supabase.from('profiles').select('achievements').eq('id', userId).maybeSingle()
+    ]);
+
+    const record = recordResponse.data;
+    const profile = profileResponse.data;
 
     const oldBest = record?.score || 0;
     const oldTime = record?.time_ms || 9999999;
-  
-    // Spread existing achievements so we don't lose them
+    
+    // Safely grab existing achievements or start fresh
     let achievements = { ...(profile?.achievements || {}) };
 
-    // --- 2. ACHIEVEMENT MILESTONES (Independent of PB) ---
+    // --- 2. ACHIEVEMENT MILESTONES ---
     if (finalScore >= 10 && oldBest < 10) showAchievementNotification("Reach 10 Score");
     if (finalScore >= 50 && oldBest < 50) showAchievementNotification("Reach 50 Score");
     if (finalScore >= 100 && oldBest < 100) showAchievementNotification("Reach 100 Score");
 
-    // --- 3. PB LOGIC (Score > Old OR Score == Old and Time < Old) ---
+    // --- 3. PB LOGIC ---
     const isHigherScore = finalScore > oldBest;
     const isFasterTime = (finalScore === oldBest && finalTime < oldTime);
 
     if (isHigherScore || isFasterTime) {
-        // Update the 'scores' table (Leaderboard source)
         const { error: scoreError } = await supabase
             .from('scores')
             .upsert({ 
@@ -1482,22 +1485,23 @@ async function saveNormalScore(currentUsername, finalScore, finalTime) {
             }, { onConflict: 'user_id' });
 
         if (!scoreError) {
-            // Update the 'profiles' table (Achievement/Stats source)
-            // We store these here too so the Profile page can show them offline
+            // Update the local object
             achievements.best_score = finalScore;
             achievements.best_time = finalTime;
           
+            // Save updated achievements back to profile
             await supabase
                 .from('profiles')
                 .update({ achievements })
                 .eq('id', userId);
 
-           return true; // PB achieved
+            return true; // PB achieved!
         } else {
             console.error("Leaderboard Save Error:", scoreError.message);
         }
     }
-  return false; //not a PB
+    
+    return false; // Not a PB
 }
 
 
@@ -2240,6 +2244,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
