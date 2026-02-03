@@ -1443,13 +1443,12 @@ function setupRealtimeSync(userId) {
     return channel;
 }
 
-async function saveNormalScore(currentUsername, finalScore) {
+async function saveNormalScore(currentUsername, finalScore, finalTime) {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
     const userId = session.user.id;
 
-    // 1. Fetch current High Score, Time, and Achievement data
-    // Added 'time_ms' to the select
+    // 1. Fetch current High Score and Achievement data
     const { data: record } = await supabase.from('scores')
         .select('score, time_ms')
         .eq('user_id', userId)
@@ -1461,47 +1460,47 @@ async function saveNormalScore(currentUsername, finalScore) {
         .maybeSingle();
     
     const oldBest = record?.score || 0;
-    const oldTime = record?.time_ms || 9999999; // Default to a very high number
+    const oldTime = record?.time_ms || 9999999;
     let achievements = profile?.achievements || {};
 
-    // --- 2. MILESTONE CHECK (Logic remains independent of High Score update) ---
-    // This triggers even if they don't beat their High Score, 
-    // but only if they haven't seen the notification before.
+    // --- 2. MILESTONE CHECK ---
     if (finalScore >= 10 && oldBest < 10) showAchievementNotification("Reach 10 Score");
     if (finalScore >= 50 && oldBest < 50) showAchievementNotification("Reach 50 Score");
     if (finalScore >= 100 && oldBest < 100) showAchievementNotification("Reach 100 Score");
-    if (finalScore >= number_of_questions && oldBest < number_of_questions) showAchievementNotification("Reach Max Score");
+    
+    // Ensure you check if number_of_questions exists
+    if (typeof number_of_questions !== 'undefined' && finalScore >= number_of_questions && oldBest < number_of_questions) {
+        showAchievementNotification("Reach Max Score");
+    }
 
     // --- 3. LEADERBOARD UPDATE LOGIC ---
-    // Condition A: Higher score than previous best
-    // Condition B: Same score, but faster time (lower ms)
     const isHigherScore = finalScore > oldBest;
     const isFasterTime = (finalScore === oldBest && finalTime < oldTime);
 
     if (isHigherScore || isFasterTime) {
+        // We only send the raw integers to the 'scores' table
         const { error: scoreError } = await supabase
             .from('scores')
             .upsert({ 
                 user_id: userId, 
                 username: currentUsername, 
-                score: finalScore,
-                time_ms: finalTime // Saving the new time column
+                score: parseInt(finalScore), // Force integer
+                time_ms: parseInt(finalTime) // Force integer
             }, { onConflict: 'user_id' });
 
         if (scoreError) {
             console.error("Leaderboard Save Error:", scoreError.message);
         } else {
             // --- 4. PROFILE SYNC ---
-            // Update achievements to keep profile in sync with leaderboard
+            // Update the achievements object with the new PB data
             achievements.best_score = finalScore;
-            achievements.best_time = finalTime; // Also saving time to profile
+            achievements.best_time = finalTime;
             
+            // This updates the JSONB column in the profiles table
             await supabase
                 .from('profiles')
-                .update({ achievements })
+                .update({ achievements: achievements }) 
                 .eq('id', userId);
-                
-            // console.log(isHigherScore ? "New High Score!" : "New Best Time for this Score!");
         }
     }
 }
@@ -2245,6 +2244,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
