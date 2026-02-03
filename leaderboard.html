@@ -141,15 +141,20 @@ function getLevel(xp) {
 }
 
 function formatLeaderboardTime(ms) {
-    // Hide if 0, null, 9999 (Weekly default), or 9999999 (Normal default)
+    // Hide if 0, null, or the default "empty" values
     if (!ms || ms <= 0 || ms === 9999 || ms === 9999999) return "";
     
     const totalSeconds = ms / 1000;
-    const timeStr = totalSeconds < 60 
-        ? totalSeconds.toFixed(2) + "s" 
-        : `${Math.floor(totalSeconds / 60)}:${(totalSeconds % 60).toFixed(2).toString().padStart(5, '0')}`;
     
-    return ` <span style="font-size: 0.85em; opacity: 0.6;">(${timeStr})</span>`;
+    if (totalSeconds < 60) {
+        // Format: 45.23s
+        return ` <span style="font-size: 0.85em; opacity: 0.6;">(${totalSeconds.toFixed(2)}s)</span>`;
+    } else {
+        // Format: 1:23.34
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = (totalSeconds % 60).toFixed(2).padStart(5, '0');
+        return ` <span style="font-size: 0.85em; opacity: 0.6;">(${minutes}:${seconds})</span>`;
+    }
 }
 
 function updateLeaderboard(data) {
@@ -178,14 +183,14 @@ function updateLeaderboard(data) {
       const s = entry.weekly_data?.score || 0;
       const t = entry.weekly_data?.time || 0;
       // Pass true for isWeekly to check against the 9999 default
-      finalHTML = `${s.toLocaleString()}${formatLeaderboardTime(t, true)}`;
+      finalHTML = `${s.toLocaleString()}${formatLeaderboardTime(t)}`;
       
     } else {
       // NORMAL MODE (using val and time_ms)
       const s = entry.val || 0;
-      const t = entry.time_ms || 9999999; 
+      const t = entry.time_ms || 0; 
       // Pass false for isWeekly to check against the 9999999 default
-      finalHTML = `${s.toLocaleString()}${formatLeaderboardTime(t, false)}`;
+      finalHTML = `${s.toLocaleString()}${formatLeaderboardTime(t)}`;
     }
     
     // Anti-flicker: Only update if different
@@ -259,6 +264,7 @@ if(weeklyTab) weeklyTab.onclick = () => handleTabClick('weekly', weeklyTab);
 </script>
 </body>
 </html>
+
 
 
 
