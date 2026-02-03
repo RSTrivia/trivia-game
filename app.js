@@ -335,10 +335,16 @@ async function init() {
         await loadSounds();
         
         isDailyMode = true;
-        isWeeklyMode = false; // Important to reset this here!
+        isWeeklyMode = false; 
+        preloadQueue = []; // Clear old stuff
 
-        // 6. START THE GAME
-        startDailyChallenge(); 
+        try {
+            // We await the setup of IDs and the first batch of preloads
+            await startDailyChallenge(); 
+        } catch (err) {
+            console.error("Daily start failed:", err);
+            dailyBtn.classList.remove('loading');
+        }
     }; 
 }
 
@@ -2169,20 +2175,22 @@ async function startDailyChallenge() {
 
     const shuffledList = shuffleWithSeed(allQuestions, cycleNumber);
     const dailyIds = shuffledList.slice(dayInCycle * questionsPerDay, (dayInCycle * questionsPerDay) + questionsPerDay).map(q => q.id);
-
-    // 4. UI Transition
+  
+    // 4. PREPARE THE DATA (Background)
     isDailyMode = true;
     isWeeklyMode = false;
-    preloadQueue = []; // Clear the "Standard" questions out
+    preloadQueue = []; 
+    remainingQuestions = dailyIds;
+      
+    // 5. Start the engine
+    await preloadNextQuestions();
+  
+    // 6. UI TRANSITION (Only happens once data is ready)
     resetGame();
-    remainingQuestions = dailyIds; // Assign the specific 10 IDs
-    
     document.body.classList.add('game-active'); 
     document.getElementById('start-screen').classList.add('hidden');
     game.classList.remove('hidden');
-    
-    // 5. Start the engine
-    await preloadNextQuestions();
+
     loadQuestion();
 }
 
@@ -2284,6 +2292,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
