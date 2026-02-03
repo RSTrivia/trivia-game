@@ -1448,7 +1448,7 @@ async function saveNormalScore(currentUsername, finalScore, finalTime) {
     if (!session) return;
     const userId = session.user.id;
 
-    // 1. Fetch current High Score and Achievement data
+    // 1. Fetch current PB to check if this is actually a new record
     const { data: record } = await supabase.from('scores')
         .select('score, time_ms')
         .eq('user_id', userId)
@@ -1460,50 +1460,45 @@ async function saveNormalScore(currentUsername, finalScore, finalTime) {
         .maybeSingle();
     
     const oldBest = record?.score || 0;
-    const oldTime = record?.time_ms || 9999999;
+    const oldTime = record?.time_ms || NORMAL_TIME_DEFAULT;
     let achievements = profile?.achievements || {};
 
-    // --- 2. MILESTONE CHECK ---
+    // --- 2. ACHIEVEMENT MILESTONES (Independent of PB) ---
     if (finalScore >= 10 && oldBest < 10) showAchievementNotification("Reach 10 Score");
     if (finalScore >= 50 && oldBest < 50) showAchievementNotification("Reach 50 Score");
     if (finalScore >= 100 && oldBest < 100) showAchievementNotification("Reach 100 Score");
-    
-    // Ensure you check if number_of_questions exists
-    if (typeof number_of_questions !== 'undefined' && finalScore >= number_of_questions && oldBest < number_of_questions) {
-        showAchievementNotification("Reach Max Score");
-    }
 
-    // --- 3. LEADERBOARD UPDATE LOGIC ---
+    // --- 3. PB LOGIC (Score > Old OR Score == Old and Time < Old) ---
     const isHigherScore = finalScore > oldBest;
     const isFasterTime = (finalScore === oldBest && finalTime < oldTime);
 
     if (isHigherScore || isFasterTime) {
-        // We only send the raw integers to the 'scores' table
+        // Update the 'scores' table (Leaderboard source)
         const { error: scoreError } = await supabase
             .from('scores')
             .upsert({ 
                 user_id: userId, 
                 username: currentUsername, 
-                score: parseInt(finalScore), // Force integer
-                time_ms: parseInt(finalTime) // Force integer
+                score: finalScore,
+                time_ms: finalTime 
             }, { onConflict: 'user_id' });
 
-        if (scoreError) {
-            console.error("Leaderboard Save Error:", scoreError.message);
-        } else {
-            // --- 4. PROFILE SYNC ---
-            // Update the achievements object with the new PB data
+        if (!scoreError) {
+            // Update the 'profiles' table (Achievement/Stats source)
+            // We store these here too so the Profile page can show them offline
             achievements.best_score = finalScore;
             achievements.best_time = finalTime;
             
-            // This updates the JSONB column in the profiles table
             await supabase
                 .from('profiles')
-                .update({ achievements: achievements }) 
+                .update({ achievements })
                 .eq('id', userId);
+        } else {
+            console.error("Leaderboard Save Error:", scoreError.message);
         }
     }
 }
+
 
 function getWeeklySliceIndex(totalQuestions, WEEKLY_LIMIT) {
     const now = new Date();
@@ -2244,6 +2239,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
