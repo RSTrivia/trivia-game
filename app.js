@@ -723,6 +723,9 @@ function resetGame() {
     const gzTitle = document.getElementById('gz-title');
     if (gameOverTitle) gameOverTitle.classList.add('hidden');
     if (gzTitle) gzTitle.classList.add('hidden');
+
+    // reset time container
+    if (weeklyTimeContainer) weeklyTimeContainer.style.display = 'none';
 }
 
 async function preloadNextQuestions() {
@@ -845,7 +848,11 @@ async function loadQuestion() {
         await endGame();
         return;
     }
-  
+    // Normal Mode "Out of questions" check
+    if (preloadQueue.length === 0 && remainingQuestions.length === 0 && currentQuestion !== null) {
+        await endGame();
+        return;
+    }
     // A. IMMEDIATE CLEANUP
     questionImage.style.display = 'none';
     questionImage.style.opacity = '0';
@@ -1211,13 +1218,6 @@ async function endGame() {
     const randomMsg = options[Math.floor(Math.random() * options.length)];
     const streakContainer = document.getElementById('dailyStreakContainer');
     const streakCount = document.getElementById('streakCount');
-    
-    // 2. WIPE GAME UI IMMEDIATELY 
-    // This prevents seeing old questions/answers behind the transition
-    questionText.textContent = ''; 
-    answersBox.innerHTML = '';
-    questionImage.style.display = 'none';
-    questionImage.src = ''; 
 
     // RESET WEEKLY UI (Crucial Fix)
     // We hide this immediately so it doesn't leak into Normal/Daily modes
@@ -1374,6 +1374,14 @@ async function endGame() {
         document.body.classList.remove('game-active'); 
         game.classList.add('hidden');
         endScreen.classList.remove('hidden');
+
+        // 2. WIPE GAME UI IMMEDIATELY 
+        // This prevents seeing old questions/answers behind the transition
+        questionText.textContent = ''; 
+        answersBox.innerHTML = '';
+        questionImage.style.display = 'none';
+        questionImage.src = ''; 
+      
         updateShareButtonState();
         gameEnding = false;
     });
@@ -2269,6 +2277,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
