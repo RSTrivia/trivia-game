@@ -718,6 +718,12 @@ function resetGame() {
         scoreDisplay.textContent = `Score: 0`;
     }
   
+    // Image cleanup
+    questionImage.style.display = 'none';
+    questionImage.style.opacity = '0';
+    // Use a blank transparent pixel to clear the previous image immediately
+    questionImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+  
     // maybe delete?
     const gameOverTitle = document.getElementById('game-over-title');
     const gzTitle = document.getElementById('gz-title');
@@ -790,50 +796,45 @@ async function preloadNextQuestions() {
 
 async function startGame() {
     try {
-        document.body.classList.add('game-active');
-        gameEnding = false;
-        game.classList.remove('hidden');
-        document.getElementById('start-screen').classList.add('hidden');
-        endScreen.classList.add('hidden');
-
-        // --- THE POOL FIX ---
-        
-        // Step A: If we've NEVER fetched questions (first load), get all 510 IDs
+        // 1. DATA PREP (Background - User still sees Start Screen)
         if (masterQuestionPool.length === 0) {
             const { data: idList, error } = await supabase.from('questions').select('id');
             if (error) throw error;
             masterQuestionPool = idList.map(q => q.id);
         }
 
-        // Step B: Every time a NEW GAME starts, we refill remainingQuestions from the pool
-        // This ensures Game 2 starts with a full deck of 510 again.
         remainingQuestions = [...masterQuestionPool].sort(() => Math.random() - 0.5);
-
-        // Step C: If we have leftovers in the preloadQueue from a previous game,
-        // remove those specific IDs from our new remainingQuestions list 
-        // so they don't appear twice in the same game.
         const bufferedIds = preloadQueue.map(q => q.id);
         remainingQuestions = remainingQuestions.filter(id => !bufferedIds.includes(id));
 
-        // Standard Reset
+        // 2. WAIT FOR DATA (Background - User still sees Start Screen)
+        // This is the key: we wait here while the screen hasn't changed yet
+        await preloadNextQuestions();
+
+        // 3. INTERNAL STATE RESET
         clearInterval(timer);
         score = 0;
-        streak = 0;              // Reset streak
-        dailyQuestionCount = 0;  // Reset daily count
+        streak = 0;
+        dailyQuestionCount = 0;
         currentQuestion = null;
-        // ADD THIS LINE HERE:
         gameStartTime = Date.now();
-      
-        // UI Clean
+        gameEnding = false;
+
+        // 4. UI PREP
+        // Use resetGame() or manual wipe here
         questionText.textContent = '';
         answersBox.innerHTML = '';
         questionImage.style.display = 'none';
         questionImage.src = '';
-      
         updateScore();
-        
-        // Start preloading (if buffer is < 3)
-        await preloadNextQuestions();
+
+        // 5. THE BIG SWAP (User finally sees the game)
+        document.body.classList.add('game-active');
+        game.classList.remove('hidden');
+        document.getElementById('start-screen').classList.add('hidden');
+        endScreen.classList.add('hidden');
+
+        // 6. FINISH
         loadQuestion();
 
     } catch (err) {
@@ -2277,6 +2278,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
