@@ -1316,10 +1316,12 @@ async function endGame() {
         if (playAgainBtn) playAgainBtn.classList.remove('hidden');
         // Add 'const' here to define the variable properly
         const finalTime = Date.now() - gameStartTime;
+        // Initialize as false first thing
+        let isNewPB = false;
         // Trigger the high-score save
         if (session && score > 0) {
             // We pass the current username, and the score achieved
-            const isNewPB = await saveNormalScore(username, score, finalTime);
+            isNewPB = await saveNormalScore(username, score, finalTime);
         }
       // 2. Check for Gz! (Completion) first
         if (score > 0 && remainingQuestions.length === 0 && preloadQueue.length === 0) {
@@ -2238,6 +2240,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
