@@ -380,10 +380,10 @@ if (playAgainBtn) {
     dailyQuestionCount = 0; // Don't forget this!
       
     // 2. UI RESET (The missing part)
-        resetGame(); // Use your existing resetGame function here!
-        document.getElementById('end-screen').classList.add('hidden'); // Hide End
-        document.getElementById('game').classList.remove('hidden');    // Show Game
-        document.body.classList.add('game-active');                   // Add background class   
+    resetGame(); // Use your existing resetGame function here!
+    document.getElementById('end-screen').classList.add('hidden'); // Hide End
+    document.getElementById('game').classList.remove('hidden');    // Show Game
+    document.body.classList.add('game-active');                   // Add background class   
       
     // 3. Start the correct game engine 
     if (isWeeklyMode) {
@@ -817,7 +817,6 @@ async function startGame() {
         streak = 0;
         dailyQuestionCount = 0;
         currentQuestion = null;
-        gameStartTime = Date.now();
         gameEnding = false;
 
         // 4. UI PREP
@@ -827,6 +826,9 @@ async function startGame() {
         questionImage.style.display = 'none';
         questionImage.src = '';
         updateScore();
+      
+        // This ensures the "Live" game and the "Clock" start at the exact same millisecond
+        gameStartTime = Date.now();
 
         // 5. THE BIG SWAP (User finally sees the game)
         document.body.classList.add('game-active');
@@ -2092,11 +2094,11 @@ async function startWeeklyChallenge() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return alert("Log in to play Weekly Mode!");
 
-    // 1. Load Questions (Same as Daily)
+    // Load Questions (Same as Daily)
     const { data: allQuestions } = await supabase.from('questions').select('id').order('id', { ascending: true });
     if (!allQuestions || allQuestions.length < 50) return alert("Error loading questions.");
 
-    // 2. Deterministic Weekly Selection
+    // Deterministic Weekly Selection
     const now = new Date();
     const startDate = new Date('2025-12-22'); // Keep this same as Daily for consistency
     const diffTime = Math.abs(now - startDate);
@@ -2116,19 +2118,23 @@ async function startWeeklyChallenge() {
         (weekInCycle * WEEKLY_LIMIT) + WEEKLY_LIMIT
     ).map(q => q.id);
 
-    // 3. UI Transition
+    // Setup Mode & Data
     isDailyMode = false;
     isWeeklyMode = true;
     preloadQueue = [];
-    weeklyStartTime = Date.now();
-    resetGame();
     remainingQuestions = weeklyIds; // Set the 50 Weekly IDs
-    
+
+    // PRELOAD FIRST (While still on the menu/loading)
+    await preloadNextQuestions();
+  
+    // THE UI SWAP
+    resetGame();
     document.body.classList.add('game-active'); 
     document.getElementById('start-screen').classList.add('hidden');
     game.classList.remove('hidden');
-    
-    await preloadNextQuestions();
+  
+    weeklyStartTime = Date.now(); // total weekly run time
+  
     loadQuestion();
 }
 
@@ -2278,6 +2284,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
