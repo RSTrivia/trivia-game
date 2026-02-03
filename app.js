@@ -196,6 +196,7 @@ let isDailyMode = false;
 let weeklyStartTime = 0;
 let isWeeklyMode = false;
 let weeklyQuestionCount = 0;
+let gameStartTime = 0;
 
 // ====== INITIAL UI SYNC ======
 // Replace your existing refreshAuthUI with this:
@@ -811,14 +812,18 @@ async function startGame() {
         streak = 0;              // Reset streak
         dailyQuestionCount = 0;  // Reset daily count
         currentQuestion = null;
-        updateScore();
-        
+      
         // UI Clean
         questionText.textContent = '';
         answersBox.innerHTML = '';
         questionImage.style.display = 'none';
         questionImage.src = '';
-
+      
+        // ADD THIS LINE HERE:
+        gameStartTime = Date.now();
+      
+        updateScore();
+        
         // Start preloading (if buffer is < 3)
         await preloadNextQuestions();
         loadQuestion();
@@ -1208,7 +1213,7 @@ async function endGame() {
     answersBox.innerHTML = '';
     questionImage.style.display = 'none';
     questionImage.src = ''; 
-  
+
     // RESET WEEKLY UI (Crucial Fix)
     // We hide this immediately so it doesn't leak into Normal/Daily modes
     if (weeklyTimeContainer) weeklyTimeContainer.style.display = 'none';
@@ -1310,10 +1315,12 @@ async function endGame() {
     } else { 
         if (streakContainer) streakContainer.style.display = 'none';
         if (playAgainBtn) playAgainBtn.classList.remove('hidden');
+        // Add 'const' here to define the variable properly
+        const finalTime = Date.now() - gameStartTime;
         // Trigger the high-score save
         if (session && score > 0) {
             // We pass the current username, and the score achieved
-            saveNormalScore(username, score);
+            saveNormalScore(username, score, finalTime);
         }
       // 2. Check for Gz! (Completion) first
         if (score > 0 && remainingQuestions.length === 0 && preloadQueue.length === 0) {
@@ -1441,11 +1448,20 @@ async function saveNormalScore(currentUsername, finalScore) {
     if (!session) return;
     const userId = session.user.id;
 
-    // 1. Fetch current High Score and Achievement data
-    const { data: record } = await supabase.from('scores').select('score').eq('user_id', userId).maybeSingle();
-    const { data: profile } = await supabase.from('profiles').select('achievements').eq('id', userId).maybeSingle();
+    // 1. Fetch current High Score, Time, and Achievement data
+    // Added 'time_ms' to the select
+    const { data: record } = await supabase.from('scores')
+        .select('score, time_ms')
+        .eq('user_id', userId)
+        .maybeSingle();
+        
+    const { data: profile } = await supabase.from('profiles')
+        .select('achievements')
+        .eq('id', userId)
+        .maybeSingle();
     
     const oldBest = record?.score || 0;
+    const oldTime = record?.time_ms || 9999999; // Default to a very high number
     let achievements = profile?.achievements || {};
 
     // --- 2. MILESTONE CHECK (Logic remains independent of High Score update) ---
@@ -1456,29 +1472,36 @@ async function saveNormalScore(currentUsername, finalScore) {
     if (finalScore >= 100 && oldBest < 100) showAchievementNotification("Reach 100 Score");
     if (finalScore >= number_of_questions && oldBest < number_of_questions) showAchievementNotification("Reach Max Score");
 
-    // --- 3. LEADERBOARD UPDATE (Matches your original logic exactly) ---
-    if (!record || finalScore > record.score) {
+    // --- 3. LEADERBOARD UPDATE LOGIC ---
+    // Condition A: Higher score than previous best
+    // Condition B: Same score, but faster time (lower ms)
+    const isHigherScore = finalScore > oldBest;
+    const isFasterTime = (finalScore === oldBest && finalTime < oldTime);
+
+    if (isHigherScore || isFasterTime) {
         const { error: scoreError } = await supabase
             .from('scores')
             .upsert({ 
                 user_id: userId, 
                 username: currentUsername, 
-                score: finalScore 
+                score: finalScore,
+                time_ms: finalTime // Saving the new time column
             }, { onConflict: 'user_id' });
 
         if (scoreError) {
             console.error("Leaderboard Save Error:", scoreError.message);
         } else {
-            //console.log("Personal best updated on leaderboard!");
-            
             // --- 4. PROFILE SYNC ---
-            // We update the profiles table only when a new high score is hit
-            // to keep the achievements object in sync with the leaderboard.
+            // Update achievements to keep profile in sync with leaderboard
             achievements.best_score = finalScore;
+            achievements.best_time = finalTime; // Also saving time to profile
+            
             await supabase
                 .from('profiles')
                 .update({ achievements })
                 .eq('id', userId);
+                
+            // console.log(isHigherScore ? "New High Score!" : "New Best Time for this Score!");
         }
     }
 }
@@ -2222,6 +2245,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
