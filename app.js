@@ -312,6 +312,18 @@ async function init() {
         };
     }
 
+    if (liteBtn) {
+    liteBtn.onclick = async () => {
+        isDailyMode = false;
+        isWeeklyMode = false;
+        isLiteMode = true; // Set the Lite mode flag
+
+        if (audioCtx.state === 'suspended') await audioCtx.resume();
+        loadSounds();
+        startGame();
+    };
+}
+
     if (dailyBtn) {
     dailyBtn.onclick = async () => {
         // 1. Get session
@@ -388,18 +400,7 @@ async function init() {
         }
     };
 }
-if (liteBtn) {
-    liteBtn.onclick = async () => {
-        isDailyMode = false;
-        isWeeklyMode = false;
-        isLiteMode = true; // Set the Lite mode flag
 
-        if (audioCtx.state === 'suspended') await audioCtx.resume();
-        loadSounds();
-        startGame();
-    };
-}
-  
 if (playAgainBtn) {
     playAgainBtn.onclick = async () => {
     // 1. Reset numerical state
@@ -735,7 +736,7 @@ function resetGame() {
     score = 0;
     currentQuestion = null;
     // NOTE: We do NOT reset preloadQueue here. 
-    // This allows "Play Again" to use the 2 questions already buffered.
+    // This allows "Play Again" to use the 3 questions already buffered.
 
     // 3. WIPE UI IMMEDIATELY (Prevents the flicker)
     questionText.textContent = '';
@@ -2436,6 +2437,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
