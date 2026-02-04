@@ -242,24 +242,31 @@ async function init() {
       supabase.auth.onAuthStateChange((event, session) => {
           //console.log("Auth Event:", event);
           
-         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'SIGNED_OUT') {
-          handleAuthChange(event, session);
-      }
+         if (['SIGNED_IN', 'TOKEN_REFRESHED', 'SIGNED_OUT'].includes(event)) {
+            handleAuthChange(event, session);
+        }
           
     });
   
     // 1. Get the current session
-    const { data: { session }, error } = await supabase.auth.getSession();
+    const { data: { session } } = await supabase.auth.getSession();
   
     // 2. Run the UI sync once
     if (session) {
-        // User is logged in on this device!
-        await handleAuthChange('INITIAL_LOAD', session);
-    } else {
-        // No session on this device, user is a guest
-        await handleAuthChange('SIGNED_OUT', null);
+            await handleAuthChange('INITIAL_LOAD', session);
+        } else {
+            const isActuallyLoggedOut = !localStorage.getItem('cachedUsername');
+            if (isActuallyLoggedOut) {
+                await handleAuthChange('SIGNED_OUT', null);
+            } else {
+                setTimeout(async () => {
+                    const { data: { session: delayedSession } } = await supabase.auth.getSession();
+                    if (!delayedSession) await handleAuthChange('SIGNED_OUT', null);
+                    else await handleAuthChange('TOKEN_REFRESHED', delayedSession);
+                }, 2000);
+            }
     }
-      
+          
     // 2. Auth Button (Log In / Log Out)
     authBtn.onclick = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -498,6 +505,7 @@ async function handleAuthChange(event, session) {
             localStorage.removeItem('lastDailyMessage'); 
             
             lockDailyButton();
+            updateLevelUI()
              [shareBtn, logBtn].forEach(btn => {
                       if (btn) {
                     btn.classList.add('is-disabled');
@@ -509,8 +517,8 @@ async function handleAuthChange(event, session) {
         if (span) span.textContent = ' Guest';
         if (label) label.textContent = 'Log In';
        // syncDailyButton();
-        lockDailyButton();
-        updateLevelUI()
+        //lockDailyButton();
+        //updateLevelUI()
         return; // Stop here for guests
     }
     // 1. Immediately sync with local cache so we don't overwrite the HTML script's work
@@ -2292,6 +2300,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
