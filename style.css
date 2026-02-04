@@ -1643,7 +1643,18 @@ input.input-field:-webkit-autofill:active {
 
 
 
+.button-pair {
+  display: flex;
+  gap: 10px; /* Space between the two buttons */
+  justify-content: center;
+}
 
+.button-pair .btn {
+  flex: 1; /* Makes both buttons equal width */
+  padding: 10px 5px; /* Adjust padding to fit text */
+  font-size: 0.9rem; /* Slightly smaller font to ensure text fits on one line */
+  white-space: nowrap;
+}
 
 
 
