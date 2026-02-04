@@ -17,7 +17,7 @@ let isShowingNotification = false;
 let currentMode = 'score'; // 'score' or 'xp'
 let masterQuestionPool = [];
 
-const WEEKLY_LIMIT = 50; // Change to 50 when ready to go live
+const WEEKLY_LIMIT = 3; // Change to 50 when ready to go live
 const LITE_LIMIT = 3;
 const number_of_questions = 610;
 const leaderboardRows = document.querySelectorAll('#leaderboard li');
@@ -1269,7 +1269,12 @@ async function endGame() {
     gameEnding = true;
     clearInterval(timer);
     stopTickSound();
-
+   // 1. Calculate time IMMEDIATELY for all modes
+    const endTime = Date.now();
+    const startValue = isWeeklyMode ? weeklyStartTime : gameStartTime;
+    const totalMs = endTime - startValue;
+    const totalSeconds = totalMs / 1000;
+  
     // 1. PREPARE DATA FIRST (Quietly in background)
     const { data: { session } } = await supabase.auth.getSession();
     const scoreKey = Math.min(Math.max(score, 0), 10);
@@ -1293,11 +1298,11 @@ async function endGame() {
 
     if (isWeeklyMode) {
         // Calculate time
-        const endTime = Date.now();
+        //const endTime = Date.now();
         // Format and Show the Time
         // Use raw milliseconds for precision
-        const totalMs = endTime - weeklyStartTime; 
-        const totalSeconds = totalMs / 1000;
+        //const totalMs = endTime - weeklyStartTime; 
+        //const totalSeconds = totalMs / 1000;
       
         // UI Visibility resets
         if (playAgainBtn) playAgainBtn.classList.remove('hidden');
@@ -1322,28 +1327,24 @@ async function endGame() {
             }
         }
          // Format Time
-          let formattedTime;
-          if (totalSeconds < 60) {
-            formattedTime = totalSeconds.toFixed(2) + "s";
-      } else {
-            const mins = Math.floor(totalSeconds / 60);
-            const secs = (totalSeconds % 60).toFixed(2); // Keeps the .00
-            formattedTime = `${mins}:${secs.toString().padStart(5, '0')}`; 
-      }
+          //let formattedTime;
+          //if (totalSeconds < 60) {
+            //formattedTime = totalSeconds.toFixed(2) + "s";
+      //} else {
+            //const mins = Math.floor(totalSeconds / 60);
+           // const secs = (totalSeconds % 60).toFixed(2); // Keeps the .00
+            //formattedTime = `${mins}:${secs.toString().padStart(5, '0')}`; 
+     // }
         // Update UI Elements
         // Use the elements already defined globally or fetch them specifically
-        const finalTimeEl = document.getElementById('finalTime');
-        const WeeklyTimeContainer = document.getElementById('weeklyTimeContainer');
+        //const finalTimeEl = document.getElementById('finalTime');
+        //const WeeklyTimeContainer = document.getElementById('weeklyTimeContainer');
       
-      if (finalTimeEl) finalTimeEl.textContent = formattedTime;
-      if (weeklyTimeContainer) weeklyTimeContainer.style.display = 'block';
-
+      //if (finalTimeEl) finalTimeEl.textContent = formattedTime;
+      //if (weeklyTimeContainer) weeklyTimeContainer.style.display = 'block';
+    displayFinalTime(totalMs);
     // Save Score and Check for PB
-    let isNewPB = false;
-    if (session) {
-        // return true if it was a PB
-        isNewPB = await saveWeeklyScore(session.user.id, username, score, totalMs);
-    } 
+      let isNewPB = session ? await saveWeeklyScore(session.user.id, username, score, totalMs) : false;
       // Update Titles
       if (gameOverTitle) {
           gameOverTitle.textContent = isNewPB ? "New PB achieved!" : "Weekly Challenge Complete!";
@@ -1380,27 +1381,16 @@ async function endGame() {
         // --- NORMAL OR LITE MODE ---
         if (streakContainer) streakContainer.style.display = 'none';
         if (playAgainBtn) playAgainBtn.classList.remove('hidden');
-
+        displayFinalTime(totalMs);
+      
       // 1. Lite Mode Specific Logic
         if (isLiteMode) {
-            const finalTimeMs = Date.now() - gameStartTime; // Total duration in MS
-            const bestLite = parseInt(localStorage.getItem('best_lite_score')) || 0;
-            let isLitePB = false;
-
-        if (session) {
-            // Call our new function
-            isLitePB = await saveLiteScore(session.user.id, username, score, finalTimeMs);
+            //const finalTimeMs = Date.now() - gameStartTime; // Total duration in MS
+            //const bestLite = parseInt(localStorage.getItem('best_lite_score')) || 0;
+            let isLitePB = session ? await saveLiteScore(session.user.id, username, score, totalMs) : false;
         }
             // UI Update
-          if (gameOverTitle) {
-                if (score === 100) {
-                    gameOverTitle.textContent = "Lite Mode Completed!";
-                } else {
-                    gameOverTitle.textContent = isLitePB ? "New Lite PB achieved!" : "Lite Mode Finished!";
-                }
-                gameOverTitle.classList.remove('hidden');
-          }
-
+            gameOverTitle.textContent = isLitePB ? "New Lite PB achieved!" : "Game Over!";
             // Lite Completion Achievement
             //if (session && score === 100) {
                 //showNotification("LITE COMPLETION!", bonusBuffer, "#d4af37");
@@ -1410,8 +1400,8 @@ async function endGame() {
         // end of Lite Mode
         // --- ACTUAL NORMAL MODE ---
         // 1. Calculate the time
-        const finalTime = Date.now() - gameStartTime;
-        const totalSeconds = finalTime / 1000;
+        //const finalTime = Date.now() - gameStartTime;
+        //const totalSeconds = finalTime / 1000;
         // Initialize as false first thing
         let isNewPB = false;
         // Trigger the high-score save
@@ -1419,21 +1409,6 @@ async function endGame() {
             // We pass the current username, and the score achieved
             isNewPB = await saveNormalScore(username, score, finalTime);
         }
-        // 2. Format and Show the Time (Exactly like weekly mode)
-        let formattedTime;
-        if (totalSeconds < 60) {
-            formattedTime = totalSeconds.toFixed(2) + "s";
-        } else {
-            const mins = Math.floor(totalSeconds / 60);
-            const secs = (totalSeconds % 60).toFixed(2);
-            formattedTime = `${mins}:${secs.toString().padStart(5, '0')}`; 
-        }
-
-        const finalTimeEl = document.getElementById('finalTime');
-        const weeklyTimeContainer = document.getElementById('weeklyTimeContainer');
-        
-        if (finalTimeEl) finalTimeEl.textContent = formattedTime;
-        if (weeklyTimeContainer) weeklyTimeContainer.style.display = 'block'; // SHOW IT HERE
 
       // 2. Check for Gz! (Completion) first
         if (score > 0 && remainingQuestions.length === 0 && preloadQueue.length === 0) {
@@ -1474,7 +1449,27 @@ async function endGame() {
         gameEnding = false;
     });
 }
-  
+
+function displayFinalTime(ms) {
+    const totalSeconds = ms / 1000;
+    let formattedTime;
+
+    if (totalSeconds < 60) {
+        formattedTime = totalSeconds.toFixed(2) + "s";
+    } else {
+        const mins = Math.floor(totalSeconds / 60);
+        const secs = (totalSeconds % 60).toFixed(2);
+        formattedTime = `${mins}:${secs.toString().padStart(5, '0')}`; 
+    }
+
+    const finalTimeEl = document.getElementById('finalTime');
+    const weeklyTimeContainer = document.getElementById('weeklyTimeContainer');
+    
+    if (finalTimeEl) finalTimeEl.textContent = formattedTime;
+    if (weeklyTimeContainer) weeklyTimeContainer.style.display = 'block';
+
+}
+
 async function saveLiteScore(userId, username, currentScore, timeInMs) {
     // 1. Fetch the existing Lite data
     const { data, error: fetchError } = await supabase
@@ -2438,6 +2433,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
