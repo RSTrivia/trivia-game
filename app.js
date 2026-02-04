@@ -427,6 +427,20 @@ if (scoreTab && xpTab) {
         scoreTab.classList.remove('active');
         fetchLeaderboard();
     };
+   // Realtime Sync for both tables
+supabase
+  .channel('leaderboard-sync')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'scores' }, () => {
+    if (currentMode === 'score') fetchLeaderboard();
+  })
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
+    if (currentMode === 'xp') fetchLeaderboard();
+  })
+  .subscribe();
+
+  // Trigger initial fetch
+  await fetchLeaderboard();
+}
   
   // SET UP AUTH LISTENER
       supabase.auth.onAuthStateChange((event, session) => {
@@ -474,21 +488,6 @@ if (scoreTab && xpTab) {
       }
   }
 }     
-    
-
-  // Realtime Sync for both tables
-supabase
-  .channel('leaderboard-sync')
-  .on('postgres_changes', { event: '*', schema: 'public', table: 'scores' }, () => {
-    if (currentMode === 'score') fetchLeaderboard();
-  })
-  .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
-    if (currentMode === 'xp') fetchLeaderboard();
-  })
-  .subscribe();
-
-  // Trigger initial fetch
-  await fetchLeaderboard();
   // This will check if a user is logged in and lock the button if they aren't
   await syncDailyButton();
   // This will check if a user has played daily mode already and will unlock it if they did
@@ -2310,6 +2309,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
