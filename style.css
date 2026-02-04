@@ -1011,12 +1011,6 @@ input.input-field:-webkit-autofill:active {
   }
 
 }
- /* ====== FIX POSITIONING FOR MOBILE ====== */
-}
-
-
-  
-}
 
 /* Keep the inputs snug (overriding the 20px gap for just the inputs) */
 #app.login-page .login-container .row:has(.input-field) {
@@ -1707,6 +1701,7 @@ input.input-field:-webkit-autofill:active {
   font-size: 1rem; /* Slightly smaller than the massive 1.1rem to ensure it fits mobile */
   white-space: nowrap;
 }
+
 
 
 
