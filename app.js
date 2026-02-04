@@ -1388,13 +1388,20 @@ async function endGame() {
             //const bestLite = parseInt(localStorage.getItem('best_lite_score')) || 0;
             let isLitePB = session ? await saveLiteScore(session.user.id, username, score, totalMs) : false;
         
-            // UI Update
-            gameOverTitle.textContent = isLitePB ? "New Lite PB achieved!" : "Game Over!";
-            // Lite Completion Achievement
-            //if (session && score === 100) {
-                //showNotification("LITE COMPLETION!", bonusBuffer, "#d4af37");
-                //saveAchievement('lite_completed', true);
-           // }
+           // 2. Update UI IMMEDIATELY 
+            if (gameOverTitle) {
+                if (isLitePB) {
+                    // Prioritize the PB message
+                    gameOverTitle.textContent = "New PB achieved!";
+                } else if (score === 100) {
+                    // If it's not a PB, but they still finished
+                    gameOverTitle.textContent = "Lite Mode Completed!";
+                } else {
+                        // Standard fail
+                        gameOverTitle.textContent = "Game Over!";
+                    }
+                gameOverTitle.classList.remove('hidden');
+            }
         } else {
         // end of Lite Mode
         // --- ACTUAL NORMAL MODE ---
@@ -2432,6 +2439,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
