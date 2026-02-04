@@ -2170,6 +2170,10 @@ async function startWeeklyChallenge() {
     weeklyStartTime = Date.now(); // total weekly run time
   
     loadQuestion();
+  
+    // FILL THE REST IN THE BACKGROUND
+    // We don't 'await' this; it runs while the user is looking at question 1
+    preloadNextQuestions(3);
 }
 
 
@@ -2203,13 +2207,13 @@ async function startDailyChallenge() {
 
     const shuffledList = shuffleWithSeed(allQuestions, cycleNumber);
     const dailyIds = shuffledList.slice(dayInCycle * questionsPerDay, (dayInCycle * questionsPerDay) + questionsPerDay).map(q => q.id);
-  
+
     // 4. PREPARE THE DATA (Background)
     isDailyMode = true;
     isWeeklyMode = false;
     preloadQueue = []; 
-    remainingQuestions = dailyIds;
-      
+    remainingQuestions = dailyIds;   
+  
     // 5. Start the engine
     //await preloadNextQuestions();
     // FETCH ONLY THE FIRST QUESTION IMMEDIATELY
@@ -2225,6 +2229,10 @@ async function startDailyChallenge() {
     game.classList.remove('hidden');
 
     loadQuestion();
+  
+    // FILL THE REST IN THE BACKGROUND
+    // We don't 'await' this; it runs while the user is looking at question 1
+    preloadNextQuestions(3);
 }
 
 function shuffleWithSeed(array, seed) {
@@ -2325,6 +2333,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
