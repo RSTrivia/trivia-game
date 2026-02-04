@@ -1327,7 +1327,7 @@ async function endGame() {
         if (session && score >= 50) {
             await saveAchievement('weekly_50', true);
             if (totalSeconds <= 120) await saveAchievement('weekly_sub_2', true);
-            else if (totalSeconds <= 180) await saveAchievement('weekly_sub_3', true);
+            if (totalSeconds <= 180) await saveAchievement('weekly_sub_3', true);
         }
     
       displayFinalTime(totalMs);
@@ -1379,7 +1379,7 @@ async function endGame() {
             if (session && score >= 5) { //change to 100 score
                 await saveAchievement('lite_100', true);
                 if (totalSeconds <= 240) await saveAchievement('lite_sub_4', true);
-                else if (totalSeconds <= 360) await saveAchievement('lite_sub_6', true);
+                if (totalSeconds <= 360) await saveAchievement('lite_sub_6', true);
             }
           
             let isLitePB = session ? await saveLiteScore(session.user.id, username, score, totalMs) : false;
@@ -2452,6 +2452,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
