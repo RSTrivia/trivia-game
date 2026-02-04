@@ -1646,50 +1646,6 @@ input.input-field:-webkit-autofill:active {
 
 
 
-/* 1. Lite Button */
-#liteBtn.lite-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 14px 0 !important;
-    width: 100%;
-    border-radius: 8px;
-    font-size: 1.1rem;
-    background: rgba(0, 0, 0, 0.4); 
-    border: 2px solid #444;
-    color: #666;
-    pointer-events: none;
-    transition: 0.2s;
-    cursor: pointer;
-}
-
-/* 1. The ACTIVE state (Only works if the class is present) */
-#liteBtn.lite-btn.is-active {
-    background: rgba(0, 0, 0, 0.6) !important;
-    border: 2px solid #d4af37 !important;
-    color: #d4af37 !important;
-    opacity: 1 !important;
-    pointer-events: auto !important;
-}
-
-
-/* 3. The HOVER state (The highlight you were missing) */
-#liteBtn.lite-btn.is-active:hover {
-    background: rgba(0, 0, 0, 0.85) !important;
-    border-color: #ffea8a !important;
-    color: #ffea8a !important;
-}
-
-/* 3. Handle the tapped state for mobile feedback */
-#liteBtn.tapped {
-    background-color: rgba(212, 175, 55, 0.2) !important;
-    transform: scale(0.96);
-}
-
-
-
-
-
 
 
 
