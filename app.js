@@ -4,6 +4,7 @@ const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
 // ====== UI & STATE ======
 const cachedMuted = localStorage.getItem('muted') === 'true';
+let dailySubscription = null; // Track this globally to prevent duplicates
 let streak = 0;              // Tracking for normal game bonus
 let dailyQuestionCount = 0;   // Tracking for daily bonus
 let currentDailyStreak = 0; 
@@ -52,7 +53,7 @@ const dailyMessages = {
     "It can only go higher from here.",
     "Buying brain for 10k?",
     "Your hitpoints reached 0. Oh dear.",
-    "You splashed!",
+    "You're splashing on a seagull in Port Sarim.",
     "This score is lower than the chances of a 3rd Age Pickaxe."
   ],
   1: [
@@ -2291,9 +2292,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
-
-
-
 
 
 
