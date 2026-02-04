@@ -18,7 +18,7 @@ let currentMode = 'score'; // 'score' or 'xp'
 let masterQuestionPool = [];
 
 const WEEKLY_LIMIT = 3; // Change to 50 when ready to go live
-const LITE_LIMIT = 3;
+const LITE_LIMIT = 3; // Change to 100 when ready to go live
 const number_of_questions = 610;
 const leaderboardRows = document.querySelectorAll('#leaderboard li');
 const scoreTab = document.getElementById('scoreTab');
@@ -909,6 +909,11 @@ async function loadQuestion() {
         await endGame();
         return;
     }
+  // check for lite mode completion
+  if (isLiteMode && score >= LITE_LIMIT) {
+        await endGame();
+        return;
+    }
     // Normal Mode "Out of questions" check
     if (preloadQueue.length === 0 && remainingQuestions.length === 0 && currentQuestion !== null) {
         await endGame();
@@ -1113,7 +1118,7 @@ async function checkAnswer(choiceId, btn) {
             // Challenges keep going until the limit is reached
             setTimeout(loadQuestion, 1500);
         } else {
-            // Only Normal Mode ends on a wrong answer
+            // Only Normal and Lite modes end on a wrong answer
             setTimeout(endGame, 1000);
         }
     }
@@ -2427,6 +2432,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
