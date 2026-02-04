@@ -1086,6 +1086,11 @@ async function checkAnswer(choiceId, btn) {
                 saveAchievement('just_in_time', true); // 2. Just in Time
             }
 
+            // halfway 50/100 lite mode score
+            if (isLiteMode && score === 50) {
+                saveAchievement('lite_50', true); // Sync to Supabase
+            }
+          
             // halfway 25/50 weekly mode score
             if (isWeeklyMode && score === 25) {
                 saveAchievement('weekly_25', true); // Sync to Supabase
@@ -1369,6 +1374,13 @@ async function endGame() {
       
       // 1. Lite Mode Specific Logic
         if (isLiteMode) {
+            
+          // --- ACHIEVEMENTS CHECK ---
+            if (session && score >= 100) {
+                await saveAchievement('lite_50', true);
+                if (totalSeconds <= 240) await saveAchievement('lite_sub_4', true);
+                else if (totalSeconds <= 360) await saveAchievement('lite_sub_6', true);
+            }
           
             let isLitePB = session ? await saveLiteScore(session.user.id, username, score, totalMs) : false;
         
@@ -1921,7 +1933,24 @@ async function saveAchievement(key, value) {
         isNewAchievement = true;
         notificationText = "GM speedrunner 50/50 sub 2m";
     }
-
+  // --- Lite Mode Boolean Achievements ---
+    else if (key === 'lite_50' && !achievements[key]) {
+        isNewAchievement = true;
+        notificationText = "Halfway 50/100";
+    }
+    else if (key === 'lite_100' && !achievements[key]) {
+        isNewAchievement = true;
+        notificationText = "Perfect 100/100";
+    }
+    else if (key === 'lite_sub_4' && !achievements[key]) {
+        isNewAchievement = true;
+        notificationText = "Speedrunner 100/100 sub 4m";
+    }
+    else if (key === 'lite_sub_6' && !achievements[key]) {
+        isNewAchievement = true;
+        notificationText = "GM speedrunner 100/100 sub 6m";
+    }
+  
     // 4. EXECUTE SAVING
     if (isNewAchievement) {
         if (typeof showAchievementNotification === "function") {
@@ -2423,6 +2452,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
