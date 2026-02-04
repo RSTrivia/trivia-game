@@ -252,26 +252,34 @@ async function init() {
     const { data: { session }, error } = await supabase.auth.getSession();
   
     // 2. Run the UI sync once
-    if (session) {
-        // Found a valid session in LocalStorage!
-        await handleAuthChange('INITIAL_LOAD', session);
-    } else {
-        // No session found. Check if we have a "remembered" username.
-        // If we do, maybe give it a second to refresh before showing "Guest"
-        const isActuallyLoggedOut = !localStorage.getItem('cachedUsername');
-        
-        if (isActuallyLoggedOut) {
-            await handleAuthChange('SIGNED_OUT', null);
-        } else {
-            // We have a cached user, but the session is missing/refreshing.
-            // Don't wipe the UI yet. Try one last check in 2 seconds.
-            setTimeout(async () => {
-                const { data: { secondCheck } } = await supabase.auth.getSession();
-                if (!secondCheck) await handleAuthChange('SIGNED_OUT', null);
-            }, 2000);
-        }
-    }
+  if (session) {
+      // Found a valid session in LocalStorage!
+      await handleAuthChange('INITIAL_LOAD', session);
+  } else {
+      // Check if we have a "remembered" username from a previous login
+      const isActuallyLoggedOut = !localStorage.getItem('cachedUsername');
       
+      if (isActuallyLoggedOut) {
+          // No session AND no cache? They are definitely a Guest.
+          await handleAuthChange('SIGNED_OUT', null);
+      } else {
+          // We have a cached user, but the session is currently null.
+          // This happens on mobile while Supabase refreshes the token.
+          // We wait 2 seconds before giving up and forcing Guest mode.
+          setTimeout(async () => {
+              const { data: { session: delayedSession } } = await supabase.auth.getSession();
+              
+              if (!delayedSession) {
+                  // Still no session after 2 seconds? Okay, log them out.
+                  await handleAuthChange('SIGNED_OUT', null);
+              } else {
+                  // Session found! Update the UI.
+                  await handleAuthChange('TOKEN_REFRESHED', delayedSession);
+              }
+          }, 2000);
+      }
+  }
+        
     // 2. Auth Button (Log In / Log Out)
     authBtn.onclick = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -497,13 +505,12 @@ async function handleAuthChange(event, session) {
     if (!session) {
         // IMPORTANT: Only wipe if we are CERTAIN this is an intentional logout
         // and not just a slow connection.
-        if (event === 'SIGNED_OUT' || event === 'INITIAL_LOAD') {
+        if (event === 'SIGNED_OUT') {
             username = 'Guest';
             currentProfileXp = 0;
             if (span) span.textContent = ' Guest';
             if (label) label.textContent = 'Log In';
-            // Wipe data ONLY on explicit sign out
-            if (event === 'SIGNED_OUT') { 
+          
               // Clear all session-specific UI and storage
               localStorage.removeItem('lastDailyScore');
               localStorage.removeItem('dailyPlayedDate');
@@ -511,6 +518,7 @@ async function handleAuthChange(event, session) {
               localStorage.removeItem('cachedUsername');
               localStorage.removeItem('lastDailyMessage'); 
               lockDailyButton();
+              updateLevelUI()
              [shareBtn, logBtn].forEach(btn => {
                       if (btn) {
                     btn.classList.add('is-disabled');
@@ -518,13 +526,10 @@ async function handleAuthChange(event, session) {
                     btn.style.pointerEvents = 'none';
                 }
             });
-          }
         }
-        //if (span) span.textContent = ' Guest';
-        //if (label) label.textContent = 'Log In';
-       // syncDailyButton();
-        lockDailyButton();
-        updateLevelUI()
+
+        //lockDailyButton();
+        //updateLevelUI()
         return; // Stop here for guests
     }
     // 1. Immediately sync with local cache so we don't overwrite the HTML script's work
@@ -2306,6 +2311,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
