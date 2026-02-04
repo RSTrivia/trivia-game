@@ -981,8 +981,19 @@ input.input-field:-webkit-autofill:active {
   body.game-active #app {
     padding-top: 25px !important;
   }
-
-  /* Ensures the name and mic row stays visible and tidy */
+  
+  /* 2. ADD THE GAP: Internal padding at the top of the box */
+  body.game-active .container {
+    padding-top: 60px !important; /* This creates the empty room you want */
+  }
+  
+  /* 3. Keep the Help Button at the very top edge of that room */
+  body.game-active #helpBtn {
+    top: 10px !important; 
+    right: 8px !important;
+  }
+  
+  /* 4. Ensures the name and mic row stays visible and tidy */
   body.game-active #user-controls {
     margin-bottom: 15px !important;
     padding-top: 5px !important;
@@ -1000,7 +1011,6 @@ input.input-field:-webkit-autofill:active {
     gap: 5px !important;
   }
   
-
   /* 3. INCREASE gap between Text and Mic */
   #userDisplay {
     /* This creates the wide gap you want without pushing buttons off-screen */
@@ -1701,6 +1711,7 @@ input.input-field:-webkit-autofill:active {
   font-size: 1rem; /* Slightly smaller than the massive 1.1rem to ensure it fits mobile */
   white-space: nowrap;
 }
+
 
 
 
