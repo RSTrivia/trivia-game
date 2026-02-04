@@ -1008,6 +1008,17 @@ input.input-field:-webkit-autofill:active {
     flex-direction: column;
     align-items: flex-start;
   }
+
+  /* This controls the gap between the very top of the phone screen and your UI */
+  body.game-active #app {
+    padding-top: 50px !important; /* INCREASE THIS VALUE for more empty space at the top */
+  }
+
+  /* This controls the gap between the User Info row and the Game Box below it */
+  body.game-active #user-controls {
+    margin-bottom: 25px !important; 
+    padding-top: 0px !important;
+  }
 }
  /* ====== FIX POSITIONING FOR MOBILE ====== */
 }
@@ -1705,6 +1716,7 @@ input.input-field:-webkit-autofill:active {
   font-size: 1rem; /* Slightly smaller than the massive 1.1rem to ensure it fits mobile */
   white-space: nowrap;
 }
+
 
 
 
