@@ -2128,15 +2128,9 @@ async function startWeeklyChallenge() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return alert("Log in to play Weekly Mode!");
 
-    // Load Questions (Same as Daily) shir
-    //const { data: allQuestions } = await supabase.from('questions').select('id').order('id', { ascending: true });
-    //if (!allQuestions || allQuestions.length < 50) return alert("Error loading questions.");
-
-    if (masterQuestionPool.length === 0) {
-      const { data: idList } = await supabase.from('questions').select('id').order('id', { ascending: true });
-      if (!idList) return alert("Error loading questions.");
-      masterQuestionPool = idList.map(q => q.id);
-  }
+    // Load Questions (Same as Daily)
+    const { data: allQuestions } = await supabase.from('questions').select('id').order('id', { ascending: true });
+    if (!allQuestions || allQuestions.length < 50) return alert("Error loading questions.");
 
     // Deterministic Weekly Selection
     const now = new Date();
@@ -2344,6 +2338,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
