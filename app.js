@@ -42,9 +42,11 @@ const timeWrap = document.getElementById('time-wrap');
 const userDisplay = document.getElementById('userDisplay');
 const authBtn = document.getElementById('authBtn');
 const muteBtn = document.getElementById('muteBtn');
+const dailyBtn = document.getElementById('dailyBtn');
 const weeklyBtn = document.getElementById('weeklyBtn');
 const liteBtn = document.getElementById('liteBtn');
-const dailyBtn = document.getElementById('dailyBtn');
+const lobbyBtn = document.getElementById('lobbyBtn');
+
 const dailyMessages = {
   0: [
     "Ouch. Zero XP gained today.",
@@ -213,6 +215,7 @@ async function syncDailyButton() {
     if (!session) {
         lockDailyButton();
         lockWeeklyButton();
+        locklobbyButton();
       // Add visual guest feedback
         dailyBtn.style.opacity = '0.5';
         dailyBtn.style.pointerEvents = 'none';
@@ -377,20 +380,6 @@ async function init() {
         // 1. Audio setup
         if (audioCtx.state === 'suspended') await audioCtx.resume();
         loadSounds();
-
-        // 2. WARM UP THE QUEUE (This is the fix)
-        // Refill the pool and buffer the first few questions
-        //if (masterQuestionPool.length === 0) {
-           // const { data: idList } = await supabase.from('questions').select('id');
-           // masterQuestionPool = idList.map(q => q.id);
-       // }
-       // remainingQuestions = [...masterQuestionPool].sort(() => Math.random() - 0.5);
-        
-        // Load the first 3 questions into memory before switching screens
-        //await preloadNextQuestions();
-      
-        // 2. Start the specific weekly logic 
-        // (This function already handles resetGame, flags, and loading)
         try {
             await startWeeklyChallenge();
         } catch (err) {
@@ -726,7 +715,13 @@ function lockWeeklyButton() {
     weeklyBtn.style.pointerEvents = 'none'; // Makes it ignore all clicks/touches
     
 }
-
+function lockLobbyButton() {
+    if (!lobbyBtn) return;
+    lobbyBtn.classList.add('disabled');
+    lobbyBtn.classList.remove('is-active');
+    lobbyBtn.style.opacity = '0.5';
+    lobbyBtn.style.pointerEvents = 'none'; // Makes it ignore all clicks/touches   
+}
 // ====== GAME ENGINE ======
 
 function resetGame() {
@@ -2428,6 +2423,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
