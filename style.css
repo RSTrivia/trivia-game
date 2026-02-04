@@ -979,7 +979,7 @@ input.input-field:-webkit-autofill:active {
   
   /* This controls the gap between the very top of the phone screen and your UI */
   body.game-active #app {
-    padding-top: 100px !important;
+    padding-top: 25px !important;
   }
 
   /* Ensures the name and mic row stays visible and tidy */
@@ -1701,6 +1701,7 @@ input.input-field:-webkit-autofill:active {
   font-size: 1rem; /* Slightly smaller than the massive 1.1rem to ensure it fits mobile */
   white-space: nowrap;
 }
+
 
 
 
