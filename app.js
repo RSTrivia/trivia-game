@@ -215,7 +215,7 @@ async function syncDailyButton() {
     if (!session) {
         lockDailyButton();
         lockWeeklyButton();
-        locklobbyButton();
+        lockLobbyButton();
       // Add visual guest feedback
         dailyBtn.style.opacity = '0.5';
         dailyBtn.style.pointerEvents = 'none';
@@ -2423,6 +2423,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
