@@ -366,14 +366,14 @@ async function init() {
 
         // 2. WARM UP THE QUEUE (This is the fix)
         // Refill the pool and buffer the first few questions
-        if (masterQuestionPool.length === 0) {
-            const { data: idList } = await supabase.from('questions').select('id');
-            masterQuestionPool = idList.map(q => q.id);
-        }
-        remainingQuestions = [...masterQuestionPool].sort(() => Math.random() - 0.5);
+        //if (masterQuestionPool.length === 0) {
+           // const { data: idList } = await supabase.from('questions').select('id');
+           // masterQuestionPool = idList.map(q => q.id);
+       // }
+       // remainingQuestions = [...masterQuestionPool].sort(() => Math.random() - 0.5);
         
         // Load the first 3 questions into memory before switching screens
-        await preloadNextQuestions();
+        //await preloadNextQuestions();
       
         // 2. Start the specific weekly logic 
         // (This function already handles resetGame, flags, and loading)
@@ -2128,9 +2128,15 @@ async function startWeeklyChallenge() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return alert("Log in to play Weekly Mode!");
 
-    // Load Questions (Same as Daily)
-    const { data: allQuestions } = await supabase.from('questions').select('id').order('id', { ascending: true });
-    if (!allQuestions || allQuestions.length < 50) return alert("Error loading questions.");
+    // Load Questions (Same as Daily) shir
+    //const { data: allQuestions } = await supabase.from('questions').select('id').order('id', { ascending: true });
+    //if (!allQuestions || allQuestions.length < 50) return alert("Error loading questions.");
+
+    if (masterQuestionPool.length === 0) {
+      const { data: idList } = await supabase.from('questions').select('id').order('id', { ascending: true });
+      if (!idList) return alert("Error loading questions.");
+      masterQuestionPool = idList.map(q => q.id);
+  }
 
     // Deterministic Weekly Selection
     const now = new Date();
@@ -2338,6 +2344,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
