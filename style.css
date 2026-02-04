@@ -1588,11 +1588,7 @@ input.input-field:-webkit-autofill:active {
 
 
 
-
-
-/* 1. The "Off" state - This is the default when the page loads */
-/* 1. The BASE state (Locked/Loading) */
-/* 1. The BASE state (Locked/Disabled) */
+/* Weekly button */
 #weeklyBtn.weekly-btn {
     display: flex;
     align-items: center;
@@ -1644,8 +1640,9 @@ input.input-field:-webkit-autofill:active {
 
 
 
-/* Weekly button */
-#weeklyBtn.lobby-btn {
+
+/* Lobby button */
+#lobbyBtn.lobby-btn {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1661,7 +1658,6 @@ input.input-field:-webkit-autofill:active {
     cursor: pointer;
 }
 
-/* Lobby button */
 #lobbyBtn.lobby-btn.is-active {
     background: rgba(0, 0, 0, 0.6) !important;
     border: 2px solid #d4af37 !important;
@@ -1710,16 +1706,6 @@ input.input-field:-webkit-autofill:active {
   white-space: nowrap;
 }
 
-/* Style for your new Lobby Button to make it look special */
-.lobby-btn {
-  background: rgba(74, 0, 0, 0.6) !important; /* Dark OSRS Red */
-  border-color: #d4af37 !important;
-}
-
-.lobby-btn:hover {
-  background: rgba(100, 0, 0, 0.8) !important;
-  border-color: #ffea8a !important;
-}
 
 
 
