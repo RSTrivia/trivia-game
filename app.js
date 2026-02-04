@@ -1297,7 +1297,18 @@ async function endGame() {
     if (weeklyTimeContainer) weeklyTimeContainer.style.display = 'none';
   
     // 3. POPULATE END SCREEN BEFORE SHOWING IT
-    if (finalScore) finalScore.textContent = score;
+    if (finalScore) {
+        if (isLiteMode) {
+            // This shows the 3/100 format ONLY on the end screen
+            finalScore.textContent = `${score}/${LITE_LIMIT}`;
+        } else if (isWeeklyMode) {
+            finalScore.textContent = `${score}/${WEEKLY_LIMIT}`;
+        } else
+            // Normal display for other modes
+            finalScore.textContent = score;
+        }
+    }
+
     const gameOverTitle = document.getElementById('game-over-title');
     const gzTitle = document.getElementById('gz-title');
 
@@ -1306,44 +1317,20 @@ async function endGame() {
     if (gzTitle) gzTitle.classList.add('hidden');
 
     if (isWeeklyMode) {
-        // Calculate time
-        //const endTime = Date.now();
-        // Format and Show the Time
-        // Use raw milliseconds for precision
-        //const totalMs = endTime - weeklyStartTime; 
-        //const totalSeconds = totalMs / 1000;
-      
+
         // UI Visibility resets
         if (playAgainBtn) playAgainBtn.classList.remove('hidden');
         if (dailyStreakContainer) dailyStreakContainer.style.display = 'none';
     
-        // Update Score (Simple text, no extra HTML injected here)
-        if (finalScore) {
-            finalScore.textContent = `${score}/${WEEKLY_LIMIT}`;
-        }
         // --- ACHIEVEMENTS CHECK ---
         if (session && score >= 50) {
             await saveAchievement('weekly_50', true);
             if (totalSeconds <= 120) await saveAchievement('weekly_sub_2', true);
             else if (totalSeconds <= 180) await saveAchievement('weekly_sub_3', true);
         }
-         // Format Time
-          //let formattedTime;
-          //if (totalSeconds < 60) {
-            //formattedTime = totalSeconds.toFixed(2) + "s";
-      //} else {
-            //const mins = Math.floor(totalSeconds / 60);
-           // const secs = (totalSeconds % 60).toFixed(2); // Keeps the .00
-            //formattedTime = `${mins}:${secs.toString().padStart(5, '0')}`; 
-     // }
-        // Update UI Elements
-        // Use the elements already defined globally or fetch them specifically
-        //const finalTimeEl = document.getElementById('finalTime');
-        //const WeeklyTimeContainer = document.getElementById('weeklyTimeContainer');
-      
-      //if (finalTimeEl) finalTimeEl.textContent = formattedTime;
-      //if (weeklyTimeContainer) weeklyTimeContainer.style.display = 'block';
+    
       displayFinalTime(totalMs);
+      
     // Save Score and Check for PB
       let isNewPB = session ? await saveWeeklyScore(session.user.id, username, score, totalMs) : false;
       // Update Titles
@@ -1386,8 +1373,7 @@ async function endGame() {
       
       // 1. Lite Mode Specific Logic
         if (isLiteMode) {
-            //const finalTimeMs = Date.now() - gameStartTime; // Total duration in MS
-            //const bestLite = parseInt(localStorage.getItem('best_lite_score')) || 0;
+          
             let isLitePB = session ? await saveLiteScore(session.user.id, username, score, totalMs) : false;
         
            // 2. Update UI IMMEDIATELY 
@@ -1407,10 +1393,6 @@ async function endGame() {
         } else {
         // end of Lite Mode
         // --- ACTUAL NORMAL MODE ---
-        // 1. Calculate the time
-        //const finalTime = Date.now() - gameStartTime;
-        //const totalSeconds = finalTime / 1000;
-        // Initialize as false first thing
         let isNewPB = false;
         // Trigger the high-score save
         if (session && score > 0) {
@@ -2450,6 +2432,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
