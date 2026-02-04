@@ -18,6 +18,7 @@ let currentMode = 'score'; // 'score' or 'xp'
 let masterQuestionPool = [];
 
 const WEEKLY_LIMIT = 50; // Change to 50 when ready to go live
+const LITE_LIMIT = 100;
 const number_of_questions = 610;
 const leaderboardRows = document.querySelectorAll('#leaderboard li');
 const scoreTab = document.getElementById('scoreTab');
@@ -42,6 +43,7 @@ const userDisplay = document.getElementById('userDisplay');
 const authBtn = document.getElementById('authBtn');
 const muteBtn = document.getElementById('muteBtn');
 const weeklyBtn = document.getElementById('weeklyBtn');
+const liteBtn = document.getElementById('liteBtn');
 const dailyBtn = document.getElementById('dailyBtn');
 const dailyMessages = {
   0: [
@@ -196,6 +198,8 @@ let isDailyMode = false;
 let weeklyStartTime = 0;
 let isWeeklyMode = false;
 let weeklyQuestionCount = 0;
+let isLiteMode = false;
+let liteQuestions = []; // To store the shuffled subset
 let gameStartTime = 0;
 
 // ====== INITIAL UI SYNC ======
@@ -384,6 +388,18 @@ async function init() {
         }
     };
 }
+if (liteBtn) {
+    liteBtn.onclick = async () => {
+        isDailyMode = false;
+        isWeeklyMode = false;
+        isLiteMode = true; // Set the Lite mode flag
+
+        if (audioCtx.state === 'suspended') await audioCtx.resume();
+        loadSounds();
+        startGame();
+    };
+}
+  
 if (playAgainBtn) {
     playAgainBtn.onclick = async () => {
     // 1. Reset numerical state
@@ -405,10 +421,13 @@ if (playAgainBtn) {
     } else if (isDailyMode) {
            // Usually Daily is locked after 1 play, but for safety:
            await startDailyChallenge();
+    } else if (isLiteMode) {
+           await startGame();
     } else {
           // Normal Mode - Reset flags just in case
           isWeeklyMode = false;
           isDailyMode = false;
+          isLiteMode = false;
           await startGame();
     }
   };
@@ -825,6 +844,11 @@ async function startGame() {
         }
 
         remainingQuestions = [...masterQuestionPool].sort(() => Math.random() - 0.5);
+        if (isLiteMode) {
+            // Take only the first 100 questions from the shuffled pool
+            remainingQuestions = remainingQuestions.slice(0, LITE_LIMIT);
+        }
+      
         const bufferedIds = preloadQueue.map(q => q.id);
         remainingQuestions = remainingQuestions.filter(id => !bufferedIds.includes(id));
 
@@ -1352,9 +1376,38 @@ async function endGame() {
       }
        
     } else { 
-        // --- NORMAL MODE ---
+        // --- NORMAL OR LITE MODE ---
         if (streakContainer) streakContainer.style.display = 'none';
         if (playAgainBtn) playAgainBtn.classList.remove('hidden');
+
+      // 1. Lite Mode Specific Logic
+        if (isLiteMode) {
+            const finalTimeMs = Date.now() - gameStartTime; // Total duration in MS
+            const bestLite = parseInt(localStorage.getItem('best_lite_score')) || 0;
+            let isLitePB = false;
+
+        if (session) {
+            // Call our new function
+            isLitePB = await saveLiteScore(session.user.id, username, score, finalTimeMs);
+        }
+            // UI Update
+          if (gameOverTitle) {
+                if (score === 100) {
+                    gameOverTitle.textContent = "Lite Mode Completed!";
+                } else {
+                    gameOverTitle.textContent = isLitePB ? "New Lite PB achieved!" : "Lite Mode Finished!";
+                }
+                gameOverTitle.classList.remove('hidden');
+          }
+
+            // Lite Completion Achievement
+            //if (session && score === 100) {
+                //showNotification("LITE COMPLETION!", bonusBuffer, "#d4af37");
+                //saveAchievement('lite_completed', true);
+           // }
+        } else {
+        // end of Lite Mode
+        // --- ACTUAL NORMAL MODE ---
         // 1. Calculate the time
         const finalTime = Date.now() - gameStartTime;
         const totalSeconds = finalTime / 1000;
@@ -1365,8 +1418,7 @@ async function endGame() {
             // We pass the current username, and the score achieved
             isNewPB = await saveNormalScore(username, score, finalTime);
         }
-
-      // 2. Format and Show the Time (Exactly like weekly mode)
+        // 2. Format and Show the Time (Exactly like weekly mode)
         let formattedTime;
         if (totalSeconds < 60) {
             formattedTime = totalSeconds.toFixed(2) + "s";
@@ -1421,7 +1473,50 @@ async function endGame() {
     });
 }
   
+async function saveLiteScore(userId, username, currentScore, timeInMs) {
+    // 1. Fetch the existing Lite data
+    const { data, error: fetchError } = await supabase
+        .from('scores')
+        .select('lite_data')
+        .eq('user_id', userId)
+        .maybeSingle();
 
+    if (fetchError) {
+        console.error("Fetch Lite error:", fetchError);
+        return false; 
+    }
+
+    // 2. Set defaults if no record exists
+    const bestLite = data?.lite_data || { score: -1, time: 9999999 };
+    
+    // 3. Comparison Logic: Higher score is better. 
+    // If scores are tied, a faster time (lower ms) is better.
+    const isHigherScore = currentScore > bestLite.score;
+    const isFasterTime = (currentScore === bestLite.score && timeInMs < bestLite.time);
+
+    if (isHigherScore || isFasterTime) {
+        const { error: upsertError } = await supabase
+            .from('scores')
+            .upsert({ 
+                user_id: userId,
+                username: username,
+                lite_data: { 
+                    score: currentScore, 
+                    time: timeInMs 
+                } 
+            }, { onConflict: 'user_id' }); 
+
+        if (upsertError) {
+            console.error("Upsert Lite error:", upsertError);
+            return false;
+        }
+        
+        return true; // Is a new PB
+    } 
+
+    return false; // Not a new record
+}
+ 
 async function saveWeeklyScore(userId, username, currentScore, timeInMs) {
     const { data, error: fetchError } = await supabase
         .from('scores')
@@ -2341,6 +2436,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
