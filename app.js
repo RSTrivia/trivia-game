@@ -1626,7 +1626,7 @@ if (shareBtn) {
                           `Score: ${currentScore}/${totalQs}\n` +
                           `${grid}\n` +
                           `Streak: ${currentStreak} 🔥\n` +
-                          `https://osrstrivia.pages.dev/`;
+                          //`https://osrstrivia.pages.dev/`;
       
         // 5. Desktop Tooltip Logic
         if (window.matchMedia("(hover: hover)").matches) {
@@ -2306,6 +2306,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
