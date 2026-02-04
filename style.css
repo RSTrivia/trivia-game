@@ -977,9 +977,9 @@ input.input-field:-webkit-autofill:active {
     display: none !important;
   }
   
-  /* Reduces the top padding so the name and mic sit closer to the top */
+  /* This controls the gap between the very top of the phone screen and your UI */
   body.game-active #app {
-    padding-top: 5px !important;
+    padding-top: 20px !important;
   }
 
   /* Ensures the name and mic row stays visible and tidy */
@@ -987,6 +987,7 @@ input.input-field:-webkit-autofill:active {
     margin-bottom: 15px !important;
     padding-top: 5px !important;
   }
+  
   /* ====== FIX POSITIONING FOR MOBILE ====== */
  #user-controls {
    display: flex;
@@ -1009,16 +1010,6 @@ input.input-field:-webkit-autofill:active {
     align-items: flex-start;
   }
 
-  /* This controls the gap between the very top of the phone screen and your UI */
-  body.game-active #app {
-    padding-top: 50px !important; /* INCREASE THIS VALUE for more empty space at the top */
-  }
-
-  /* This controls the gap between the User Info row and the Game Box below it */
-  body.game-active #user-controls {
-    margin-bottom: 25px !important; 
-    padding-top: 0px !important;
-  }
 }
  /* ====== FIX POSITIONING FOR MOBILE ====== */
 }
@@ -1716,6 +1707,7 @@ input.input-field:-webkit-autofill:active {
   font-size: 1rem; /* Slightly smaller than the massive 1.1rem to ensure it fits mobile */
   white-space: nowrap;
 }
+
 
 
 
