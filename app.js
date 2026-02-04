@@ -1636,7 +1636,7 @@ if (shareBtn) {
         const totalQs = 10;
         const grid = "🟩".repeat(currentScore) + "🟥".repeat(totalQs - currentScore);
 
-        const shareText = `OSRS Trivia ${dailyNum}  ${currentScore} ⚔️\n` +
+        const shareText = `OSRS Trivia ${dailyNum}  ${currentScore}/${totalQs} ⚔️\n` +
                           `${grid}\n` +
                           `Streak: ${currentStreak} 🔥\n`;
                           //`https://osrstrivia.pages.dev/`;
@@ -2341,6 +2341,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
