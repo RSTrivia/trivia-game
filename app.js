@@ -1313,18 +1313,10 @@ async function endGame() {
             finalScore.textContent = `${score}/${WEEKLY_LIMIT}`;
         }
         // --- ACHIEVEMENTS CHECK ---
-        if (session) {
-            // Check for Perfect + Speedruns
-            if (score >= 50) {
-                await saveAchievement('weekly_50', true);
-
-                // Use totalSeconds (the variable you actually defined)
-                if (totalSeconds <= 120) {
-                    await saveAchievement('weekly_sub_2', true);
-                } else if (totalSeconds <= 180) {
-                    await saveAchievement('weekly_sub_3', true);
-                }
-            }
+        if (session && score >= 50) {
+            await saveAchievement('weekly_50', true);
+            if (totalSeconds <= 120) await saveAchievement('weekly_sub_2', true);
+            else if (totalSeconds <= 180) await saveAchievement('weekly_sub_3', true);
         }
          // Format Time
           //let formattedTime;
@@ -1342,7 +1334,7 @@ async function endGame() {
       
       //if (finalTimeEl) finalTimeEl.textContent = formattedTime;
       //if (weeklyTimeContainer) weeklyTimeContainer.style.display = 'block';
-    displayFinalTime(totalMs);
+      displayFinalTime(totalMs);
     // Save Score and Check for PB
       let isNewPB = session ? await saveWeeklyScore(session.user.id, username, score, totalMs) : false;
       // Update Titles
@@ -1388,7 +1380,7 @@ async function endGame() {
             //const finalTimeMs = Date.now() - gameStartTime; // Total duration in MS
             //const bestLite = parseInt(localStorage.getItem('best_lite_score')) || 0;
             let isLitePB = session ? await saveLiteScore(session.user.id, username, score, totalMs) : false;
-        }
+        
             // UI Update
             gameOverTitle.textContent = isLitePB ? "New Lite PB achieved!" : "Game Over!";
             // Lite Completion Achievement
@@ -2433,6 +2425,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
