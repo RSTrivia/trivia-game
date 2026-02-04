@@ -16,6 +16,7 @@ let notificationQueue = [];
 let isShowingNotification = false;
 let currentMode = 'score'; // 'score' or 'xp'
 let masterQuestionPool = [];
+let userHasPlayedDaily = false; // Global flag
 
 const WEEKLY_LIMIT = 50; // Change to 50 when ready to go live
 const number_of_questions = 610;
@@ -216,6 +217,7 @@ async function syncDailyButton() {
     }
 
     const played = await hasUserCompletedDaily(session);
+    userHasPlayedDaily = played;
 
     if (!played) {
         dailyBtn.classList.add('is-active');
@@ -303,7 +305,7 @@ async function init() {
             isDailyMode = false;
             isWeeklyMode = false;
             if (audioCtx.state === 'suspended') await audioCtx.resume();
-            await loadSounds();
+            loadSounds();
             startGame();
         };
     }
@@ -322,8 +324,9 @@ async function init() {
         }
 
         // 2. Double-check "Played" status
-        const played = await hasUserCompletedDaily(session);
-        if (played) return; 
+        //const played = await hasUserCompletedDaily(session);
+        //if (played) return; 
+        if (userHasPlayedDaily) return;
               
         // 3. Sync with other tabs
         if (syncChannel) {
@@ -796,15 +799,17 @@ async function preloadNextQuestions(targetCount = 3) {
                 // We AWAIT the decode here in the background.
                 // This forces the CPU to decompress the image now, 
                 // so it's ready to paint the millisecond we set the src later.
-                await img.decode(); 
+                if (preloadQueue.length > 0) {
+                  await img.decode();
+                } 
                 
                 // Optional: Store the pre-decoded object to keep it in memory
                 //question._cachedImg = img; 
-            } catch (e) {
-                console.warn("Image warming failed for:", question.id, e);
-                // If the image fails to load, we still allow the question 
-                // but it might have a tiny flicker later.
-            }
+                } catch (e) {
+                    console.warn("Image warming failed for:", question.id, e);
+                    // If the image fails to load, we still allow the question 
+                    // but it might have a tiny flicker later.
+                }
         }
 
         // Only push to the queue AFTER the image is decoded
@@ -2333,6 +2338,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
