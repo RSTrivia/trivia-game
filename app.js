@@ -342,7 +342,7 @@ async function init() {
           
         // 5. Setup Audio & Mode
         if (audioCtx.state === 'suspended') await audioCtx.resume();
-        await loadSounds();
+        loadSounds();
         
         isDailyMode = true;
         isWeeklyMode = false; 
@@ -362,7 +362,7 @@ async function init() {
     weeklyBtn.onclick = async () => {
         // 1. Audio setup
         if (audioCtx.state === 'suspended') await audioCtx.resume();
-        await loadSounds();
+        loadSounds();
 
         // 2. WARM UP THE QUEUE (This is the fix)
         // Refill the pool and buffer the first few questions
@@ -2338,6 +2338,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
