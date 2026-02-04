@@ -758,7 +758,8 @@ function resetGame() {
     
     // 6. Reset Score Visual
     if (scoreDisplay) {
-        updateScore(); 
+        scoreDisplay.textContent = `Score: 0`;
+        //updateScore(); 
     }
       
     // Image cleanup
@@ -2203,16 +2204,11 @@ function playSound(buffer, loop = false) {
     return source; // Return this so we can call .stop()
 }
 
-function updateScore() { 
-  if (!scoreDisplay) return;
-  if (isLiteMode) {
-        // Shows "Score/100"
-        scoreDisplay.textContent = `${score}/${LITE_LIMIT}`;
-    } else {
-        scoreDisplay.textContent = `Score: ${score}`; 
+function updateScore() {
+    if (scoreDisplay) {
+        scoreDisplay.textContent = `Score: ${score}`;
     }
-  }
-
+}
 
 async function startWeeklyChallenge() {
     const { data: { session } } = await supabase.auth.getSession();
@@ -2432,6 +2428,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
