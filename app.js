@@ -18,7 +18,7 @@ let currentMode = 'score'; // 'score' or 'xp'
 let masterQuestionPool = [];
 const RELEASE_DATE = '2025-12-22';
 const WEEKLY_LIMIT = 3; // Change to 50 when ready to go live
-const LITE_LIMIT = 3; // Change to 100 when ready to go live
+const LITE_LIMIT = 10; // Change to 100 when ready to go live
 const number_of_questions = 610;
 const leaderboardRows = document.querySelectorAll('#leaderboard li');
 const scoreTab = document.getElementById('scoreTab');
@@ -2423,6 +2423,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
