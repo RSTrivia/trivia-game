@@ -758,9 +758,9 @@ function resetGame() {
     
     // 6. Reset Score Visual
     if (scoreDisplay) {
-        scoreDisplay.textContent = `Score: 0`;
+        updateScore(); 
     }
-  
+      
     // Image cleanup
     questionImage.style.display = 'none';
     questionImage.style.opacity = '0';
@@ -2220,7 +2220,16 @@ function playSound(buffer, loop = false) {
     source.start(0); // Add the 0 for older mobile browser compatibility
     return source; // Return this so we can call .stop()
 }
-function updateScore() { scoreDisplay.textContent = `Score: ${score}`; }
+
+function updateScore() { 
+  if (!scoreDisplay) return;
+  if (isLiteMode) {
+        // Shows "Score/100"
+        scoreDisplay.textContent = `${score}/${LITE_LIMIT}`;
+    } else {
+        scoreDisplay.textContent = `Score: ${score}`; 
+    }
+  }
 
 
 async function startWeeklyChallenge() {
@@ -2441,6 +2450,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
