@@ -458,11 +458,17 @@ const ACHIEVEMENT_SCHEMA = [
         { id: 'lvl50', text: 'Reach Level 50', check: (d) => d.level >= 50 },
         { id: 'lvl99', text: 'Reach Max Level', check: (d) => d.level >= 99 }
     ]},
-    { cat: 'Scores', tasks: [
+    { cat: 'Normal Mode', tasks: [
         { id: 'sc10', text: 'Reach 10 Score', check: (d) => d.maxScore >= 10 },
         { id: 'sc50', text: 'Reach 50 Score', check: (d) => d.maxScore >= 50 },
         { id: 'sc100', text: 'Reach 100 Score', check: (d) => d.maxScore >= 100 },
-        { id: 'sc510', text: 'Reach Max Score', check: (d) => d.maxScore >= 510 }
+        { id: 'sc510', text: 'Reach Max Score', check: (d) => d.maxScore >= 610 }
+    ]},
+    { cat: 'Lite Mode', tasks: [
+        { id: 'l50', text: 'Halfway 50/100', check: (d) => d.lite50 === true },
+        { id: 'l100', text: 'Perfect 100/100', check: (d) => d.lite100 === true },
+        { id: 'ls6', text: 'Speedrunner 100/100 sub 6m', check: (d) => d.liteSub6 === true },
+        { id: 'ls4', text: 'GM Speedrunner 100/100 sub 4m', check: (d) => d.liteSub4 === true }
     ]},
     { cat: 'Daily Mode', tasks: [
         { id: 'd1', text: 'First Daily Mode', check: (d) => d.dailyTotal >= 1 },
@@ -538,7 +544,12 @@ async function renderAchievements(calculatedLevel) {
         weekly25: localStorage.getItem('ach_stat_weekly_25') === 'true',
         weekly50: localStorage.getItem('ach_stat_weekly_50') === 'true',
         weeklySub3: localStorage.getItem('ach_stat_weekly_sub_3') === 'true',
-        weeklySub2: localStorage.getItem('ach_stat_weekly_sub_2') === 'true'
+        weeklySub2: localStorage.getItem('ach_stat_weekly_sub_2') === 'true',
+        // --- FIXED: Lite Booleans from LocalStorage ---
+        lite50: localStorage.getItem('ach_stat_lite_50') === 'true',
+        lite100: localStorage.getItem('ach_stat_lite_100') === 'true',
+        liteSub6: localStorage.getItem('ach_stat_lite_sub_6') === 'true',
+        liteSub4: localStorage.getItem('ach_stat_lite_sub_4') === 'true'
     };
 
     ACHIEVEMENT_SCHEMA.forEach(category => {
@@ -645,6 +656,11 @@ async function loadCollection() {
         localStorage.setItem('ach_stat_weekly_50', (a.weekly_50 || false).toString());
         localStorage.setItem('ach_stat_weekly_sub_3', (a.weekly_sub_3 || false).toString());
         localStorage.setItem('ach_stat_weekly_sub_2', (a.weekly_sub_2 || false).toString());
+        // Save Lite stats to LocalStorage so renderAchievements can see them
+        localStorage.setItem('ach_stat_lite_50', (a.lite_50 || false).toString());
+        localStorage.setItem('ach_stat_lite_100', (a.lite_100 || false).toString());
+        localStorage.setItem('ach_stat_lite_sub_6', (a.lite_sub_6 || false).toString());
+        localStorage.setItem('ach_stat_lite_sub_4', (a.lite_sub_4 || false).toString());
         
         // --- SOURCE OF TRUTH OVERRIDES ---
         localStorage.setItem('cached_daily_total', realTotalGames);
