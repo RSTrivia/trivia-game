@@ -473,7 +473,7 @@ if (scoreTab && xpTab) {
           }, 2000);
       }
   }
-        
+}     
     
 
   // Realtime Sync for both tables
@@ -2312,6 +2312,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
