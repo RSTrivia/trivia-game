@@ -423,6 +423,7 @@ if (playAgainBtn) {
            // Usually Daily is locked after 1 play, but for safety:
            await startDailyChallenge();
     } else if (isLiteMode) {
+           isLiteMode = true;
            await startGame();
     } else {
           // Normal Mode - Reset flags just in case
@@ -2425,6 +2426,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
