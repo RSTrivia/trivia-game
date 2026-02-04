@@ -1405,7 +1405,7 @@ async function endGame() {
         // Trigger the high-score save
         if (session && score > 0) {
             // We pass the current username, and the score achieved
-            isNewPB = await saveNormalScore(username, score, finalTime);
+            isNewPB = await saveNormalScore(username, score, totalMs);
         }
 
       // 2. Check for Gz! (Completion) first
@@ -1620,13 +1620,14 @@ async function saveNormalScore(currentUsername, finalScore, finalTime) {
     const oldTime = record?.time_ms || 9999999;
     
     // Safely grab existing achievements or start fresh
-    let achievements = { ...(profile?.achievements || {}) };
+    let achievements = profile?.achievements || {};
 
     // --- 2. ACHIEVEMENT MILESTONES ---
     if (finalScore >= 10 && oldBest < 10) showAchievementNotification("Reach 10 Score");
     if (finalScore >= 50 && oldBest < 50) showAchievementNotification("Reach 50 Score");
     if (finalScore >= 100 && oldBest < 100) showAchievementNotification("Reach 100 Score");
-
+    if (finalScore >= number_of_questions && oldBest < number_of_questions) showAchievementNotification("Reach Max Score");
+  
     // --- 3. PB LOGIC ---
     const isHigherScore = finalScore > oldBest;
     const isFasterTime = (finalScore === oldBest && finalTime < oldTime);
@@ -2452,6 +2453,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
