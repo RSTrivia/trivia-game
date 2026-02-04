@@ -253,11 +253,23 @@ async function init() {
   
     // 2. Run the UI sync once
     if (session) {
-        // User is logged in on this device!
+        // Found a valid session in LocalStorage!
         await handleAuthChange('INITIAL_LOAD', session);
     } else {
-        // No session on this device, user is a guest
-        await handleAuthChange('SIGNED_OUT', null);
+        // No session found. Check if we have a "remembered" username.
+        // If we do, maybe give it a second to refresh before showing "Guest"
+        const isActuallyLoggedOut = !localStorage.getItem('cachedUsername');
+        
+        if (isActuallyLoggedOut) {
+            await handleAuthChange('SIGNED_OUT', null);
+        } else {
+            // We have a cached user, but the session is missing/refreshing.
+            // Don't wipe the UI yet. Try one last check in 2 seconds.
+            setTimeout(async () => {
+                const { data: { secondCheck } } = await supabase.auth.getSession();
+                if (!secondCheck) await handleAuthChange('SIGNED_OUT', null);
+            }, 2000);
+        }
     }
       
     // 2. Auth Button (Log In / Log Out)
@@ -485,19 +497,20 @@ async function handleAuthChange(event, session) {
     if (!session) {
         // IMPORTANT: Only wipe if we are CERTAIN this is an intentional logout
         // and not just a slow connection.
-        if (event === 'SIGNED_OUT') {
+        if (event === 'SIGNED_OUT' || event === 'INITIAL_LOAD') {
             username = 'Guest';
             currentProfileXp = 0;
             if (span) span.textContent = ' Guest';
             if (label) label.textContent = 'Log In';
-            // Clear all session-specific UI and storage
-            localStorage.removeItem('lastDailyScore');
-            localStorage.removeItem('dailyPlayedDate');
-            localStorage.removeItem('cached_xp');
-            localStorage.removeItem('cachedUsername');
-            localStorage.removeItem('lastDailyMessage'); 
-            
-            lockDailyButton();
+            // Wipe data ONLY on explicit sign out
+            if (event === 'SIGNED_OUT') { 
+              // Clear all session-specific UI and storage
+              localStorage.removeItem('lastDailyScore');
+              localStorage.removeItem('dailyPlayedDate');
+              localStorage.removeItem('cached_xp');
+              localStorage.removeItem('cachedUsername');
+              localStorage.removeItem('lastDailyMessage'); 
+              lockDailyButton();
              [shareBtn, logBtn].forEach(btn => {
                       if (btn) {
                     btn.classList.add('is-disabled');
@@ -505,9 +518,10 @@ async function handleAuthChange(event, session) {
                     btn.style.pointerEvents = 'none';
                 }
             });
+          }
         }
-        if (span) span.textContent = ' Guest';
-        if (label) label.textContent = 'Log In';
+        //if (span) span.textContent = ' Guest';
+        //if (label) label.textContent = 'Log In';
        // syncDailyButton();
         lockDailyButton();
         updateLevelUI()
@@ -2292,6 +2306,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
