@@ -232,55 +232,8 @@ let isRefreshing = false;
 
 // ====== INITIALIZATION ======
 async function init() {
-    // 1. Immediately sync the button based on CACHE only (Instant)
-    // This stops the flicker because the button starts in the 'locked' state 
-    // if they played, before any network request happens.
-    lockDailyButton();
     
-  
-  // 1. Set up the listener FIRST
-      supabase.auth.onAuthStateChange((event, session) => {
-          //console.log("Auth Event:", event);
-          
-         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'SIGNED_OUT') {
-          handleAuthChange(event, session);
-      }
-          
-    });
-  
-    // 1. Get the current session
-    const { data: { session }, error } = await supabase.auth.getSession();
-  
-    // 2. Run the UI sync once
-  if (session) {
-      // Found a valid session in LocalStorage!
-      await handleAuthChange('INITIAL_LOAD', session);
-  } else {
-      // Check if we have a "remembered" username from a previous login
-      const isActuallyLoggedOut = !localStorage.getItem('cachedUsername');
-      
-      if (isActuallyLoggedOut) {
-          // No session AND no cache? They are definitely a Guest.
-          await handleAuthChange('SIGNED_OUT', null);
-      } else {
-          // We have a cached user, but the session is currently null.
-          // This happens on mobile while Supabase refreshes the token.
-          // We wait 2 seconds before giving up and forcing Guest mode.
-          setTimeout(async () => {
-              const { data: { session: delayedSession } } = await supabase.auth.getSession();
-              
-              if (!delayedSession) {
-                  // Still no session after 2 seconds? Okay, log them out.
-                  await handleAuthChange('SIGNED_OUT', null);
-              } else {
-                  // Session found! Update the UI.
-                  await handleAuthChange('TOKEN_REFRESHED', delayedSession);
-              }
-          }, 2000);
-      }
-  }
-        
-    // 2. Auth Button (Log In / Log Out)
+  // Auth Button (Log In / Log Out)
     authBtn.onclick = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
@@ -474,6 +427,54 @@ if (scoreTab && xpTab) {
         scoreTab.classList.remove('active');
         fetchLeaderboard();
     };
+  
+  // SET UP AUTH LISTENER
+      supabase.auth.onAuthStateChange((event, session) => {
+          //console.log("Auth Event:", event);
+          
+        if (['SIGNED_IN', 'TOKEN_REFRESHED', 'SIGNED_OUT'].includes(event)) {
+            handleAuthChange(event, session);
+        }
+          
+    });
+    // 1. Immediately sync the button based on CACHE only (Instant)
+    // This stops the flicker because the button starts in the 'locked' state 
+    // if they played, before any network request happens.
+    lockDailyButton();
+  
+    // 1. Get the current session
+    const { data: { session }, error } = await supabase.auth.getSession();
+  
+    // 2. Run the UI sync once
+  if (session) {
+      // Found a valid session in LocalStorage!
+      await handleAuthChange('INITIAL_LOAD', session);
+  } else {
+      // Check if we have a "remembered" username from a previous login
+      const isActuallyLoggedOut = !localStorage.getItem('cachedUsername');
+      
+      if (isActuallyLoggedOut) {
+          // No session AND no cache? They are definitely a Guest.
+          await handleAuthChange('SIGNED_OUT', null);
+      } else {
+          // We have a cached user, but the session is currently null.
+          // This happens on mobile while Supabase refreshes the token.
+          // We wait 2 seconds before giving up and forcing Guest mode.
+          setTimeout(async () => {
+              const { data: { session: delayedSession } } = await supabase.auth.getSession();
+              
+              if (!delayedSession) {
+                  // Still no session after 2 seconds? Okay, log them out.
+                  await handleAuthChange('SIGNED_OUT', null);
+              } else {
+                  // Session found! Update the UI.
+                  await handleAuthChange('TOKEN_REFRESHED', delayedSession);
+              }
+          }, 2000);
+      }
+  }
+        
+    
 
   // Realtime Sync for both tables
 supabase
@@ -2311,6 +2312,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
