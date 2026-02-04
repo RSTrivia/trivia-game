@@ -16,7 +16,6 @@ let notificationQueue = [];
 let isShowingNotification = false;
 let currentMode = 'score'; // 'score' or 'xp'
 let masterQuestionPool = [];
-let userHasPlayedDaily = false; // Global flag
 
 const WEEKLY_LIMIT = 50; // Change to 50 when ready to go live
 const number_of_questions = 610;
@@ -217,7 +216,6 @@ async function syncDailyButton() {
     }
 
     const played = await hasUserCompletedDaily(session);
-    userHasPlayedDaily = played;
 
     if (!played) {
         dailyBtn.classList.add('is-active');
@@ -324,9 +322,8 @@ async function init() {
         }
 
         // 2. Double-check "Played" status
-        //const played = await hasUserCompletedDaily(session);
-        //if (played) return; 
-        if (userHasPlayedDaily) return;
+        const played = await hasUserCompletedDaily(session);
+        if (played) return; 
               
         // 3. Sync with other tabs
         if (syncChannel) {
@@ -2338,6 +2335,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
