@@ -335,10 +335,16 @@ async function init() {
         await loadSounds();
         
         isDailyMode = true;
-        isWeeklyMode = false; // Important to reset this here!
+        isWeeklyMode = false; 
+        preloadQueue = []; // Clear old stuff
 
-        // 6. START THE GAME
-        startDailyChallenge(); 
+        try {
+            // We await the setup of IDs and the first batch of preloads
+            await startDailyChallenge(); 
+        } catch (err) {
+            console.error("Daily start failed:", err);
+            dailyBtn.classList.remove('loading');
+        }
     }; 
 }
 
@@ -380,10 +386,10 @@ if (playAgainBtn) {
     dailyQuestionCount = 0; // Don't forget this!
       
     // 2. UI RESET (The missing part)
-        resetGame(); // Use your existing resetGame function here!
-        document.getElementById('end-screen').classList.add('hidden'); // Hide End
-        document.getElementById('game').classList.remove('hidden');    // Show Game
-        document.body.classList.add('game-active');                   // Add background class   
+    resetGame(); // Use your existing resetGame function here!
+    document.getElementById('end-screen').classList.add('hidden'); // Hide End
+    document.getElementById('game').classList.remove('hidden');    // Show Game
+    document.body.classList.add('game-active');                   // Add background class   
       
     // 3. Start the correct game engine 
     if (isWeeklyMode) {
@@ -470,7 +476,7 @@ supabase
   await updateShareButtonState();
 }
 
-
+// Replace your existing handleAuthChange with this:
 async function handleAuthChange(event, session) {
     const span = document.querySelector('#usernameSpan');
     const label = authBtn?.querySelector('.btn-label');
@@ -577,9 +583,6 @@ async function handleAuthChange(event, session) {
     updateLevelUI();
     await syncDailyButton();
 }
-
-
-
 
 async function hasUserCompletedDaily(session) {
     if (!session) return false;
@@ -1609,7 +1612,7 @@ if (shareBtn) {
                           `Score: ${currentScore}/${totalQs}\n` +
                           `${grid}\n` +
                           `Streak: ${currentStreak} 🔥\n` +
-                          //`https://osrstrivia.pages.dev/`;
+                          `https://osrstrivia.pages.dev/`;
       
         // 5. Desktop Tooltip Logic
         if (window.matchMedia("(hover: hover)").matches) {
@@ -2289,15 +2292,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
-
-
-
-
-
-
-
-
-
 
 
 
