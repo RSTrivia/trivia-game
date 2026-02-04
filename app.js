@@ -306,6 +306,7 @@ async function init() {
         startBtn.onclick = async () => {
             isDailyMode = false;
             isWeeklyMode = false;
+            isLiteMode = false;
             if (audioCtx.state === 'suspended') await audioCtx.resume();
             loadSounds();
             startGame();
@@ -2426,6 +2427,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
