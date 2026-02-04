@@ -72,7 +72,7 @@
     }
 
     // 1. Reset everything to locked first (Safety)
-  [dailyBtn, weeklyBtn].forEach(btn => {
+  [dailyBtn, weeklyBtn, lobbyBtn].forEach(btn => {
     if (btn) {
         btn.classList.remove('is-active');
         btn.classList.add('is-disabled');
@@ -108,14 +108,14 @@
     // 2. Instant Button State Sync (Anti-Flicker)
     if (cachedLoggedIn) {
       // Weekly Mode: Always GOLD if logged in (even if they played)
-      if (weeklyBtn) {
-          // Logged in users always get Gold/Active for Weekly
-          weeklyBtn.classList.add('is-active');
-          weeklyBtn.classList.remove('is-disabled');
-          // CLEANUP: Remove manual styles so CSS can work
-          weeklyBtn.style.opacity = '1';
-          weeklyBtn.style.pointerEvents = 'auto';
-        }
+      [weeklyBtn, lobbyBtn].forEach(btn => {
+          if (btn) {
+              btn.classList.add('is-active');
+              btn.classList.remove('is-disabled');
+              btn.style.opacity = '1';
+              btn.style.pointerEvents = 'auto';
+          }
+      });
       // 2. ONLY unlock if they are logged in AND haven't played
       if (!hasPlayedToday && dailyBtn) {
           dailyBtn.classList.add('is-active');
@@ -132,7 +132,7 @@
       });
     } else {
       // If not logged in, ensure these stay locked 
-      [dailyBtn, shareBtn, logBtn, weeklyBtn].forEach(btn => {
+      [dailyBtn, shareBtn, logBtn, weeklyBtn, lobbyBtn].forEach(btn => {
         if (btn) {
           btn.classList.remove('is-active'); // Remove Gold state
           btn.classList.add('is-disabled');  // Add Grey state
@@ -236,7 +236,7 @@
       </div>
       <!-- Second row: Lite mode -->
         <div class="row">
-         <button id="lobbyBtn" class="btn">Enter Lobby</button>
+         <button id="lobbyBtn" class="weekly-btn is-disabled">Enter Lobby</button>
       </div>
         <!-- Third row: Daily mode -->
        <div class="row">
@@ -388,6 +388,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
 
 
