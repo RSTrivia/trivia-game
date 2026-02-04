@@ -52,7 +52,7 @@ const dailyMessages = {
     "It can only go higher from here.",
     "Buying brain for 10k?",
     "Your hitpoints reached 0. Oh dear.",
-    "You're splashing on a seagull in Port Sarim.",
+    "You splashed!",
     "This score is lower than the chances of a 3rd Age Pickaxe."
   ],
   1: [
@@ -1610,8 +1610,8 @@ if (shareBtn) {
         const shareText = `OSRS Trivia • ${dateStr} ⚔️\n` +
                           `Score: ${currentScore}/${totalQs}\n` +
                           `${grid}\n` +
-                          `Streak: ${currentStreak} 🔥\n` +
-                          `https://osrstrivia.pages.dev/`;
+                          `Streak: ${currentStreak} 🔥\n`;
+                          //`https://osrstrivia.pages.dev/`;
       
         // 5. Desktop Tooltip Logic
         if (window.matchMedia("(hover: hover)").matches) {
@@ -2291,6 +2291,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
