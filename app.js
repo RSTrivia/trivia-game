@@ -266,7 +266,7 @@ async function init() {
                 }, 2000);
             }
     }
-          
+     
     // 2. Auth Button (Log In / Log Out)
     authBtn.onclick = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -487,7 +487,13 @@ supabase
 async function handleAuthChange(event, session) {
     const span = document.querySelector('#usernameSpan');
     const label = authBtn?.querySelector('.btn-label');
-
+    // Ensure the auth button is ALWAYS active so guests can actually click "Log In"
+    if (authBtn) {
+        authBtn.style.opacity = '1';
+        authBtn.style.pointerEvents = 'auto';
+        authBtn.classList.remove('is-disabled');
+    }
+  
     // 1. Logged Out State
     if (!session) {
         // IMPORTANT: Only wipe if we are CERTAIN this is an intentional logout
@@ -505,7 +511,6 @@ async function handleAuthChange(event, session) {
             localStorage.removeItem('lastDailyMessage'); 
             
             lockDailyButton();
-            updateLevelUI()
              [shareBtn, logBtn].forEach(btn => {
                       if (btn) {
                     btn.classList.add('is-disabled');
@@ -516,9 +521,9 @@ async function handleAuthChange(event, session) {
         }
         if (span) span.textContent = ' Guest';
         if (label) label.textContent = 'Log In';
-       // syncDailyButton();
-        //lockDailyButton();
-        //updateLevelUI()
+        //syncDailyButton();
+        lockDailyButton();
+        updateLevelUI()
         return; // Stop here for guests
     }
     // 1. Immediately sync with local cache so we don't overwrite the HTML script's work
@@ -2300,6 +2305,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
