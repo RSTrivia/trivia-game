@@ -1393,7 +1393,7 @@ async function endGame() {
                 if (isLitePB) {
                     // Prioritize the PB message
                     gameOverTitle.textContent = "New PB achieved!";
-                } else if (score === 100) {
+                } else if (score === LITE_LIMIT) {
                     // If it's not a PB, but they still finished
                     gameOverTitle.textContent = "Lite Mode Completed!";
                 } else {
@@ -2439,6 +2439,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
