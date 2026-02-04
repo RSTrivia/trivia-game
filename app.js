@@ -1622,7 +1622,10 @@ if (shareBtn) {
         
         // Pull the streak we just saved in handleAuthChange
         const currentStreak = localStorage.getItem('cached_daily_streak') || "0";
-
+      
+        // Calculate edition on the fly
+        const dailyNum = getDailyEditionNumber();
+      
         const dateStr = new Date().toLocaleDateString('en-US', { 
             month: 'short', 
             day: 'numeric', 
@@ -1633,12 +1636,11 @@ if (shareBtn) {
         const totalQs = 10;
         const grid = "🟩".repeat(currentScore) + "🟥".repeat(totalQs - currentScore);
 
-        const shareText = `OSRS Trivia • ${dateStr} ⚔️\n` +
-                          `Score: ${currentScore}/${totalQs}\n` +
+        const shareText = `OSRS Trivia ${dailyNum}  ${currentScore} ⚔️\n` +
                           `${grid}\n` +
                           `Streak: ${currentStreak} 🔥\n`;
                           //`https://osrstrivia.pages.dev/`;
-      
+   
         // 5. Desktop Tooltip Logic
         if (window.matchMedia("(hover: hover)").matches) {
             const tooltip = document.createElement('div');
@@ -2178,7 +2180,11 @@ async function startWeeklyChallenge() {
     preloadNextQuestions(3);
 }
 
-
+function getDailyEditionNumber() {
+    const startDate = new Date('2025-12-22'); 
+    const diffTime = Math.abs(new Date() - startDate);
+    return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+}
 
 async function startDailyChallenge() {
     const { data: { session } } = await supabase.auth.getSession();
@@ -2335,6 +2341,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
