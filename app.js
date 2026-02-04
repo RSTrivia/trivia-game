@@ -1087,7 +1087,7 @@ async function checkAnswer(choiceId, btn) {
             }
 
             // halfway 50/100 lite mode score
-            if (isLiteMode && score === 50) {
+            if (isLiteMode && score === 3) { // change to 50
                 saveAchievement('lite_50', true); // Sync to Supabase
             }
           
@@ -1376,8 +1376,8 @@ async function endGame() {
         if (isLiteMode) {
             
           // --- ACHIEVEMENTS CHECK ---
-            if (session && score >= 100) {
-                await saveAchievement('lite_50', true);
+            if (session && score >= 5) { //change to 100 score
+                await saveAchievement('lite_100', true);
                 if (totalSeconds <= 240) await saveAchievement('lite_sub_4', true);
                 else if (totalSeconds <= 360) await saveAchievement('lite_sub_6', true);
             }
@@ -2452,6 +2452,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
