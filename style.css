@@ -1643,24 +1643,31 @@ input.input-field:-webkit-autofill:active {
 
 
 
-.button-pair {
-  display: flex;
-  gap: 10px; /* Space between the two buttons */
-  justify-content: center;
+
+/* Container for the side-by-side buttons */
+.button-row {
+  display: flex !important;
+  gap: 12px; /* Space between Normal and Lite */
+  width: 100%;
 }
 
-.button-pair .btn {
-  flex: 1; /* Makes both buttons equal width */
-  padding: 10px 5px; /* Adjust padding to fit text */
-  font-size: 0.9rem; /* Slightly smaller font to ensure text fits on one line */
+/* Force buttons in a .button-row to behave like full-size buttons but share width */
+.button-row .btn {
+  flex: 1; /* Makes them equal width */
+  padding: 14px 10px !important; /* Slightly less horizontal padding so text doesn't wrap */
+  font-size: 1rem; /* Slightly smaller than the massive 1.1rem to ensure it fits mobile */
   white-space: nowrap;
 }
 
-/* Make Lobby Button stand out */
+/* Style for your new Lobby Button to make it look special */
 .lobby-btn {
-  background-color: #4a0000; /* Darker red/combat theme */
-  border: 2px solid #d4af37;
-  color: #d4af37;
+  background: rgba(74, 0, 0, 0.6) !important; /* Dark OSRS Red */
+  border-color: #d4af37 !important;
+}
+
+.lobby-btn:hover {
+  background: rgba(100, 0, 0, 0.8) !important;
+  border-color: #ffea8a !important;
 }
 
 
