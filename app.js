@@ -2154,8 +2154,13 @@ async function startWeeklyChallenge() {
     remainingQuestions = weeklyIds; // Set the 50 Weekly IDs
 
     // PRELOAD FIRST (While still on the menu/loading)
-    await preloadNextQuestions();
-  
+    //await preloadNextQuestions();
+    // 5. FETCH ONLY THE FIRST QUESTION IMMEDIATELY
+    // If queue is empty, get one right now so we can start
+    if (preloadQueue.length === 0) {
+        await preloadNextQuestions(1); // Modified to accept a 'count'
+    }
+
     // THE UI SWAP
     resetGame();
     document.body.classList.add('game-active'); 
@@ -2206,7 +2211,12 @@ async function startDailyChallenge() {
     remainingQuestions = dailyIds;
       
     // 5. Start the engine
-    await preloadNextQuestions();
+    //await preloadNextQuestions();
+    // FETCH ONLY THE FIRST QUESTION IMMEDIATELY
+    // If queue is empty, get one right now so we can start
+    if (preloadQueue.length === 0) {
+        await preloadNextQuestions(1); // Modified to accept a 'count'
+    }
   
     // 6. UI TRANSITION (Only happens once data is ready)
     resetGame();
@@ -2315,6 +2325,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
