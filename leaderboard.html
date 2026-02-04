@@ -99,9 +99,11 @@
     <div class="container">
       <h1 id="leaderboard-title">Leaderboard</h1>
       <div class="leaderboard-tabs">
-    <button id="scoreTab" class="tab-btn active">Score</button>
+    <button id="scoreTab" class="tab-btn active">Normal</button>
+    <button id="LiteTab" class="tab-btn">Lite</button>   
     <button id="weeklyTab" class="tab-btn">Weekly</button>   
     <button id="xpTab" class="tab-btn">Total XP</button>
+    
       </div>
       <ul id="leaderboard">
           <li class="first"><span class="name-part"><span class="rank-slot">🥇</span><span class="user-txt"></span></span><span class="score-part"></span></li>
@@ -127,7 +129,8 @@ const leaderboardRows = document.querySelectorAll('#leaderboard li');
 const scoreTab = document.getElementById('scoreTab');
 const weeklyTab = document.getElementById('weeklyTab');
 const xpTab = document.getElementById('xpTab');
-
+const liteTab = document.getElementById('liteTab');
+  
 let currentMode = 'score'; 
 
 function getLevel(xp) {
@@ -179,9 +182,10 @@ function updateLeaderboard(data) {
       const level = getLevel(entry.val);
       finalHTML = `${entry.val.toLocaleString()} <span style="font-size: 0.85em; opacity: 0.6;">(Lvl ${level})</span>`;
       
-    } else if (currentMode === 'weekly') {
-      const s = entry.weekly_data?.score || 0;
-      const t = entry.weekly_data?.time || 0;
+    } else if (currentMode === 'weekly' || currentMode === 'lite') {
+      const dataKey = currentMode === 'weekly' ? 'weekly_data' : 'lite_data';
+      const s = entry[dataKey]?.score || 0;
+      const t = entry[dataKey]?.time || 0;
       // Pass true for isWeekly to check against the 9999 default
       finalHTML = `${s.toLocaleString()}${formatLeaderboardTime(t)}`;
       
@@ -209,6 +213,14 @@ async function fetchLeaderboard() {
       .order('score', { ascending: false })    // 2. Primary sort: Highest Score
       .order('time_ms', { ascending: true }); // 3. Tie-breaker: Fastest Time (lowest ms)
       
+  } else if (currentMode === 'lite') {
+    query = supabase
+      .from('scores')
+      .select('username, lite_data') // Pull the JSONB object
+      .not('lite_data', 'is', null)
+      .gt('lite_data->score', 0)     // Only rows with a score
+      .order('lite_data->score', { ascending: false }) // Sort by nested score
+      .order('lite_data->time', { ascending: true });  // Sort by nested time
   } else if (currentMode === 'weekly') {
     query = supabase
       .from('scores')
@@ -252,6 +264,7 @@ function handleTabClick(mode, btn) {
 scoreTab.onclick = () => handleTabClick('score', scoreTab);
 xpTab.onclick = () => handleTabClick('xp', xpTab);
 if(weeklyTab) weeklyTab.onclick = () => handleTabClick('weekly', weeklyTab);
+if(liteTab) liteTab.onclick = () => handleTabClick('lite', liteTab);
 
 // Initial Run (Immediately pull from Score cache)
 (async () => {
@@ -264,6 +277,7 @@ if(weeklyTab) weeklyTab.onclick = () => handleTabClick('weekly', weeklyTab);
 </script>
 </body>
 </html>
+
 
 
 
