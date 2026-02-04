@@ -232,8 +232,35 @@ let isRefreshing = false;
 
 // ====== INITIALIZATION ======
 async function init() {
+    // 1. Immediately sync the button based on CACHE only (Instant)
+    // This stops the flicker because the button starts in the 'locked' state 
+    // if they played, before any network request happens.
+    lockDailyButton();
     
-  // Auth Button (Log In / Log Out)
+  
+  // 1. Set up the listener FIRST
+      supabase.auth.onAuthStateChange((event, session) => {
+          //console.log("Auth Event:", event);
+          
+         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'SIGNED_OUT') {
+          handleAuthChange(event, session);
+      }
+          
+    });
+  
+    // 1. Get the current session
+    const { data: { session }, error } = await supabase.auth.getSession();
+  
+    // 2. Run the UI sync once
+    if (session) {
+        // User is logged in on this device!
+        await handleAuthChange('INITIAL_LOAD', session);
+    } else {
+        // No session on this device, user is a guest
+        await handleAuthChange('SIGNED_OUT', null);
+    }
+      
+    // 2. Auth Button (Log In / Log Out)
     authBtn.onclick = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
@@ -308,16 +335,10 @@ async function init() {
         await loadSounds();
         
         isDailyMode = true;
-        isWeeklyMode = false; 
-        preloadQueue = []; // Clear old stuff
+        isWeeklyMode = false; // Important to reset this here!
 
-        try {
-            // We await the setup of IDs and the first batch of preloads
-            await startDailyChallenge(); 
-        } catch (err) {
-            console.error("Daily start failed:", err);
-            dailyBtn.classList.remove('loading');
-        }
+        // 6. START THE GAME
+        startDailyChallenge(); 
     }; 
 }
 
@@ -359,10 +380,10 @@ if (playAgainBtn) {
     dailyQuestionCount = 0; // Don't forget this!
       
     // 2. UI RESET (The missing part)
-    resetGame(); // Use your existing resetGame function here!
-    document.getElementById('end-screen').classList.add('hidden'); // Hide End
-    document.getElementById('game').classList.remove('hidden');    // Show Game
-    document.body.classList.add('game-active');                   // Add background class   
+        resetGame(); // Use your existing resetGame function here!
+        document.getElementById('end-screen').classList.add('hidden'); // Hide End
+        document.getElementById('game').classList.remove('hidden');    // Show Game
+        document.body.classList.add('game-active');                   // Add background class   
       
     // 3. Start the correct game engine 
     if (isWeeklyMode) {
@@ -427,7 +448,8 @@ if (scoreTab && xpTab) {
         scoreTab.classList.remove('active');
         fetchLeaderboard();
     };
-   // Realtime Sync for both tables
+
+  // Realtime Sync for both tables
 supabase
   .channel('leaderboard-sync')
   .on('postgres_changes', { event: '*', schema: 'public', table: 'scores' }, () => {
@@ -441,60 +463,14 @@ supabase
   // Trigger initial fetch
   await fetchLeaderboard();
 }
-  
-  // SET UP AUTH LISTENER
-      supabase.auth.onAuthStateChange((event, session) => {
-          //console.log("Auth Event:", event);
-          
-        if (['SIGNED_IN', 'TOKEN_REFRESHED', 'SIGNED_OUT'].includes(event)) {
-            handleAuthChange(event, session);
-        }
-          
-    });
-    // 1. Immediately sync the button based on CACHE only (Instant)
-    // This stops the flicker because the button starts in the 'locked' state 
-    // if they played, before any network request happens.
-    lockDailyButton();
-  
-    // 1. Get the current session
-    const { data: { session }, error } = await supabase.auth.getSession();
-  
-    // 2. Run the UI sync once
-  if (session) {
-      // Found a valid session in LocalStorage!
-      await handleAuthChange('INITIAL_LOAD', session);
-  } else {
-      // Check if we have a "remembered" username from a previous login
-      const isActuallyLoggedOut = !localStorage.getItem('cachedUsername');
-      
-      if (isActuallyLoggedOut) {
-          // No session AND no cache? They are definitely a Guest.
-          await handleAuthChange('SIGNED_OUT', null);
-      } else {
-          // We have a cached user, but the session is currently null.
-          // This happens on mobile while Supabase refreshes the token.
-          // We wait 2 seconds before giving up and forcing Guest mode.
-          setTimeout(async () => {
-              const { data: { session: delayedSession } } = await supabase.auth.getSession();
-              
-              if (!delayedSession) {
-                  // Still no session after 2 seconds? Okay, log them out.
-                  await handleAuthChange('SIGNED_OUT', null);
-              } else {
-                  // Session found! Update the UI.
-                  await handleAuthChange('TOKEN_REFRESHED', delayedSession);
-              }
-          }, 2000);
-      }
-  }
-}     
+
   // This will check if a user is logged in and lock the button if they aren't
   await syncDailyButton();
   // This will check if a user has played daily mode already and will unlock it if they did
   await updateShareButtonState();
 }
 
-// Replace your existing handleAuthChange with this:
+
 async function handleAuthChange(event, session) {
     const span = document.querySelector('#usernameSpan');
     const label = authBtn?.querySelector('.btn-label');
@@ -508,15 +484,14 @@ async function handleAuthChange(event, session) {
             currentProfileXp = 0;
             if (span) span.textContent = ' Guest';
             if (label) label.textContent = 'Log In';
-          
-              // Clear all session-specific UI and storage
-              localStorage.removeItem('lastDailyScore');
-              localStorage.removeItem('dailyPlayedDate');
-              localStorage.removeItem('cached_xp');
-              localStorage.removeItem('cachedUsername');
-              localStorage.removeItem('lastDailyMessage'); 
-              lockDailyButton();
-              updateLevelUI()
+            // Clear all session-specific UI and storage
+            localStorage.removeItem('lastDailyScore');
+            localStorage.removeItem('dailyPlayedDate');
+            localStorage.removeItem('cached_xp');
+            localStorage.removeItem('cachedUsername');
+            localStorage.removeItem('lastDailyMessage'); 
+            
+            lockDailyButton();
              [shareBtn, logBtn].forEach(btn => {
                       if (btn) {
                     btn.classList.add('is-disabled');
@@ -525,9 +500,11 @@ async function handleAuthChange(event, session) {
                 }
             });
         }
-
-        //lockDailyButton();
-        //updateLevelUI()
+        if (span) span.textContent = ' Guest';
+        if (label) label.textContent = 'Log In';
+       // syncDailyButton();
+        lockDailyButton();
+        updateLevelUI()
         return; // Stop here for guests
     }
     // 1. Immediately sync with local cache so we don't overwrite the HTML script's work
@@ -600,6 +577,9 @@ async function handleAuthChange(event, session) {
     updateLevelUI();
     await syncDailyButton();
 }
+
+
+
 
 async function hasUserCompletedDaily(session) {
     if (!session) return false;
@@ -2309,6 +2289,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
