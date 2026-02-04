@@ -16,7 +16,7 @@ let notificationQueue = [];
 let isShowingNotification = false;
 let currentMode = 'score'; // 'score' or 'xp'
 let masterQuestionPool = [];
-
+const RELEASE_DATE = '2025-12-22';
 const WEEKLY_LIMIT = 3; // Change to 50 when ready to go live
 const LITE_LIMIT = 3; // Change to 100 when ready to go live
 const number_of_questions = 610;
@@ -410,12 +410,9 @@ if (playAgainBtn) {
     streak = 0;
     dailyQuestionCount = 0; // Don't forget this!
       
-    // 2. UI RESET (The missing part)
-    resetGame(); // Use your existing resetGame function here!
-    document.getElementById('end-screen').classList.add('hidden'); // Hide End
-    document.getElementById('game').classList.remove('hidden');    // Show Game
-    document.body.classList.add('game-active');                   // Add background class   
-      
+    // 2. wipe old text/images, but DO NOT show the game screen yet
+    resetGame(); 
+   
     // 3. Start the correct game engine 
     if (isWeeklyMode) {
            // Re-run the weekly setup to get the same 50 IDs
@@ -433,6 +430,11 @@ if (playAgainBtn) {
           isLiteMode = false;
           await startGame();
     }
+   // 3. show game screen
+    document.getElementById('end-screen').classList.add('hidden'); // Hide End
+    document.getElementById('game').classList.remove('hidden');    // Show Game
+    document.body.classList.add('game-active');                   // Add background class   
+      
   };
 }
   if (mainMenuBtn) {  
@@ -2231,7 +2233,7 @@ async function startWeeklyChallenge() {
 
     // Deterministic Weekly Selection
     const now = new Date();
-    const startDate = new Date('2025-12-22'); // Keep this same as Daily for consistency
+    const startDate = new Date(RELEASE_DATE); // Keep this same as Daily for consistency
     const diffTime = Math.abs(now - startDate);
     const dayCounter = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     
@@ -2279,7 +2281,7 @@ async function startWeeklyChallenge() {
 }
 
 function getDailyEditionNumber() {
-    const startDate = new Date('2025-12-22'); 
+    const startDate = new Date(RELEASE_DATE); 
     const diffTime = Math.abs(new Date() - startDate);
     return Math.floor(diffTime / (1000 * 60 * 60 * 24));
 }
@@ -2302,7 +2304,7 @@ async function startDailyChallenge() {
     if (!allQuestions || allQuestions.length < 10) return alert("Error loading questions.");
 
     // 3. Deterministic Selection
-    const startDate = new Date('2025-12-22'); 
+    const startDate = new Date(RELEASE_DATE); 
     const diffTime = Math.abs(new Date() - startDate);
     const dayCounter = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     
@@ -2439,6 +2441,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
