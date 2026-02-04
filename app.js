@@ -1348,7 +1348,7 @@ async function endGame() {
       let isNewPB = session ? await saveWeeklyScore(session.user.id, username, score, totalMs) : false;
       // Update Titles
       if (gameOverTitle) {
-          gameOverTitle.textContent = isNewPB ? "New PB achieved!" : "Weekly Challenge Complete!";
+          gameOverTitle.textContent = isNewPB ? "New PB achieved!" : "Weekly Mode Completed!";
           gameOverTitle.classList.remove('hidden');
       }
     } else if (isDailyMode) {
@@ -2441,6 +2441,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
