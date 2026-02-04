@@ -753,11 +753,11 @@ function resetGame() {
     if (weeklyTimeContainer) weeklyTimeContainer.style.display = 'none';
 }
 
-async function preloadNextQuestions() {
+async function preloadNextQuestions(targetCount = 3) {
     let attempts = 0;
 
     while (
-        preloadQueue.length < 3 &&
+        preloadQueue.length < targetCount &&
         remainingQuestions.length > 0 &&
         attempts < 10
     ) {
@@ -828,7 +828,13 @@ async function startGame() {
 
         // 2. WAIT FOR DATA (Background - User still sees Start Screen)
         // This is the key: we wait here while the screen hasn't changed yet
-        await preloadNextQuestions();
+        //await preloadNextQuestions();
+      
+        // 5. FETCH ONLY THE FIRST QUESTION IMMEDIATELY
+        // If queue is empty, get one right now so we can start
+        if (preloadQueue.length === 0) {
+            await preloadNextQuestions(1); // Modified to accept a 'count'
+        }
 
         // 3. INTERNAL STATE RESET
         clearInterval(timer);
@@ -858,6 +864,10 @@ async function startGame() {
         // 6. FINISH
         loadQuestion();
 
+        // 6. FILL THE REST IN THE BACKGROUND
+        // We don't 'await' this; it runs while the user is looking at question 1
+        preloadNextQuestions(3);
+      
     } catch (err) {
         console.error("startGame error:", err);
     }
@@ -2305,6 +2315,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
