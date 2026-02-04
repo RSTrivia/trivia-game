@@ -1304,7 +1304,7 @@ async function endGame() {
             finalScore.textContent = `${score}/${LITE_LIMIT}`;
         } else if (isWeeklyMode) {
             finalScore.textContent = `${score}/${WEEKLY_LIMIT}`;
-        } else
+        } else {
             // Normal display for other modes
             finalScore.textContent = score;
         }
@@ -2428,6 +2428,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
