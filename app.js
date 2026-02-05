@@ -2330,6 +2330,14 @@ function beginLiveMatch() {
         .subscribe();
 }
 
+function updateSurvivorCountUI(count) {
+    const survivorElement = document.getElementById('survivor-count');
+    if (survivorElement) {
+        survivorElement.innerText = `Survivors: ${count}`;
+    } else {
+        console.warn("Survivor count element not found in HTML!");
+    }
+}
 
 // Logic when the user answers wrong
 async function onWrongAnswer() {
@@ -2679,6 +2687,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
