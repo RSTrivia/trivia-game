@@ -15,6 +15,11 @@ let gameEnding = false;
 let isShowingNotification = false;
 let notificationQueue = [];
 let masterQuestionPool = [];
+//live mode
+let currentLobby = null;
+let lobbyChannel = null;
+let survivors = 0;
+let isLiveMode = false;
 
 const RELEASE_DATE = '2025-12-22';
 const WEEKLY_LIMIT = 50; // Change to 50 when ready to go live
@@ -798,8 +803,14 @@ async function preloadNextQuestions(targetCount = 3) {
 }
 
 
-async function startGame() {
+async function startGame(isLive = false) {
     try {
+        isLiveMode = isLive; // Set our global flag
+      if (isLiveMode) {
+            // In Live Mode, we don't shuffle. 
+            // We wait for the "Host" or "Edge Function" to broadcast the ID.
+            remainingQuestions = []; 
+        } else {
         // 1. DATA PREP (Background - User still sees Start Screen)
         if (masterQuestionPool.length === 0) {
             const { data: idList, error } = await supabase.from('questions').select('id');
@@ -815,16 +826,12 @@ async function startGame() {
       
         const bufferedIds = preloadQueue.map(q => q.id);
         remainingQuestions = remainingQuestions.filter(id => !bufferedIds.includes(id));
-
-        // 2. WAIT FOR DATA (Background - User still sees Start Screen)
-        // This is the key: we wait here while the screen hasn't changed yet
-        //await preloadNextQuestions();
-      
         // 5. FETCH ONLY THE FIRST QUESTION IMMEDIATELY
         // If queue is empty, get one right now so we can start
         if (preloadQueue.length === 0) {
             await preloadNextQuestions(1); // Modified to accept a 'count'
         }
+      }
 
         // 3. INTERNAL STATE RESET
         clearInterval(timer);
@@ -851,13 +858,17 @@ async function startGame() {
         document.getElementById('start-screen').classList.add('hidden');
         endScreen.classList.add('hidden');
 
-        // 6. FINISH
-        loadQuestion();
-
-        // 6. FILL THE REST IN THE BACKGROUND
-        // We don't 'await' this; it runs while the user is looking at question 1
-        preloadNextQuestions(3);
-      
+        // 4. STARTING THE ENGINE
+        if (isLiveMode) {
+            // DO NOT call loadQuestion() yet. 
+            // Wait for the Supabase Broadcast to tell us which question is #1.
+            showWaitingForPlayersOverlay(); 
+        } else {
+            loadQuestion(); // Start immediately for Solo
+            // 6. FILL THE REST IN THE BACKGROUND
+            // We don't 'await' this; it runs while the user is looking at question 1
+            preloadNextQuestions(3);
+        }
     } catch (err) {
         console.error("startGame error:", err);
     }
@@ -2188,6 +2199,137 @@ function showAchievementNotification(achievementName) {
 window.showAchievementNotification = showAchievementNotification;
 
 
+//live mode
+async function joinMatchmaking() {
+    // 1. Find an open lobby or create one
+    let { data: lobby } = await supabase
+        .from('live_lobbies')
+        .select('*')
+        .eq('status', 'waiting')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+    if (!lobby) {
+        const startTimestamp = new Date();
+        startTimestamp.setMinutes(startTimestamp.getMinutes() + 3); // 3 min timer
+
+        const { data: newLobby } = await supabase
+            .from('live_lobbies')
+            .insert([{ starts_at: startTimestamp.toISOString() }])
+            .select().single();
+        lobby = newLobby;
+    }
+
+    currentLobby = lobby;
+    setupLobbyRealtime(lobby);
+}
+
+function setupLobbyRealtime(lobby) {
+    lobbyChannel = supabase.channel(`lobby-${lobby.id}`, {
+        config: { presence: { key: userId } }
+    });
+
+    lobbyChannel
+        .on('presence', { event: 'sync' }, () => {
+            const state = lobbyChannel.presenceState();
+            const count = Object.keys(state).length;
+            
+            // UI Update: "14/25 players - Starting in 2:00"
+            updateLobbyUI(count, lobby.starts_at);
+
+            // INSTANT START: If 25 players join
+            if (count >= 25 && isHost(lobby)) { 
+                triggerGameStart(lobby.id); 
+            }
+        })
+        .on('broadcast', { event: 'start-game' }, () => {
+            beginLiveMatch(); // Move to the game screen
+        })
+        .subscribe(async (status) => {
+            if (status === 'SUBSCRIBED') {
+                await lobbyChannel.track({ online_at: new Date().toISOString() });
+            }
+        });
+}
+
+function beginLiveMatch() {
+    isLiveMode = true;
+    showGameScreen();
+    
+    const gameChannel = supabase.channel(`game-${currentLobby.id}`);
+
+    gameChannel
+        .on('broadcast', { event: 'player-died' }, () => {
+            survivors--;
+            updateSurvivorCountUI(survivors);
+            checkVictoryCondition();
+        })
+        .on('broadcast', { event: 'next-question' }, (payload) => {
+            // Server-synced progression
+            loadQuestion(payload.questionId); 
+        })
+        .subscribe();
+}
+
+
+// Logic when the user answers wrong
+async function onWrongAnswer() {
+    if (isLiveMode) {
+        // 1. Tell everyone else you died
+        gameChannel.send({ type: 'broadcast', event: 'player-died' });
+        
+        // 2. Local "Game Over" but allow them to join a NEW lobby immediately
+        showGameOverUI(); 
+        isLiveMode = false;
+        supabase.removeChannel(gameChannel);
+    }
+}
+
+
+function checkVictoryCondition() {
+    if (survivors === 1 && !hasDiedLocally) {
+        transitionToSoloMode();
+    }
+}
+
+function transitionToSoloMode() {
+    isLiveMode = false; // Stop listening to server timing
+    showVictoryBanner("Victory! Now go for the High Score!");
+    // The 'Next' button now works normally again
+    enableLocalNextButton(); 
+}
+
+function updateLobbyUI(count, startTime) {
+    const timerElement = document.getElementById('lobby-timer');
+    const countElement = document.getElementById('player-count');
+
+    countElement.innerText = `${count} players waiting...`;
+
+    const interval = setInterval(() => {
+        const remaining = new Date(startTime) - new Date();
+        if (remaining <= 0) {
+            clearInterval(interval);
+            timerElement.innerText = "Starting now...";
+            return;
+        }
+        const mins = Math.floor(remaining / 60000);
+        const secs = Math.floor((remaining % 60000) / 1000);
+        timerElement.innerText = `Starts in: ${mins}:${secs.toString().padStart(2, '0')}`;
+    }, 1000);
+}
+
+
+function showWaitingForPlayersOverlay() {
+    questionText.innerHTML = "Get Ready!<br><span style='font-size: 0.5em; opacity: 0.7;'>Waiting for match to begin...</span>";
+    answersBox.innerHTML = '<div class="loading-spinner"></div>'; // Or just leave empty
+}
+
+
+
+
+
+
 
 // ====== HELPERS & AUDIO ======
 async function loadSounds() {
@@ -2416,7 +2558,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });   // closes DOMContentLoaded listener
 
 
+
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
