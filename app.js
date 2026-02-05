@@ -696,7 +696,7 @@ function lockDailyButton() {
 
 function lockWeeklyButton() {
     if (!weeklyBtn) return;
-    weeklyBtn.classList.add('disabled');
+    weeklyBtn.classList.add('is-disabled'); // fix ??
     weeklyBtn.classList.remove('is-active');
     weeklyBtn.style.opacity = '0.5';
     weeklyBtn.style.pointerEvents = 'none'; // Makes it ignore all clicks/touches
@@ -704,7 +704,7 @@ function lockWeeklyButton() {
 }
 function lockLobbyButton() {
     if (!lobbyBtn) return;
-    lobbyBtn.classList.add('disabled');
+    lobbyBtn.classList.add('is-disabled');
     lobbyBtn.classList.remove('is-active');
     lobbyBtn.style.opacity = '0.5';
     lobbyBtn.style.pointerEvents = 'none'; // Makes it ignore all clicks/touches   
@@ -2664,6 +2664,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
