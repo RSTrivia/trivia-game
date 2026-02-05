@@ -889,12 +889,18 @@ async function startGame(isLive = false) {
 }
 
 
-async function loadQuestion() {
+async function loadQuestion(broadcastedId = null) {
     // 1. If we are in Live Mode and NO ID was provided, we wait.
     // This stops the "Auto-End" bug.
-    if (isLiveMode && !broadcastedId) {
-        console.log("Live mode: Waiting for host signal...");
-        return; 
+    if (isLiveMode) {
+    if (broadcastedId !== null) {
+            // Fetch specific question from Supabase using your existing RPC
+            const { data } = await supabase.rpc('get_question_by_id', { input_id: broadcastedId });
+            currentQuestion = data[0];
+        } else {
+            // Prevent the game from ending if we are just waiting
+            return; 
+        }
     }
    // Check for Weekly End Condition
     if (isWeeklyMode && weeklyQuestionCount >= WEEKLY_LIMIT) {
@@ -2737,6 +2743,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
