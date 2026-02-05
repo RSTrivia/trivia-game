@@ -2273,12 +2273,13 @@ function setupLobbyRealtime(lobby) {
             const state = lobbyChannel.presenceState();
             const count = Object.keys(state).length;
             
-            // UI Update
             updateLobbyUI(count, lobby.starts_at);
-
-            // INSTANT START logic
-            if (count >= 2 && isHost(lobby)) { //2 people waiting. change to 25 on release
-                triggerGameStart(lobby.id); 
+        
+            if (count >= 2 && isHost(lobby)) { 
+                // Add a 1-second delay to ensure all peers have finished subscribing
+                setTimeout(() => {
+                    triggerGameStart(lobby.id); 
+                }, 1000); 
             }
         })
         .on('broadcast', { event: 'chat' }, ({ payload }) => {
@@ -2433,8 +2434,10 @@ function isHost() {
 
 function triggerGameStart(lobbyId) {
     if (!lobbyChannel) return;
-
-    lobbyChannel.httpSend({
+  
+    console.log("Host is triggering game start for lobby:", lobbyId);
+  
+    lobbyChannel.send({
         type: 'broadcast',
         event: 'start-game',
         payload: { lobbyId: lobbyId } // The "pistol shot" data
@@ -2676,6 +2679,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
