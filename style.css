@@ -1713,8 +1713,23 @@ input.input-field:-webkit-autofill:active {
 }
 
 
+/* ====== HIDE TITLE IN LOBBY ====== */
+@media (max-width: 480px) {
+  /* Hides the big gold title when either game or lobby is active */
+  body.lobby-active h1 {
+    display: none !important;
+  }
+  
+  /* Create the space for user-controls and helpBtn at the top */
+  body.lobby-active .container {
+    padding-top: 60px !important; 
+  }
 
-
+  /* Ensure the UI doesn't jump too high */
+  body.lobby-active #app {
+    padding-top: 25px !important;
+  }
+}
 
 
 
