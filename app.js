@@ -924,18 +924,20 @@ async function loadQuestion() {
     questionText.textContent = '';
     answersBox.innerHTML = '';
 
-    // B, C, D. LOGIC & BUFFER CHECKS (Same as yours)
-    if (preloadQueue.length === 0 && remainingQuestions.length === 0 && currentQuestion !== null) {
-        await endGame();
-        return;
+    // Emergency Refill (The "Clean" Insurance)
+    // If the queue is getting low (2 or less), kick off a refill in the background
+    if (preloadQueue.length <= 2 && remainingQuestions.length > 0) {
+        preloadNextQuestions(5); // Increase buffer to 5
     }
+    // The "Stall" Guard
+    // Only await if we are literally empty
     if (preloadQueue.length === 0) await preloadNextQuestions();
+  
     if (preloadQueue.length === 0) {
         await endGame();
         return;
     }
   
-    // E. PULL QUESTION & F. BACKGROUND PRELOAD
     currentQuestion = preloadQueue.shift();
     preloadNextQuestions();
 
@@ -973,8 +975,6 @@ async function loadQuestion() {
     // START THE TIMER 
     startTimer();
     };
-   
-
    
 
 
@@ -2488,6 +2488,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
