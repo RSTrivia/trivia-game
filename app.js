@@ -1670,7 +1670,7 @@ async function saveNormalScore(currentUsername, finalScore, finalTime) {
 
 
 // 1. Updated checkNormalScoreAchievements function
-function checkNormalScoreAchievements(currentUsername, finalScore) {
+async function checkNormalScoreAchievements(currentUsername, finalScore) {
   const { data: { session } } = await supabase.auth.getSession();
       if (!session) return false;
       const userId = session.user.id;
@@ -1687,7 +1687,7 @@ function checkNormalScoreAchievements(currentUsername, finalScore) {
           return false;
       }
       
-      // 2. Now you can use record.score and record.time_ms
+      // 2. Now you can use record.score 
       const oldBest = record?.score || 0;
   
       // --- 2. ACHIEVEMENT MILESTONES ---
@@ -2488,6 +2488,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
