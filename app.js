@@ -12,14 +12,15 @@ let currentProfileXp = parseInt(localStorage.getItem('cached_xp')) || 0;    // S
 let syncChannel;
 let username = 'Guest';
 let gameEnding = false;
-let notificationQueue = [];
 let isShowingNotification = false;
-let currentMode = 'score'; // 'score' or 'xp'
+let notificationQueue = [];
 let masterQuestionPool = [];
+
 const RELEASE_DATE = '2025-12-22';
 const WEEKLY_LIMIT = 50; // Change to 50 when ready to go live
 const LITE_LIMIT = 100; // Change to 100 when ready to go live
 const number_of_questions = 610;
+
 const shareBtn = document.getElementById('shareBtn');
 const logBtn = document.getElementById('logBtn');
 const startBtn = document.getElementById('startBtn');
@@ -627,7 +628,6 @@ async function updateShareButtonState() {
 
 
 // ====== NEW: FETCH SCORE FROM DATABASE ======
-// Ensure fetchDailyStatus calls the button update at the end
 async function fetchDailyStatus(userId) {
     const { data, error } = await supabase
         .from('daily_attempts')
@@ -2417,6 +2417,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
