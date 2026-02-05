@@ -890,18 +890,12 @@ async function startGame(isLive = false) {
 
 
 async function loadQuestion(broadcastedId = null) {
-    // 1. If we are in Live Mode and NO ID was provided, we wait.
-    // This stops the "Auto-End" bug.
-    if (isLiveMode) {
-    if (broadcastedId !== null) {
-            // Fetch specific question from Supabase using your existing RPC
-            const { data } = await supabase.rpc('get_question_by_id', { input_id: broadcastedId });
-            currentQuestion = data[0];
-        } else {
-            // Prevent the game from ending if we are just waiting
+    // 1. Live Mode Guard: If we are in Live Mode but don't have an ID yet, 
+        // we stop and wait for the Supabase broadcast.
+        if (isLiveMode && broadcastedId === null) {
+            console.log("Waiting for host to broadcast question...");
             return; 
         }
-    }
    // Check for Weekly End Condition
     if (isWeeklyMode && weeklyQuestionCount >= WEEKLY_LIMIT) {
         await endGame();
@@ -926,14 +920,17 @@ async function loadQuestion(broadcastedId = null) {
   
     if (isLiveMode && broadcastedId !== null) {
         const { data, error } = await supabase.rpc('get_question_by_id', { input_id: broadcastedId });
-        if (data && data[0]) {
-            currentQuestion = data[0];
-            // Hide the "Get Ready" overlay now that we have the question
-            hideWaitingOverlay(); 
-        }
+        if (error || !data || !data[0]) {
+                    console.error("Live question fetch failed:", error);
+                    return;
+                }
+      currentQuestion = data[0];
+      // Hide the "Get Ready" overlay if it's visible
+      const overlay = document.getElementById('waiting-overlay');
+      if (overlay) overlay.classList.add('hidden');
+      
     } else {
-    // Emergency Refill (The "Clean" Insurance)
-    // If the queue is getting low (2 or less), kick off a refill in the background
+    // SOLO: Use the local preload queue
     if (preloadQueue.length <= 2 && remainingQuestions.length > 0) {
         preloadNextQuestions(5); // Increase buffer to 5
     }
@@ -1126,7 +1123,17 @@ async function checkAnswer(choiceId, btn) {
       
         // This is where the pet roll happens
         rollForPet();
-        setTimeout(loadQuestion, 1000);
+        if (isLiveMode) {
+                // Do NOTHING here. 
+                // We wait for the 'next-question' broadcast from the host.
+                console.log("Correct! Waiting for host to send next question...");
+            } else {
+                // SOLO, DAILY, or POST-VICTORY mode:
+                // We trigger the next question ourselves after 1 second.
+                setTimeout(() => {
+                    loadQuestion(); 
+                }, 1000);
+          }
     } else {
         playSound(wrongBuffer);
         streak = 0; // Reset streak on wrong answer in both Normal and Weekly modes
@@ -2367,19 +2374,16 @@ function beginLiveMatch() {
         .subscribe(async (status) => {
             // ONLY send the first question once we are officially connected
             if (status === 'SUBSCRIBED' && isHost()) {
-                console.log("Host connected. Preparing first question...");
-                
                 setTimeout(() => {
-                    // FIX: Pick a REAL ID from your master pool, not 0
-                    const randomIndex = Math.floor(Math.random() * masterQuestionPool.length);
-                    const realQuestionId = masterQuestionPool[randomIndex];
-
+                    // Pick a REAL id from the pool you loaded
+                    const pickedId = masterQuestionPool[Math.floor(Math.random() * masterQuestionPool.length)];
+                    
                     gameChannel.send({
                         type: 'broadcast',
                         event: 'next-question',
-                        payload: { questionId: realQuestionId }
+                        payload: { questionId: pickedId }
                     });
-                }, 3000); 
+                }, 3000);
             }
         });
   
@@ -2422,9 +2426,37 @@ function checkVictoryCondition() {
 
 function transitionToSoloMode() {
     isLiveMode = false; // Stop listening to server timing
+    
+    // 1. Victory UI
     showVictoryBanner("Victory! Now go for the High Score!");
-    // The 'Next' button now works normally again
+    
+    // 2. REFILL THE POOL
+    // If the pool was emptied for Live Mode, we must refill it now 
+    // so loadQuestion() has data to work with.
+    if (remainingQuestions.length === 0) {
+        remainingQuestions = [...masterQuestionPool].sort(() => Math.random() - 0.5);
+    }
+
+    // 3. Ensure the buffer is filled
+    preloadNextQuestions(3);
+
+    // 4. Cleanup Channel (Optional but recommended)
+    if (gameChannel) {
+        gameChannel.unsubscribe();
+        gameChannel = null;
+    }
+
+    // 5. The 'Next' button/logic now works normally again
     enableLocalNextButton(); 
+}
+
+function showVictoryBanner(message) {
+    // Reuse your notification logic if you have it
+    if (typeof showNotification === 'function') {
+        showNotification(message, bonusBuffer, "#FFD700"); // Gold text
+    } else {
+        alert(message); // Fallback
+    }
 }
 
 function updateLobbyUI(count, startTime) {
@@ -2743,6 +2775,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
