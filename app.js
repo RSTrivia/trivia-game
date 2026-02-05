@@ -890,6 +890,12 @@ async function startGame(isLive = false) {
 
 
 async function loadQuestion() {
+    // 1. If we are in Live Mode and NO ID was provided, we wait.
+    // This stops the "Auto-End" bug.
+    if (isLiveMode && !broadcastedId) {
+        console.log("Live mode: Waiting for host signal...");
+        return; 
+    }
    // Check for Weekly End Condition
     if (isWeeklyMode && weeklyQuestionCount >= WEEKLY_LIMIT) {
         await endGame();
@@ -901,7 +907,7 @@ async function loadQuestion() {
         return;
     }
     // Normal Mode "Out of questions" check
-    if (preloadQueue.length === 0 && remainingQuestions.length === 0 && currentQuestion !== null) {
+    if (!isLiveMode && preloadQueue.length === 0 && remainingQuestions.length === 0 && currentQuestion !== null) {
         await endGame();
         return;
     }
@@ -911,7 +917,15 @@ async function loadQuestion() {
     questionImage.src = '';
     questionText.textContent = '';
     answersBox.innerHTML = '';
-
+  
+    if (isLiveMode && broadcastedId !== null) {
+        const { data, error } = await supabase.rpc('get_question_by_id', { input_id: broadcastedId });
+        if (data && data[0]) {
+            currentQuestion = data[0];
+            // Hide the "Get Ready" overlay now that we have the question
+            hideWaitingOverlay(); 
+        }
+    } else {
     // Emergency Refill (The "Clean" Insurance)
     // If the queue is getting low (2 or less), kick off a refill in the background
     if (preloadQueue.length <= 2 && remainingQuestions.length > 0) {
@@ -925,9 +939,10 @@ async function loadQuestion() {
         await endGame();
         return;
     }
-  
+    
     currentQuestion = preloadQueue.shift();
     preloadNextQuestions();
+  }
 
     // --- MINIMAL CHANGE START: Define the display logic ---
    
@@ -2336,28 +2351,33 @@ function beginLiveMatch() {
             checkVictoryCondition();
         })
         .on('broadcast', { event: 'next-question' }, (payload) => {
-            // Server-synced progression
+            console.log("Received Question ID:", payload.questionId);
+            // Hide the "Waiting" overlay once the question arrives
+            const overlay = document.getElementById('waiting-overlay');
+            if (overlay) overlay.classList.add('hidden');
+            
             loadQuestion(payload.questionId); 
         })
-        .subscribe();
+        .subscribe(async (status) => {
+            // ONLY send the first question once we are officially connected
+            if (status === 'SUBSCRIBED' && isHost()) {
+                console.log("Host connected. Preparing first question...");
+                
+                setTimeout(() => {
+                    // FIX: Pick a REAL ID from your master pool, not 0
+                    const randomIndex = Math.floor(Math.random() * masterQuestionPool.length);
+                    const realQuestionId = masterQuestionPool[randomIndex];
+
+                    gameChannel.send({
+                        type: 'broadcast',
+                        event: 'next-question',
+                        payload: { questionId: realQuestionId }
+                    });
+                }, 3000); 
+            }
+        });
   
     startGame(isLiveMode);
-  
-    // 4. THE FIX: Host sends the first question after a small delay
-    if (isHost()) {
-        console.log("I am Host. Sending first question...");
-        setTimeout(() => {
-            // Pick a random starting ID or just 0
-            const firstQuestionId = 0; 
-            
-            // Broadcast to EVERYONE (including yourself)
-            gameChannel.send({
-                type: 'broadcast',
-                event: 'next-question',
-                payload: { questionId: firstQuestionId }
-            });
-        }, 3000); // 3-second "Get Ready" period
-    }
 }
 
 function updateSurvivorCountUI(count) {
@@ -2717,6 +2737,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
