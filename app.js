@@ -251,32 +251,26 @@ async function init() {
     
   
   // 1. Set up the listener FIRST
-      supabase.auth.onAuthStateChange((event, session) => {
-          //console.log("Auth Event:", event);
+    supabase.auth.onAuthStateChange((event, session) => {
+          if (['SIGNED_IN', 'TOKEN_REFRESHED', 'SIGNED_OUT', 'USER_UPDATED'].includes(event)) {
+              handleAuthChange(event, session);
+          }
+      });
           
-         if (['SIGNED_IN', 'TOKEN_REFRESHED', 'SIGNED_OUT'].includes(event)) {
-            handleAuthChange(event, session);
-        }
-          
-    });
-  
     // 1. Get the current session
     const { data: { session } } = await supabase.auth.getSession();
   
     // 2. Run the UI sync once
     if (session) {
+           // We have a session, sync everything
             await handleAuthChange('INITIAL_LOAD', session);
         } else {
-            const isActuallyLoggedOut = !localStorage.getItem('cachedUsername');
-            if (isActuallyLoggedOut) {
+            // No session found. Check if we have cached data before giving up.
+            const cachedUser = localStorage.getItem('cachedUsername');
+            if (!cachedUser) {
+                // Truly a new guest
                 await handleAuthChange('SIGNED_OUT', null);
-            } else {
-                setTimeout(async () => {
-                    const { data: { session: delayedSession } } = await supabase.auth.getSession();
-                    if (!delayedSession) await handleAuthChange('SIGNED_OUT', null);
-                    else await handleAuthChange('TOKEN_REFRESHED', delayedSession);
-                }, 2000);
-            }
+            }      
     }
      
     // 2. Auth Button (Log In / Log Out)
@@ -519,21 +513,25 @@ async function handleAuthChange(event, session) {
                     btn.style.pointerEvents = 'none';
                 }
             });
+        } else {
+            // This handles the "waiting" state - show cache if it exists
+            username = localStorage.getItem('cachedUsername') || 'Guest';
+            currentProfileXp = parseInt(localStorage.getItem('cached_xp')) || 0;
         }
-        if (span) span.textContent = ' Guest';
+        if (span) span.textContent = 'Guest';
         if (label) label.textContent = 'Log In';
         //syncDailyButton();
-        lockDailyButton();
         updateLevelUI()
+        lockDailyButton();
         return; // Stop here for guests
     }
   
+   // 3. Handle LOGGED IN State
     userId = session.user.id;
     // 1. Immediately sync with local cache so we don't overwrite the HTML script's work
     username = localStorage.getItem('cachedUsername') || 'Player';
     currentProfileXp = parseInt(localStorage.getItem('cached_xp')) || 0;
  
-  
     // 2. Update the UI with the cached values right now
     if (span) span.textContent = ' ' + username;
     if (label) label.textContent = 'Log Out';
@@ -2666,6 +2664,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
