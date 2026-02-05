@@ -305,6 +305,9 @@ async function init() {
       }
   };
 
+
+
+  
     // 3. Game Buttons
     if (startBtn) {
         startBtn.onclick = async () => {
@@ -317,6 +320,15 @@ async function init() {
         };
     }
 
+lobbyBtn.onclick = async () => {
+    // 1. Show the Lobby UI (Hide the start screen)
+    document.getElementById('start-screen').classList.add('hidden');
+    document.getElementById('lobby-screen').classList.remove('hidden');
+
+    // 2. Initialize the search for a match
+    await joinMatchmaking();
+};
+  
     if (liteBtn) {
     liteBtn.onclick = async () => {
         isDailyMode = false;
@@ -2560,6 +2572,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
