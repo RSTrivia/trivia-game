@@ -1036,6 +1036,7 @@ async function checkAnswer(choiceId, btn) {
     clearInterval(timer);
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
   
+    // increment weekly count
     if (isWeeklyMode) weeklyQuestionCount++;
   
     const { data: isCorrect, error } = await supabase.rpc('check_my_answer', {
@@ -1048,7 +1049,11 @@ async function checkAnswer(choiceId, btn) {
     if (isCorrect) {
         playSound(correctBuffer);
         btn.classList.add('correct');
-        // increment weekly count
+        // Update Local State & UI
+        score++;
+        updateScore();
+        const currentUsername = localStorage.getItem('cachedUsername') || 'Player';
+       
         // 1. Get the session
         const { data: { session } } = await supabase.auth.getSession();
         
@@ -1095,6 +1100,10 @@ async function checkAnswer(choiceId, btn) {
             if (isWeeklyMode && score === 25) {
                 saveAchievement('weekly_25', true); // Sync to Supabase
             }
+
+            // normal mode scores - achievements
+            checkNormalScoreAchievements(currentUsername, score);
+          
             // 5. UPDATE DATA
             currentProfileXp += gained; // Add the XP to local state
             localStorage.setItem('cached_xp', currentProfileXp);
@@ -1105,9 +1114,7 @@ async function checkAnswer(choiceId, btn) {
             .update({ xp: currentProfileXp })
             .eq('id', session.user.id);
         }
-        // Update Local State & UI
-        score++;
-        updateScore();
+      
         // This is where the pet roll happens
         rollForPet();
         setTimeout(loadQuestion, 1000);
@@ -1167,17 +1174,22 @@ function checkLevelUp(gainedXp) {
 
         // --- MILESTONE CHECKS ---
         if (newLevel === 10) {
-            saveAchievement('reach_level_10', true); // Save to Supabase
+            //saveAchievement('reach_level_10', true); // Save to Supabase
             showAchievementNotification("Reach Level 10");
         } else if (newLevel === 50) {
-            saveAchievement('reach_level_50', true);
+            //saveAchievement('reach_level_50', true);
             showAchievementNotification("Reach Level 50");
         } else if (newLevel === 99) {
-            saveAchievement('reach_max_level', true);
+            //saveAchievement('reach_max_level', true);
             showAchievementNotification("Reach Max Level");
         }
     }
 }
+
+
+
+
+
 
 function triggerFireworks() {
     const container = document.getElementById('game');
@@ -1622,12 +1634,6 @@ async function saveNormalScore(currentUsername, finalScore, finalTime) {
     // Safely grab existing achievements or start fresh
     let achievements = profile?.achievements || {};
 
-    // --- 2. ACHIEVEMENT MILESTONES ---
-    if (finalScore >= 10 && oldBest < 10) showAchievementNotification("Reach 10 Score");
-    if (finalScore >= 50 && oldBest < 50) showAchievementNotification("Reach 50 Score");
-    if (finalScore >= 100 && oldBest < 100) showAchievementNotification("Reach 100 Score");
-    if (finalScore >= number_of_questions && oldBest < number_of_questions) showAchievementNotification("Reach Max Score");
-  
     // --- 3. PB LOGIC ---
     const isHigherScore = finalScore > oldBest;
     const isFasterTime = (finalScore === oldBest && finalTime < oldTime);
@@ -1660,6 +1666,35 @@ async function saveNormalScore(currentUsername, finalScore, finalTime) {
     }
     
     return false; // Not a PB
+}
+
+
+// 1. Updated checkNormalScoreAchievements function
+function checkNormalScoreAchievements(currentUsername, finalScore) {
+  const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return false;
+      const userId = session.user.id;
+  
+      // 1. Fetch only the normal mode score
+      const { data: record, error } = await supabase
+          .from('scores')
+          .select('score')
+          .eq('user_id', userId)
+          .maybeSingle();
+      
+      if (error) {
+          console.error("Error fetching score:", error.message);
+          return false;
+      }
+      
+      // 2. Now you can use record.score and record.time_ms
+      const oldBest = record?.score || 0;
+  
+      // --- 2. ACHIEVEMENT MILESTONES ---
+      if (finalScore >= 10 && oldBest < 10) showAchievementNotification("Reach 10 Score");
+      if (finalScore >= 50 && oldBest < 50) showAchievementNotification("Reach 50 Score");
+      if (finalScore >= 100 && oldBest < 100) showAchievementNotification("Reach 100 Score");
+      if (finalScore >= number_of_questions && oldBest < number_of_questions) showAchievementNotification("Reach Max Score");
 }
 
 
@@ -2453,6 +2488,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
