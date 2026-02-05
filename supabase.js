@@ -1,6 +1,6 @@
 // supabase.js
 //import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { createClient } from 'https://unpkg.com/@supabase/supabase-js@2/dist/main/index.js';
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
 
 // Your Supabase project URL and anon key
 const SUPABASE_URL = 'https://nnlkcwvqhkxasjtshvpw.supabase.co';
