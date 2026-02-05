@@ -362,7 +362,7 @@ lobbyBtn.onclick = async () => {
                 type: 'broadcast',
                 event: 'lock-daily',
                 payload: { userId: session.user.id }
-            });.then(resp => {
+            }).then(resp => {
               if (resp !== 'ok') console.error("Broadcast failed:", resp);
           });
         }
@@ -2671,6 +2671,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
