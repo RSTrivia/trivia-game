@@ -2380,11 +2380,12 @@ async function beginLiveMatch() {
         config: { presence: { key: userId } }
     });
 
-    gameChannel.on('broadcast', { event: 'next-question' }, ({ payload }) => {
+    gameChannel
+      .on('broadcast', { event: 'next-question' }, ({ payload }) => {
         console.log("Question received. Syncing data...");
         // Pass everything to the function
         loadQuestion(payload.questionId, payload.startTime); 
-    });
+    })
         .on('presence', { event: 'sync' }, () => {
             const currentState = gameChannel.presenceState();
             const playersJoined = Object.keys(currentState).length;
@@ -2830,6 +2831,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
