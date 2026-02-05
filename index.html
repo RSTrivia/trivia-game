@@ -239,6 +239,9 @@
       
       <!-- Game Screen -->
       <div id="game" class="hidden">
+      <div id="live-stats" style="color: #d4af37; font-family: 'Cinzel', serif; text-align: center;">
+          <span id="survivor-count">Survivors: 0</span>
+      </div>
         <div id="game-notifications"></div> 
         <div id="score">Score: 0</div>
         <div id="question">
@@ -249,9 +252,6 @@
         <div id="timer">
           Time: <span id="time-wrap"><span id="time">15</span>s</span>
         </div>
-        <div id="live-stats" style="color: #d4af37; font-family: 'Cinzel', serif;">
-          <span id="survivor-count">Survivors: 0</span>
-      </div>
       </div>
 
       <!-- Start Screen -->
@@ -416,6 +416,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
 
 
