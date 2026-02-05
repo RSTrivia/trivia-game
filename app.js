@@ -2253,6 +2253,7 @@ function setupLobbyRealtime(lobby) {
     config: { 
         presence: { key: userId },
         broadcast: { self: true } // This ensures you see your own messages
+      }
     });
 
     // 2. Chain all listeners (.on)
@@ -2635,6 +2636,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
