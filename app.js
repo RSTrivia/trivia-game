@@ -889,7 +889,7 @@ async function startGame(isLive = false) {
 }
 
 
-async function loadQuestion(broadcastedId = null) {
+async function loadQuestion(broadcastedId = null, startTime = null) {
     // 1. Live Mode Guard: If we are in Live Mode but don't have an ID yet, 
         // we stop and wait for the Supabase broadcast.
         if (isLiveMode && broadcastedId === null) {
@@ -928,6 +928,7 @@ async function loadQuestion(broadcastedId = null) {
     // SOLO: Use the local preload queue
       if (preloadQueue.length <= 2 && remainingQuestions.length > 0) {
           preloadNextQuestions(5); // Increase buffer to 5
+      }
       // The "Stall" Guard
       // Only await if we are literally empty
       if (preloadQueue.length === 0) await preloadNextQuestions();
@@ -974,26 +975,30 @@ async function loadQuestion(broadcastedId = null) {
         questionImage.src = '';
     }
   
-    // --- THE SYNC FIX ---
-    if (isLiveMode && startTime) {
-        const now = Date.now();
-        const waitTime = startTime - now;
-
-        if (waitTime > 0) {
-            console.log(`Waiting ${waitTime}ms for synchronized start...`);
-            setTimeout(() => {
-                const overlay = document.getElementById('waiting-overlay');
-                if (overlay) overlay.classList.add('hidden');
-                startTimer();
-            }, waitTime);
-        } else {
-            // If mobile was extremely slow and missed the window
-            startTimer();
-        }
-    } else {
-        // Solo mode starts immediately
-        startTimer();
-    }
+  // --- D. THE SYNC LOGIC (PLACE IT HERE) ---
+      if (isLiveMode && startTime) {
+          const now = Date.now();
+          const delay = startTime - now;
+  
+          if (delay > 0) {
+              console.log(`Syncing... Question will reveal in ${delay}ms`);
+              setTimeout(() => {
+                  // Remove the "Get Ready" overlay
+                  const overlay = document.getElementById('waiting-overlay');
+                  if (overlay) overlay.classList.add('hidden');
+                  
+                  startTimer(); 
+              }, delay);
+          } else {
+              // Delay is 0 or negative (player joined late), start immediately
+              const overlay = document.getElementById('waiting-overlay');
+              if (overlay) overlay.classList.add('hidden');
+              startTimer();
+          }
+      } else {
+          // Solo mode: No delay needed
+          startTimer();
+      }
 };
    
 
@@ -2376,21 +2381,10 @@ async function beginLiveMatch() {
     });
 
     gameChannel.on('broadcast', { event: 'next-question' }, ({ payload }) => {
-            const now = Date.now();
-            const delay = payload.executeAt - now;
-        
-            console.log(`Question received. Syncing... starting in ${delay}ms`);
-        
-            if (delay > 0) {
-                // We wait for the synchronized start
-                setTimeout(() => {
-                    loadQuestion(payload.questionId);
-                }, delay);
-            } else {
-                // If the mobile was REALLY slow and missed the window, load immediately
-                loadQuestion(payload.questionId);
-            }
-        });
+        console.log("Question received. Syncing data...");
+        // Pass everything to the function
+        loadQuestion(payload.questionId, payload.startTime); 
+    });
         .on('presence', { event: 'sync' }, () => {
             const currentState = gameChannel.presenceState();
             const playersJoined = Object.keys(currentState).length;
@@ -2427,15 +2421,16 @@ async function sendFirstLiveQuestion() {
 
     const firstId = masterQuestionPool[Math.floor(Math.random() * masterQuestionPool.length)];
     
-    // Set a target start time 2 seconds into the future
-    const startTime = Date.now() + 2000; 
+    // Set target start time: 2.5 seconds from now
+    // This gives mobile enough time to: 1. Receive msg, 2. Fetch from DB
+    const executeAt = Date.now() + 2500; 
 
     gameChannel.send({
         type: 'broadcast',
         event: 'next-question',
         payload: { 
             questionId: firstId,
-            executeAt: startTime // Everyone will wait until this exact moment
+            startTime: executeAt 
         }
     });
 }
@@ -2835,6 +2830,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
