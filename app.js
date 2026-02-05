@@ -2327,9 +2327,7 @@ function beginLiveMatch() {
     survivors = Object.keys(state).length; 
     updateSurvivorCountUI(survivors);
   
-    startGame(isLiveMode);
-  
-    gameChannel = supabase.channel(`game-${currentLobby.id}`);
+     gameChannel = supabase.channel(`game-${currentLobby.id}`);
 
     gameChannel
         .on('broadcast', { event: 'player-died' }, () => {
@@ -2342,6 +2340,24 @@ function beginLiveMatch() {
             loadQuestion(payload.questionId); 
         })
         .subscribe();
+  
+    startGame(isLiveMode);
+  
+    // 4. THE FIX: Host sends the first question after a small delay
+    if (isHost()) {
+        console.log("I am Host. Sending first question...");
+        setTimeout(() => {
+            // Pick a random starting ID or just 0
+            const firstQuestionId = 0; 
+            
+            // Broadcast to EVERYONE (including yourself)
+            gameChannel.send({
+                type: 'broadcast',
+                event: 'next-question',
+                payload: { questionId: firstQuestionId }
+            });
+        }, 3000); // 3-second "Get Ready" period
+    }
 }
 
 function updateSurvivorCountUI(count) {
@@ -2701,6 +2717,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
