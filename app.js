@@ -15,15 +15,17 @@ let gameEnding = false;
 let isShowingNotification = false;
 let notificationQueue = [];
 let masterQuestionPool = [];
+
 //live mode
 let currentLobby = null;
 let lobbyChannel = null;
+let lobbyTimerInterval = null;
+let userId = null; // Add this globally
+let gameChannel = null;
 let survivors = 0;
 let isLiveMode = false;
 const chatInput = document.getElementById('chatInput');
 const chatMessages = document.getElementById('chat-messages');
-let lobbyTimerInterval = null;
-let userId = null; // Add this globally
 
 const RELEASE_DATE = '2025-12-22';
 const WEEKLY_LIMIT = 50; // Change to 50 when ready to go live
@@ -2312,7 +2314,7 @@ function beginLiveMatch() {
   
     startGame(isLiveMode);
   
-    const gameChannel = supabase.channel(`game-${currentLobby.id}`);
+    gameChannel = supabase.channel(`game-${currentLobby.id}`);
 
     gameChannel
         .on('broadcast', { event: 'player-died' }, () => {
@@ -2674,6 +2676,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
