@@ -132,7 +132,8 @@ const xpTab = document.getElementById('xpTab');
 const liteTab = document.getElementById('liteTab');
   
 let currentMode = 'score'; 
-
+let realtimeSubscription = null; // Track the active listener
+  
 function getLevel(xp) {
     if (!xp || xp <= 0) return 1;
     if (xp >= 100000) return 99;
@@ -247,6 +248,30 @@ async function fetchLeaderboard() {
   }
 }
 
+  // --- NEW: REALTIME SUBSCRIPTION LOGIC ---
+function subscribeToLeaderboard() {
+    // 1. Clean up existing subscription if it exists
+    if (realtimeSubscription) {
+        supabase.removeChannel(realtimeSubscription);
+    }
+
+    // 2. Determine which table to watch
+    const tableToWatch = (currentMode === 'xp') ? 'profiles' : 'scores';
+
+    // 3. Create the listener
+    realtimeSubscription = supabase
+        .channel('live-leaderboard')
+        .on(
+            'postgres_changes', 
+            { event: '*', schema: 'public', table: tableToWatch }, 
+            (payload) => {
+                console.log('Change detected!', payload);
+                fetchLeaderboard(); // Refresh the data when a change happens
+            }
+        )
+        .subscribe();
+}
+  
 // Unified Tab Click Logic
 function handleTabClick(mode, btn) {
     if (currentMode === mode || !btn) return;
@@ -259,6 +284,7 @@ function handleTabClick(mode, btn) {
     if (cached) updateLeaderboard(JSON.parse(cached));
 
     fetchLeaderboard();
+    subscribeToLeaderboard(); // Re-subscribe to the correct table
 }
 
 scoreTab.onclick = () => handleTabClick('score', scoreTab);
@@ -273,10 +299,12 @@ if(liteTab) liteTab.onclick = () => handleTabClick('lite', liteTab);
     updateLeaderboard(JSON.parse(cachedString));
   }
   await fetchLeaderboard();
+  subscribeToLeaderboard(); // Start the first listener
 })();
 </script>
 </body>
 </html>
+
 
 
 
