@@ -919,24 +919,20 @@ async function loadQuestion(broadcastedId = null) {
     answersBox.innerHTML = '';
   
     if (isLiveMode && broadcastedId !== null) {
+        // FETCH DATA IMMEDIATELY
         const { data, error } = await supabase.rpc('get_question_by_id', { input_id: broadcastedId });
-        if (error || !data || !data[0]) {
-                    console.error("Live question fetch failed:", error);
-                    return;
-                }
-      currentQuestion = data[0];
-      // Hide the "Get Ready" overlay if it's visible
-      const overlay = document.getElementById('waiting-overlay');
-      if (overlay) overlay.classList.add('hidden');
+        if (error || !data || !data[0]) return;
+        currentQuestion = data[0];
       
     } else {
     // SOLO: Use the local preload queue
-    if (preloadQueue.length <= 2 && remainingQuestions.length > 0) {
-        preloadNextQuestions(5); // Increase buffer to 5
+      if (preloadQueue.length <= 2 && remainingQuestions.length > 0) {
+          preloadNextQuestions(5); // Increase buffer to 5
+      // The "Stall" Guard
+      // Only await if we are literally empty
+      if (preloadQueue.length === 0) await preloadNextQuestions();
     }
-    // The "Stall" Guard
-    // Only await if we are literally empty
-    if (preloadQueue.length === 0) await preloadNextQuestions();
+
   
     if (preloadQueue.length === 0) {
         await endGame();
@@ -978,9 +974,27 @@ async function loadQuestion(broadcastedId = null) {
         questionImage.src = '';
     }
   
-    // START THE TIMER 
-    startTimer();
-    };
+    // --- THE SYNC FIX ---
+    if (isLiveMode && startTime) {
+        const now = Date.now();
+        const waitTime = startTime - now;
+
+        if (waitTime > 0) {
+            console.log(`Waiting ${waitTime}ms for synchronized start...`);
+            setTimeout(() => {
+                const overlay = document.getElementById('waiting-overlay');
+                if (overlay) overlay.classList.add('hidden');
+                startTimer();
+            }, waitTime);
+        } else {
+            // If mobile was extremely slow and missed the window
+            startTimer();
+        }
+    } else {
+        // Solo mode starts immediately
+        startTimer();
+    }
+};
    
 
 
@@ -2361,11 +2375,22 @@ async function beginLiveMatch() {
         config: { presence: { key: userId } }
     });
 
-    gameChannel
-        .on('broadcast', { event: 'next-question' }, ({ payload }) => {
-            // This is where the non-host finally gets the question
-            if (payload.questionId) loadQuestion(payload.questionId);
-        })
+    gameChannel.on('broadcast', { event: 'next-question' }, ({ payload }) => {
+            const now = Date.now();
+            const delay = payload.executeAt - now;
+        
+            console.log(`Question received. Syncing... starting in ${delay}ms`);
+        
+            if (delay > 0) {
+                // We wait for the synchronized start
+                setTimeout(() => {
+                    loadQuestion(payload.questionId);
+                }, delay);
+            } else {
+                // If the mobile was REALLY slow and missed the window, load immediately
+                loadQuestion(payload.questionId);
+            }
+        });
         .on('presence', { event: 'sync' }, () => {
             const currentState = gameChannel.presenceState();
             const playersJoined = Object.keys(currentState).length;
@@ -2396,34 +2421,23 @@ async function beginLiveMatch() {
 }
 
 
-// Helper function to handle the broadcast
 async function sendFirstLiveQuestion() {
     if (firstQuestionSent) return;
     firstQuestionSent = true;
 
-    if (masterQuestionPool.length === 0) {
-        const { data } = await supabase.from('questions').select('id');
-        masterQuestionPool = data.map(q => q.id);
-    }
-
     const firstId = masterQuestionPool[Math.floor(Math.random() * masterQuestionPool.length)];
+    
+    // Set a target start time 2 seconds into the future
+    const startTime = Date.now() + 2000; 
 
-    // Broadcast immediately
     gameChannel.send({
         type: 'broadcast',
         event: 'next-question',
-        payload: { questionId: firstId }
+        payload: { 
+            questionId: firstId,
+            executeAt: startTime // Everyone will wait until this exact moment
+        }
     });
-
-    // BACKUP: Send it again 1 second later just in case the player's 
-    // listener wasn't fully "wired up" during the first millisecond.
-    setTimeout(() => {
-        gameChannel.send({
-            type: 'broadcast',
-            event: 'next-question',
-            payload: { questionId: firstId }
-        });
-    }, 1000);
 }
 
 function updateSurvivorCountUI(count) {
@@ -2821,6 +2835,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
