@@ -2242,7 +2242,7 @@ async function joinMatchmaking() {
 
     if (!lobby) {
         const startTimestamp = new Date();
-        startTimestamp.setMinutes(startTimestamp.getMinutes() + 3); // 3 min timer
+        startTimestamp.setMinutes(startTimestamp.getMinutes() + 1); // 3 min timer
 
         const { data: newLobby } = await supabase
             .from('live_lobbies')
@@ -2275,7 +2275,7 @@ function setupLobbyRealtime(lobby) {
             updateLobbyUI(count, lobby.starts_at);
 
             // INSTANT START logic
-            if (count >= 25 && isHost(lobby)) { 
+            if (count >= 2 && isHost(lobby)) { 
                 triggerGameStart(lobby.id); 
             }
         })
@@ -2674,6 +2674,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
