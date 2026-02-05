@@ -2418,6 +2418,20 @@ function isHost() {
     return players[0] === userId; // Am I the first one?
 }
 
+function triggerGameStart(lobbyId) {
+    if (!lobbyChannel) return;
+
+    lobbyChannel.httpSend({
+        type: 'broadcast',
+        event: 'start-game',
+        payload: { lobbyId: lobbyId } // The "pistol shot" data
+    });
+}
+
+
+
+
+
 
 
 // ====== HELPERS & AUDIO ======
@@ -2649,6 +2663,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
