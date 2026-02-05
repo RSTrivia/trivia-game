@@ -486,6 +486,7 @@ if (playAgainBtn) {
 async function handleAuthChange(event, session) {
     const span = document.querySelector('#usernameSpan');
     const label = authBtn?.querySelector('.btn-label');
+    
     // Ensure the auth button is ALWAYS active so guests can actually click "Log In"
     if (authBtn) {
         authBtn.style.opacity = '1';
@@ -495,6 +496,7 @@ async function handleAuthChange(event, session) {
   
     // 1. Logged Out State
     if (!session) {
+        userId = null;
         // IMPORTANT: Only wipe if we are CERTAIN this is an intentional logout
         // and not just a slow connection.
         if (event === 'SIGNED_OUT') {
@@ -525,10 +527,12 @@ async function handleAuthChange(event, session) {
         updateLevelUI()
         return; // Stop here for guests
     }
+  
+    userId = session.user.id;
     // 1. Immediately sync with local cache so we don't overwrite the HTML script's work
     username = localStorage.getItem('cachedUsername') || 'Player';
     currentProfileXp = parseInt(localStorage.getItem('cached_xp')) || 0;
-    userId = session.user.id;
+ 
   
     // 2. Update the UI with the cached values right now
     if (span) span.textContent = ' ' + username;
@@ -540,7 +544,7 @@ async function handleAuthChange(event, session) {
     const { data: profile } = await supabase
         .from('profiles')
         .select('username, xp, achievements')
-        .eq('id', session.userId)
+        .eq('id', userId)
         .single();
 
     if (profile) {
@@ -2246,7 +2250,9 @@ async function joinMatchmaking() {
 function setupLobbyRealtime(lobby) {
     // 1. Create the channel
     lobbyChannel = supabase.channel(`lobby-${lobby.id}`, {
-        config: { presence: { key: userId } }
+    config: { 
+        presence: { key: userId },
+        broadcast: { self: true } // This ensures you see your own messages
     });
 
     // 2. Chain all listeners (.on)
@@ -2629,6 +2635,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
