@@ -2312,13 +2312,16 @@ function setupLobbyRealtime(lobby) {
                 }, 1000); 
             }
         })
-        .on('broadcast', { event: 'chat' }, ({ payload }) => {
-            // FIXED: Added the chat listener here
-            appendMessage(payload.username, payload.message);
-        })
-        .on('broadcast', { event: 'start-game' }, () => {
-            beginLiveMatch(); 
-        })
+       .on('broadcast', { event: 'start-game' }, () => {
+          console.log("Start signal received! Switching to game screen...");
+          // Force UI swap BEFORE initializing the next channel
+          document.getElementById('lobby-screen')?.classList.add('hidden');
+          document.getElementById('start-screen')?.classList.add('hidden');
+          document.body.classList.add('game-active');
+          game.classList.remove('hidden');
+          
+          beginLiveMatch(); 
+      })
         // 3. Finally, subscribe
       .subscribe(async (status) => {
           if (status === 'SUBSCRIBED') {
@@ -2344,7 +2347,9 @@ async function beginLiveMatch() {
     // Get the exact count of players who were in the lobby
     const finalLobbyState = lobbyChannel.presenceState();
     const expectedPlayers = Object.keys(finalLobbyState).length;
-
+    survivors = expectedPlayers; // Set the survivor count
+    updateSurvivorCountUI(survivors);
+  
     // UI Cleanup
     document.getElementById('lobby-screen')?.classList.add('hidden');
     document.getElementById('start-screen')?.classList.add('hidden');
@@ -2367,10 +2372,16 @@ async function beginLiveMatch() {
             
             console.log(`Sync: ${playersJoined}/${expectedPlayers} players arrived.`);
 
-            // HOST LOGIC: Only release the question when EVERYONE has arrived
+            // FIX: If we have enough players, wait 1.5s to ensure everyone's JS is "listening"
             if (isHost() && playersJoined >= expectedPlayers && !firstQuestionSent) {
-                console.log("Everyone is locked in. Releasing question!");
-                sendFirstLiveQuestion();
+                console.log("Stability delay started...");
+                setTimeout(() => {
+                    // Re-check count one last time before firing
+                    const doubleCheck = Object.keys(gameChannel.presenceState()).length;
+                    if (doubleCheck >= expectedPlayers) {
+                        sendFirstLiveQuestion();
+                    }
+                }, 1500); 
             }
         })
         .subscribe(async (status) => {
@@ -2390,7 +2401,6 @@ async function sendFirstLiveQuestion() {
     if (firstQuestionSent) return;
     firstQuestionSent = true;
 
-    // Fetch pool if host hasn't yet
     if (masterQuestionPool.length === 0) {
         const { data } = await supabase.from('questions').select('id');
         masterQuestionPool = data.map(q => q.id);
@@ -2398,12 +2408,22 @@ async function sendFirstLiveQuestion() {
 
     const firstId = masterQuestionPool[Math.floor(Math.random() * masterQuestionPool.length)];
 
-    // Broadcast to the "Locked In" players
+    // Broadcast immediately
     gameChannel.send({
         type: 'broadcast',
         event: 'next-question',
         payload: { questionId: firstId }
     });
+
+    // BACKUP: Send it again 1 second later just in case the player's 
+    // listener wasn't fully "wired up" during the first millisecond.
+    setTimeout(() => {
+        gameChannel.send({
+            type: 'broadcast',
+            event: 'next-question',
+            payload: { questionId: firstId }
+        });
+    }, 1000);
 }
 
 function updateSurvivorCountUI(count) {
@@ -2801,6 +2821,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
