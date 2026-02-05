@@ -2355,38 +2355,41 @@ function beginLiveMatch() {
     survivors = Object.keys(state).length; 
     updateSurvivorCountUI(survivors);
   
-     gameChannel = supabase.channel(`game-${currentLobby.id}`);
+  
 
+   // Inside beginLiveMatch
+    gameChannel = supabase.channel(`game-${currentLobby.id}`);
+    
     gameChannel
-        .on('broadcast', { event: 'player-died' }, () => {
-            survivors--;
-            updateSurvivorCountUI(survivors);
-            checkVictoryCondition();
-        })
         .on('broadcast', { event: 'next-question' }, (payload) => {
             console.log("Received Question ID:", payload.questionId);
-            // Hide the "Waiting" overlay once the question arrives
-            const overlay = document.getElementById('waiting-overlay');
-            if (overlay) overlay.classList.add('hidden');
-            
-            loadQuestion(payload.questionId); 
+            if (payload.questionId !== undefined) {
+                loadQuestion(payload.questionId); 
+            }
         })
         .subscribe(async (status) => {
-            // ONLY send the first question once we are officially connected
             if (status === 'SUBSCRIBED' && isHost()) {
+                console.log("Host connected. Sending first question...");
+                
+                // EMERGENCY: If pool is empty, fetch IDs so we can start
+                if (masterQuestionPool.length === 0) {
+                    const { data } = await supabase.from('questions').select('id');
+                    masterQuestionPool = data.map(q => q.id);
+                }
+    
                 setTimeout(() => {
-                    // Pick a REAL id from the pool you loaded
-                    const pickedId = masterQuestionPool[Math.floor(Math.random() * masterQuestionPool.length)];
-                    
+                    const randomIndex = Math.floor(Math.random() * masterQuestionPool.length);
+                    const firstId = masterQuestionPool[randomIndex];
+    
                     gameChannel.send({
                         type: 'broadcast',
                         event: 'next-question',
-                        payload: { questionId: pickedId }
+                        payload: { questionId: firstId } // Ensure this name matches the listener!
                     });
                 }, 3000);
             }
         });
-  
+      
     startGame(isLiveMode);
 }
 
@@ -2775,6 +2778,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
