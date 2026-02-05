@@ -20,6 +20,10 @@ let currentLobby = null;
 let lobbyChannel = null;
 let survivors = 0;
 let isLiveMode = false;
+const chatInput = document.getElementById('chatInput');
+const chatMessages = document.getElementById('chat-messages');
+let lobbyTimerInterval = null;
+let userId = null; // Add this globally
 
 const RELEASE_DATE = '2025-12-22';
 const WEEKLY_LIMIT = 50; // Change to 50 when ready to go live
@@ -316,7 +320,7 @@ async function init() {
             isLiteMode = false;
             if (audioCtx.state === 'suspended') await audioCtx.resume();
             loadSounds();
-            startGame();
+            startGame(false);
         };
     }
 
@@ -337,7 +341,7 @@ lobbyBtn.onclick = async () => {
 
         if (audioCtx.state === 'suspended') await audioCtx.resume();
         loadSounds();
-        startGame();
+        startGame(false);
     };
 }
 
@@ -424,13 +428,14 @@ if (playAgainBtn) {
            await startDailyChallenge();
     } else if (isLiteMode) {
            isLiteMode = true;
-           await startGame();
+           await startGame(false);
     } else {
           // Normal Mode - Reset flags just in case
           isWeeklyMode = false;
           isDailyMode = false;
           isLiteMode = false;
-          await startGame();
+          isLiveMode = false;
+          await startGame(false);
     }
    // 3. show game screen
     document.getElementById('end-screen').classList.add('hidden'); // Hide End
@@ -523,7 +528,8 @@ async function handleAuthChange(event, session) {
     // 1. Immediately sync with local cache so we don't overwrite the HTML script's work
     username = localStorage.getItem('cachedUsername') || 'Player';
     currentProfileXp = parseInt(localStorage.getItem('cached_xp')) || 0;
-    
+    userId = session.user.id;
+  
     // 2. Update the UI with the cached values right now
     if (span) span.textContent = ' ' + username;
     if (label) label.textContent = 'Log Out';
@@ -534,13 +540,12 @@ async function handleAuthChange(event, session) {
     const { data: profile } = await supabase
         .from('profiles')
         .select('username, xp, achievements')
-        .eq('id', session.user.id)
+        .eq('id', session.userId)
         .single();
 
     if (profile) {
         username = profile.username || 'Player';
         currentProfileXp = profile.xp || 0;
-      
         // Access the daily_streak inside the achievements JSONB
         currentDailyStreak = profile.achievements?.daily_streak || 0;
       
@@ -872,6 +877,7 @@ async function startGame(isLive = false) {
 
         // 4. STARTING THE ENGINE
         if (isLiveMode) {
+            isLiteMode = false;
             // DO NOT call loadQuestion() yet. 
             // Wait for the Supabase Broadcast to tell us which question is #1.
             showWaitingForPlayersOverlay(); 
@@ -2238,26 +2244,33 @@ async function joinMatchmaking() {
 }
 
 function setupLobbyRealtime(lobby) {
+    // 1. Create the channel
     lobbyChannel = supabase.channel(`lobby-${lobby.id}`, {
         config: { presence: { key: userId } }
     });
 
+    // 2. Chain all listeners (.on)
     lobbyChannel
         .on('presence', { event: 'sync' }, () => {
             const state = lobbyChannel.presenceState();
             const count = Object.keys(state).length;
             
-            // UI Update: "14/25 players - Starting in 2:00"
+            // UI Update
             updateLobbyUI(count, lobby.starts_at);
 
-            // INSTANT START: If 25 players join
+            // INSTANT START logic
             if (count >= 25 && isHost(lobby)) { 
                 triggerGameStart(lobby.id); 
             }
         })
-        .on('broadcast', { event: 'start-game' }, () => {
-            beginLiveMatch(); // Move to the game screen
+        .on('broadcast', { event: 'chat' }, ({ payload }) => {
+            // FIXED: Added the chat listener here
+            appendMessage(payload.username, payload.message);
         })
+        .on('broadcast', { event: 'start-game' }, () => {
+            beginLiveMatch(); 
+        })
+        // 3. Finally, subscribe
         .subscribe(async (status) => {
             if (status === 'SUBSCRIBED') {
                 await lobbyChannel.track({ online_at: new Date().toISOString() });
@@ -2267,8 +2280,14 @@ function setupLobbyRealtime(lobby) {
 
 function beginLiveMatch() {
     isLiveMode = true;
-    showGameScreen();
     
+    // Set initial survivors based on the lobby count
+    const state = lobbyChannel.presenceState();
+    survivors = Object.keys(state).length; 
+    updateSurvivorCountUI(survivors);
+  
+    startGame(isLiveMode);
+  
     const gameChannel = supabase.channel(`game-${currentLobby.id}`);
 
     gameChannel
@@ -2292,9 +2311,10 @@ async function onWrongAnswer() {
         gameChannel.send({ type: 'broadcast', event: 'player-died' });
         
         // 2. Local "Game Over" but allow them to join a NEW lobby immediately
-        showGameOverUI(); 
+        startGame(true); 
         isLiveMode = false;
         supabase.removeChannel(gameChannel);
+        endGame();
     }
 }
 
@@ -2315,13 +2335,15 @@ function transitionToSoloMode() {
 function updateLobbyUI(count, startTime) {
     const timerElement = document.getElementById('lobby-timer');
     const countElement = document.getElementById('player-count');
-
     countElement.innerText = `${count} players waiting...`;
 
-    const interval = setInterval(() => {
+    // Clear any existing timer before starting a new one
+    if (lobbyTimerInterval) clearInterval(lobbyTimerInterval);
+
+    lobbyTimerInterval = setInterval(() => {
         const remaining = new Date(startTime) - new Date();
         if (remaining <= 0) {
-            clearInterval(interval);
+            clearInterval(lobbyTimerInterval);
             timerElement.innerText = "Starting now...";
             return;
         }
@@ -2331,15 +2353,50 @@ function updateLobbyUI(count, startTime) {
     }, 1000);
 }
 
-
 function showWaitingForPlayersOverlay() {
     questionText.innerHTML = "Get Ready!<br><span style='font-size: 0.5em; opacity: 0.7;'>Waiting for match to begin...</span>";
     answersBox.innerHTML = '<div class="loading-spinner"></div>'; // Or just leave empty
 }
 
+// 1. Listen for the Enter key
+chatInput.onkeydown = (e) => {
+    if (e.key === 'Enter' && chatInput.value.trim() !== '') {
+        sendChatMessage(chatInput.value.trim());
+        chatInput.value = '';
+    }
+};
+
+// 2. Function to broadcast your message
+function sendChatMessage(msg) {
+    if (!lobbyChannel) return;
+
+    lobbyChannel.send({
+        type: 'broadcast',
+        event: 'chat',
+        payload: {
+            username: cachedUsername,
+            message: msg,
+            timestamp: new Date().toISOString()
+        }
+    });
+}
 
 
+function appendMessage(user, msg) {
+    const msgDiv = document.createElement('div');
+    // OSRS style: Blue for name, Yellow for text
+    msgDiv.innerHTML = `<span style="color: #00ffff;">${user}:</span> ${msg}`;
+    chatMessages.appendChild(msgDiv);
+    
+    // Auto-scroll to bottom
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
 
+function isHost() {
+    const state = lobbyChannel.presenceState();
+    const players = Object.keys(state).sort(); // Sort by ID or join time
+    return players[0] === userId; // Am I the first one?
+}
 
 
 
@@ -2572,6 +2629,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
