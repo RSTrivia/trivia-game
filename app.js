@@ -2305,8 +2305,20 @@ function beginLiveMatch() {
     // Clear the lobby timer so it doesn't keep running in the background
     if (lobbyTimerInterval) clearInterval(lobbyTimerInterval);
   
-   // UI: remove title in lobby
+    // UI: remove title in lobby
     document.body.classList.remove('lobby-active');
+  
+    // 1. HIDE THE LOBBY
+    // Assuming your lobby div has id="lobby"
+    const lobbyElement = document.getElementById('lobby');
+    if (lobbyElement) lobbyElement.classList.add('hidden');
+    
+    // 2. RUN THE BIG SWAP
+    document.body.classList.add('game-active');
+    document.body.classList.remove('lobby-active'); // Clean up lobby class
+    game.classList.remove('hidden');
+    // Ensure start screen is gone (just in case)
+    document.getElementById('start-screen').classList.add('hidden');
   
     // Set initial survivors based on the lobby count
     const state = lobbyChannel.presenceState();
@@ -2687,6 +2699,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
