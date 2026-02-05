@@ -20,9 +20,9 @@ const RELEASE_DATE = '2025-12-22';
 const WEEKLY_LIMIT = 50; // Change to 50 when ready to go live
 const LITE_LIMIT = 100; // Change to 100 when ready to go live
 const number_of_questions = 610;
-const leaderboardRows = document.querySelectorAll('#leaderboard li');
-const scoreTab = document.getElementById('scoreTab');
-const xpTab = document.getElementById('xpTab');
+//const leaderboardRows = document.querySelectorAll('#leaderboard li');
+//const scoreTab = document.getElementById('scoreTab');
+//const xpTab = document.getElementById('xpTab');
 const shareBtn = document.getElementById('shareBtn');
 const logBtn = document.getElementById('logBtn');
 const startBtn = document.getElementById('startBtn');
@@ -457,39 +457,7 @@ if (playAgainBtn) {
         }
     };
 }
-// leaderboards for score and xp
-if (scoreTab && xpTab) {
-    scoreTab.onclick = () => {
-        if (currentMode === 'score') return;
-        currentMode = 'score';
-        scoreTab.classList.add('active');
-        xpTab.classList.remove('active');
-        fetchLeaderboard();
-    };
-
-    xpTab.onclick = () => {
-        if (currentMode === 'xp') return;
-        currentMode = 'xp';
-        xpTab.classList.add('active');
-        scoreTab.classList.remove('active');
-        fetchLeaderboard();
-    };
-
-  // Realtime Sync for both tables
-supabase
-  .channel('leaderboard-sync')
-  .on('postgres_changes', { event: '*', schema: 'public', table: 'scores' }, () => {
-    if (currentMode === 'score') fetchLeaderboard();
-  })
-  .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
-    if (currentMode === 'xp') fetchLeaderboard();
-  })
-  .subscribe();
-
-  // Trigger initial fetch
-  await fetchLeaderboard();
-}
-
+  
   // This will check if a user is logged in and lock the button if they aren't
   await syncDailyButton();
   // This will check if a user has played daily mode already and will unlock it if they did
@@ -2422,40 +2390,6 @@ function subscribeToDailyChanges(userId) {
     return channel;
 }
 
-// 2. Logic to update the UI rows
-function updateLeaderboard(data) {
-  leaderboardRows.forEach((row, i) => {
-    const entry = data[i] || { username: '---', val: '' };
-    const userTxt = row.querySelector('.user-txt');
-    const scoreSpan = row.querySelector('.score-part');
-
-    // Use 'val' because we rename the column in the fetch query below
-    userTxt.textContent = entry.username || '---';
-    scoreSpan.textContent = entry.val !== undefined ? entry.val.toLocaleString() : '';
-  });
-}
-
-// 3. Dynamic Fetch (Handles both Score and XP)
-async function fetchLeaderboard() {
-  let query;
-  
-  if (currentMode === 'score') {
-    // Select from scores table
-    query = supabase.from('scores').select('username, val:score').order('score', { ascending: false });
-  } else {
-    // Select from profiles table for XP
-    query = supabase.from('profiles').select('username, val:xp').order('xp', { ascending: false });
-  }
-
-  const { data, error } = await query.limit(10);
-
-  if (error) {
-    console.error('Fetch Error:', error.message);
-    return;
-  }
-
-  updateLeaderboard(data);
-}
 
 // ====== MOBILE TAP FEEDBACK (THE FLASH) ======
 document.addEventListener('DOMContentLoaded', () => {
@@ -2488,6 +2422,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
