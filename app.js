@@ -1644,6 +1644,8 @@ function setupRealtimeSync(userId) {
 
     return channel;
 }
+
+
 async function saveNormalScore(currentUsername, finalScore, finalTime) {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return false;
@@ -2354,14 +2356,12 @@ function beginLiveMatch() {
     const state = lobbyChannel.presenceState();
     survivors = Object.keys(state).length; 
     updateSurvivorCountUI(survivors);
-  
-  
 
    // Inside beginLiveMatch
     gameChannel = supabase.channel(`game-${currentLobby.id}`);
     
     gameChannel
-        .on('broadcast', { event: 'next-question' }, (payload) => {
+        .on('broadcast', { event: 'next-question' }, ({ payload }) => {
             console.log("Received Question ID:", payload.questionId);
             if (payload.questionId !== undefined) {
                 loadQuestion(payload.questionId); 
@@ -2402,22 +2402,28 @@ function updateSurvivorCountUI(count) {
     }
 }
 
-// Logic when the user answers wrong
 async function onWrongAnswer() {
     if (isLiveMode && gameChannel) {
-        // Change .send to .httpSend and add payload: {}
-        gameChannel.httpSend({ 
+        // 1. Tell everyone else you died
+        gameChannel.send({ 
             type: 'broadcast', 
             event: 'player-died',
-            payload: {} // <--- This prevents the error
+            payload: {} 
         });
         
-        document.body.classList.remove('game-active', 'lobby-active');
-        startGame(true); 
+        // 2. Turn off Live Mode immediately
         isLiveMode = false;
+        
+        // 3. Clean up the channel so you don't receive more questions
         supabase.removeChannel(gameChannel);
-        endGame();
+        gameChannel = null;
     }
+
+    // 4. UI Cleanup (for both Solo and Live)
+    document.body.classList.remove('game-active', 'lobby-active');
+    
+    // 5. Trigger the End Game screen
+    await endGame(); 
 }
 
 
@@ -2778,6 +2784,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
