@@ -2251,6 +2251,7 @@ async function joinMatchmaking() {
 }
 
 function setupLobbyRealtime(lobby) {
+  console.log(userId);
     // 1. Create the channel
     lobbyChannel = supabase.channel(`lobby-${lobby.id}`, {
     config: { 
@@ -2281,10 +2282,13 @@ function setupLobbyRealtime(lobby) {
             beginLiveMatch(); 
         })
         // 3. Finally, subscribe
-        .subscribe(async (status) => {
-            if (status === 'SUBSCRIBED') {
-                await lobbyChannel.track({ online_at: new Date().toISOString() });
-            }
+      .subscribe(async (status) => {
+          if (status === 'SUBSCRIBED') {
+              await lobbyChannel.track({ online_at: new Date().toISOString() });
+              // Optional: Enable chat input here
+              chatInput.placeholder = "Type a message...";
+              chatInput.disabled = false;
+          }
         });
 }
 
@@ -2386,7 +2390,7 @@ chatInput.onkeydown = (e) => {
 function sendChatMessage(msg) {
     if (!lobbyChannel) return;
 
-    lobbyChannel.send({
+    lobbyChannel.httpSend({
         type: 'broadcast',
         event: 'chat',
         payload: {
@@ -2645,6 +2649,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
