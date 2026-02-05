@@ -362,7 +362,9 @@ lobbyBtn.onclick = async () => {
                 type: 'broadcast',
                 event: 'lock-daily',
                 payload: { userId: session.user.id }
-            });
+            });.then(resp => {
+              if (resp !== 'ok') console.error("Broadcast failed:", resp);
+          });
         }
 
         // 4. Lock button locally 
@@ -555,22 +557,12 @@ async function handleAuthChange(event, session) {
         localStorage.setItem('cachedUsername', username);
         localStorage.setItem('cached_xp', currentProfileXp);
         localStorage.setItem('cached_daily_streak', currentDailyStreak); // Also cache it
-
-        // Sync the Achievement data from Profile
-        //const a = profile.achievements || {};
-        //localStorage.setItem('ach_stat_weekly_25', (a.weekly_25 || false).toString());
-        //localStorage.setItem('ach_stat_weekly_50', (a.weekly_50 || false).toString());
-        //localStorage.setItem('ach_stat_weekly_sub_3', (a.weekly_sub_3 || false).toString());
-        //localStorage.setItem('ach_stat_weekly_sub_2', (a.weekly_sub_2 || false).toString());
-        //localStorage.setItem('stat_fastest', (a.fastest_guess || false).toString());
-        //localStorage.setItem('stat_just_in_time', (a.just_in_time || false).toString());
       
         // UI Update
         if (span) span.textContent = ' ' + username;
         
     }
    
-
   // ENABLE the Log Button for users
     if (logBtn) {
       logBtn.addEventListener('click', () => {
@@ -1584,29 +1576,44 @@ function triggerXpDrop(amount) {
 }
 
 function setupRealtimeSync(userId) {
-    // Unique channel per user means only YOUR devices talk to each other
     const channel = supabase.channel(`user-sync-${userId}`, {
         config: {
-            broadcast: { self: false } // Don't trigger the lock on the device that sent it
+            broadcast: { self: false } 
         }
     });
 
+    // Track connection state internally
+    let isReady = false;
+    const queue = [];
+
     channel
         .on('broadcast', { event: 'lock-daily' }, (payload) => {
-            //console.log("Broadcast received! Locking daily button.");
             lockDailyButton();
-            // Also sync the score/message data so the "Share" button appears
             fetchDailyStatus(userId);
         })
         .subscribe((status) => {
             if (status === 'SUBSCRIBED') {
-                //console.log("Realtime connection established.");
+                isReady = true;
+                // Flush any messages sent while we were connecting
+                while (queue.length > 0) {
+                    const next = queue.shift();
+                    channel.send(next);
+                }
             }
         });
 
+    // Wrap the send method to be "connection-aware"
+    const originalSend = channel.send.bind(channel);
+    channel.send = (payload) => {
+        if (isReady) {
+            return originalSend(payload);
+        } else {
+            queue.push(payload);
+        }
+    };
+
     return channel;
 }
-
 async function saveNormalScore(currentUsername, finalScore, finalTime) {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return false;
@@ -2664,6 +2671,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
