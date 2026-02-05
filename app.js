@@ -2294,6 +2294,8 @@ function setupLobbyRealtime(lobby) {
 
 function beginLiveMatch() {
     isLiveMode = true;
+    // Clear the lobby timer so it doesn't keep running in the background
+    if (lobbyTimerInterval) clearInterval(lobbyTimerInterval);
   
    // UI: remove title in lobby
     document.body.classList.remove('lobby-active');
@@ -2323,14 +2325,15 @@ function beginLiveMatch() {
 
 // Logic when the user answers wrong
 async function onWrongAnswer() {
-    if (isLiveMode) {
-        // 1. Tell everyone else you died
-        gameChannel.send({ type: 'broadcast', event: 'player-died' });
-      
-        // 2. Clean up UI states so title returns
+    if (isLiveMode && gameChannel) {
+        // Change .send to .httpSend and add payload: {}
+        gameChannel.httpSend({ 
+            type: 'broadcast', 
+            event: 'player-died',
+            payload: {} // <--- This prevents the error
+        });
+        
         document.body.classList.remove('game-active', 'lobby-active');
-      
-        // 2. Local "Game Over" but allow them to join a NEW lobby immediately
         startGame(true); 
         isLiveMode = false;
         supabase.removeChannel(gameChannel);
@@ -2663,6 +2666,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
