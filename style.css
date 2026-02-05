@@ -881,7 +881,7 @@ input.input-field:-webkit-autofill:active {
   .btn-small:not(.is-disabled):hover,
   #dailyBtn.is-active:not(.is-disabled):hover,
   #weeklyBtn.is-active:hover,   /* ADDED THIS */
-  #lobbyBtn.is-active:hover {    /* ADDED THIS */{
+  #lobbyBtn.is-active:hover {    /* ADDED THIS */
     background: rgba(0, 0, 0, 0.6) !important;
     border-color: #d4af37 !important;
     color: #d4af37 !important;
@@ -896,7 +896,7 @@ input.input-field:-webkit-autofill:active {
   #weeklyBtn.is-active:active,  /* ADDED THIS */
   #lobbyBtn.is-active:active,   /* ADDED THIS */
   #weeklyBtn.tapped,            /* ADDED THIS */
-  #lobbyBtn.tapped {            /* ADDED THIS */{
+  #lobbyBtn.tapped {            /* ADDED THIS */
     background-color: #000000 !important;
     border-color: #ffea8a !important;
     color: #ffea8a !important;
@@ -1736,6 +1736,7 @@ input.input-field:-webkit-autofill:active {
     padding-top: 25px !important;
   }
 }
+
 
 
 
