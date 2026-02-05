@@ -2330,6 +2330,8 @@ function setupLobbyRealtime(lobby) {
         });
 }
 
+let firstQuestionSent = false; // Reset this when a match starts
+
 function beginLiveMatch() {
     isLiveMode = true;
     // Clear the lobby timer so it doesn't keep running in the background
@@ -2358,39 +2360,61 @@ function beginLiveMatch() {
     updateSurvivorCountUI(survivors);
 
    // Inside beginLiveMatch
-    gameChannel = supabase.channel(`game-${currentLobby.id}`);
+    // 2. Initialize the Game Channel with Presence
+    gameChannel = supabase.channel(`game-${currentLobby.id}`, {
+        config: { presence: { key: userId } }
+    });
     
     gameChannel
+        // LISTEN for questions
         .on('broadcast', { event: 'next-question' }, ({ payload }) => {
             console.log("Received Question ID:", payload.questionId);
             if (payload.questionId !== undefined) {
                 loadQuestion(payload.questionId); 
             }
         })
+        // SYNC presence to see if everyone arrived
+        .on('presence', { event: 'sync' }, () => {
+            const state = gameChannel.presenceState();
+            const count = Object.keys(state).length;
+            console.log(`Players ready in game channel: ${count}`);
+
+            // HOST LOGIC: Only send when at least 2 people are synced
+            if (isHost() && count >= 2 && !firstQuestionSent) {
+                sendFirstLiveQuestion();
+            }
+        })
         .subscribe(async (status) => {
-            if (status === 'SUBSCRIBED' && isHost()) {
-                console.log("Host connected. Sending first question...");
-                
-                // EMERGENCY: If pool is empty, fetch IDs so we can start
-                if (masterQuestionPool.length === 0) {
-                    const { data } = await supabase.from('questions').select('id');
-                    masterQuestionPool = data.map(q => q.id);
-                }
-    
-                setTimeout(() => {
-                    const randomIndex = Math.floor(Math.random() * masterQuestionPool.length);
-                    const firstId = masterQuestionPool[randomIndex];
-    
-                    gameChannel.send({
-                        type: 'broadcast',
-                        event: 'next-question',
-                        payload: { questionId: firstId } // Ensure this name matches the listener!
-                    });
-                }, 3000);
+            if (status === 'SUBSCRIBED') {
+                // Tell the host "I am here"
+                await gameChannel.track({ online_at: new Date().toISOString() });
             }
         });
       
     startGame(isLiveMode);
+}
+
+// Helper function to handle the broadcast
+async function sendFirstLiveQuestion() {
+    firstQuestionSent = true; // Guard against double-firing
+    console.log("All players synced. Sending first question...");
+
+    if (masterQuestionPool.length === 0) {
+        const { data } = await supabase.from('questions').select('id');
+        masterQuestionPool = data.map(q => q.id);
+    }
+
+    // Short delay so the last person to join doesn't miss the message
+    setTimeout(() => {
+        const randomIndex = Math.floor(Math.random() * masterQuestionPool.length);
+        const firstId = masterQuestionPool[randomIndex];
+
+        gameChannel.send({
+            type: 'broadcast',
+            event: 'next-question',
+            payload: { questionId: firstId }
+        });
+    }, 1000);
 }
 
 function updateSurvivorCountUI(count) {
@@ -2784,6 +2808,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
