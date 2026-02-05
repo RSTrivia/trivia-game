@@ -932,17 +932,14 @@ async function loadQuestion(broadcastedId = null, startTime = null) {
       // The "Stall" Guard
       // Only await if we are literally empty
       if (preloadQueue.length === 0) await preloadNextQuestions();
-    }
-
-  
-    if (preloadQueue.length === 0) {
-        await endGame();
-        return;
-    }
-    
+        
+      if (preloadQueue.length === 0) {
+          await endGame();
+          return;
+      }
     currentQuestion = preloadQueue.shift();
     preloadNextQuestions();
-  }
+}
 
     // --- MINIMAL CHANGE START: Define the display logic ---
    
@@ -2831,6 +2828,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
