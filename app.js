@@ -2223,6 +2223,9 @@ window.showAchievementNotification = showAchievementNotification;
 
 //live mode
 async function joinMatchmaking() {
+    // UI: Hide the title for mobile lobby view
+    document.body.classList.add('lobby-active');
+  
     // 1. Find an open lobby or create one
     let { data: lobby } = await supabase
         .from('live_lobbies')
@@ -2287,7 +2290,10 @@ function setupLobbyRealtime(lobby) {
 
 function beginLiveMatch() {
     isLiveMode = true;
-    
+  
+   // UI: remove title in lobby
+    document.body.classList.remove('lobby-active');
+  
     // Set initial survivors based on the lobby count
     const state = lobbyChannel.presenceState();
     survivors = Object.keys(state).length; 
@@ -2316,7 +2322,10 @@ async function onWrongAnswer() {
     if (isLiveMode) {
         // 1. Tell everyone else you died
         gameChannel.send({ type: 'broadcast', event: 'player-died' });
-        
+      
+        // 2. Clean up UI states so title returns
+        document.body.classList.remove('game-active', 'lobby-active');
+      
         // 2. Local "Game Over" but allow them to join a NEW lobby immediately
         startGame(true); 
         isLiveMode = false;
@@ -2636,6 +2645,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
