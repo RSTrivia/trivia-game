@@ -20,9 +20,6 @@ const RELEASE_DATE = '2025-12-22';
 const WEEKLY_LIMIT = 50; // Change to 50 when ready to go live
 const LITE_LIMIT = 100; // Change to 100 when ready to go live
 const number_of_questions = 610;
-//const leaderboardRows = document.querySelectorAll('#leaderboard li');
-//const scoreTab = document.getElementById('scoreTab');
-//const xpTab = document.getElementById('xpTab');
 const shareBtn = document.getElementById('shareBtn');
 const logBtn = document.getElementById('logBtn');
 const startBtn = document.getElementById('startBtn');
@@ -31,8 +28,6 @@ const mainMenuBtn = document.getElementById('mainMenuBtn');
 const game = document.getElementById('game');
 const endScreen = document.getElementById('end-screen');
 const finalScore = document.getElementById('finalScore');
-//const finalTimeEl = document.getElementById('finalTime');
-//const weeklyTimeContainer = document.getElementById('weeklyTimeContainer');
 const scoreDisplay = document.getElementById('score');
 const questionText = document.getElementById('questionText');
 const questionImage = document.getElementById('questionImage');
@@ -2422,6 +2417,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
