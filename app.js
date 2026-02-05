@@ -2332,89 +2332,78 @@ function setupLobbyRealtime(lobby) {
 
 let firstQuestionSent = false; // Reset this when a match starts
 
-function beginLiveMatch() {
+async function beginLiveMatch() {
     isLiveMode = true;
-    // Clear the lobby timer so it doesn't keep running in the background
+    firstQuestionSent = false;
+    
     if (lobbyTimerInterval) clearInterval(lobbyTimerInterval);
   
     // UI: remove title in lobby
     document.body.classList.remove('lobby-active');
   
-    // 1. HIDE THE LOBBY
-    // Assuming your lobby div has id="lobby"
-   // 1. HIDE THE LOBBY SCREEN (Fixed ID)
-    const lobbyElement = document.getElementById('lobby-screen');
-    const startScreen = document.getElementById('start-screen');
-    
-    if (lobbyElement) lobbyElement.classList.add('hidden');
-    if (startScreen) startScreen.classList.add('hidden');
-    
-    // 2. RUN THE BIG SWAP
-    document.body.classList.add('game-active');
-    document.body.classList.remove('lobby-active'); // Clean up lobby class
-    game.classList.remove('hidden');
-  
-    // Set initial survivors based on the lobby count
-    const state = lobbyChannel.presenceState();
-    survivors = Object.keys(state).length; 
-    updateSurvivorCountUI(survivors);
+    // Get the exact count of players who were in the lobby
+    const finalLobbyState = lobbyChannel.presenceState();
+    const expectedPlayers = Object.keys(finalLobbyState).length;
 
-   // Inside beginLiveMatch
-    // 2. Initialize the Game Channel with Presence
+    // UI Cleanup
+    document.getElementById('lobby-screen')?.classList.add('hidden');
+    document.getElementById('start-screen')?.classList.add('hidden');
+    document.body.classList.add('game-active');
+    game.classList.remove('hidden');
+
+    // Create the dedicated Game Channel
     gameChannel = supabase.channel(`game-${currentLobby.id}`, {
         config: { presence: { key: userId } }
     });
-    
-    gameChannel
-        // LISTEN for questions
-        .on('broadcast', { event: 'next-question' }, ({ payload }) => {
-            console.log("Received Question ID:", payload.questionId);
-            if (payload.questionId !== undefined) {
-                loadQuestion(payload.questionId); 
-            }
-        })
-        // SYNC presence to see if everyone arrived
-        .on('presence', { event: 'sync' }, () => {
-            const state = gameChannel.presenceState();
-            const count = Object.keys(state).length;
-            console.log(`Players ready in game channel: ${count}`);
 
-            // HOST LOGIC: Only send when at least 2 people are synced
-            if (isHost() && count >= 2 && !firstQuestionSent) {
+    gameChannel
+        .on('broadcast', { event: 'next-question' }, ({ payload }) => {
+            // This is where the non-host finally gets the question
+            if (payload.questionId) loadQuestion(payload.questionId);
+        })
+        .on('presence', { event: 'sync' }, () => {
+            const currentState = gameChannel.presenceState();
+            const playersJoined = Object.keys(currentState).length;
+            
+            console.log(`Sync: ${playersJoined}/${expectedPlayers} players arrived.`);
+
+            // HOST LOGIC: Only release the question when EVERYONE has arrived
+            if (isHost() && playersJoined >= expectedPlayers && !firstQuestionSent) {
+                console.log("Everyone is locked in. Releasing question!");
                 sendFirstLiveQuestion();
             }
         })
         .subscribe(async (status) => {
             if (status === 'SUBSCRIBED') {
-                // Tell the host "I am here"
-                await gameChannel.track({ online_at: new Date().toISOString() });
+                // Signal to the host that this player is ready
+                await gameChannel.track({ status: 'ready' });
             }
         });
-      
+
+    // We call startGame to show the "Get Ready" overlay locally
     startGame(isLiveMode);
 }
 
+
 // Helper function to handle the broadcast
 async function sendFirstLiveQuestion() {
-    firstQuestionSent = true; // Guard against double-firing
-    console.log("All players synced. Sending first question...");
+    if (firstQuestionSent) return;
+    firstQuestionSent = true;
 
+    // Fetch pool if host hasn't yet
     if (masterQuestionPool.length === 0) {
         const { data } = await supabase.from('questions').select('id');
         masterQuestionPool = data.map(q => q.id);
     }
 
-    // Short delay so the last person to join doesn't miss the message
-    setTimeout(() => {
-        const randomIndex = Math.floor(Math.random() * masterQuestionPool.length);
-        const firstId = masterQuestionPool[randomIndex];
+    const firstId = masterQuestionPool[Math.floor(Math.random() * masterQuestionPool.length)];
 
-        gameChannel.send({
-            type: 'broadcast',
-            event: 'next-question',
-            payload: { questionId: firstId }
-        });
-    }, 1000);
+    // Broadcast to the "Locked In" players
+    gameChannel.send({
+        type: 'broadcast',
+        event: 'next-question',
+        payload: { questionId: firstId }
+    });
 }
 
 function updateSurvivorCountUI(count) {
@@ -2561,18 +2550,22 @@ function isHost() {
     return players[0] === userId; // Am I the first one?
 }
 
-function triggerGameStart(lobbyId) {
+async function triggerGameStart(lobbyId) {
     if (!lobbyChannel) return;
-  
-    console.log("Host is triggering game start for lobby:", lobbyId);
-  
+    
+    // 1. Lock the lobby in the database immediately
+    await supabase
+        .from('live_lobbies')
+        .update({ status: 'in-progress' }) // Prevents new people from finding it
+        .eq('id', lobbyId);
+
+    // 2. Tell everyone currently in the lobby to switch to the game screen
     lobbyChannel.send({
         type: 'broadcast',
         event: 'start-game',
-        payload: { lobbyId: lobbyId } // The "pistol shot" data
+        payload: { lobbyId: lobbyId }
     });
 }
-
 
 
 
@@ -2808,6 +2801,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
