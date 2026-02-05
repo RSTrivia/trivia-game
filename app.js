@@ -2277,7 +2277,7 @@ function setupLobbyRealtime(lobby) {
             updateLobbyUI(count, lobby.starts_at);
 
             // INSTANT START logic
-            if (count >= 2 && isHost(lobby)) { 
+            if (count >= 2 && isHost(lobby)) { //2 people waiting. change to 25 on release
                 triggerGameStart(lobby.id); 
             }
         })
@@ -2676,6 +2676,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
