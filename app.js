@@ -1691,10 +1691,10 @@ async function checkNormalScoreAchievements(currentUsername, finalScore) {
       const oldBest = record?.score || 0;
   
       // --- 2. ACHIEVEMENT MILESTONES ---
-      if (finalScore >= 10 && oldBest < 10) showAchievementNotification("Reach 10 Score");
-      if (finalScore >= 50 && oldBest < 50) showAchievementNotification("Reach 50 Score");
-      if (finalScore >= 100 && oldBest < 100) showAchievementNotification("Reach 100 Score");
-      if (finalScore >= number_of_questions && oldBest < number_of_questions) showAchievementNotification("Reach Max Score");
+      if (finalScore == 10 && oldBest < 10) showAchievementNotification("Reach 10 Score");
+      if (finalScore == 50 && oldBest < 50) showAchievementNotification("Reach 50 Score");
+      if (finalScore == 100 && oldBest < 100) showAchievementNotification("Reach 100 Score");
+      if (finalScore == number_of_questions && oldBest < number_of_questions) showAchievementNotification("Reach Max Score");
 }
 
 
@@ -2488,6 +2488,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
