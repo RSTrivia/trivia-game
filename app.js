@@ -2398,11 +2398,11 @@ chatInput.onkeydown = (e) => {
 function sendChatMessage(msg) {
     if (!lobbyChannel) return;
 
-    lobbyChannel.httpSend({
+    lobbyChannel.send({
         type: 'broadcast',
         event: 'chat',
         payload: {
-            username: cachedUsername,
+            username: username,
             message: msg,
             timestamp: new Date().toISOString()
         }
@@ -2413,7 +2413,10 @@ function sendChatMessage(msg) {
 function appendMessage(user, msg) {
     const msgDiv = document.createElement('div');
     // OSRS style: Blue for name, Yellow for text
-    msgDiv.innerHTML = `<span style="color: #00ffff;">${user}:</span> ${msg}`;
+    //msgDiv.innerHTML = `<span style="color: #00ffff;">${user}:</span> ${msg}`;
+    msgDiv.innerHTML = `<span style="color: #00ffff; font-weight: bold;">${user}:</span> <span style="color: #ffff00;">${msg}</span>`;
+    msgDiv.style.marginBottom = "2px";
+    msgDiv.style.textShadow = "1px 1px 0px #000"; // Makes it look like OSRS font
     chatMessages.appendChild(msgDiv);
     
     // Auto-scroll to bottom
@@ -2671,6 +2674,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
