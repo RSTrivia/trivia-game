@@ -890,12 +890,17 @@ async function startGame(isLive = false) {
 
 
 async function loadQuestion(broadcastedId = null, startTime = null) {
-    // 1. Live Mode Guard: If we are in Live Mode but don't have an ID yet, 
-        // we stop and wait for the Supabase broadcast.
-        if (isLiveMode && broadcastedId === null) {
-            console.log("Waiting for host to broadcast question...");
-            return; 
-        }
+   // 1. IMPROVED GUARD:
+    // Only "Wait" if we are in Live Mode AND we didn't just get an ID from the host
+    if (isLiveMode && !broadcastedId) {
+        console.log("Waiting for host to broadcast question...");
+        
+        // Show the waiting overlay so they don't see a blank screen
+        const overlay = document.getElementById('waiting-overlay');
+        if (overlay) overlay.classList.remove('hidden');
+        
+        return; 
+    }
    // Check for Weekly End Condition
     if (isWeeklyMode && weeklyQuestionCount >= WEEKLY_LIMIT) {
         await endGame();
@@ -2828,6 +2833,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
