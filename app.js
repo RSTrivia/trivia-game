@@ -1018,22 +1018,23 @@ function startTimer() {
             clearInterval(timer);
             stopTickSound();
             
-            // THE SYNC HUB:
-      if (isLiveMode) {
-          const correctBtn = document.querySelector('[data-answered-correctly="true"]');
-  
-          if (correctBtn) {
-              // Player got it right! Move to next question now that 15s is up.
-              loadQuestion();
-          } else {
-              // Player was wrong OR didn't answer.
-              highlightCorrectAnswer();
-              playSound(wrongBuffer);
-              setTimeout(() => { onWrongAnswer(); }, 1000);
-          }
-        } else {
-                handleTimeout(); // Solo modes die or move on immediately
+         // THE SYNC HUB:
+        if (isLiveMode) {
+            const correctBtn = document.querySelector('[data-answered-correctly="true"]');
+    
+            if (correctBtn) {
+                // Player got it right! Move to next question now that 15s is up.
+                questionText.textContent = ""; 
+                loadQuestion();
+            } else {
+                // Player was wrong OR didn't answer.
+                highlightCorrectAnswer();
+                playSound(wrongBuffer);
+                setTimeout(() => { onWrongAnswer(); }, 1000);
             }
+          } else {
+                  handleTimeout(); // Solo modes die or move on immediately
+              }
         }
     }, 1000);
 }
@@ -1159,8 +1160,11 @@ async function checkAnswer(choiceId, btn) {
             // We need a way to move forward ONLY when the 15s are up.
             // Let's use a flag to tell the Timer it's okay to load the next question.
             btn.dataset.answeredCorrectly = "true";
-          }
+          } else {
+        setTimeout(loadQuestion, 1000);
+    }
     } else {
+      // wrong answer
         playSound(wrongBuffer);
         streak = 0; // Reset streak on wrong answer in both Normal and Weekly modes
         btn.classList.add('wrong');
@@ -2998,6 +3002,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
