@@ -2316,15 +2316,17 @@ function setupLobbyRealtime(lobby) {
         .on('broadcast', { event: 'chat' }, ({ payload }) => {
             appendMessage(payload.username, payload.message);
         })
-       .on('broadcast', { event: 'start-game' }, () => {
-          console.log("Start signal received! Switching to game screen...");
+       .on('broadcast', { event: 'start-game' }, ({ payload }) => {
+          console.log("Start signal received!");
+     
           // Force UI swap BEFORE initializing the next channel
           document.getElementById('lobby-screen')?.classList.add('hidden');
           document.getElementById('start-screen')?.classList.add('hidden');
           document.body.classList.add('game-active');
           game.classList.remove('hidden');
-          
-          beginLiveMatch(); 
+        
+          // Pass the count from the payload into beginLiveMatch
+          beginLiveMatch(payload.survivorCount);
       })
         // 3. Finally, subscribe
       .subscribe(async (status) => {
@@ -2339,19 +2341,15 @@ function setupLobbyRealtime(lobby) {
 
 let firstQuestionSent = false; // Reset this when a match starts
 
-async function beginLiveMatch() {
+async function beginLiveMatch(countFromLobby) {
     isLiveMode = true;
     firstQuestionSent = false;
     hasDiedLocally = false; // Reset death state
     
     if (lobbyTimerInterval) clearInterval(lobbyTimerInterval);
     
-    // 1. Get exact survivor count from the lobby we just left
-    let lobbyCount = 0;
-    if (lobbyChannel) {
-        lobbyCount = Object.keys(lobbyChannel.presenceState()).length;
-    }
-    survivors = lobbyCount || 2; 
+   // Use the count passed from the broadcast, fallback to 2
+    survivors = countFromLobby || 2; 
     updateSurvivorCountUI(survivors);
 
     // 2. Setup the Game Channel
@@ -2588,13 +2586,11 @@ function isHost(channel) {
 
 async function triggerGameStart(lobbyId) {
     if (!lobbyChannel || isStarting) return;
-    isStarting = true; // Block further calls immediately
-    
+    isStarting = true; 
+
     console.log("Starting match for lobby:", lobbyId);
 
-    // 1. Lock the lobby in the database
-    // We add .eq('status', 'waiting') to ensure we only update it if 
-    // another host hasn't already beat us to it.
+    // 1. Lock the lobby in the database immediately
     const { error } = await supabase
         .from('live_lobbies')
         .update({ status: 'in-progress' })
@@ -2607,20 +2603,25 @@ async function triggerGameStart(lobbyId) {
         return;
     }
 
-    // 2. Tell everyone to switch screens
+    // 2. Get the final count RIGHT NOW while we are still in the lobby channel
+    const finalCount = Object.keys(lobbyChannel.presenceState()).length;
+
+    // 3. Single broadcast to tell everyone to switch screens with the correct count
     const resp = await lobbyChannel.send({
         type: 'broadcast',
         event: 'start-game',
-        payload: { lobbyId: lobbyId }
+        payload: { 
+            lobbyId: lobbyId, 
+            survivorCount: finalCount // This fixes the 'Survivors: 0' bug
+        }
     });
 
     if (resp !== 'ok') {
         console.error("Broadcast failed:", resp);
-        isStarting = false;
+        // We don't return here because the DB is already updated, 
+        // but we log it for debugging.
     }
 }
-
-
 
 
 
@@ -2856,6 +2857,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
