@@ -25,6 +25,7 @@ let gameChannel = null;
 let survivors = 0;
 let isLiveMode = false;
 let isStarting = false;
+let hasDiedLocally = false;
 const chatInput = document.getElementById('chatInput');
 const chatMessages = document.getElementById('chat-messages');
 
@@ -2441,22 +2442,22 @@ function updateSurvivorCountUI(count) {
 }
 
 async function onWrongAnswer() {
+   hasDiedLocally = true; // Mark as dead so you don't "Win" by accident
+    
     if (isLiveMode && gameChannel) {
-        // 1. Tell everyone else you died
+        // Tell everyone else you died
         gameChannel.send({ 
             type: 'broadcast', 
             event: 'player-died',
             payload: {} 
         });
         
-        // 2. Turn off Live Mode immediately
+        // Stop live mode for this player
         isLiveMode = false;
-        
-        // 3. Clean up the channel so you don't receive more questions
         supabase.removeChannel(gameChannel);
         gameChannel = null;
     }
-
+  
     // 4. UI Cleanup (for both Solo and Live)
     document.body.classList.remove('game-active', 'lobby-active');
     
@@ -2855,6 +2856,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
