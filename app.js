@@ -23,9 +23,8 @@ let lobbyChannel = null;
 let lobbyTimerInterval = null;
 let userId = null; // Add this globally
 let gameChannel = null;
-let initialLobbySize = 2; // Default for 1v1
-
-//let currentMatchSeed = null;
+let initialLobbySize = 0; // Default for 1v1
+let matchStartingCount = 0;
 let survivors = 0;
 let isLiveMode = false;
 let isStarting = false;
@@ -3027,6 +3026,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
