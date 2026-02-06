@@ -2302,23 +2302,31 @@ if (!userId) {
       }
     });
 
-    // 2. Chain all listeners (.on)
     lobbyChannel
-        .on('presence', { event: 'sync' }, () => {
-            const state = lobbyChannel.presenceState();
-            const count = Object.keys(state).length;
-            console.log("Current lobby count:", count);
-          
-            // This MUST trigger for the UI to update
-            updateLobbyUI(count, lobby.starts_at);
+    .on('presence', { event: 'sync' }, () => {
+        const state = lobbyChannel.presenceState();
+        const count = Object.keys(state).length;
+        updateLobbyUI(count, lobby.starts_at);
         
-            if (count >= 2 && isHost(lobbyChannel)) { // Use lobbyChannel, not lobby
-              console.log("Host detected 2+ players. Triggering start...");
-              setTimeout(() => {
-                  triggerGameStart(lobby.id); 
-              }, 1000); 
-          }
-        })
+        // Initial check
+        if (count >= 2 && isHost(lobbyChannel)) {
+            triggerGameStart(lobby.id);
+        }
+    })
+    .on('presence', { event: 'join' }, ({ newPresences }) => {
+        console.log("New player joined!", newPresences);
+        const state = lobbyChannel.presenceState();
+        const count = Object.keys(state).length;
+        
+        // Update UI immediately
+        updateLobbyUI(count, lobby.starts_at);
+
+        // If we are the host and someone just joined to make it 2+, START.
+        if (count >= 2 && isHost(lobbyChannel)) {
+            console.log("Host triggering game start on JOIN event");
+            triggerGameStart(lobby.id);
+        }
+    })
       // for chat
         .on('broadcast', { event: 'chat' }, ({ payload }) => {
             appendMessage(payload.username, payload.message);
@@ -2335,20 +2343,32 @@ if (!userId) {
           // Pass the count from the payload into beginLiveMatch
           beginLiveMatch(payload.survivorCount);
       })
-        // 3. Finally, subscribe
-     .subscribe(async (status) => {
-            console.log("Lobby Sync Status:", status); // Check if this says 'SUBSCRIBED'
-            if (status === 'SUBSCRIBED') {
-                const tracked = await lobbyChannel.track({ 
-                    online_at: new Date().toISOString(),
-                    user_id: userId // extra safety
-                });
-                console.log("Tracking status:", tracked);
-                
+    
+     // 3. Finally, subscribe (REPLACE YOUR OLD SUBSCRIBE BLOCK WITH THIS)
+    lobbyChannel.subscribe(async (status) => {
+        console.log("Lobby Sync Status:", status);
+
+        if (status === 'SUBSCRIBED') {
+            // Force the player to track themselves into the lobby
+            const presenceTrackStatus = await lobbyChannel.track({
+                user_id: userId,
+                online_at: new Date().toISOString(),
+            });
+            console.log("Host Tracking Status:", presenceTrackStatus);
+
+            // Enable the chat UI
+            if (chatInput) {
                 chatInput.disabled = false;
                 chatInput.placeholder = "Type a message...";
             }
-        });
+        }
+        
+        // If the connection drops, wait 2 seconds and try to join again
+        if (status === 'CHANNEL_ERROR') {
+            console.error("Lobby connection failed. Retrying...");
+            setTimeout(() => joinMatchmaking(), 2000);
+        }
+    });
 }
 
 let firstQuestionSent = false; // Reset this when a match starts
@@ -2523,22 +2543,29 @@ function showVictoryBanner(message) {
 function updateLobbyUI(count, startTime) {
     const timerElement = document.getElementById('lobby-timer');
     const countElement = document.getElementById('player-count');
-    countElement.innerText = `${count} players waiting...`;
+     if (countElement) {
+          countElement.innerText = `${count} players waiting...`;
+      }
 
     // Clear any existing timer before starting a new one
     if (lobbyTimerInterval) clearInterval(lobbyTimerInterval);
 
-    lobbyTimerInterval = setInterval(() => {
-        const remaining = new Date(startTime) - new Date();
-        if (remaining <= 0) {
-            clearInterval(lobbyTimerInterval);
-            timerElement.innerText = "Starting now...";
-            return;
+    if (timerElement) {
+            // Clear existing interval to prevent "racing" timers
+            if (lobbyTimerInterval) clearInterval(lobbyTimerInterval);
+    
+            lobbyTimerInterval = setInterval(() => {
+                const remaining = new Date(startTime) - new Date();
+                if (remaining <= 0) {
+                    clearInterval(lobbyTimerInterval);
+                    timerElement.innerText = "Starting now...";
+                    return;
+                }
+                const mins = Math.floor(remaining / 60000);
+                const secs = Math.floor((remaining % 60000) / 1000);
+                timerElement.innerText = `Starts in: ${mins}:${secs.toString().padStart(2, '0')}`;
+            }, 1000);
         }
-        const mins = Math.floor(remaining / 60000);
-        const secs = Math.floor((remaining % 60000) / 1000);
-        timerElement.innerText = `Starts in: ${mins}:${secs.toString().padStart(2, '0')}`;
-    }, 1000);
 }
 
 function showWaitingForPlayersOverlay() {
@@ -2875,6 +2902,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
