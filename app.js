@@ -2261,6 +2261,7 @@ window.showAchievementNotification = showAchievementNotification;
 
 //live mode
 async function joinMatchmaking() {
+  window.lobbyDeleted = false; // Reset the deletion flag for the new session
   // 1. CLEANUP: If there is an old channel, remove it first
     if (lobbyChannel) {
         console.log("Cleaning up old lobby channel...");
@@ -2478,33 +2479,59 @@ function updateSurvivorCountUI(count) {
 }
 
 async function onWrongAnswer() {
-   hasDiedLocally = true; // Mark as dead so you don't "Win" by accident
+    hasDiedLocally = true; 
     
     if (isLiveMode && gameChannel) {
-        // Tell everyone else you died
+        // 1. Tell others you died
         gameChannel.send({ 
             type: 'broadcast', 
             event: 'player-died',
-            payload: {} 
+            payload: { userId: userId } 
         });
         
-        // Stop live mode for this player
+        // 2. Cleanup the DB row immediately
+        // We do this here so even if everyone loses, the room is cleared
+        await deleteCurrentLobby(currentLobby.id);
+
         isLiveMode = false;
-        supabase.removeChannel(gameChannel);
-        gameChannel = null;
+        if (gameChannel) {
+            supabase.removeChannel(gameChannel);
+            gameChannel = null;
+        }
     }
   
-    // 4. UI Cleanup (for both Solo and Live)
     document.body.classList.remove('game-active', 'lobby-active');
-    
-    // 5. Trigger the End Game screen
     await endGame(); 
 }
 
 
-function checkVictoryCondition() {
+async function checkVictoryCondition() {
+    // If you are the last one standing
     if (survivors === 1 && !hasDiedLocally) {
+        console.log("Victory detected! Cleaning up database...");
+        
+        // Delete the lobby row now that the competitive part is over
+        await deleteCurrentLobby(currentLobby.id);
+        
         transitionToSoloMode();
+    }
+}
+
+async function deleteCurrentLobby(lobbyId) {
+    if (!lobbyId) return;
+
+    // Use a local flag to prevent multiple delete calls from the same client
+    if (window.lobbyDeleted) return; 
+    window.lobbyDeleted = true;
+
+    const { error } = await supabase
+        .from('live_lobbies')
+        .delete()
+        .eq('id', lobbyId);
+
+    if (error) {
+        console.error("Lobby deletion failed:", error);
+        window.lobbyDeleted = false; // Reset on failure to allow retry
     }
 }
 
@@ -2917,6 +2944,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
