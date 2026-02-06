@@ -23,6 +23,7 @@ let lobbyChannel = null;
 let lobbyTimerInterval = null;
 let userId = null; // Add this globally
 let gameChannel = null;
+let currentMatchSeed = null;
 let survivors = 0;
 let isLiveMode = false;
 let isStarting = false;
@@ -834,27 +835,7 @@ async function startGame(isLive = false) {
         isLiveMode = isLive; // Set our global flag
       if (isLiveMode) {
             isLiteMode = false;
-            // 1. CRITICAL PURGE: Clear old random questions
-            remainingQuestions = []; 
-            preloadQueue = []; 
-
-            // 2. FETCH MASTER POOL (If not already loaded)
-            if (masterQuestionPool.length === 0) {
-                const { data: idList, error } = await supabase.from('questions').select('id');
-                if (error) throw error;
-                masterQuestionPool = idList.map(q => q.id);
-            }
-
-            // 3. DETERMINISTIC SYNC: Use your specific shuffle function
-            // currentMatchSeed must be the seed received from your broadcast signal
-            remainingQuestions = shuffleLiveMatch(masterQuestionPool, currentMatchSeed);
-            
-            console.log("LIVE SYNC - Seed used:", currentMatchSeed, "First ID:", remainingQuestions[0]);
-
-            // 4. PRE-FETCH THE FIRST LIVE QUESTION
-            // We await this so we are ready before the "Waiting for players" overlay shows
-            await preloadNextQuestions(1); 
-
+            console.log("Live Match starting with pre-shuffled deck.");
         } else {
         // 1. DATA PREP (Background - User still sees Start Screen)
         if (masterQuestionPool.length === 0) {
@@ -2374,7 +2355,9 @@ function setupLobbyRealtime(lobby) {
     })
   .on('broadcast', { event: 'prepare-game' }, async ({ payload }) => {
       console.log("SHUFFLE CHECK - Seed:", payload.seed);
-      
+      // 1. Save seed globally so startGame() can see it
+      currentMatchSeed = payload.seed;
+    
       // 1. Clear any old data
       preloadQueue = []; 
       remainingQuestions = [];
@@ -2894,18 +2877,27 @@ function shuffleLiveMatch(ids, seed) {
     // 1. Force a sort so the starting point is identical on all devices
     let arr = [...ids].sort((a, b) => a - b);
     
-    // 2. Deterministic shuffle
+    // 2. Initialize the generator with the match seed
+    let rnd = seededRandomforLive(seed);
     let m = arr.length, t, i;
-    let currentSeed = seed; 
 
     while (m) {
-        // We use a local seed stepper so the original seed isn't mutated
-        i = Math.floor(seededRandom(currentSeed++) * m--);
+        // Use the generator to pick the index
+        i = Math.floor(rnd() * m--);
         t = arr[m]; 
         arr[m] = arr[i]; 
         arr[i] = t;
     }
     return arr;
+}
+
+function seededRandomforLive(a) {
+    return function() {
+      let t = a += 0x6D2B79F5;
+      t = Math.imul(t ^ t >>> 15, t | 1);
+      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    }
 }
 
 function shuffleWithSeed(array, seed) {
@@ -2973,6 +2965,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
