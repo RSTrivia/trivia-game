@@ -1032,8 +1032,9 @@ function startTimer() {
             stopTickSound();
             
             if (isLiveMode) {
+                //const myAnswer = document.querySelector('.answer-btn.selected'); // Or however you track selection
                 const youSurvived = document.querySelector('[data-answered-correctly="true"]');
-                
+
                 // 1.5s buffer is safe for network lag
                 setTimeout(async () => {
                     // Check if you personally got it right
@@ -1055,8 +1056,7 @@ function startTimer() {
                         }
                     } else {
                         // CASE B: You got it wrong or timed out.
-                        // We need to know if you were the LAST one to die.
-                        
+                        onWrongAnswer();
                         if (survivors === 0) {
                             // TIE: Everyone died this round.
                             // In Battle Royale, a tie is usually treated as a Co-Victory.
@@ -2554,6 +2554,19 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
             survivors--;
             updateSurvivorCountUI(survivors);
             checkVictoryCondition();
+            // If I'm the only one left and I've already answered correctly...
+            const alreadyAnsweredCorrectly = document.querySelector('[data-answered-correctly="true"]');
+            
+            if (survivors === 1 && alreadyAnsweredCorrectly && isLiveMode) {
+                console.log("Opponent died! Interrupting timer for Victory Screen.");
+                window.pendingVictory = true;
+                // Don't wait for timer! Go straight to victory.
+                setTimeout(() => {
+                    if (isLiveMode) transitionToSoloMode();
+                }, 1000); 
+            } else {
+                checkVictoryCondition();
+            }
         });
 
     // CRITICAL: You must track presence for the 'sync' event to count you
@@ -3100,6 +3113,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
