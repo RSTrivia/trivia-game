@@ -1006,7 +1006,7 @@ function startTimer() {
     timeDisplay.textContent = timeLeft;
     timeWrap.classList.remove('red-timer');
   
-    timer = setInterval(() => {
+    timer = setInterval(async () => {
         timeLeft--;
         timeDisplay.textContent = timeLeft;
 
@@ -3054,6 +3054,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
