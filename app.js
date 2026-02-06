@@ -2332,17 +2332,19 @@ function setupLobbyRealtime(lobby) {
         .on('broadcast', { event: 'chat' }, ({ payload }) => {
             appendMessage(payload.username, payload.message);
         })
-       .on('broadcast', { event: 'start-game' }, ({ payload }) => {
+       .on('broadcast', { event: 'start-game' }, async ({ payload }) => {
           console.log("Start signal received!");
-         // 1. CLEAR LOBBY IMMEDIATELY
-        if (lobbyTimerInterval) clearInterval(lobbyTimerInterval);
+        // 1. Kill the lobby channel properly
         if (lobbyChannel) {
             await supabase.removeChannel(lobbyChannel);
             lobbyChannel = null;
         }
-     // 2. FORCE UI SWAP FOR EVERYONE
-    // Use a small timeout to ensure the DOM is ready
-    setTimeout(() => {
+        
+        // 2. Stop the countdown
+        if (lobbyTimerInterval) clearInterval(lobbyTimerInterval);
+         // 2. FORCE UI SWAP FOR EVERYONE
+        // Use a small timeout to ensure the DOM is ready
+        setTimeout(() => {
         const lobbyScreen = document.getElementById('lobby-screen');
         const startScreen = document.getElementById('start-screen');
         const gameScreen = document.getElementById('game'); // Ensure this matches your HTML ID
@@ -2350,12 +2352,11 @@ function setupLobbyRealtime(lobby) {
         if (lobbyScreen) lobbyScreen.classList.add('hidden');
         if (startScreen) startScreen.classList.add('hidden');
         document.body.classList.add('game-active');
-        if (gameScreen) gameScreen.classList.remove('hidden');
+        if (game) game.classList.remove('hidden');
                
-          // Pass the count from the payload into beginLiveMatch
-          beginLiveMatch(payload.survivorCount);
-        console.log("UI Swapped. Initializing match...");
+        // Pass the count from the payload into beginLiveMatch
         beginLiveMatch(payload.survivorCount);
+        console.log("UI Swapped. Initializing match...");
     }, 50);
  })
     
@@ -2962,6 +2963,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
