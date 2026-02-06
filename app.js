@@ -833,13 +833,26 @@ async function preloadNextQuestions(targetCount = 3) {
 async function startGame(isLive = false) {
     try {
         isLiveMode = isLive; // Set our global flag
-      if (isLiveMode) {
+        // Inside startGame(isLive = false)
+        if (isLiveMode && currentLobby && currentLobby.question_ids) {
             isLiteMode = false;
-            // CRITICAL: Clear these so old Solo questions don't pop up!
             preloadQueue = []; 
-            remainingQuestions = [];
-            console.log("Live Match starting with pre-shuffled deck.");
-        } else {
+            
+            // The "Seed" is now the array saved in the DB
+            // Instead of shuffling locally, use the sequence from the lobby
+            if (currentLobby && currentLobby.question_ids) {
+                // question_ids is the JSONB array we just added to Supabase
+                remainingQuestions = [...currentLobby.question_ids]; 
+                console.log("Live Mode: Synced with lobby question deck.");
+            } else {
+                console.error("No lobby question data found!");
+            }
+            
+            console.log("Live Match: Using shared lobby question sequence.");
+            
+            // Fetch the first 5 questions based on these specific IDs
+            await preloadSpecificQuestions(remainingQuestions.slice(0, 5));
+} else {
         // 1. DATA PREP (Background - User still sees Start Screen)
         if (masterQuestionPool.length === 0) {
             const { data: idList, error } = await supabase.from('questions').select('id');
@@ -2311,24 +2324,27 @@ async function joinMatchmaking() {
         .maybeSingle();
 
     // 3. CREATE LOBBY (This is where the 403 Forbidden happened)
-    if (!lobby) {
-        const startTimestamp = new Date();
-        startTimestamp.setMinutes(startTimestamp.getMinutes() + 1); 
-
-        const { data: newLobby, error: insertError } = await supabase
-            .from('live_lobbies')
-            .insert([{ starts_at: startTimestamp.toISOString() }])
-            .select()
-            .single();
-
-        if (insertError) {
-            console.error("Lobby Creation Error:", insertError.message);
-            showNotification("Failed to create lobby. Check RLS policies.", null, "#ff4444");
-            return;
-        }
-        lobby = newLobby;
+      // Inside joinMatchmaking()
+      if (!lobby) {
+          const startTimestamp = new Date();
+          startTimestamp.setMinutes(startTimestamp.getMinutes() + 1);
+      
+          // 1. Get all possible IDs (or a large sample)
+          const { data: idList } = await supabase.from('questions').select('id');
+          
+          // 2. Shuffle them once here (this becomes the master seed)
+          const shuffledIds = idList.map(q => q.id).sort(() => Math.random() - 0.5);
+      
+          // 3. Save this array into the lobby row
+          const { data: newLobby } = await supabase
+              .from('live_lobbies')
+              .insert([{ 
+                  starts_at: startTimestamp.toISOString(),
+                  question_ids: shuffledIds // You'll need a JSONB column named question_ids
+              }])
+              .select().single();
+          lobby = newLobby;
     }
-
     currentLobby = lobby;
     setupLobbyRealtime(lobby);
 }
@@ -2980,6 +2996,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
