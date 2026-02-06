@@ -1019,34 +1019,32 @@ function startTimer() {
             clearInterval(timer);
             stopTickSound();
             
-         // THE SYNC HUB:
-        if (isLiveMode) {
-            const correctBtn = document.querySelector('[data-answered-correctly="true"]');
-            // If you were right, check if you've also won the match
-            if (correctBtn) {
-            // Give a 200ms grace period for final "death" signals to arrive
-            setTimeout(async () => {
-                // Now check if everyone else died or if we were already marked as winner
-                if (window.pendingVictory || survivors === 1) {
-                    await deleteCurrentLobby(currentLobby.id);
-                    transitionToSoloMode(); // Trigger victory!
-                    window.pendingVictory = false;
+            // THE SYNC HUB:
+            if (isLiveMode) {
+                const correctBtn = document.querySelector('[data-answered-correctly="true"]');
+                
+                if (correctBtn) {
+                    // Give a 200ms grace period for final "death" signals to arrive
+                    setTimeout(async () => {
+                        if (window.pendingVictory || survivors === 1) {
+                            await deleteCurrentLobby(currentLobby.id);
+                            transitionToSoloMode(); 
+                            window.pendingVictory = false;
+                        } else {
+                            questionText.textContent = ""; 
+                            loadQuestion();
+                        }
+                    }, 200); 
                 } else {
-                    // Match continues
-                    questionText.textContent = ""; 
-                    loadQuestion();
+                    // Player was wrong or timed out
+                    highlightCorrectAnswer();
+                    playSound(wrongBuffer);
+                    setTimeout(() => { onWrongAnswer(); }, 1000);
                 }
-            }, 200); 
-        } else {
-            // You were wrong or timed out
-            highlightCorrectAnswer();
-            playSound(wrongBuffer);
-            setTimeout(() => { onWrongAnswer(); }, 1000);
-        }
-    }
-          } else {
-                  handleTimeout(); // Solo modes die or move on immediately
-              }
+            } else {
+                // Not in Live Mode (Solo/Daily/Weekly)
+                handleTimeout(); 
+            }
         }
     }, 1000);
 }
@@ -3059,6 +3057,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
