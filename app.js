@@ -1019,32 +1019,25 @@ function startTimer() {
             clearInterval(timer);
             stopTickSound();
             
-              // THE SYNC HUB:
-              if (isLiveMode) {
-                    const correctBtn = document.querySelector('[data-answered-correctly="true"]');
-                    
-                    // CASE A: You answered correctly (or the button exists)
-                    if (correctBtn) {
-                        // Wait 200ms for final death signals from the slow-pokes
-                        setTimeout(async () => {
-                            if (window.pendingVictory || survivors === 1) {
-                                await deleteCurrentLobby(currentLobby.id);
-                                // This now shows your victory screen!
-                                await transitionToSoloMode(); 
-                                window.pendingVictory = false;
-                            } else {
-                                // Match continues to next round
-                                questionText.textContent = ""; 
-                                loadQuestion();
-                            }
-                        }, 200);
-                    } else {
-                        // Match continues
-                        questionText.textContent = ""; 
-                        loadQuestion();
-                    }
+            if (isLiveMode) {
+                // THE SYNC HUB: We check what happened during the 15 seconds
+                const correctBtn = document.querySelector('[data-answered-correctly="true"]');
+                
+                if (correctBtn) {
+                    // You survived! Now check if you're the ONLY one left
+                    setTimeout(async () => {
+                        if (window.pendingVictory || survivors === 1) {
+                            await deleteCurrentLobby(currentLobby.id);
+                            await transitionToSoloMode(); 
+                            window.pendingVictory = false;
+                        } else {
+                            // Others are still alive, move to next round
+                            questionText.textContent = ""; 
+                            loadQuestion();
+                        }
+                    }, 200); 
                 } else {
-                    // Player was wrong or timed out
+                    // You didn't mark 'correct' during the 15s (Wrong or No Answer)
                     highlightCorrectAnswer();
                     playSound(wrongBuffer);
                     setTimeout(() => { onWrongAnswer(); }, 1000);
@@ -3069,6 +3062,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
