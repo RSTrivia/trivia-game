@@ -2295,6 +2295,7 @@ window.showAchievementNotification = showAchievementNotification;
 
 //live mode
 async function joinMatchmaking() {
+  window.finalStartSent = false;
   window.lobbyDeleted = false; // Reset the deletion flag for the new session
   isLiveMode = false; // Ensure this is false until the match actually starts
   preloadQueue = [];  // Clear questions from previous rounds
@@ -2394,27 +2395,27 @@ function setupLobbyRealtime(lobby) {
        
         if (questionText) questionText.innerHTML = "Syncing with players...";
     })
-    .on('broadcast', { event: 'start-game' }, async ({ payload }) => {
+        .on('broadcast', { event: 'start-game' }, async ({ payload }) => {
         console.log("Start signal received!");
         if (audioCtx.state === 'suspended') audioCtx.resume();
-      // 1. Start the game logic first
-      beginLiveMatch(payload.survivorCount, payload.startTime);
-      // 2. Delay the cleanup of the lobby so the broadcast doesn't get cut off
-          setTimeout(async () => {
-              if (lobbyChannel) {
-                  await supabase.removeChannel(lobbyChannel);
-                  lobbyChannel = null;
-              }
-              if (lobbyTimerInterval) clearInterval(lobbyTimerInterval);
-          }, 1000);
-
-        // UI Swap
-        setTimeout(() => {
-            document.getElementById('lobby-screen')?.classList.add('hidden');
-            document.getElementById('start-screen')?.classList.add('hidden');
-            document.body.classList.add('game-active');
-            if (game) game.classList.remove('hidden');
-        }, 50); // Added the missing closing of setTimeout
+        
+        // 1. UI Swap - Do this immediately for responsiveness
+        document.getElementById('lobby-screen')?.classList.add('hidden');
+        document.getElementById('start-screen')?.classList.add('hidden');
+        document.body.classList.add('game-active');
+        if (game) game.classList.remove('hidden');
+    
+        // 2. Start the game logic
+        beginLiveMatch(payload.survivorCount, payload.startTime);
+    
+        // 3. Delayed Cleanup
+        setTimeout(async () => {
+            if (lobbyChannel) {
+                await supabase.removeChannel(lobbyChannel);
+                lobbyChannel = null;
+            }
+            if (lobbyTimerInterval) clearInterval(lobbyTimerInterval);
+        }, 1000);
     })
     .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
@@ -2456,11 +2457,11 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
             if (joinedCount >= survivors) {
                 const delay = Math.max(0, syncedStartTime - Date.now());
                 
-                setTimeout(() => {
-                    console.log("MATCH STARTING NOW");
-                    // Clear the "Syncing" text manually just in case
-                    if (questionText) questionText.innerHTML = "";
-                    loadQuestion(); 
+              setTimeout(() => {
+                    if (isLiveMode) { // Ensure user didn't quit/crash during delay
+                        if (questionText) questionText.innerHTML = "";
+                        loadQuestion(); 
+                    }
                 }, delay);
             }
         })
@@ -2554,29 +2555,35 @@ async function deleteCurrentLobby(lobbyId) {
 }
 
 function transitionToSoloMode() {
-    isLiveMode = false; // Stop listening to server timing
-    
-    // 1. Victory UI
+    isLiveMode = false; // Stops server-sync timing
     showVictoryBanner("Victory! Now go for the High Score!");
-    
-    // 2. REFILL THE POOL
-    // If the pool was emptied for Live Mode, we must refill it now 
-    // so loadQuestion() has data to work with.
-    if (remainingQuestions.length === 0) {
+
+    // 1. DO NOT reset remainingQuestions. 
+    // They are currently sitting in the order determined by the match seed.
+    // We only need to refill it IF it's somehow empty (safety check).
+    if (remainingQuestions.length === 0 && masterQuestionPool.length > 0) {
+        console.log("Deck finished or empty, reshuffling master pool for endless play.");
         remainingQuestions = [...masterQuestionPool].sort(() => Math.random() - 0.5);
     }
 
-    // 3. Ensure the buffer is filled
+    // 2. Clear the preloadQueue if you want to ensure the very next 
+    // questions fetched are truly fresh, but usually, keeping them is fine.
+    
+    // 3. Ensure the background buffer stays full
     preloadNextQuestions(3);
 
-    // 4. Cleanup Channel (Optional but recommended)
+    // 4. Cleanup the live communication
     if (gameChannel) {
-        gameChannel.unsubscribe();
+        supabase.removeChannel(gameChannel);
         gameChannel = null;
     }
 
-    // 5. The 'Next' button/logic now works normally again
-    enableLocalNextButton(); 
+    // 5. Enable the UI for solo play (e.g., showing the next button if it was hidden)
+    if (typeof enableLocalNextButton === 'function') {
+        enableLocalNextButton();
+    }
+    
+    console.log(`Transition complete. ${remainingQuestions.length} questions left in this deck.`);
 }
 
 function showVictoryBanner(message) {
@@ -2966,6 +2973,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
