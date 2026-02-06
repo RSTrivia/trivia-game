@@ -2310,29 +2310,23 @@ function setupLobbyRealtime(lobby) {
 
     lobbyChannel
     .on('presence', { event: 'sync' }, () => {
-        const state = lobbyChannel.presenceState();
-        const count = Object.keys(state).length;
-        updateLobbyUI(count, lobby.starts_at);
-        
-        // Initial check
-        if (count >= 2 && isHost(lobbyChannel)) {
-            triggerGameStart(lobby.id);
-        }
-    })
-    .on('presence', { event: 'join' }, ({ newPresences }) => {
-        console.log("New player joined!", newPresences);
-        const state = lobbyChannel.presenceState();
-        const count = Object.keys(state).length;
-        
-        // Update UI immediately
-        updateLobbyUI(count, lobby.starts_at);
-
-        // If we are the host and someone just joined to make it 2+, START.
-        if (count >= 2 && isHost(lobbyChannel)) {
-            console.log("Host triggering game start on JOIN event");
-            triggerGameStart(lobby.id);
-        }
-    })
+                const state = lobbyChannel.presenceState();
+                const keys = Object.keys(state);
+                const count = keys.length;
+                
+                console.log("Sync Event - Players:", keys);
+                updateLobbyUI(count, lobby.starts_at);
+                
+                // Only the host triggers the start
+                if (count >= 2 && isHost(lobbyChannel)) {
+                    console.log("I am Host and 2 players present. Starting...");
+                    triggerGameStart(lobby.id);
+                }
+            })
+      .on('presence', { event: 'join' }, ({ newPresences }) => {
+                  const state = lobbyChannel.presenceState();
+                  updateLobbyUI(Object.keys(state).length, lobby.starts_at);
+              })
       // for chat
         .on('broadcast', { event: 'chat' }, ({ payload }) => {
             appendMessage(payload.username, payload.message);
@@ -2369,10 +2363,13 @@ function setupLobbyRealtime(lobby) {
         }
     }
 
-    if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+    if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' && !isStarting) {
         console.log("Connection lost. Retrying...");
         if (lobbyChannel) supabase.removeChannel(lobbyChannel);
-        setTimeout(() => joinMatchmaking(), 3000);
+        setTimeout(() => {
+          if (lobbyChannel) supabase.removeChannel(lobbyChannel);
+                   joinMatchmaking();
+                }, 3000);
     }
 });
 }
@@ -2636,13 +2633,17 @@ function isHost(channel) {
 
 
 async function triggerGameStart(lobbyId) {
+    // 1. Safety Locks
     if (!lobbyChannel || isStarting) return;
-    isStarting = true; 
+    
+    // Crucial: Double check host status before touching the DB
+    if (!isHost(lobbyChannel)) return;
 
+    isStarting = true; 
     console.log("Starting match for lobby:", lobbyId);
 
-    // 1. Lock the lobby in the database immediately
-    const { error } = await supabase
+    // 2. Lock the lobby in the DB
+    const { error, count } = await supabase
         .from('live_lobbies')
         .update({ status: 'in-progress' })
         .eq('id', lobbyId)
@@ -2654,25 +2655,33 @@ async function triggerGameStart(lobbyId) {
         return;
     }
 
-    // 2. Get the final count RIGHT NOW while we are still in the lobby channel
+    // 3. Get final player count
     const finalCount = Object.keys(lobbyChannel.presenceState()).length;
 
-    // 3. Single broadcast to tell everyone to switch screens with the correct count
-    const resp = await lobbyChannel.send({
-        type: 'broadcast',
-        event: 'start-game',
-        payload: { 
-            lobbyId: lobbyId, 
-            survivorCount: finalCount // This fixes the 'Survivors: 0' bug
-        }
-    });
+    // 4. Slight delay before broadcasting
+    // This gives the Supabase Database a millisecond to "breathe" 
+    // so the status change is fully committed before players react.
+    setTimeout(async () => {
+        const resp = await lobbyChannel.send({
+            type: 'broadcast',
+            event: 'start-game',
+            payload: { 
+                lobbyId: lobbyId, 
+                survivorCount: finalCount 
+            }
+        });
 
-    if (resp !== 'ok') {
-        console.error("Broadcast failed:", resp);
-        // We don't return here because the DB is already updated, 
-        // but we log it for debugging.
-    }
+        if (resp !== 'ok') {
+            console.error("Broadcast failed:", resp);
+            isStarting = false; // Allow retry if broadcast failed
+        }
+    }, 200); 
 }
+
+
+
+
+
 
 
 
@@ -2908,6 +2917,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
