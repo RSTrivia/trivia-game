@@ -24,6 +24,7 @@ let userId = null; // Add this globally
 let gameChannel = null;
 let survivors = 0;
 let isLiveMode = false;
+let isStarting = false;
 const chatInput = document.getElementById('chatInput');
 const chatMessages = document.getElementById('chat-messages');
 
@@ -2289,12 +2290,15 @@ function setupLobbyRealtime(lobby) {
             
             updateLobbyUI(count, lobby.starts_at);
         
-            if (count >= 2 && isHost(lobby)) { 
-                // Add a 1-second delay to ensure all peers have finished subscribing
-                setTimeout(() => {
-                    triggerGameStart(lobby.id); 
-                }, 1000); 
-            }
+            if (count >= 2 && isHost(lobbyChannel)) { // Use lobbyChannel, not lobby
+              setTimeout(() => {
+                  triggerGameStart(lobby.id); 
+              }, 1000); 
+          }
+        })
+      // for chat
+        .on('broadcast', { event: 'chat' }, ({ payload }) => {
+            appendMessage(payload.username, payload.message);
         })
        .on('broadcast', { event: 'start-game' }, () => {
           console.log("Start signal received! Switching to game screen...");
@@ -2327,8 +2331,12 @@ async function beginLiveMatch() {
     document.body.classList.remove('lobby-active');
   
     // Initial Survivor Count based on Lobby Presence
-    const finalLobbyState = lobbyChannel.presenceState();
-    survivors = Object.keys(finalLobbyState).length;
+    let survivorsInLobby = 0;
+    if (lobbyChannel && typeof lobbyChannel.presenceState === 'function') {
+        const finalLobbyState = lobbyChannel.presenceState();
+        survivorsInLobby = Object.keys(finalLobbyState).length;
+    }
+    survivors = survivorsInLobby || 2; // Fallback to 2 if something went wrong
     updateSurvivorCountUI(survivors);
   
     // UI Cleanup
@@ -2554,31 +2562,54 @@ function appendMessage(user, msg) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-function isHost(channel = gameChannel || lobbyChannel) {
-    if (!channel) return false;
+function isHost(channel) {
+    // If no channel is passed, try to fall back to globals
+    const activeChannel = channel || gameChannel || lobbyChannel;
     
-    const state = channel.presenceState();
-    const players = Object.keys(state).sort(); // Sorts by userId strings
+    // Safety check: Does the object actually have the presenceState function?
+    if (!activeChannel || typeof activeChannel.presenceState !== 'function') {
+        return false;
+    }
     
-    // The "Host" is simply the player with the lowest alphabetical/numerical ID
+    const state = activeChannel.presenceState();
+    const players = Object.keys(state).sort(); 
+    
     return players[0] === userId; 
 }
 
-async function triggerGameStart(lobbyId) {
-    if (!lobbyChannel) return;
-    
-    // 1. Lock the lobby in the database immediately
-    await supabase
-        .from('live_lobbies')
-        .update({ status: 'in-progress' }) // Prevents new people from finding it
-        .eq('id', lobbyId);
 
-    // 2. Tell everyone currently in the lobby to switch to the game screen
-    lobbyChannel.send({
+async function triggerGameStart(lobbyId) {
+    if (!lobbyChannel || isStarting) return;
+    isStarting = true; // Block further calls immediately
+    
+    console.log("Starting match for lobby:", lobbyId);
+
+    // 1. Lock the lobby in the database
+    // We add .eq('status', 'waiting') to ensure we only update it if 
+    // another host hasn't already beat us to it.
+    const { error } = await supabase
+        .from('live_lobbies')
+        .update({ status: 'in-progress' })
+        .eq('id', lobbyId)
+        .eq('status', 'waiting');
+
+    if (error) {
+        console.error("Lobby lock failed:", error);
+        isStarting = false;
+        return;
+    }
+
+    // 2. Tell everyone to switch screens
+    const resp = await lobbyChannel.send({
         type: 'broadcast',
         event: 'start-game',
         payload: { lobbyId: lobbyId }
     });
+
+    if (resp !== 'ok') {
+        console.error("Broadcast failed:", resp);
+        isStarting = false;
+    }
 }
 
 
@@ -2817,6 +2848,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
