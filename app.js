@@ -2279,6 +2279,13 @@ window.showAchievementNotification = showAchievementNotification;
 
 //live mode
 async function joinMatchmaking() {
+  // 1. AUTH CHECK: This prevents the "Cannot read properties of null (reading 'id')" error
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+        showNotification("Please log in to join Live Matches!", null, "#ff4444");
+        return; // Stop the function here
+    }
   window.finalStartSent = false;
   window.lobbyDeleted = false; // Reset the deletion flag for the new session
   isLiveMode = false; // Ensure this is false until the match actually starts
@@ -2303,14 +2310,22 @@ async function joinMatchmaking() {
         .limit(1)
         .maybeSingle();
 
+    // 3. CREATE LOBBY (This is where the 403 Forbidden happened)
     if (!lobby) {
         const startTimestamp = new Date();
-        startTimestamp.setMinutes(startTimestamp.getMinutes() + 1); // 3 min timer
+        startTimestamp.setMinutes(startTimestamp.getMinutes() + 1); 
 
-        const { data: newLobby } = await supabase
+        const { data: newLobby, error: insertError } = await supabase
             .from('live_lobbies')
             .insert([{ starts_at: startTimestamp.toISOString() }])
-            .select().single();
+            .select()
+            .single();
+
+        if (insertError) {
+            console.error("Lobby Creation Error:", insertError.message);
+            showNotification("Failed to create lobby. Check RLS policies.", null, "#ff4444");
+            return;
+        }
         lobby = newLobby;
     }
 
@@ -2965,6 +2980,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
