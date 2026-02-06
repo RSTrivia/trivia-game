@@ -1024,21 +1024,26 @@ function startTimer() {
             const correctBtn = document.querySelector('[data-answered-correctly="true"]');
             // If you were right, check if you've also won the match
             if (correctBtn) {
-              if (window.pendingVictory) {
-                await deleteCurrentLobby(currentLobby.id);
-                transitionToSoloMode(matchStartingCount);
-                window.pendingVictory = false;
-                // Player got it right! Move to next question now that 15s is up.
-              } else {
-                questionText.textContent = ""; 
-                loadQuestion();
-              }
-            } else {
-                // Player was wrong OR didn't answer.
-                highlightCorrectAnswer();
-                playSound(wrongBuffer);
-                setTimeout(() => { onWrongAnswer(); }, 1000);
-            }
+            // Give a 200ms grace period for final "death" signals to arrive
+            setTimeout(async () => {
+                // Now check if everyone else died or if we were already marked as winner
+                if (window.pendingVictory || survivors === 1) {
+                    await deleteCurrentLobby(currentLobby.id);
+                    transitionToSoloMode(); // Trigger victory!
+                    window.pendingVictory = false;
+                } else {
+                    // Match continues
+                    questionText.textContent = ""; 
+                    loadQuestion();
+                }
+            }, 200); 
+        } else {
+            // You were wrong or timed out
+            highlightCorrectAnswer();
+            playSound(wrongBuffer);
+            setTimeout(() => { onWrongAnswer(); }, 1000);
+        }
+    }
           } else {
                   handleTimeout(); // Solo modes die or move on immediately
               }
@@ -2627,9 +2632,9 @@ async function transitionToSoloMode() {
 
     // Inside transitionToSoloMode
     if (survivors === 0) {
-        if (statsText) statsText.textContent = `Co-Victory! Total Players: ${totalPlayers}`;
+        if (statsText) statsText.textContent = `Co-Victory! Total Players: ${total}`;
     } else {
-        if (statsText) statsText.textContent = `Sole Survivor! Total Players: ${totalPlayers}`;
+        if (statsText) statsText.textContent = `Sole Survivor! Total Players: ${total}`;
     }
     if (oddsText) oddsText.textContent = `Survival Odds: ${odds}%`;
 
@@ -2648,7 +2653,7 @@ async function transitionToSoloMode() {
         victoryScreen.classList.add('hidden');
         
         if (preloadQueue.length === 0 && remainingQuestions.length === 0) {
-            endGame();
+            await endGame();
             return;
         }
 
@@ -3054,6 +3059,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
