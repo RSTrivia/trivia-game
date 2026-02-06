@@ -1022,11 +1022,17 @@ function startTimer() {
          // THE SYNC HUB:
         if (isLiveMode) {
             const correctBtn = document.querySelector('[data-answered-correctly="true"]');
-    
+            // If you were right, check if you've also won the match
             if (correctBtn) {
+              if (window.pendingVictory) {
+                await deleteCurrentLobby(currentLobby.id);
+                transitionToSoloMode(matchStartingCount);
+                window.pendingVictory = false;
                 // Player got it right! Move to next question now that 15s is up.
+              } else {
                 questionText.textContent = ""; 
                 loadQuestion();
+              }
             } else {
                 // Player was wrong OR didn't answer.
                 highlightCorrectAnswer();
@@ -2536,31 +2542,48 @@ async function onWrongAnswer() {
             payload: { userId: userId } 
         });
         
-        // 2. Cleanup the DB row immediately
-        // We do this here so even if everyone loses, the room is cleared
-        await deleteCurrentLobby(currentLobby.id);
-
-        isLiveMode = false;
+        // 2. THE GROUP ELIMINATION CHECK
+        // We wait a tiny bit (100ms) to let the 'player-died' broadcasts from 
+        // others arrive so our 'survivors' count is accurate for the group.
+        setTimeout(async () => {
+            // If survivors is 0, it means EVERYONE died on this question.
+            // If survivors is 1 and it's NOT you (hasDiedLocally is true), 
+            // then that 1 person is the sole winner.
+            
+            if (survivors <= 0) {
+                console.log("Mass elimination! Everyone remaining wins.");
+                await deleteCurrentLobby(currentLobby.id);
+                transitionToSoloMode(matchStartingCount); 
+            } else {
+                // You died, but at least one person is still in the game.
+                // Standard game over for you.
+                await deleteCurrentLobby(currentLobby.id);
+                isLiveMode = false;
+                document.body.classList.remove('game-active', 'lobby-active');
+                await endGame(); 
+            }
+        }, 100);
+        // Cleanup channel (moved inside the logic above or handled after)
         if (gameChannel) {
             supabase.removeChannel(gameChannel);
             gameChannel = null;
         }
     }
-  
+    // Standard Solo/Daily death
     document.body.classList.remove('game-active', 'lobby-active');
     await endGame(); 
 }
 
 
 async function checkVictoryCondition() {
-    // If you are the last one standing
+    // We only trigger the win if you are the last one standing 
+    // AND you aren't currently "dead" yourself.
     if (survivors === 1 && !hasDiedLocally) {
-        console.log("Victory detected! Cleaning up database...");
+        console.log("Last survivor detected.");
         
-        // Delete the lobby row now that the competitive part is over
-        await deleteCurrentLobby(currentLobby.id);
-        
-        transitionToSoloMode();
+        // Flag this so that when the timer hits 0 or you answer, 
+        // the game knows to transition.
+        window.pendingVictory = true; 
     }
 }
 
@@ -2602,7 +2625,12 @@ async function transitionToSoloMode() {
     const total = matchStartingCount || 2; 
     const odds = Math.round((1 / total) * 100);
 
-    if (statsText) statsText.textContent = `Total Participants: ${total}`;
+    // Inside transitionToSoloMode
+    if (survivors === 0) {
+        if (statsText) statsText.textContent = `Co-Victory! Total Players: ${totalPlayers}`;
+    } else {
+        if (statsText) statsText.textContent = `Sole Survivor! Total Players: ${totalPlayers}`;
+    }
     if (oddsText) oddsText.textContent = `Survival Odds: ${odds}%`;
 
     // 2. Show the Screen
@@ -3026,6 +3054,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
