@@ -1032,42 +1032,49 @@ function startTimer() {
             stopTickSound();
             
             if (isLiveMode) {
-                const answeredCorrectly = document.querySelector('[data-answered-correctly="true"]');
+                const youSurvived = document.querySelector('[data-answered-correctly="true"]');
                 
-                // 200ms buffer to allow 'player-died' signals from other players to arrive
+                // 1.5s buffer is safe for network lag
                 setTimeout(async () => {
-                    if (answeredCorrectly) {
-                        if (survivors === 1) {
-                            // Sole Winner
-                            isLiveMode = false; // LOCK THE GATE IMMEDIATELY
-                            await deleteCurrentLobby(currentLobby.id);
+                    // Check if you personally got it right
+                    const youSurvived = document.querySelector('[data-answered-correctly="true"]');
+                
+                    if (youSurvived) {
+                        // CASE A: You are still in. Is anyone else?
+                        if (survivors === 1 || window.pendingVictory) {
+                            // Sole Winner!
+                            isLiveMode = false; 
+                            const lobbyId = currentLobby?.id;
+                            currentLobby = null; 
+                            if (lobbyId) await deleteCurrentLobby(lobbyId);
                             await transitionToSoloMode(); 
                         } else {
-                            // Multiple survivors, move to next round
+                            // Multiple people still alive. Next round!
                             if (questionText) questionText.textContent = ""; 
                             loadQuestion();
                         }
-                    } 
-                    else {
-                        // Scenario: You didn't get it right
+                    } else {
+                        // CASE B: You got it wrong or timed out.
+                        // We need to know if you were the LAST one to die.
+                        
                         if (survivors === 0) {
-                            // Tie / Co-Victory
-                            isLiveMode = false; // LOCK THE GATE IMMEDIATELY
-                            const lobbyToCleanup = currentLobby?.id;
-                            currentLobby = null; // Clear this IMMEDIATELY so loadQuestion doesn't trigger the block
-                            if (lobbyToCleanup) {
-                                await deleteCurrentLobby(lobbyToCleanup);
-                            }
+                            // TIE: Everyone died this round.
+                            // In Battle Royale, a tie is usually treated as a Co-Victory.
+                            isLiveMode = false;
+                            const lobbyId = currentLobby?.id;
+                            currentLobby = null;
+                            if (lobbyId) await deleteCurrentLobby(lobbyId);
                             await transitionToSoloMode(); 
                         } else {
-                            // You are eliminated, but others remain
+                            // ELIMINATED: Others are still playing.
                             isLiveMode = false;
                             highlightCorrectAnswer();
                             playSound(wrongBuffer);
+                            // We wait a second so they see the red/green buttons before kicking to menu
                             setTimeout(() => { onWrongAnswer(); }, 1000);
                         }
                     }
-                }, 200); 
+                }, 1500);
             } else {
                 // Not in Live Mode (Solo/Daily/Weekly)
                 handleTimeout(); 
@@ -3093,6 +3100,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
