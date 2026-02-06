@@ -917,6 +917,11 @@ async function preloadSpecificQuestions(idsToFetch) {
 }
 
 async function loadQuestion(broadcastedId = null, startTime = null) {
+  // NEW: If the match is ending, stop everything immediately
+    if (window.pendingVictory || !isLiveMode && currentLobby) {
+        console.log("Blocking loadQuestion: Match is over.");
+        return;
+    }
    // 1. End Game Checks
     if (isWeeklyMode && weeklyQuestionCount >= WEEKLY_LIMIT) { await endGame(); return; }
     if (isLiteMode && score >= LITE_LIMIT) { await endGame(); return; }
@@ -1034,6 +1039,7 @@ function startTimer() {
                     if (answeredCorrectly) {
                         if (survivors === 1) {
                             // Sole Winner
+                            isLiveMode = false; // LOCK THE GATE IMMEDIATELY
                             await deleteCurrentLobby(currentLobby.id);
                             await transitionToSoloMode(); 
                         } else {
@@ -1046,6 +1052,7 @@ function startTimer() {
                         // Scenario: You didn't get it right
                         if (survivors === 0) {
                             // Tie / Co-Victory
+                            isLiveMode = false; // LOCK THE GATE IMMEDIATELY
                             await deleteCurrentLobby(currentLobby.id);
                             await transitionToSoloMode(); 
                         } else {
@@ -2333,6 +2340,7 @@ async function joinMatchmaking() {
         return; // Stop the function here
     }
   window.finalStartSent = false;
+  window.pendingVictory = false; // Add this reset
   window.lobbyDeleted = false; // Reset the deletion flag for the new session
   isLiveMode = false; // Ensure this is false until the match actually starts
   preloadQueue = [];  // Clear questions from previous rounds
@@ -3058,6 +3066,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
