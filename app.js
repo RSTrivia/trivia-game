@@ -833,12 +833,28 @@ async function startGame(isLive = false) {
     try {
         isLiveMode = isLive; // Set our global flag
       if (isLiveMode) {
-          isLiteMode = false;
-          // Only clear if we don't have a live list yet. 
-          // Usually, the lobby sets remainingQuestions before startGame is called.
-          if (remainingQuestions.length === 0) {
-              preloadQueue = []; 
-          }
+            isLiteMode = false;
+            // 1. CRITICAL PURGE: Clear old random questions
+            remainingQuestions = []; 
+            preloadQueue = []; 
+
+            // 2. FETCH MASTER POOL (If not already loaded)
+            if (masterQuestionPool.length === 0) {
+                const { data: idList, error } = await supabase.from('questions').select('id');
+                if (error) throw error;
+                masterQuestionPool = idList.map(q => q.id);
+            }
+
+            // 3. DETERMINISTIC SYNC: Use your specific shuffle function
+            // currentMatchSeed must be the seed received from your broadcast signal
+            remainingQuestions = shuffleLiveMatch(masterQuestionPool, currentMatchSeed);
+            
+            console.log("LIVE SYNC - Seed used:", currentMatchSeed, "First ID:", remainingQuestions[0]);
+
+            // 4. PRE-FETCH THE FIRST LIVE QUESTION
+            // We await this so we are ready before the "Waiting for players" overlay shows
+            await preloadNextQuestions(1); 
+
         } else {
         // 1. DATA PREP (Background - User still sees Start Screen)
         if (masterQuestionPool.length === 0) {
@@ -890,7 +906,6 @@ async function startGame(isLive = false) {
 
         // 4. STARTING THE ENGINE
         if (isLiveMode) {
-            isLiteMode = false;
             // DO NOT call loadQuestion() yet. 
             // Wait for the Supabase Broadcast to tell us which question is #1.
             showWaitingForPlayersOverlay(); 
@@ -2951,6 +2966,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
