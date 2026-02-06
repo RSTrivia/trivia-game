@@ -917,9 +917,9 @@ async function preloadSpecificQuestions(idsToFetch) {
 }
 
 async function loadQuestion(broadcastedId = null, startTime = null) {
-  // NEW: If the match is ending, stop everything immediately
-    if (window.pendingVictory || !isLiveMode && currentLobby) {
-        console.log("Blocking loadQuestion: Match is over.");
+    // Only block if we are actually at the End Screen or Victory state
+    if (window.pendingVictory || (!isLiveMode && !currentLobby && !isWeeklyMode && !isDailyMode)) {
+        console.log("Blocking loadQuestion: Game is fully over.");
         return;
     }
    // 1. End Game Checks
@@ -1053,10 +1053,15 @@ function startTimer() {
                         if (survivors === 0) {
                             // Tie / Co-Victory
                             isLiveMode = false; // LOCK THE GATE IMMEDIATELY
-                            await deleteCurrentLobby(currentLobby.id);
+                            const lobbyToCleanup = currentLobby?.id;
+                            currentLobby = null; // Clear this IMMEDIATELY so loadQuestion doesn't trigger the block
+                            if (lobbyToCleanup) {
+                                await deleteCurrentLobby(lobbyToCleanup);
+                            }
                             await transitionToSoloMode(); 
                         } else {
                             // You are eliminated, but others remain
+                            isLiveMode = false;
                             highlightCorrectAnswer();
                             playSound(wrongBuffer);
                             setTimeout(() => { onWrongAnswer(); }, 1000);
@@ -3066,6 +3071,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
