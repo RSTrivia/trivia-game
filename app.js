@@ -2289,7 +2289,11 @@ async function joinMatchmaking() {
 }
 
 function setupLobbyRealtime(lobby) {
-  console.log(userId);
+if (!userId) {
+        console.error("CRITICAL: userId is undefined. Cannot join lobby.");
+        return;
+    }
+ 
     // 1. Create the channel
     lobbyChannel = supabase.channel(`lobby-${lobby.id}`, {
     config: { 
@@ -2303,10 +2307,13 @@ function setupLobbyRealtime(lobby) {
         .on('presence', { event: 'sync' }, () => {
             const state = lobbyChannel.presenceState();
             const count = Object.keys(state).length;
-            
+            console.log("Current lobby count:", count);
+          
+            // This MUST trigger for the UI to update
             updateLobbyUI(count, lobby.starts_at);
         
             if (count >= 2 && isHost(lobbyChannel)) { // Use lobbyChannel, not lobby
+              console.log("Host detected 2+ players. Triggering start...");
               setTimeout(() => {
                   triggerGameStart(lobby.id); 
               }, 1000); 
@@ -2329,13 +2336,18 @@ function setupLobbyRealtime(lobby) {
           beginLiveMatch(payload.survivorCount);
       })
         // 3. Finally, subscribe
-      .subscribe(async (status) => {
-          if (status === 'SUBSCRIBED') {
-              await lobbyChannel.track({ online_at: new Date().toISOString() });
-              // Optional: Enable chat input here
-              chatInput.placeholder = "Type a message...";
-              chatInput.disabled = false;
-          }
+     .subscribe(async (status) => {
+            console.log("Lobby Sync Status:", status); // Check if this says 'SUBSCRIBED'
+            if (status === 'SUBSCRIBED') {
+                const tracked = await lobbyChannel.track({ 
+                    online_at: new Date().toISOString(),
+                    user_id: userId // extra safety
+                });
+                console.log("Tracking status:", tracked);
+                
+                chatInput.disabled = false;
+                chatInput.placeholder = "Type a message...";
+            }
         });
 }
 
@@ -2392,9 +2404,12 @@ async function beginLiveMatch(countFromLobby) {
             }
         })
         .subscribe(async (status) => {
+          console.log("Lobby Subscription Status:", status); // ADD THIS LOG
             if (status === 'SUBSCRIBED') {
                 // Track into the new game channel so the host sees you
                 await gameChannel.track({ status: 'playing' });
+                //chatInput.disabled = false; // Ensure this ID matches your HTML
+                //chatInput.placeholder = "Type a message...";
             }
         });
 }
@@ -2569,16 +2584,19 @@ function appendMessage(user, msg) {
 }
 
 function isHost(channel) {
-    // If no channel is passed, try to fall back to globals
     const activeChannel = channel || gameChannel || lobbyChannel;
     
-    // Safety check: Does the object actually have the presenceState function?
     if (!activeChannel || typeof activeChannel.presenceState !== 'function') {
         return false;
     }
     
     const state = activeChannel.presenceState();
     const players = Object.keys(state).sort(); 
+    
+    // DEBUG LOGS - Check these in F12 console
+    console.log("Presence Keys:", players);
+    console.log("My userId:", userId);
+    console.log("Am I Host?", players[0] === userId);
     
     return players[0] === userId; 
 }
@@ -2857,6 +2875,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
