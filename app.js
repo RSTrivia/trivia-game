@@ -834,23 +834,22 @@ async function startGame(isLive = false) {
     try {
         isLiveMode = isLive; // Set our global flag
         // Inside startGame(isLive = false)
-        if (isLiveMode && currentLobby && currentLobby.question_ids) {
-            isLiteMode = false;
+        if (isLiveMode) {
             preloadQueue = []; 
             
             // The "Seed" is now the array saved in the DB
             // Instead of shuffling locally, use the sequence from the lobby
             if (currentLobby && currentLobby.question_ids) {
-                // question_ids is the JSONB array we just added to Supabase
-                remainingQuestions = [...currentLobby.question_ids]; 
-                console.log("Live Mode: Synced with lobby question deck.");
+                remainingQuestions = [...currentLobby.question_ids];
+                console.log("Live Sync: Using Lobby Deck", remainingQuestions);
             } else {
-                console.error("No lobby question data found!");
+                console.error("Lobby data missing! Questions will be out of sync.");
+                // Fallback: fetch IDs but DON'T shuffle if you want a chance at sync
+                const { data } = await supabase.from('questions').select('id');
+                remainingQuestions = data.map(q => q.id); 
             }
             
-            console.log("Live Match: Using shared lobby question sequence.");
-            
-            // Fetch the first 5 questions based on these specific IDs
+            // Fetch first 5 specific IDs from the shared list
             await preloadSpecificQuestions(remainingQuestions.slice(0, 5));
 } else {
         // 1. DATA PREP (Background - User still sees Start Screen)
@@ -917,6 +916,17 @@ async function startGame(isLive = false) {
     }
 }
 
+async function preloadSpecificQuestions(idsToFetch) {
+    const { data, error } = await supabase.rpc('get_questions_by_ids', { input_ids: idsToFetch });
+    
+    if (data) {
+        // Crucial: Maintain the order of the idsToFetch array
+        const ordered = idsToFetch.map(id => data.find(q => q.id === id)).filter(Boolean);
+        preloadQueue.push(...ordered);
+        // Remove from the master list so we don't fetch them again
+        remainingQuestions = remainingQuestions.filter(id => !idsToFetch.includes(id));
+    }
+}
 
 async function loadQuestion(broadcastedId = null, startTime = null) {
    // 1. End Game Checks
@@ -2996,6 +3006,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
