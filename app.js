@@ -2334,6 +2334,10 @@ function setupLobbyRealtime(lobby) {
         })
        .on('broadcast', { event: 'start-game' }, async ({ payload }) => {
           console.log("Start signal received!");
+         // Force the browser to stay "awake" by interacting with a dummy sound or element
+          if (audioCtx.state === 'suspended') {
+              audioCtx.resume();
+          }
         // 1. Kill the lobby channel properly
         if (lobbyChannel) {
             await supabase.removeChannel(lobbyChannel);
@@ -2411,14 +2415,18 @@ async function beginLiveMatch(countFromLobby) {
     gameChannel
         .on('broadcast', { event: 'initialize-game-sequence' }, async ({ payload }) => {
             console.log("Seed received! Initializing...");
+            // VISUAL DEBUG for your phone
+            questionText.innerHTML = "Seed Received! Preloading...";
             // Shuffling with the shared seed
             const shuffled = shuffleWithSeed(payload.masterIds, payload.seed);
             remainingQuestions = shuffled;
             
             await preloadNextQuestions(3);
-
-            // Sync the start time
             const delay = payload.startTime - Date.now();
+    
+            // VISUAL DEBUG
+            questionText.innerHTML = `Starting in ${Math.round(delay/1000)}s...`;
+          
             setTimeout(() => {
                 const overlay = document.getElementById('waiting-overlay');
                 if (overlay) overlay.classList.add('hidden');
@@ -2963,6 +2971,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
