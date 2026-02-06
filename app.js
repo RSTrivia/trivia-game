@@ -904,6 +904,11 @@ async function loadQuestion(broadcastedId = null, startTime = null) {
         return;
     }
   
+    if (isLiveMode && preloadQueue.length > 0) {
+        // Optional: Log the ID to verify both players have the same one
+        console.log("Live Question ID:", preloadQueue[0].id);
+    }
+  
     // A. IMMEDIATE CLEANUP
     questionImage.style.display = 'none';
     questionImage.style.opacity = '0';
@@ -2263,6 +2268,10 @@ window.showAchievementNotification = showAchievementNotification;
 //live mode
 async function joinMatchmaking() {
   window.lobbyDeleted = false; // Reset the deletion flag for the new session
+  isLiveMode = false; // Ensure this is false until the match actually starts
+  preloadQueue = [];  // Clear questions from previous rounds
+  remainingQuestions = [];
+  
   // 1. CLEANUP: If there is an old channel, remove it first
     if (lobbyChannel) {
         console.log("Cleaning up old lobby channel...");
@@ -2339,7 +2348,8 @@ function setupLobbyRealtime(lobby) {
       
       // 1. Clear any old data
       preloadQueue = []; 
-      
+      remainingQuestions = [];
+    
       // 2. Shuffle using the deterministic function
       const shuffled = shuffleLiveMatch(payload.masterIds, payload.seed);
       
@@ -2928,6 +2938,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
