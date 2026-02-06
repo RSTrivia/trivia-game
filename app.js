@@ -2261,6 +2261,12 @@ window.showAchievementNotification = showAchievementNotification;
 
 //live mode
 async function joinMatchmaking() {
+  // 1. CLEANUP: If there is an old channel, remove it first
+    if (lobbyChannel) {
+        console.log("Cleaning up old lobby channel...");
+        await supabase.removeChannel(lobbyChannel);
+        lobbyChannel = null;
+    }
     // UI: Hide the title for mobile lobby view
     document.body.classList.add('lobby-active');
   
@@ -2289,11 +2295,11 @@ async function joinMatchmaking() {
 }
 
 function setupLobbyRealtime(lobby) {
-if (!userId) {
-        console.error("CRITICAL: userId is undefined. Cannot join lobby.");
+// 2. Extra Safety: Ensure we aren't creating a channel with an invalid name
+    if (!lobby.id || !userId) {
+        console.error("Missing ID or UserID", { lobbyId: lobby.id, userId });
         return;
     }
- 
     // 1. Create the channel
     lobbyChannel = supabase.channel(`lobby-${lobby.id}`, {
     config: { 
@@ -2350,10 +2356,10 @@ if (!userId) {
 
         if (status === 'SUBSCRIBED') {
             // Force the player to track themselves into the lobby
-            const presenceTrackStatus = await lobbyChannel.track({
-                user_id: userId,
-                online_at: new Date().toISOString(),
-            });
+            // Use a timeout for tracking to prevent the 'timed out' error
+                const trackStatus = await lobbyChannel.track({
+                    online_at: new Date().toISOString()
+                });
             console.log("Host Tracking Status:", presenceTrackStatus);
 
             // Enable the chat UI
@@ -2363,11 +2369,12 @@ if (!userId) {
             }
         }
         
-        // If the connection drops, wait 2 seconds and try to join again
-        if (status === 'CHANNEL_ERROR') {
-            console.error("Lobby connection failed. Retrying...");
-            setTimeout(() => joinMatchmaking(), 2000);
-        }
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+                console.log("Connection lost. Cleaning up and retrying...");
+                // Remove the broken channel before retrying
+                supabase.removeChannel(lobbyChannel);
+                setTimeout(() => joinMatchmaking(), 3000); // 3 second delay
+            }
     });
 }
 
@@ -2902,6 +2909,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
