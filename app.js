@@ -1208,9 +1208,11 @@ async function checkAnswer(choiceId, btn) {
                 // Standard multiplayer behavior: wait for the timer
                 questionText.textContent = "Waiting for other players...";
                 btn.dataset.answeredCorrectly = "true";
-          } else {
+          } 
+        } else {
         setTimeout(loadQuestion, 1000);
     }
+    
     } else {
       // wrong answer
         playSound(wrongBuffer);
@@ -3091,6 +3093,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
