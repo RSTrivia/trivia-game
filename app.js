@@ -1058,7 +1058,6 @@ function startTimer() {
                         }
                     } else {
                         // CASE B: You got it wrong or timed out.
-                        onWrongAnswer();
                         if (survivors === 0) {
                             // TIE: Everyone died this round.
                             // In Battle Royale, a tie is usually treated as a Co-Victory.
@@ -1073,7 +1072,15 @@ function startTimer() {
                             highlightCorrectAnswer();
                             playSound(wrongBuffer);
                             // We wait a second so they see the red/green buttons before kicking to menu
-                            setTimeout(() => { onWrongAnswer(); }, 1000);
+                            // THIS is where the loser actually leaves the game
+                            setTimeout(async () => {
+                                document.body.classList.remove('game-active', 'lobby-active');
+                                if (gameChannel) {
+                                    await supabase.removeChannel(gameChannel);
+                                    gameChannel = null;
+                                }
+                                await endGame();
+                            }, 1500);
                         }
                     }
                 }, 1500);
@@ -2554,24 +2561,30 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
                 }, delay);
             }
         })
-        .on('broadcast', { event: 'player-died' }, () => {
-            survivors--;
-            updateSurvivorCountUI(survivors);
-            checkVictoryCondition();
-            // If I'm the only one left and I've already answered correctly...
-            const alreadyAnsweredCorrectly = document.querySelector('[data-answered-correctly="true"]');
-            
-            if (survivors === 1 && alreadyAnsweredCorrectly && isLiveMode) {
-                console.log("Opponent died! Interrupting timer for Victory Screen.");
-                window.pendingVictory = true;
-                // Don't wait for timer! Go straight to victory.
-                setTimeout(() => {
-                    if (isLiveMode) transitionToSoloMode();
-                }, 1000); 
-            } else {
-                checkVictoryCondition();
-            }
-        });
+      
+      .on('broadcast', { event: 'player-died' }, () => {
+          survivors--;
+          updateSurvivorCountUI(survivors);
+          
+          // Check if we just became the winner
+          if (survivors === 1 && !hasDiedLocally) {
+              window.pendingVictory = true;
+              showVictoryBanner("Last Survivor! Finish the round!");
+              
+              // Check if the current user has already answered this specific round
+              // We look for a button that has been selected
+              const hasSelected = document.querySelector('.answer-btn.selected');
+              
+              if (hasSelected) {
+                  console.log("Opponent died and I already answered. Transitioning now.");
+                  // Kill any pending loadQuestion timeouts
+                  clearAllQueuedTransitions(); 
+                  setTimeout(() => transitionToSoloMode(), 1000);
+              }
+          } else if (survivors === 0) {
+              checkVictoryCondition();
+          }
+      });
 
     // CRITICAL: You must track presence for the 'sync' event to count you
     await gameChannel.subscribe(async (status) => {
@@ -2609,14 +2622,8 @@ async function onWrongAnswer() {
             event: 'player-died',
             payload: { userId: userId } 
         });
-
-        // 2. Immediate Cleanup for the loser
-        // We don't wait for the timer; the loser leaves the match now.
-        isLiveMode = false;
-        if (gameChannel) {
-            supabase.removeChannel(gameChannel);
-            gameChannel = null;
-        }
+        console.log("Local player eliminated. Waiting for round end sync...");
+        return;
     }
 
     // 3. UI Cleanup & Results
@@ -3118,6 +3125,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
