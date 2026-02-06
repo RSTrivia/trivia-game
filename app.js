@@ -23,6 +23,8 @@ let lobbyChannel = null;
 let lobbyTimerInterval = null;
 let userId = null; // Add this globally
 let gameChannel = null;
+let initialLobbySize = 2; // Default for 1v1
+
 //let currentMatchSeed = null;
 let survivors = 0;
 let isLiveMode = false;
@@ -2422,7 +2424,10 @@ function setupLobbyRealtime(lobby) {
         .on('broadcast', { event: 'start-game' }, async ({ payload }) => {
         console.log("Start signal received!");
         if (audioCtx.state === 'suspended') audioCtx.resume();
-        
+          
+        // SAVE THE COUNT HERE
+        matchStartingCount = payload.survivorCount || 2;  
+          
         // 1. UI Swap - Do this immediately for responsiveness
         document.getElementById('lobby-screen')?.classList.add('hidden');
         document.getElementById('start-screen')?.classList.add('hidden');
@@ -2578,43 +2583,53 @@ async function deleteCurrentLobby(lobbyId) {
     }
 }
 
-async function transitionToSoloMode(totalPlayers = 2) {
+async function transitionToSoloMode() {
     clearInterval(timer);
     stopTickSound();
     
     isLiveMode = false;
+    
+    // Hide standard HUD
+    const timerDisplay = document.getElementById('timer');
+    const liveStats = document.getElementById('live-stats');
+    if (timerDisplay) timerDisplay.style.visibility = 'hidden';
+    if (liveStats) liveStats.style.visibility = 'hidden';
+
     const victoryScreen = document.getElementById('victory-screen');
     const statsText = document.getElementById('player-count-stat');
     const oddsText = document.getElementById('odds-stat');
 
-    // 1. Set the Match Data
-    if (statsText) statsText.textContent = `Players: ${totalPlayers}`;
-    if (oddsText) {
-        // Simple odds calculation (1 in totalPlayers)
-        const odds = ((1 / totalPlayers) * 100).toFixed(0);
-        oddsText.textContent = `Win Chance: ${odds}%`;
-    }
+    // 1. Use the saved matchStartingCount
+    const total = matchStartingCount || 2; 
+    const odds = Math.round((1 / total) * 100);
+
+    if (statsText) statsText.textContent = `Total Participants: ${total}`;
+    if (oddsText) oddsText.textContent = `Survival Odds: ${odds}%`;
 
     // 2. Show the Screen
     victoryScreen.classList.remove('hidden');
-    playSound(bonusBuffer); // Use your OSRS-style level up sound
+    playSound(bonusBuffer);
 
-    // 3. Cleanup Live Channels
+    // 3. Cleanup 
     if (gameChannel) {
         supabase.removeChannel(gameChannel);
         gameChannel = null;
     }
 
-    // 4. Handle "Continue" click
+    // 4. Handle "Continue"
     document.getElementById('continue-solo-btn').onclick = async () => {
         victoryScreen.classList.add('hidden');
         
-        // Check if pool is empty before continuing
         if (preloadQueue.length === 0 && remainingQuestions.length === 0) {
             endGame();
             return;
         }
 
+        if (timerDisplay) timerDisplay.style.visibility = 'visible';
+        
+        // Ensure preloader knows we are solo now
+        isLiveMode = false; 
+        
         await preloadNextQuestions(3);
         loadQuestion();
     };
@@ -3012,6 +3027,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
