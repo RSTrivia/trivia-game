@@ -2351,31 +2351,30 @@ function setupLobbyRealtime(lobby) {
       })
     
      // 3. Finally, subscribe (REPLACE YOUR OLD SUBSCRIBE BLOCK WITH THIS)
-    lobbyChannel.subscribe(async (status) => {
-        console.log("Lobby Sync Status:", status);
-
-        if (status === 'SUBSCRIBED') {
-            // Force the player to track themselves into the lobby
-            // Use a timeout for tracking to prevent the 'timed out' error
-                const trackStatus = await lobbyChannel.track({
-                    online_at: new Date().toISOString()
-                });
-            console.log("Host Tracking Status:", presenceTrackStatus);
-
-            // Enable the chat UI
-            if (chatInput) {
-                chatInput.disabled = false;
-                chatInput.placeholder = "Type a message...";
-            }
-        }
+    .subscribe(async (status) => {
+    console.log("Lobby Status:", status);
+    
+    if (status === 'SUBSCRIBED') {
+        // We define the variable HERE
+        const presenceTrackStatus = await lobbyChannel.track({
+            online_at: new Date().toISOString()
+        });
         
-        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-                console.log("Connection lost. Cleaning up and retrying...");
-                // Remove the broken channel before retrying
-                supabase.removeChannel(lobbyChannel);
-                setTimeout(() => joinMatchmaking(), 3000); // 3 second delay
-            }
-    });
+        // We log it HERE, where it is defined
+        console.log("Track status:", presenceTrackStatus);
+
+        if (chatInput) {
+            chatInput.disabled = false;
+            chatInput.placeholder = "Type a message...";
+        }
+    }
+
+    if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+        console.log("Connection lost. Retrying...");
+        if (lobbyChannel) supabase.removeChannel(lobbyChannel);
+        setTimeout(() => joinMatchmaking(), 3000);
+    }
+});
 }
 
 let firstQuestionSent = false; // Reset this when a match starts
@@ -2909,6 +2908,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
