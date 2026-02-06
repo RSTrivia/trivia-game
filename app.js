@@ -1030,6 +1030,7 @@ function startTimer() {
               highlightCorrectAnswer();
               playSound(wrongBuffer);
               setTimeout(() => { onWrongAnswer(); }, 1000);
+          }
         } else {
                 handleTimeout(); // Solo modes die or move on immediately
             }
@@ -2997,6 +2998,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
