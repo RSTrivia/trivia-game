@@ -716,6 +716,7 @@ function lockLobbyButton() {
 
 function resetGame() {
     // 1. Stop any active logic
+    window.pendingVictory = false;
     clearInterval(timer);
     stopTickSound(); 
     // Wipe any existing firework particles that didn't get removed
@@ -917,9 +918,10 @@ async function preloadSpecificQuestions(idsToFetch) {
 }
 
 async function loadQuestion(broadcastedId = null, startTime = null) {
-    // Only block if we are actually at the End Screen or Victory state
-    if (window.pendingVictory || (!isLiveMode && !currentLobby && !isWeeklyMode && !isDailyMode)) {
-        console.log("Blocking loadQuestion: Game is fully over.");
+    // 1. LIVE MATCH VICTORY LOCK
+    // If we are in Live Mode and a victory is pending, stop loading new questions.
+    if (isLiveMode && window.pendingVictory) {
+        console.log("Live match won. Waiting for transition...");
         return;
     }
    // 1. End Game Checks
@@ -3113,6 +3115,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
