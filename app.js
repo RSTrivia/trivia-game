@@ -870,6 +870,7 @@ async function startGame(isLive = false) {
         game.classList.remove('hidden');
         document.getElementById('start-screen').classList.add('hidden');
         endScreen.classList.add('hidden');
+        updateSurvivorCountUI();
 
         // 4. STARTING THE ENGINE
         if (isLiveMode) {
@@ -2440,13 +2441,17 @@ async function sendFirstLiveQuestion() {
 
 function updateSurvivorCountUI(count) {
     const survivorElement = document.getElementById('survivor-count');
-    if (survivorElement) {
+    if (!survivorElement) return; // Guard clause to prevent errors
+
+    if (isLiveMode) {
+        // Show it and update the text
+        survivorElement.classList.remove('hidden');
         survivorElement.innerText = `Survivors: ${count}`;
     } else {
-        console.warn("Survivor count element not found in HTML!");
+        // Hide it for Solo/Weekly modes
+        survivorElement.classList.add('hidden');
     }
 }
-
 async function onWrongAnswer() {
     if (isLiveMode && gameChannel) {
         // 1. Tell everyone else you died
@@ -2833,6 +2838,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
