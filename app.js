@@ -1019,12 +1019,18 @@ function startTimer() {
             stopTickSound();
             
             // THE SYNC HUB:
-            if (isLiveMode) {
-                // Wait 800ms to let all mobile devices finish their 'tick' sound
-                setTimeout(() => {
-                    loadQuestion(); // In your new system, this pulls from the shared shuffled deck
-                }, 800);
-            } else {
+      if (isLiveMode) {
+          const correctBtn = document.querySelector('[data-answered-correctly="true"]');
+  
+          if (correctBtn) {
+              // Player got it right! Move to next question now that 15s is up.
+              loadQuestion();
+          } else {
+              // Player was wrong OR didn't answer.
+              highlightCorrectAnswer();
+              playSound(wrongBuffer);
+              setTimeout(() => { onWrongAnswer(); }, 1000);
+        } else {
                 handleTimeout(); // Solo modes die or move on immediately
             }
         }
@@ -1062,11 +1068,13 @@ async function checkAnswer(choiceId, btn) {
     stopTickSound(); // CUT THE SOUND IMMEDIATELY
     if (timeLeft <= 0) return;
     clearInterval(timer);
+    // Disable all buttons immediately so they can't change their mind
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
   
     // increment weekly count
     if (isWeeklyMode) weeklyQuestionCount++;
   
+    // 1. Check answer via RPC
     const { data: isCorrect, error } = await supabase.rpc('check_my_answer', {
         input_id: currentQuestion.id,
         choice: choiceId
@@ -1146,17 +1154,10 @@ async function checkAnswer(choiceId, btn) {
         // This is where the pet roll happens
         rollForPet();
         if (isLiveMode) {
-                    // In Live Mode, we don't wait for a broadcast to load the next question
-                    // We just auto-advance after 2 seconds to keep the game moving.
-                    console.log("Correct! Next live question in 2s...");
-                    setTimeout(() => {
-                        loadQuestion(); 
-                    }, 2000);
-                } else {
-                    // SOLO, DAILY, or POST-VICTORY mode:
-                    setTimeout(() => {
-                        loadQuestion(); 
-                    }, 1000);
+            questionText.textContent = "Waiting for other players...";
+            // We need a way to move forward ONLY when the 15s are up.
+            // Let's use a flag to tell the Timer it's okay to load the next question.
+            btn.dataset.answeredCorrectly = "true";
           }
     } else {
         playSound(wrongBuffer);
@@ -2996,6 +2997,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
