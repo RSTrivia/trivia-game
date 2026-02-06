@@ -891,32 +891,16 @@ async function startGame(isLive = false) {
 
 
 async function loadQuestion(broadcastedId = null, startTime = null) {
-   // 1. IMPROVED GUARD:
-    // Only "Wait" if we are in Live Mode AND we didn't just get an ID from the host
-    if (isLiveMode && !broadcastedId) {
-        console.log("Waiting for host to broadcast question...");
+   // 1. End Game Checks
+    if (isWeeklyMode && weeklyQuestionCount >= WEEKLY_LIMIT) { await endGame(); return; }
+    if (isLiteMode && score >= LITE_LIMIT) { await endGame(); return; }
         
-        // Show the waiting overlay so they don't see a blank screen
-        const overlay = document.getElementById('waiting-overlay');
-        if (overlay) overlay.classList.remove('hidden');
-        
-        return; 
-    }
-   // Check for Weekly End Condition
-    if (isWeeklyMode && weeklyQuestionCount >= WEEKLY_LIMIT) {
-        await endGame();
-        return;
-    }
-  // check for lite mode completion
-  if (isLiteMode && score >= LITE_LIMIT) {
-        await endGame();
-        return;
-    }
     // Normal Mode "Out of questions" check
     if (!isLiveMode && preloadQueue.length === 0 && remainingQuestions.length === 0 && currentQuestion !== null) {
         await endGame();
         return;
     }
+  
     // A. IMMEDIATE CLEANUP
     questionImage.style.display = 'none';
     questionImage.style.opacity = '0';
@@ -924,13 +908,6 @@ async function loadQuestion(broadcastedId = null, startTime = null) {
     questionText.textContent = '';
     answersBox.innerHTML = '';
   
-    if (isLiveMode && broadcastedId !== null) {
-        // FETCH DATA IMMEDIATELY
-        const { data, error } = await supabase.rpc('get_question_by_id', { input_id: broadcastedId });
-        if (error || !data || !data[0]) return;
-        currentQuestion = data[0];
-      
-    } else {
     // SOLO: Use the local preload queue
       if (preloadQueue.length <= 2 && remainingQuestions.length > 0) {
           preloadNextQuestions(5); // Increase buffer to 5
@@ -945,7 +922,6 @@ async function loadQuestion(broadcastedId = null, startTime = null) {
       }
     currentQuestion = preloadQueue.shift();
     preloadNextQuestions();
-}
 
     // --- MINIMAL CHANGE START: Define the display logic ---
    
@@ -978,37 +954,14 @@ async function loadQuestion(broadcastedId = null, startTime = null) {
         questionImage.src = '';
     }
   
-  // --- D. THE SYNC LOGIC (PLACE IT HERE) ---
-      if (isLiveMode && startTime) {
-          const now = Date.now();
-          const delay = startTime - now;
-  
-          if (delay > 0) {
-              console.log(`Syncing... Question will reveal in ${delay}ms`);
-              setTimeout(() => {
-                  // Remove the "Get Ready" overlay
-                  const overlay = document.getElementById('waiting-overlay');
-                  if (overlay) overlay.classList.add('hidden');
-                  
-                  startTimer(); 
-              }, delay);
-          } else {
-              // Delay is 0 or negative (player joined late), start immediately
-              const overlay = document.getElementById('waiting-overlay');
-              if (overlay) overlay.classList.add('hidden');
-              startTimer();
-          }
-      } else {
-          // Solo mode: No delay needed
-          startTimer();
-      }
+  startTimer();   
 };
    
 
 
 function startTimer() {
     clearInterval(timer);
-    if (activeTickSource) { activeTickSource.stop(); activeTickSource = null; } // Cleanup
+    if (activeTickSource) { activeTickSource.stop(); activeTickSource = null; } 
   
     timeLeft = 15;
     timeDisplay.textContent = timeLeft;
@@ -1017,16 +970,25 @@ function startTimer() {
     timer = setInterval(() => {
         timeLeft--;
         timeDisplay.textContent = timeLeft;
-        // When the UI shows 3, start the loop
-        // This ensures that even if a frame is dropped, the sound starts
+
         if (timeLeft <= 5 && timeLeft > 0 && !activeTickSource) {
             activeTickSource = playSound(tickBuffer, true); 
         }
         if (timeLeft <= 5) timeWrap.classList.add('red-timer');
+
         if (timeLeft <= 0) {
             clearInterval(timer);
-            stopTickSound(); // Stop sound when time hits zero
-            handleTimeout();
+            stopTickSound();
+            
+            // THE SYNC HUB:
+            if (isLiveMode) {
+                // Wait 800ms to let all mobile devices finish their 'tick' sound
+                setTimeout(() => {
+                    loadQuestion(); // In your new system, this pulls from the shared shuffled deck
+                }, 800);
+            } else {
+                handleTimeout(); // Solo modes die or move on immediately
+            }
         }
     }, 1000);
 }
@@ -2383,30 +2345,34 @@ async function beginLiveMatch() {
         config: { presence: { key: userId } }
     });
 
-    gameChannel
-      .on('broadcast', { event: 'next-question' }, ({ payload }) => {
-        console.log("Question received. Syncing data...");
-        // Pass everything to the function
-        loadQuestion(payload.questionId, payload.startTime); 
-    })
-        .on('presence', { event: 'sync' }, () => {
-            const currentState = gameChannel.presenceState();
-            const playersJoined = Object.keys(currentState).length;
-            
-            console.log(`Sync: ${playersJoined}/${expectedPlayers} players arrived.`);
+   gameChannel
+    .on('broadcast', { event: 'initialize-game-sequence' }, async ({ payload }) => {
+        console.log("Initializing shared sequence...");
+        
+        // 1. Generate the same shuffled list locally using the seed
+        const shuffled = shuffleWithSeed(payload.masterIds, payload.seed);
+        
+        // 2. Set up the local game state
+        isLiveMode = true;
+        remainingQuestions = shuffled; // This is now our shared "deck"
+        preloadQueue = [];
+        
+        // 3. Preload the first few questions so there's no lag
+        await preloadNextQuestions(3);
 
-            // FIX: If we have enough players, wait 1.5s to ensure everyone's JS is "listening"
-            if (isHost() && playersJoined >= expectedPlayers && !firstQuestionSent) {
-                console.log("Stability delay started...");
-                setTimeout(() => {
-                    // Re-check count one last time before firing
-                    const doubleCheck = Object.keys(gameChannel.presenceState()).length;
-                    if (doubleCheck >= expectedPlayers) {
-                        sendFirstLiveQuestion();
-                    }
-                }, 1500); 
-            }
-        })
+        // 4. Wait for the synchronized start
+        const delay = payload.startTime - Date.now();
+        setTimeout(() => {
+            const overlay = document.getElementById('waiting-overlay');
+            if (overlay) overlay.classList.add('hidden');
+            loadQuestion(); // Starts the first question
+        }, Math.max(0, delay));
+    })
+    .on('broadcast', { event: 'player-died' }, () => {
+        survivors--;
+        updateSurvivorCountUI(survivors);
+        checkVictoryCondition();
+    });
         .subscribe(async (status) => {
             if (status === 'SUBSCRIBED') {
                 // Signal to the host that this player is ready
@@ -2423,18 +2389,24 @@ async function sendFirstLiveQuestion() {
     if (firstQuestionSent) return;
     firstQuestionSent = true;
 
-    const firstId = masterQuestionPool[Math.floor(Math.random() * masterQuestionPool.length)];
-    
-    // Set target start time: 2.5 seconds from now
-    // This gives mobile enough time to: 1. Receive msg, 2. Fetch from DB
-    const executeAt = Date.now() + 2500; 
+    // 1. Get all question IDs (the "Deck")
+    const { data: allQuestions } = await supabase.from('questions').select('id');
+    const masterIds = allQuestions.map(q => q.id);
 
+    // 2. Generate a random seed for this match
+    const matchSeed = Math.floor(Math.random() * 1000000);
+    
+    // 3. Set a start time 3 seconds in the future
+    const startTime = Date.now() + 3000;
+
+    // 4. Broadcast the "Game Rules" to everyone
     gameChannel.send({
         type: 'broadcast',
-        event: 'next-question',
+        event: 'initialize-game-sequence',
         payload: { 
-            questionId: firstId,
-            startTime: executeAt 
+            seed: matchSeed, 
+            startTime: startTime,
+            masterIds: masterIds 
         }
     });
 }
@@ -2840,6 +2812,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
