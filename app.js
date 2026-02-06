@@ -1213,7 +1213,7 @@ async function checkAnswer(choiceId, btn) {
                 isLiveMode = false;
                 clearInterval(timer);
                 setTimeout(() => {
-                    await transitionToSoloMode();
+                   transitionToSoloMode();
                 }, 1000);
             } else {
                 // Standard multiplayer behavior: wait for the timer
@@ -3118,6 +3118,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
