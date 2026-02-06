@@ -933,6 +933,12 @@ async function loadQuestion(broadcastedId = null, startTime = null) {
     }
   
     // A. IMMEDIATE CLEANUP
+  const allBtns = document.querySelectorAll('.answer-btn');
+    allBtns.forEach(btn => {
+        btn.removeAttribute('data-answered-correctly');
+        btn.classList.remove('correct', 'wrong');
+        btn.disabled = false;
+    });
     questionImage.style.display = 'none';
     questionImage.style.opacity = '0';
     questionImage.src = '';
@@ -1015,33 +1021,41 @@ function startTimer() {
         }
         if (timeLeft <= 5) timeWrap.classList.add('red-timer');
 
+        // --- ROUND END LOGIC ---
         if (timeLeft <= 0) {
             clearInterval(timer);
             stopTickSound();
             
             if (isLiveMode) {
-                // THE SYNC HUB: We check what happened during the 15 seconds
-                const correctBtn = document.querySelector('[data-answered-correctly="true"]');
+                const answeredCorrectly = document.querySelector('[data-answered-correctly="true"]');
                 
-                if (correctBtn) {
-                    // You survived! Now check if you're the ONLY one left
-                    setTimeout(async () => {
-                        if (window.pendingVictory || survivors === 1) {
+                // 200ms buffer to allow 'player-died' signals from other players to arrive
+                setTimeout(async () => {
+                    if (answeredCorrectly) {
+                        if (survivors === 1) {
+                            // Sole Winner
                             await deleteCurrentLobby(currentLobby.id);
                             await transitionToSoloMode(); 
-                            window.pendingVictory = false;
                         } else {
-                            // Others are still alive, move to next round
-                            questionText.textContent = ""; 
+                            // Multiple survivors, move to next round
+                            if (questionText) questionText.textContent = ""; 
                             loadQuestion();
                         }
-                    }, 200); 
-                } else {
-                    // You didn't mark 'correct' during the 15s (Wrong or No Answer)
-                    highlightCorrectAnswer();
-                    playSound(wrongBuffer);
-                    setTimeout(() => { onWrongAnswer(); }, 1000);
-                }
+                    } 
+                    else {
+                        // Scenario: You didn't get it right
+                        if (survivors === 0) {
+                            // Tie / Co-Victory
+                            await deleteCurrentLobby(currentLobby.id);
+                            await transitionToSoloMode(); 
+                        } else {
+                            // You are eliminated, but others remain
+                            highlightCorrectAnswer();
+                            playSound(wrongBuffer);
+                            setTimeout(() => { onWrongAnswer(); }, 1000);
+                        }
+                    }
+                }, 200); 
             } else {
                 // Not in Live Mode (Solo/Daily/Weekly)
                 handleTimeout(); 
@@ -1049,6 +1063,7 @@ function startTimer() {
         }
     }, 1000);
 }
+
 
 function stopTickSound() {
     if (activeTickSource) {
@@ -2510,7 +2525,7 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
         .on('broadcast', { event: 'player-died' }, () => {
             survivors--;
             updateSurvivorCountUI(survivors);
-            checkVictoryCondition();
+            //checkVictoryCondition();
         });
 
     // CRITICAL: You must track presence for the 'sync' event to count you
@@ -2543,45 +2558,26 @@ async function onWrongAnswer() {
     hasDiedLocally = true; 
     
     if (isLiveMode && gameChannel) {
-        // 1. Tell others you died
+        // 1. Tell others you are out immediately
         gameChannel.send({ 
             type: 'broadcast', 
             event: 'player-died',
             payload: { userId: userId } 
         });
-        
-        // 2. THE GROUP ELIMINATION CHECK
-        // We wait a tiny bit (100ms) to let the 'player-died' broadcasts from 
-        // others arrive so our 'survivors' count is accurate for the group.
-        setTimeout(async () => {
-            // If survivors is 0, it means EVERYONE died on this question.
-            // If survivors is 1 and it's NOT you (hasDiedLocally is true), 
-            // then that 1 person is the sole winner.
-            
-            if (survivors <= 0) {
-                console.log("Mass elimination! Everyone remaining wins.");
-                await deleteCurrentLobby(currentLobby.id);
-                transitionToSoloMode(matchStartingCount); 
-            } else {
-                // You died, but at least one person is still in the game.
-                // Standard game over for you.
-                await deleteCurrentLobby(currentLobby.id);
-                isLiveMode = false;
-                document.body.classList.remove('game-active', 'lobby-active');
-                await endGame(); 
-            }
-        }, 100);
-        // Cleanup channel (moved inside the logic above or handled after)
+
+        // 2. Immediate Cleanup for the loser
+        // We don't wait for the timer; the loser leaves the match now.
+        isLiveMode = false;
         if (gameChannel) {
             supabase.removeChannel(gameChannel);
             gameChannel = null;
         }
     }
-    // Standard Solo/Daily death
+
+    // 3. UI Cleanup & Results
     document.body.classList.remove('game-active', 'lobby-active');
     await endGame(); 
 }
-
 
 async function checkVictoryCondition() {
     // We only trigger the win if you are the last one standing 
@@ -3062,6 +3058,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
