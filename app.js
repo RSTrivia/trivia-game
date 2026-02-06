@@ -2334,16 +2334,30 @@ function setupLobbyRealtime(lobby) {
         })
        .on('broadcast', { event: 'start-game' }, ({ payload }) => {
           console.log("Start signal received!");
-     
-          // Force UI swap BEFORE initializing the next channel
-          document.getElementById('lobby-screen')?.classList.add('hidden');
-          document.getElementById('start-screen')?.classList.add('hidden');
-          document.body.classList.add('game-active');
-          game.classList.remove('hidden');
-        
+         // 1. CLEAR LOBBY IMMEDIATELY
+        if (lobbyTimerInterval) clearInterval(lobbyTimerInterval);
+        if (lobbyChannel) {
+            await supabase.removeChannel(lobbyChannel);
+            lobbyChannel = null;
+        }
+     // 2. FORCE UI SWAP FOR EVERYONE
+    // Use a small timeout to ensure the DOM is ready
+    setTimeout(() => {
+        const lobbyScreen = document.getElementById('lobby-screen');
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game'); // Ensure this matches your HTML ID
+
+        if (lobbyScreen) lobbyScreen.classList.add('hidden');
+        if (startScreen) startScreen.classList.add('hidden');
+        document.body.classList.add('game-active');
+        if (gameScreen) gameScreen.classList.remove('hidden');
+               
           // Pass the count from the payload into beginLiveMatch
           beginLiveMatch(payload.survivorCount);
-      })
+        console.log("UI Swapped. Initializing match...");
+        beginLiveMatch(payload.survivorCount);
+    }, 50);
+ })
     
      // 3. Finally, subscribe (REPLACE YOUR OLD SUBSCRIBE BLOCK WITH THIS)
     .subscribe(async (status) => {
@@ -2415,18 +2429,22 @@ async function beginLiveMatch(countFromLobby) {
             updateSurvivorCountUI(survivors);
             checkVictoryCondition();
         })
-        .on('presence', { event: 'sync' }, () => {
-            const state = gameChannel.presenceState();
-            const joinedCount = Object.keys(state).length;
-            
-            console.log(`Sync: ${joinedCount}/${survivors} players ready.`);
-
-            // Only the host sends the seed, and only when everyone has arrived
-            if (isHost(gameChannel) && joinedCount >= survivors && !firstQuestionSent) {
-                console.log("All players present. Host sending sequence...");
-                sendFirstLiveQuestion();
-            }
-        })
+      .on('presence', { event: 'sync' }, () => {
+          const state = gameChannel.presenceState();
+          const joinedCount = Object.keys(state).length;
+          
+          console.log(`Game Sync: ${joinedCount}/${survivors} players present.`);
+      
+          // If both are here, wait 1 second for hosting to settle, then start
+          if (joinedCount >= survivors && !firstQuestionSent) {
+              setTimeout(() => {
+                  if (isHost(gameChannel)) {
+                      console.log("I am confirmed Game Host. Sending sequence...");
+                      sendFirstLiveQuestion();
+                  }
+              }, 1000); // Give presence sorting a moment to breathe
+          }
+      })
         .subscribe(async (status) => {
           console.log("Lobby Subscription Status:", status); // ADD THIS LOG
             if (status === 'SUBSCRIBED') {
@@ -2944,6 +2962,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
