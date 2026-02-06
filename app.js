@@ -2372,11 +2372,11 @@ function setupLobbyRealtime(lobby) {
 
         // UI Swap
         setTimeout(() => {
-        document.getElementById('lobby-screen')?.classList.add('hidden');
-        document.getElementById('start-screen')?.classList.add('hidden');
-        document.body.classList.add('game-active');
-        if (game) game.classList.remove('hidden');
-
+            document.getElementById('lobby-screen')?.classList.add('hidden');
+            document.getElementById('start-screen')?.classList.add('hidden');
+            document.body.classList.add('game-active');
+            if (game) game.classList.remove('hidden');
+        }, 50); // Added the missing closing of setTimeout
     })
     .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
@@ -2928,6 +2928,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
