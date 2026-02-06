@@ -417,6 +417,10 @@ if (playAgainBtn) {
     streak = 0;
     dailyQuestionCount = 0; // Don't forget this!
       
+    if (isLiveMode) {
+            preloadQueue = []; // Clear old match questions
+            remainingQuestions = [];
+        }  
     // 2. wipe old text/images, but DO NOT show the game screen yet
     resetGame(); 
    
@@ -766,8 +770,14 @@ async function preloadNextQuestions(targetCount = 3) {
         attempts < 10
     ) {
         attempts++;
-
-        const index = Math.floor(Math.random() * remainingQuestions.length);
+        let index;
+        if (isLiveMode) {
+              // In Live Mode, always take the NEXT one in the pre-shuffled list
+              index = 0; 
+          } else {
+              // Solo modes can stay random
+              index = Math.floor(Math.random() * remainingQuestions.length);
+          }
         const qId = remainingQuestions[index];
 
         remainingQuestions.splice(index, 1);
@@ -823,9 +833,12 @@ async function startGame(isLive = false) {
     try {
         isLiveMode = isLive; // Set our global flag
       if (isLiveMode) {
-            // In Live Mode, we don't shuffle. 
-            // We wait for the "Host" or "Edge Function" to broadcast the ID.
-            remainingQuestions = []; 
+          isLiteMode = false;
+          // Only clear if we don't have a live list yet. 
+          // Usually, the lobby sets remainingQuestions before startGame is called.
+          if (remainingQuestions.length === 0) {
+              preloadQueue = []; 
+          }
         } else {
         // 1. DATA PREP (Background - User still sees Start Screen)
         if (masterQuestionPool.length === 0) {
@@ -2938,6 +2951,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
