@@ -909,20 +909,28 @@ async function loadQuestion(broadcastedId = null, startTime = null) {
     questionText.textContent = '';
     answersBox.innerHTML = '';
   
-    // SOLO: Use the local preload queue
-      if (preloadQueue.length <= 2 && remainingQuestions.length > 0) {
-          preloadNextQuestions(5); // Increase buffer to 5
-      }
-      // The "Stall" Guard
-      // Only await if we are literally empty
-      if (preloadQueue.length === 0) await preloadNextQuestions();
-        
-      if (preloadQueue.length === 0) {
-          await endGame();
-          return;
-      }
+    // B. THE STALL GUARD
+    // Fill buffer if low
+    if (preloadQueue.length <= 2 && remainingQuestions.length > 0) {
+        preloadNextQuestions(5); 
+    }
+
+    // STALL: Wait if literally empty
+    if (preloadQueue.length === 0 && remainingQuestions.length > 0) {
+        console.log("Stall Guard triggered: Waiting for questions...");
+        await preloadNextQuestions();
+    }
+
+    // C. FINAL SAFETY CHECK
+    if (preloadQueue.length === 0) {
+        console.error("No questions available.");
+        // Only trigger endGame if we aren't in a Live Match, 
+        // or if the Live Match is truly over.
+        if (!isLiveMode) await endGame();
+        return;
+    }
+  
     currentQuestion = preloadQueue.shift();
-    preloadNextQuestions();
 
     // --- MINIMAL CHANGE START: Define the display logic ---
    
@@ -1109,15 +1117,17 @@ async function checkAnswer(choiceId, btn) {
         // This is where the pet roll happens
         rollForPet();
         if (isLiveMode) {
-                // Do NOTHING here. 
-                // We wait for the 'next-question' broadcast from the host.
-                console.log("Correct! Waiting for host to send next question...");
-            } else {
-                // SOLO, DAILY, or POST-VICTORY mode:
-                // We trigger the next question ourselves after 1 second.
-                setTimeout(() => {
-                    loadQuestion(); 
-                }, 1000);
+                    // In Live Mode, we don't wait for a broadcast to load the next question
+                    // We just auto-advance after 2 seconds to keep the game moving.
+                    console.log("Correct! Next live question in 2s...");
+                    setTimeout(() => {
+                        loadQuestion(); 
+                    }, 2000);
+                } else {
+                    // SOLO, DAILY, or POST-VICTORY mode:
+                    setTimeout(() => {
+                        loadQuestion(); 
+                    }, 1000);
           }
     } else {
         playSound(wrongBuffer);
@@ -1125,7 +1135,12 @@ async function checkAnswer(choiceId, btn) {
         btn.classList.add('wrong');
         await highlightCorrectAnswer();
       
-        if (isDailyMode || isWeeklyMode) {
+      if (isLiveMode) {
+            // IMPORTANT: Call your specific death function to broadcast to the channel
+            setTimeout(() => {
+                onWrongAnswer(); 
+            }, 1000);
+      } else if (isDailyMode || isWeeklyMode) {
             // Challenges keep going until the limit is reached
             setTimeout(loadQuestion, 1500);
         } else {
@@ -2326,40 +2341,33 @@ let firstQuestionSent = false; // Reset this when a match starts
 async function beginLiveMatch() {
     isLiveMode = true;
     firstQuestionSent = false;
+    hasDiedLocally = false; // Reset death state
     
     if (lobbyTimerInterval) clearInterval(lobbyTimerInterval);
-    document.body.classList.remove('lobby-active');
-  
-    // Initial Survivor Count based on Lobby Presence
-    let survivorsInLobby = 0;
-    if (lobbyChannel && typeof lobbyChannel.presenceState === 'function') {
-        const finalLobbyState = lobbyChannel.presenceState();
-        survivorsInLobby = Object.keys(finalLobbyState).length;
+    
+    // 1. Get exact survivor count from the lobby we just left
+    let lobbyCount = 0;
+    if (lobbyChannel) {
+        lobbyCount = Object.keys(lobbyChannel.presenceState()).length;
     }
-    survivors = survivorsInLobby || 2; // Fallback to 2 if something went wrong
+    survivors = lobbyCount || 2; 
     updateSurvivorCountUI(survivors);
-  
-    // UI Cleanup
-    document.getElementById('lobby-screen')?.classList.add('hidden');
-    document.getElementById('start-screen')?.classList.add('hidden');
-    document.body.classList.add('game-active');
-    game.classList.remove('hidden');
 
-    // Create the dedicated Game Channel
+    // 2. Setup the Game Channel
     gameChannel = supabase.channel(`game-${currentLobby.id}`, {
         config: { presence: { key: userId } }
     });
 
     gameChannel
         .on('broadcast', { event: 'initialize-game-sequence' }, async ({ payload }) => {
-            console.log("Shared sequence received. Seeding...");
+            console.log("Seed received! Initializing...");
+            // Shuffling with the shared seed
             const shuffled = shuffleWithSeed(payload.masterIds, payload.seed);
-            
             remainingQuestions = shuffled;
-            preloadQueue = [];
             
             await preloadNextQuestions(3);
 
+            // Sync the start time
             const delay = payload.startTime - Date.now();
             setTimeout(() => {
                 const overlay = document.getElementById('waiting-overlay');
@@ -2373,25 +2381,23 @@ async function beginLiveMatch() {
             checkVictoryCondition();
         })
         .on('presence', { event: 'sync' }, () => {
-            const currentState = gameChannel.presenceState();
-            const playersJoined = Object.keys(currentState).length;
+            const state = gameChannel.presenceState();
+            const joinedCount = Object.keys(state).length;
             
-            console.log(`Players in game channel: ${playersJoined} / ${survivors}`);
-        
-            if (isHost(gameChannel) && playersJoined >= survivors && !firstQuestionSent) {
-                // We add a 1.5s "stability" delay so slow phones can finish subscribing
-                setTimeout(() => {
-                    sendFirstLiveQuestion();
-                }, 1500);
+            console.log(`Sync: ${joinedCount}/${survivors} players ready.`);
+
+            // Only the host sends the seed, and only when everyone has arrived
+            if (isHost(gameChannel) && joinedCount >= survivors && !firstQuestionSent) {
+                console.log("All players present. Host sending sequence...");
+                sendFirstLiveQuestion();
             }
         })
         .subscribe(async (status) => {
             if (status === 'SUBSCRIBED') {
-                await gameChannel.track({ status: 'ready' });
+                // Track into the new game channel so the host sees you
+                await gameChannel.track({ status: 'playing' });
             }
         });
-
-    startGame(true);
 }
 
 async function sendFirstLiveQuestion() {
@@ -2422,17 +2428,18 @@ async function sendFirstLiveQuestion() {
 
 function updateSurvivorCountUI(count) {
     const survivorElement = document.getElementById('survivor-count');
-    if (!survivorElement) return; // Guard clause to prevent errors
+    if (!survivorElement) return;
 
     if (isLiveMode) {
-        // Show it and update the text
         survivorElement.classList.remove('hidden');
-        survivorElement.innerText = `Survivors: ${count}`;
+        // Use the passed count, but fall back to the global survivors variable
+        const displayCount = count !== undefined ? count : survivors;
+        survivorElement.innerText = `Survivors: ${displayCount}`;
     } else {
-        // Hide it for Solo/Weekly modes
         survivorElement.classList.add('hidden');
     }
 }
+
 async function onWrongAnswer() {
     if (isLiveMode && gameChannel) {
         // 1. Tell everyone else you died
@@ -2848,6 +2855,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
