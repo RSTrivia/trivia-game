@@ -2368,11 +2368,13 @@ async function beginLiveMatch() {
             const currentState = gameChannel.presenceState();
             const playersJoined = Object.keys(currentState).length;
             
-            // IF I AM THE HOST and everyone is here, send the seed
-            if (isHost() && playersJoined >= survivors && !firstQuestionSent) {
+            console.log(`Players in game channel: ${playersJoined} / ${survivors}`);
+        
+            if (isHost(gameChannel) && playersJoined >= survivors && !firstQuestionSent) {
+                // We add a 1.5s "stability" delay so slow phones can finish subscribing
                 setTimeout(() => {
-                    sendFirstLiveQuestion(); // This broadcasts the seed to everyone
-                }, 1000); 
+                    sendFirstLiveQuestion();
+                }, 1500);
             }
         })
         .subscribe(async (status) => {
@@ -2552,10 +2554,14 @@ function appendMessage(user, msg) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-function isHost() {
-    const state = lobbyChannel.presenceState();
-    const players = Object.keys(state).sort(); // Sort by ID or join time
-    return players[0] === userId; // Am I the first one?
+function isHost(channel = gameChannel || lobbyChannel) {
+    if (!channel) return false;
+    
+    const state = channel.presenceState();
+    const players = Object.keys(state).sort(); // Sorts by userId strings
+    
+    // The "Host" is simply the player with the lowest alphabetical/numerical ID
+    return players[0] === userId; 
 }
 
 async function triggerGameStart(lobbyId) {
@@ -2811,6 +2817,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
