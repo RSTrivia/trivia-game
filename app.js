@@ -1209,9 +1209,11 @@ async function checkAnswer(choiceId, btn) {
         if (isLiveMode) {
             // NEW: If the other player already died, move to victory immediately after answering!
             if (window.pendingVictory) {
-                questionText.textContent = "Victory!";
+                // Stop the game loop!
+                isLiveMode = false;
+                clearInterval(timer);
                 setTimeout(() => {
-                    transitionToSoloMode();
+                    await transitionToSoloMode();
                 }, 1000);
             } else {
                 // Standard multiplayer behavior: wait for the timer
@@ -2625,13 +2627,14 @@ async function onWrongAnswer() {
 async function checkVictoryCondition() {
     // 1. The Sole Winner Case
     if (survivors === 1 && !hasDiedLocally) {
-        console.log("Victory condition met: You are the last survivor.");
-        window.pendingVictory = true;
-        
-        // We show a notification so the player knows they've already won
-        showVictoryBanner("Last Survivor! Finish the round!");
-    } 
-    
+      // If we haven't already flagged victory, do it now
+        if (!window.pendingVictory) {
+            console.log("Victory condition met: You are the last survivor.");
+            window.pendingVictory = true;
+            // We show a notification so the player knows they've already won
+            showVictoryBanner("Last Survivor! Finish the round!");
+      } 
+    }
     // 2. The "Everyone is Dead" Case (Tie)
     if (survivors === 0) {
         console.log("Match over: No survivors.");
@@ -3115,6 +3118,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
