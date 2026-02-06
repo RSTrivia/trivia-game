@@ -1043,7 +1043,6 @@ function startTimer() {
                         questionText.textContent = ""; 
                         loadQuestion();
                     }
-        }, 200);
                 } else {
                     // Player was wrong or timed out
                     highlightCorrectAnswer();
@@ -3070,6 +3069,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
