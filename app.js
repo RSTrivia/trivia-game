@@ -1198,10 +1198,16 @@ async function checkAnswer(choiceId, btn) {
         // This is where the pet roll happens
         rollForPet();
         if (isLiveMode) {
-            questionText.textContent = "Waiting for other players...";
-            // We need a way to move forward ONLY when the 15s are up.
-            // Let's use a flag to tell the Timer it's okay to load the next question.
-            btn.dataset.answeredCorrectly = "true";
+            // NEW: If the other player already died, move to victory immediately after answering!
+            if (window.pendingVictory) {
+                questionText.textContent = "Victory!";
+                setTimeout(() => {
+                    transitionToSoloMode();
+                }, 1000);
+            } else {
+                // Standard multiplayer behavior: wait for the timer
+                questionText.textContent = "Waiting for other players...";
+                btn.dataset.answeredCorrectly = "true";
           } else {
         setTimeout(loadQuestion, 1000);
     }
@@ -2538,7 +2544,7 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
         .on('broadcast', { event: 'player-died' }, () => {
             survivors--;
             updateSurvivorCountUI(survivors);
-            //checkVictoryCondition();
+            checkVictoryCondition();
         });
 
     // CRITICAL: You must track presence for the 'sync' event to count you
@@ -2593,17 +2599,25 @@ async function onWrongAnswer() {
 }
 
 async function checkVictoryCondition() {
-    // We only trigger the win if you are the last one standing 
-    // AND you aren't currently "dead" yourself.
+    // 1. The Sole Winner Case
     if (survivors === 1 && !hasDiedLocally) {
-        console.log("Last survivor detected.");
+        console.log("Victory condition met: You are the last survivor.");
+        window.pendingVictory = true;
         
-        // Flag this so that when the timer hits 0 or you answer, 
-        // the game knows to transition.
-        window.pendingVictory = true; 
+        // We show a notification so the player knows they've already won
+        showVictoryBanner("Last Survivor! Finish the round!");
+    } 
+    
+    // 2. The "Everyone is Dead" Case (Tie)
+    if (survivors === 0) {
+        console.log("Match over: No survivors.");
+        isLiveMode = false;
+        
+        // Don't wait for the timer, go to the screen now
+        clearInterval(timer);
+        await transitionToSoloMode();
     }
 }
-
 async function deleteCurrentLobby(lobbyId) {
     if (!lobbyId) return;
 
@@ -2626,7 +2640,14 @@ async function transitionToSoloMode() {
     clearInterval(timer);
     stopTickSound();
     
+    // 1. SAVE NECESSARY DATA BEFORE CLEARING
+    const lobbyId = currentLobby?.id; // Capture ID for deletion
+    const total = matchStartingCount || 2; 
+    const odds = Math.round((1 / total) * 100);
+
+    // 2. LOCK THE MULTIPLAYER GATE
     isLiveMode = false;
+    currentLobby = null; // THIS IS CRITICAL: prevents loadQuestion from blocking
     
     // Hide standard HUD
     const timerDisplay = document.getElementById('timer');
@@ -2638,11 +2659,7 @@ async function transitionToSoloMode() {
     const statsText = document.getElementById('player-count-stat');
     const oddsText = document.getElementById('odds-stat');
 
-    // 1. Use the saved matchStartingCount
-    const total = matchStartingCount || 2; 
-    const odds = Math.round((1 / total) * 100);
-
-    // Inside transitionToSoloMode
+    // Set Victory Text
     if (survivors === 0) {
         if (statsText) statsText.textContent = `Co-Victory! Total Players: ${total}`;
     } else {
@@ -2650,17 +2667,20 @@ async function transitionToSoloMode() {
     }
     if (oddsText) oddsText.textContent = `Survival Odds: ${odds}%`;
 
-    // 2. Show the Screen
+    // 3. SHOW SCREEN & PLAY SOUND
     victoryScreen.classList.remove('hidden');
     playSound(bonusBuffer);
 
-    // 3. Cleanup 
+    // 4. CLEANUP REALTIME CHANNELS & DATABASE
     if (gameChannel) {
         supabase.removeChannel(gameChannel);
         gameChannel = null;
     }
+    if (lobbyId) {
+        await deleteCurrentLobby(lobbyId);
+    }
 
-    // 4. Handle "Continue"
+    // 5. HANDLE "CONTINUE"
     document.getElementById('continue-solo-btn').onclick = async () => {
         victoryScreen.classList.add('hidden');
         
@@ -2671,11 +2691,11 @@ async function transitionToSoloMode() {
 
         if (timerDisplay) timerDisplay.style.visibility = 'visible';
         
-        // Ensure preloader knows we are solo now
-        isLiveMode = false; 
+        // Resetting state for the Solo Sprint
+        window.pendingVictory = false; 
         
         await preloadNextQuestions(3);
-        loadQuestion();
+        loadQuestion(); // Now this won't be blocked!
     };
 }
 
@@ -3071,6 +3091,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
