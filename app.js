@@ -2337,7 +2337,7 @@ function setupLobbyRealtime(lobby) {
     .on('broadcast', { event: 'prepare-game' }, async ({ payload }) => {
         console.log("Preparing game data...");
         // 1. Shuffle & Preload
-        const shuffled = shuffleWithSeed(payload.masterIds, payload.seed);
+        const shuffled = shuffleLiveMatch(payload.masterIds, payload.seed);
         remainingQuestions = shuffled;
         await preloadNextQuestions(3);
 
@@ -2388,17 +2388,13 @@ function setupLobbyRealtime(lobby) {
 }
 
 
-
 async function beginLiveMatch(countFromLobby, syncedStartTime) {
     isLiveMode = true;
-    firstQuestionSent = false;
+    firstQuestionSent = true; // Set this to true immediately so no other logic triggers a shuffle
     hasDiedLocally = false;
-    
-    // survivors count passed from lobby
     survivors = countFromLobby || 2; 
     updateSurvivorCountUI(survivors);
 
-    // 1. Setup the Game Channel
     gameChannel = supabase.channel(`game-${currentLobby.id}`, {
         config: { presence: { key: userId } }
     });
@@ -2412,17 +2408,11 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
         .on('presence', { event: 'sync' }, () => {
             const state = gameChannel.presenceState();
             const joinedCount = Object.keys(state).length;
-            console.log(`Game Sync: ${joinedCount}/${survivors} present.`);
 
-            // Since questions are already preloaded from the Lobby 'prepare' phase,
-            // we just need to wait for everyone to arrive in this channel.
-            if (joinedCount >= survivors && !firstQuestionSent) {
-                const now = Date.now();
-                const delay = Math.max(0, syncedStartTime - now);
-
-                console.log(`Sync complete. Starting in ${delay}ms`);
-                firstQuestionSent = true;
-
+            if (joinedCount >= survivors) {
+                const delay = Math.max(0, syncedStartTime - Date.now());
+                
+                // Final countdown to the synced start time
                 setTimeout(() => {
                     const overlay = document.getElementById('waiting-overlay');
                     if (overlay) overlay.classList.add('hidden');
@@ -2430,16 +2420,7 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
                 }, delay);
             }
         })
-        .subscribe(async (status) => {
-            console.log("Game Channel Status:", status);
-            if (status === 'SUBSCRIBED') {
-                // Important: track user_id so isHost() works if needed
-                await gameChannel.track({ 
-                    user_id: userId, 
-                    status: 'playing' 
-                });
-            }
-        });
+        .subscribe();
 }
 
 async function sendFirstLiveQuestion() {
@@ -2863,6 +2844,24 @@ async function startDailyChallenge() {
     preloadNextQuestions(3);
 }
 
+function shuffleLiveMatch(ids, seed) {
+    // 1. Force a sort so the starting point is identical on all devices
+    let arr = [...ids].sort((a, b) => a - b);
+    
+    // 2. Deterministic shuffle
+    let m = arr.length, t, i;
+    let currentSeed = seed; 
+
+    while (m) {
+        // We use a local seed stepper so the original seed isn't mutated
+        i = Math.floor(seededRandom(currentSeed++) * m--);
+        t = arr[m]; 
+        arr[m] = arr[i]; 
+        arr[i] = t;
+    }
+    return arr;
+}
+
 function shuffleWithSeed(array, seed) {
     let arr = [...array];
     let m = arr.length, t, i;
@@ -2928,6 +2927,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
