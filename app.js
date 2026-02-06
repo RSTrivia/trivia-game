@@ -2334,19 +2334,26 @@ function setupLobbyRealtime(lobby) {
     .on('broadcast', { event: 'chat' }, ({ payload }) => {
         appendMessage(payload.username, payload.message);
     })
-    .on('broadcast', { event: 'prepare-game' }, async ({ payload }) => {
-        console.log("Preparing game data...");
-        // 1. Shuffle & Preload
-        const shuffled = shuffleLiveMatch(payload.masterIds, payload.seed);
-        remainingQuestions = shuffled;
-        await preloadNextQuestions(3);
-
-        // 2. Tell Host we are ready
-        await lobbyChannel.track({
-            online_at: new Date().toISOString(),
-            status: 'ready_to_start' 
-        });
-        
+  .on('broadcast', { event: 'prepare-game' }, async ({ payload }) => {
+      console.log("SHUFFLE CHECK - Seed:", payload.seed);
+      
+      // 1. Clear any old data
+      preloadQueue = []; 
+      
+      // 2. Shuffle using the deterministic function
+      const shuffled = shuffleLiveMatch(payload.masterIds, payload.seed);
+      
+      // 3. Set the global pool
+      remainingQuestions = shuffled;
+      
+      // 4. Preload immediately so they are ready for the start signal
+      await preloadNextQuestions(3);
+  
+      await lobbyChannel.track({
+          online_at: new Date().toISOString(),
+          status: 'ready_to_start' 
+      });
+       
         if (questionText) questionText.innerHTML = "Syncing with players...";
     })
     .on('broadcast', { event: 'start-game' }, async ({ payload }) => {
@@ -2390,11 +2397,11 @@ function setupLobbyRealtime(lobby) {
 
 async function beginLiveMatch(countFromLobby, syncedStartTime) {
     isLiveMode = true;
-    firstQuestionSent = true; // Block any accidental secondary shuffles
     hasDiedLocally = false;
     survivors = countFromLobby || 2; 
     updateSurvivorCountUI(survivors);
 
+    // This must match the lobby ID
     gameChannel = supabase.channel(`game-${currentLobby.id}`, {
         config: { presence: { key: userId } }
     });
@@ -2409,24 +2416,23 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
             const state = gameChannel.presenceState();
             const joinedCount = Object.keys(state).length;
 
-            // Wait for both players to be present in the GAME channel
             if (joinedCount >= survivors) {
-                const delay = Math.max(0, syncedStartTime - Date.now());
+                const now = Date.now();
+                const delay = Math.max(0, syncedStartTime - now);
                 
-                console.log(`Both players present. Starting in ${delay}ms`);
-                
+                console.log(`Syncing start. Delay: ${delay}ms`);
+
                 setTimeout(() => {
                     const overlay = document.getElementById('waiting-overlay');
                     if (overlay) overlay.classList.add('hidden');
+                    
+                    // IMPORTANT: loadQuestion picks from 'remainingQuestions' 
+                    // which we already shuffled in the lobby!
                     loadQuestion(); 
                 }, delay);
             }
         })
-        .subscribe(async (status) => {
-            if (status === 'SUBSCRIBED') {
-                await gameChannel.track({ user_id: userId, status: 'playing' });
-            }
-        });
+        .subscribe();
 }
 
 function updateSurvivorCountUI(count) {
@@ -2913,6 +2919,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
