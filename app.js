@@ -15,6 +15,7 @@ let gameEnding = false;
 let isShowingNotification = false;
 let notificationQueue = [];
 let masterQuestionPool = [];
+let firstQuestionSent = false; // Reset this when a match starts
 
 //live mode
 let currentLobby = null;
@@ -2296,171 +2297,147 @@ async function joinMatchmaking() {
 }
 
 function setupLobbyRealtime(lobby) {
-// 2. Extra Safety: Ensure we aren't creating a channel with an invalid name
-    if (!lobby.id || !userId) {
-        console.error("Missing ID or UserID", { lobbyId: lobby.id, userId });
-        return;
-    }
-    // 1. Create the channel
+    if (!lobby.id || !userId) return;
+
     lobbyChannel = supabase.channel(`lobby-${lobby.id}`, {
-    config: { 
-        presence: { key: userId },
-        broadcast: { self: true } // This ensures you see your own messages
-      }
+        config: { 
+            presence: { key: userId },
+            broadcast: { self: true } 
+        }
     });
 
     lobbyChannel
     .on('presence', { event: 'sync' }, () => {
-                const state = lobbyChannel.presenceState();
-                const keys = Object.keys(state);
-                const count = keys.length;
-                
-                console.log("Sync Event - Players:", keys);
-                updateLobbyUI(count, lobby.starts_at);
-                
-                // Only the host triggers the start
-                if (count >= 2 && isHost(lobbyChannel)) {
-                    console.log("I am Host and 2 players present. Starting...");
-                    triggerGameStart(lobby.id);
-                }
-            })
-      .on('presence', { event: 'join' }, ({ newPresences }) => {
-                  const state = lobbyChannel.presenceState();
-                  updateLobbyUI(Object.keys(state).length, lobby.starts_at);
-              })
-      // for chat
-        .on('broadcast', { event: 'chat' }, ({ payload }) => {
-            appendMessage(payload.username, payload.message);
-        })
-       .on('broadcast', { event: 'start-game' }, async ({ payload }) => {
-          console.log("Start signal received!");
-         // Force the browser to stay "awake" by interacting with a dummy sound or element
-          if (audioCtx.state === 'suspended') {
-              audioCtx.resume();
-          }
-        // 1. Kill the lobby channel properly
+        const state = lobbyChannel.presenceState();
+        const players = Object.values(state).flat();
+        const count = players.length;
+        
+        updateLobbyUI(count, lobby.starts_at);
+
+        // --- NEW READY CHECK LOGIC ---
+        const readyCount = players.filter(p => p.status === 'ready_to_start').length;
+        console.log(`Sync: ${readyCount}/${count} players ready.`);
+
+        if (count >= 2 && isHost(lobbyChannel)) {
+            // If NO ONE is ready yet, send the "Prepare" command
+            if (readyCount === 0 && !isStarting) {
+                console.log("Host: Sending Prepare Command...");
+                triggerGamePrepare(lobby.id); 
+            } 
+            // If EVERYONE is ready, send the final "Start" command
+            else if (readyCount === count && count >= 2) {
+                console.log("Host: Everyone ready! Sending Start Signal...");
+                sendFinalStartSignal(count);
+            }
+        }
+    })
+    .on('broadcast', { event: 'chat' }, ({ payload }) => {
+        appendMessage(payload.username, payload.message);
+    })
+    .on('broadcast', { event: 'prepare-game' }, async ({ payload }) => {
+        console.log("Preparing game data...");
+        // 1. Shuffle & Preload
+        const shuffled = shuffleWithSeed(payload.masterIds, payload.seed);
+        remainingQuestions = shuffled;
+        await preloadNextQuestions(3);
+
+        // 2. Tell Host we are ready
+        await lobbyChannel.track({
+            online_at: new Date().toISOString(),
+            status: 'ready_to_start' 
+        });
+        
+        if (questionText) questionText.innerHTML = "Syncing with players...";
+    })
+    .on('broadcast', { event: 'start-game' }, async ({ payload }) => {
+        console.log("Start signal received!");
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+
+        // Kill lobby
         if (lobbyChannel) {
             await supabase.removeChannel(lobbyChannel);
             lobbyChannel = null;
         }
-        
-        // 2. Stop the countdown
         if (lobbyTimerInterval) clearInterval(lobbyTimerInterval);
-         // 2. FORCE UI SWAP FOR EVERYONE
-        // Use a small timeout to ensure the DOM is ready
-        setTimeout(() => {
-        const lobbyScreen = document.getElementById('lobby-screen');
-        const startScreen = document.getElementById('start-screen');
-        const gameScreen = document.getElementById('game'); // Ensure this matches your HTML ID
 
-        if (lobbyScreen) lobbyScreen.classList.add('hidden');
-        if (startScreen) startScreen.classList.add('hidden');
-        document.body.classList.add('game-active');
-        if (game) game.classList.remove('hidden');
-               
-        // Pass the count from the payload into beginLiveMatch
-        beginLiveMatch(payload.survivorCount);
-        console.log("UI Swapped. Initializing match...");
-    }, 50);
- })
-    
-     // 3. Finally, subscribe (REPLACE YOUR OLD SUBSCRIBE BLOCK WITH THIS)
+        // UI Swap
+        setTimeout(() => {
+            document.getElementById('lobby-screen')?.classList.add('hidden');
+            document.getElementById('start-screen')?.classList.add('hidden');
+            document.body.classList.add('game-active');
+            if (game) game.classList.remove('hidden');
+            
+            // Start the match with the synced Start Time from payload
+            beginLiveMatch(payload.survivorCount, payload.startTime);
+        }, 50);
+    })
     .subscribe(async (status) => {
-    console.log("Lobby Status:", status);
-    
-    if (status === 'SUBSCRIBED') {
-        // We define the variable HERE
-        const presenceTrackStatus = await lobbyChannel.track({
-            online_at: new Date().toISOString()
-        });
-        
-        // We log it HERE, where it is defined
-        console.log("Track status:", presenceTrackStatus);
-
-        if (chatInput) {
-            chatInput.disabled = false;
-            chatInput.placeholder = "Type a message...";
+        if (status === 'SUBSCRIBED') {
+            await lobbyChannel.track({ online_at: new Date().toISOString() });
+            if (chatInput) {
+                chatInput.disabled = false;
+                chatInput.placeholder = "Type a message...";
+            }
         }
-    }
 
-    if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' && !isStarting) {
-        console.log("Connection lost. Retrying...");
-        if (lobbyChannel) supabase.removeChannel(lobbyChannel);
-        setTimeout(() => {
-          if (lobbyChannel) supabase.removeChannel(lobbyChannel);
-                   joinMatchmaking();
-                }, 3000);
-    }
-});
+        if ((status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') && !isStarting) {
+            console.log("Connection lost. Retrying...");
+            setTimeout(() => joinMatchmaking(), 3000);
+        }
+    });
 }
 
-let firstQuestionSent = false; // Reset this when a match starts
 
-async function beginLiveMatch(countFromLobby) {
+
+async function beginLiveMatch(countFromLobby, syncedStartTime) {
     isLiveMode = true;
     firstQuestionSent = false;
-    hasDiedLocally = false; // Reset death state
+    hasDiedLocally = false;
     
-    if (lobbyTimerInterval) clearInterval(lobbyTimerInterval);
-    
-   // Use the count passed from the broadcast, fallback to 2
+    // survivors count passed from lobby
     survivors = countFromLobby || 2; 
     updateSurvivorCountUI(survivors);
 
-    // 2. Setup the Game Channel
+    // 1. Setup the Game Channel
     gameChannel = supabase.channel(`game-${currentLobby.id}`, {
         config: { presence: { key: userId } }
     });
 
     gameChannel
-        .on('broadcast', { event: 'initialize-game-sequence' }, async ({ payload }) => {
-            console.log("Seed received! Initializing...");
-            // VISUAL DEBUG for your phone
-            questionText.innerHTML = "Seed Received! Preloading...";
-            // Shuffling with the shared seed
-            const shuffled = shuffleWithSeed(payload.masterIds, payload.seed);
-            remainingQuestions = shuffled;
-            
-            await preloadNextQuestions(3);
-            const delay = payload.startTime - Date.now();
-    
-            // VISUAL DEBUG
-            questionText.innerHTML = `Starting in ${Math.round(delay/1000)}s...`;
-          
-            setTimeout(() => {
-                const overlay = document.getElementById('waiting-overlay');
-                if (overlay) overlay.classList.add('hidden');
-                loadQuestion(); 
-            }, Math.max(0, delay));
-        })
         .on('broadcast', { event: 'player-died' }, () => {
             survivors--;
             updateSurvivorCountUI(survivors);
             checkVictoryCondition();
         })
-      .on('presence', { event: 'sync' }, () => {
-          const state = gameChannel.presenceState();
-          const joinedCount = Object.keys(state).length;
-          
-          console.log(`Game Sync: ${joinedCount}/${survivors} players present.`);
-      
-          // If both are here, wait 1 second for hosting to settle, then start
-          if (joinedCount >= survivors && !firstQuestionSent) {
-              setTimeout(() => {
-                  if (isHost(gameChannel)) {
-                      console.log("I am confirmed Game Host. Sending sequence...");
-                      sendFirstLiveQuestion();
-                  }
-              }, 1000); // Give presence sorting a moment to breathe
-          }
-      })
+        .on('presence', { event: 'sync' }, () => {
+            const state = gameChannel.presenceState();
+            const joinedCount = Object.keys(state).length;
+            console.log(`Game Sync: ${joinedCount}/${survivors} present.`);
+
+            // Since questions are already preloaded from the Lobby 'prepare' phase,
+            // we just need to wait for everyone to arrive in this channel.
+            if (joinedCount >= survivors && !firstQuestionSent) {
+                const now = Date.now();
+                const delay = Math.max(0, syncedStartTime - now);
+
+                console.log(`Sync complete. Starting in ${delay}ms`);
+                firstQuestionSent = true;
+
+                setTimeout(() => {
+                    const overlay = document.getElementById('waiting-overlay');
+                    if (overlay) overlay.classList.add('hidden');
+                    loadQuestion(); 
+                }, delay);
+            }
+        })
         .subscribe(async (status) => {
-          console.log("Lobby Subscription Status:", status); // ADD THIS LOG
+            console.log("Game Channel Status:", status);
             if (status === 'SUBSCRIBED') {
-                // Track into the new game channel so the host sees you
-                await gameChannel.track({ status: 'playing' });
-                //chatInput.disabled = false; // Ensure this ID matches your HTML
-                //chatInput.placeholder = "Type a message...";
+                // Important: track user_id so isHost() works if needed
+                await gameChannel.track({ 
+                    user_id: userId, 
+                    status: 'playing' 
+                });
             }
         });
 }
@@ -2686,54 +2663,34 @@ function isHost(channel) {
 }
 
 
-async function triggerGameStart(lobbyId) {
-    // 1. Safety Locks
-    if (!lobbyChannel || isStarting) return;
-    
-    // Crucial: Double check host status before touching the DB
-    if (!isHost(lobbyChannel)) return;
+// Phase 1: Host sends data
+async function triggerGamePrepare(lobbyId) {
+    if (isStarting) return;
+    const { data: allQuestions } = await supabase.from('questions').select('id');
+    const masterIds = allQuestions.map(q => q.id);
+    const matchSeed = Math.floor(Math.random() * 1000000);
 
-    isStarting = true; 
-    console.log("Starting match for lobby:", lobbyId);
-
-    // 2. Lock the lobby in the DB
-    const { error, count } = await supabase
-        .from('live_lobbies')
-        .update({ status: 'in-progress' })
-        .eq('id', lobbyId)
-        .eq('status', 'waiting');
-
-    if (error) {
-        console.error("Lobby lock failed:", error);
-        isStarting = false;
-        return;
-    }
-
-    // 3. Get final player count
-    const finalCount = Object.keys(lobbyChannel.presenceState()).length;
-
-    // 4. Slight delay before broadcasting
-    // This gives the Supabase Database a millisecond to "breathe" 
-    // so the status change is fully committed before players react.
-    setTimeout(async () => {
-        const resp = await lobbyChannel.send({
-            type: 'broadcast',
-            event: 'start-game',
-            payload: { 
-                lobbyId: lobbyId, 
-                survivorCount: finalCount 
-            }
-        });
-
-        if (resp !== 'ok') {
-            console.error("Broadcast failed:", resp);
-            isStarting = false; // Allow retry if broadcast failed
-        }
-    }, 200); 
+    lobbyChannel.send({
+        type: 'broadcast',
+        event: 'prepare-game',
+        payload: { seed: matchSeed, masterIds: masterIds }
+    });
 }
 
+// Phase 2: Host sends the final "GO"
+function sendFinalStartSignal(count) {
+    if (window.finalStartSent) return;
+    window.finalStartSent = true;
 
-
+    lobbyChannel.send({
+        type: 'broadcast',
+        event: 'start-game',
+        payload: { 
+            survivorCount: count,
+            startTime: Date.now() + 2000 // Start in exactly 2 seconds
+        }
+    });
+}
 
 
 
@@ -2971,6 +2928,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
