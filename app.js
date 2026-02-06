@@ -2578,36 +2578,46 @@ async function deleteCurrentLobby(lobbyId) {
     }
 }
 
-function transitionToSoloMode() {
-    isLiveMode = false; // Stops server-sync timing
-    showVictoryBanner("Victory! Now go for the High Score!");
+async function transitionToSoloMode(totalPlayers = 2) {
+    clearInterval(timer);
+    stopTickSound();
+    
+    isLiveMode = false;
+    const victoryScreen = document.getElementById('victory-screen');
+    const statsText = document.getElementById('player-count-stat');
+    const oddsText = document.getElementById('odds-stat');
 
-    // 1. DO NOT reset remainingQuestions. 
-    // They are currently sitting in the order determined by the match seed.
-    // We only need to refill it IF it's somehow empty (safety check).
-    if (remainingQuestions.length === 0 && masterQuestionPool.length > 0) {
-        console.log("Deck finished or empty, reshuffling master pool for endless play.");
-        remainingQuestions = [...masterQuestionPool].sort(() => Math.random() - 0.5);
+    // 1. Set the Match Data
+    if (statsText) statsText.textContent = `Players: ${totalPlayers}`;
+    if (oddsText) {
+        // Simple odds calculation (1 in totalPlayers)
+        const odds = ((1 / totalPlayers) * 100).toFixed(0);
+        oddsText.textContent = `Win Chance: ${odds}%`;
     }
 
-    // 2. Clear the preloadQueue if you want to ensure the very next 
-    // questions fetched are truly fresh, but usually, keeping them is fine.
-    
-    // 3. Ensure the background buffer stays full
-    preloadNextQuestions(3);
+    // 2. Show the Screen
+    victoryScreen.classList.remove('hidden');
+    playSound(bonusBuffer); // Use your OSRS-style level up sound
 
-    // 4. Cleanup the live communication
+    // 3. Cleanup Live Channels
     if (gameChannel) {
         supabase.removeChannel(gameChannel);
         gameChannel = null;
     }
 
-    // 5. Enable the UI for solo play (e.g., showing the next button if it was hidden)
-    if (typeof enableLocalNextButton === 'function') {
-        enableLocalNextButton();
-    }
-    
-    console.log(`Transition complete. ${remainingQuestions.length} questions left in this deck.`);
+    // 4. Handle "Continue" click
+    document.getElementById('continue-solo-btn').onclick = async () => {
+        victoryScreen.classList.add('hidden');
+        
+        // Check if pool is empty before continuing
+        if (preloadQueue.length === 0 && remainingQuestions.length === 0) {
+            endGame();
+            return;
+        }
+
+        await preloadNextQuestions(3);
+        loadQuestion();
+    };
 }
 
 function showVictoryBanner(message) {
@@ -3002,6 +3012,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
