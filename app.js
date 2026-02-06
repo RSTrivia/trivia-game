@@ -2700,6 +2700,7 @@ async function startWeeklyChallenge() {
     document.body.classList.add('game-active'); 
     document.getElementById('start-screen').classList.add('hidden');
     game.classList.remove('hidden');
+    updateSurvivorCountUI();
   
     weeklyStartTime = Date.now(); // total weekly run time
   
@@ -2765,7 +2766,8 @@ async function startDailyChallenge() {
     document.body.classList.add('game-active'); 
     document.getElementById('start-screen').classList.add('hidden');
     game.classList.remove('hidden');
-
+    updateSurvivorCountUI();
+  
     loadQuestion();
   
     // FILL THE REST IN THE BACKGROUND
@@ -2838,6 +2840,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
