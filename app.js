@@ -2324,14 +2324,11 @@ async function beginLiveMatch() {
     firstQuestionSent = false;
     
     if (lobbyTimerInterval) clearInterval(lobbyTimerInterval);
-  
-    // UI: remove title in lobby
     document.body.classList.remove('lobby-active');
   
-    // Get the exact count of players who were in the lobby
+    // Initial Survivor Count based on Lobby Presence
     const finalLobbyState = lobbyChannel.presenceState();
-    const expectedPlayers = Object.keys(finalLobbyState).length;
-    survivors = expectedPlayers; // Set the survivor count
+    survivors = Object.keys(finalLobbyState).length;
     updateSurvivorCountUI(survivors);
   
     // UI Cleanup
@@ -2345,45 +2342,47 @@ async function beginLiveMatch() {
         config: { presence: { key: userId } }
     });
 
-   gameChannel
-    .on('broadcast', { event: 'initialize-game-sequence' }, async ({ payload }) => {
-        console.log("Initializing shared sequence...");
-        
-        // 1. Generate the same shuffled list locally using the seed
-        const shuffled = shuffleWithSeed(payload.masterIds, payload.seed);
-        
-        // 2. Set up the local game state
-        isLiveMode = true;
-        remainingQuestions = shuffled; // This is now our shared "deck"
-        preloadQueue = [];
-        
-        // 3. Preload the first few questions so there's no lag
-        await preloadNextQuestions(3);
+    gameChannel
+        .on('broadcast', { event: 'initialize-game-sequence' }, async ({ payload }) => {
+            console.log("Shared sequence received. Seeding...");
+            const shuffled = shuffleWithSeed(payload.masterIds, payload.seed);
+            
+            remainingQuestions = shuffled;
+            preloadQueue = [];
+            
+            await preloadNextQuestions(3);
 
-        // 4. Wait for the synchronized start
-        const delay = payload.startTime - Date.now();
-        setTimeout(() => {
-            const overlay = document.getElementById('waiting-overlay');
-            if (overlay) overlay.classList.add('hidden');
-            loadQuestion(); // Starts the first question
-        }, Math.max(0, delay));
-    })
-    .on('broadcast', { event: 'player-died' }, () => {
-        survivors--;
-        updateSurvivorCountUI(survivors);
-        checkVictoryCondition();
-    });
+            const delay = payload.startTime - Date.now();
+            setTimeout(() => {
+                const overlay = document.getElementById('waiting-overlay');
+                if (overlay) overlay.classList.add('hidden');
+                loadQuestion(); 
+            }, Math.max(0, delay));
+        })
+        .on('broadcast', { event: 'player-died' }, () => {
+            survivors--;
+            updateSurvivorCountUI(survivors);
+            checkVictoryCondition();
+        })
+        .on('presence', { event: 'sync' }, () => {
+            const currentState = gameChannel.presenceState();
+            const playersJoined = Object.keys(currentState).length;
+            
+            // IF I AM THE HOST and everyone is here, send the seed
+            if (isHost() && playersJoined >= survivors && !firstQuestionSent) {
+                setTimeout(() => {
+                    sendFirstLiveQuestion(); // This broadcasts the seed to everyone
+                }, 1000); 
+            }
+        })
         .subscribe(async (status) => {
             if (status === 'SUBSCRIBED') {
-                // Signal to the host that this player is ready
                 await gameChannel.track({ status: 'ready' });
             }
         });
 
-    // We call startGame to show the "Get Ready" overlay locally
-    startGame(isLiveMode);
+    startGame(true);
 }
-
 
 async function sendFirstLiveQuestion() {
     if (firstQuestionSent) return;
@@ -2812,6 +2811,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
