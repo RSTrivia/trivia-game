@@ -834,42 +834,27 @@ async function startGame(isLive = false) {
     try {
         isLiveMode = isLive; // Set our global flag
         // Inside startGame(isLive = false)
-        if (isLiveMode) {
-            preloadQueue = []; 
-            
-            // The "Seed" is now the array saved in the DB
-            if (currentLobby && currentLobby.question_ids) {
-            // CLONE the lobby list. Do NOT shuffle it.
-            remainingQuestions = [...currentLobby.question_ids];
-            console.log("Live Sync: Using Lobby Deck", remainingQuestions);
-            } else {
-                console.error("Lobby data missing!");
-                return; 
-            }
-                
-            // Fetch first 5 specific IDs from the shared list
-            await preloadSpecificQuestions(remainingQuestions.slice(0, 5));
-} else {
-        // 1. DATA PREP (Background - User still sees Start Screen)
-        if (masterQuestionPool.length === 0) {
-            const { data: idList, error } = await supabase.from('questions').select('id');
-            if (error) throw error;
-            masterQuestionPool = idList.map(q => q.id);
-        }
-
-        remainingQuestions = [...masterQuestionPool].sort(() => Math.random() - 0.5);
-        if (isLiteMode) {
-            // Take only the first 100 questions from the shuffled pool
-            remainingQuestions = remainingQuestions.slice(0, LITE_LIMIT);
-        }
-      
-        const bufferedIds = preloadQueue.map(q => q.id);
-        remainingQuestions = remainingQuestions.filter(id => !bufferedIds.includes(id));
-        // 5. FETCH ONLY THE FIRST QUESTION IMMEDIATELY
-        // If queue is empty, get one right now so we can start
-        if (preloadQueue.length === 0) {
-            await preloadNextQuestions(1); // Modified to accept a 'count'
-        }
+        if (!isLiveMode) {
+          // 1. DATA PREP (Background - User still sees Start Screen)
+          if (masterQuestionPool.length === 0) {
+              const { data: idList, error } = await supabase.from('questions').select('id');
+              if (error) throw error;
+              masterQuestionPool = idList.map(q => q.id);
+          }
+  
+          remainingQuestions = [...masterQuestionPool].sort(() => Math.random() - 0.5);
+          if (isLiteMode) {
+              // Take only the first 100 questions from the shuffled pool
+              remainingQuestions = remainingQuestions.slice(0, LITE_LIMIT);
+          }
+        
+          const bufferedIds = preloadQueue.map(q => q.id);
+          remainingQuestions = remainingQuestions.filter(id => !bufferedIds.includes(id));
+          // 5. FETCH ONLY THE FIRST QUESTION IMMEDIATELY
+          // If queue is empty, get one right now so we can start
+          if (preloadQueue.length === 0) {
+              await preloadNextQuestions(1); // Modified to accept a 'count'
+          }
       }
 
         // 3. INTERNAL STATE RESET
@@ -2399,28 +2384,35 @@ function setupLobbyRealtime(lobby) {
     .on('broadcast', { event: 'chat' }, ({ payload }) => {
         appendMessage(payload.username, payload.message);
     })
-  .on('broadcast', { event: 'prepare-game' }, async ({ payload }) => {
-      console.log("SHUFFLE CHECK - Seed:", payload.seed);
-      // 1. Clear any old data
-      preloadQueue = []; 
-      remainingQuestions = []
+.on('broadcast', { event: 'prepare-game' }, async ({ payload }) => {
+    console.log("Received Seed:", payload.seed);
     
-      // 2. Save seed globally so startGame() can see it
-      //currentMatchSeed = payload.seed;
+    // 1. Everyone fetches the same base list from DB
+    const { data: allQuestions } = await supabase
+        .from('questions')
+        .select('id')
+        .order('id', { ascending: true });
+
+    const masterIds = allQuestions.map(q => q.id);
+
+    // 2. Clear old data
+    preloadQueue = []; 
     
-      // 3. Everyone shuffles the EXACT same way using the host's seed
-      remainingQuestions = shuffleLiveMatch(payload.masterIds, payload.seed);
-      
-      // 4. Preload immediately so they are ready for the start signal
-      await preloadNextQuestions(3);
-  
-      await lobbyChannel.track({
-          online_at: new Date().toISOString(),
-          status: 'ready_to_start' 
-      });
-       
-        if (questionText) questionText.innerHTML = "Syncing with players...";
-    })
+    // 3. Everyone shuffles that base list using the same seed
+    remainingQuestions = shuffleLiveMatch(masterIds, payload.seed);
+    
+    // 4. Preload the first few questions from the newly shuffled deck
+    isLiveMode = true; // Set this so preloader knows to pull from the top of the deck
+    await preloadNextQuestions(3);
+
+    // 5. Tell Host you are ready
+    await lobbyChannel.track({
+        online_at: new Date().toISOString(),
+        status: 'ready_to_start' 
+    });
+    
+    if (questionText) questionText.innerHTML = "Syncing with players...";
+})
         .on('broadcast', { event: 'start-game' }, async ({ payload }) => {
         console.log("Start signal received!");
         if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -2710,23 +2702,19 @@ function isHost(channel) {
 }
 
 
-// Phase 1: Host sends data
+// Phase 1: Host ONLY sends the seed
 async function triggerGamePrepare(lobbyId) {
     if (isStarting) return;
     
-    // Fetch IDs in a guaranteed order
-    const { data: allQuestions } = await supabase
-        .from('questions')
-        .select('id')
-        .order('id', { ascending: true });
-
-    const masterIds = allQuestions.map(q => q.id);
+    // Just roll the dice
     const matchSeed = Math.floor(Math.random() * 1000000);
+
+    console.log("Host: Broadcasting Seed", matchSeed);
 
     lobbyChannel.send({
         type: 'broadcast',
         event: 'prepare-game',
-        payload: { seed: matchSeed, masterIds: masterIds }
+        payload: { seed: matchSeed } // masterIds is removed!
     });
 }
 
@@ -3008,6 +2996,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
