@@ -838,17 +838,15 @@ async function startGame(isLive = false) {
             preloadQueue = []; 
             
             // The "Seed" is now the array saved in the DB
-            // Instead of shuffling locally, use the sequence from the lobby
             if (currentLobby && currentLobby.question_ids) {
-                remainingQuestions = [...currentLobby.question_ids];
-                console.log("Live Sync: Using Lobby Deck", remainingQuestions);
+            // CLONE the lobby list. Do NOT shuffle it.
+            remainingQuestions = [...currentLobby.question_ids];
+            console.log("Live Sync: Using Lobby Deck", remainingQuestions);
             } else {
-                console.error("Lobby data missing! Questions will be out of sync.");
-                // Fallback: fetch IDs but DON'T shuffle if you want a chance at sync
-                const { data } = await supabase.from('questions').select('id');
-                remainingQuestions = data.map(q => q.id); 
+                console.error("Lobby data missing!");
+                return; 
             }
-            
+                
             // Fetch first 5 specific IDs from the shared list
             await preloadSpecificQuestions(remainingQuestions.slice(0, 5));
 } else {
@@ -917,13 +915,17 @@ async function startGame(isLive = false) {
 }
 
 async function preloadSpecificQuestions(idsToFetch) {
+    if (idsToFetch.length === 0) return;
+
     const { data, error } = await supabase.rpc('get_questions_by_ids', { input_ids: idsToFetch });
     
     if (data) {
-        // Crucial: Maintain the order of the idsToFetch array
+        // MAP the data back to the order of the idsToFetch array
         const ordered = idsToFetch.map(id => data.find(q => q.id === id)).filter(Boolean);
+        
         preloadQueue.push(...ordered);
-        // Remove from the master list so we don't fetch them again
+        
+        // Remove these specific IDs from remainingQuestions so we don't fetch them again
         remainingQuestions = remainingQuestions.filter(id => !idsToFetch.includes(id));
     }
 }
@@ -3006,6 +3008,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
