@@ -23,7 +23,7 @@ let lobbyChannel = null;
 let lobbyTimerInterval = null;
 let userId = null; // Add this globally
 let gameChannel = null;
-let currentMatchSeed = null;
+//let currentMatchSeed = null;
 let survivors = 0;
 let isLiveMode = false;
 let isStarting = false;
@@ -835,6 +835,9 @@ async function startGame(isLive = false) {
         isLiveMode = isLive; // Set our global flag
       if (isLiveMode) {
             isLiteMode = false;
+            // CRITICAL: Clear these so old Solo questions don't pop up!
+            preloadQueue = []; 
+            remainingQuestions = [];
             console.log("Live Match starting with pre-shuffled deck.");
         } else {
         // 1. DATA PREP (Background - User still sees Start Screen)
@@ -2355,18 +2358,15 @@ function setupLobbyRealtime(lobby) {
     })
   .on('broadcast', { event: 'prepare-game' }, async ({ payload }) => {
       console.log("SHUFFLE CHECK - Seed:", payload.seed);
-      // 1. Save seed globally so startGame() can see it
-      currentMatchSeed = payload.seed;
-    
       // 1. Clear any old data
       preloadQueue = []; 
-      remainingQuestions = [];
+      remainingQuestions = []
     
-      // 2. Shuffle using the deterministic function
-      const shuffled = shuffleLiveMatch(payload.masterIds, payload.seed);
-      
-      // 3. Set the global pool
-      remainingQuestions = shuffled;
+      // 2. Save seed globally so startGame() can see it
+      //currentMatchSeed = payload.seed;
+    
+      // 3. Everyone shuffles the EXACT same way using the host's seed
+      remainingQuestions = shuffleLiveMatch(payload.masterIds, payload.seed);
       
       // 4. Preload immediately so they are ready for the start signal
       await preloadNextQuestions(3);
@@ -2965,6 +2965,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
