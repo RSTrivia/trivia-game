@@ -2359,24 +2359,24 @@ function setupLobbyRealtime(lobby) {
     .on('broadcast', { event: 'start-game' }, async ({ payload }) => {
         console.log("Start signal received!");
         if (audioCtx.state === 'suspended') audioCtx.resume();
-
-        // Kill lobby
-        if (lobbyChannel) {
-            await supabase.removeChannel(lobbyChannel);
-            lobbyChannel = null;
-        }
-        if (lobbyTimerInterval) clearInterval(lobbyTimerInterval);
+      // 1. Start the game logic first
+      beginLiveMatch(payload.survivorCount, payload.startTime);
+      // 2. Delay the cleanup of the lobby so the broadcast doesn't get cut off
+          setTimeout(async () => {
+              if (lobbyChannel) {
+                  await supabase.removeChannel(lobbyChannel);
+                  lobbyChannel = null;
+              }
+              if (lobbyTimerInterval) clearInterval(lobbyTimerInterval);
+          }, 1000);
 
         // UI Swap
         setTimeout(() => {
-            document.getElementById('lobby-screen')?.classList.add('hidden');
-            document.getElementById('start-screen')?.classList.add('hidden');
-            document.body.classList.add('game-active');
-            if (game) game.classList.remove('hidden');
-            
-            // Start the match with the synced Start Time from payload
-            beginLiveMatch(payload.survivorCount, payload.startTime);
-        }, 50);
+        document.getElementById('lobby-screen')?.classList.add('hidden');
+        document.getElementById('start-screen')?.classList.add('hidden');
+        document.body.classList.add('game-active');
+        if (game) game.classList.remove('hidden');
+
     })
     .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
@@ -2401,38 +2401,47 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
     survivors = countFromLobby || 2; 
     updateSurvivorCountUI(survivors);
 
-    // This must match the lobby ID
-    gameChannel = supabase.channel(`game-${currentLobby.id}`, {
+    // Ensure we are using a unique ID for this specific match instance
+    const matchId = currentLobby.id;
+    gameChannel = supabase.channel(`game-${matchId}`, {
         config: { presence: { key: userId } }
     });
 
     gameChannel
-        .on('broadcast', { event: 'player-died' }, () => {
-            survivors--;
-            updateSurvivorCountUI(survivors);
-            checkVictoryCondition();
-        })
         .on('presence', { event: 'sync' }, () => {
             const state = gameChannel.presenceState();
             const joinedCount = Object.keys(state).length;
+            
+            console.log(`Players in Game Channel: ${joinedCount}/${survivors}`);
 
+            // If everyone is here, trigger the start timer
             if (joinedCount >= survivors) {
-                const now = Date.now();
-                const delay = Math.max(0, syncedStartTime - now);
+                const delay = Math.max(0, syncedStartTime - Date.now());
                 
-                console.log(`Syncing start. Delay: ${delay}ms`);
-
                 setTimeout(() => {
-                    const overlay = document.getElementById('waiting-overlay');
-                    if (overlay) overlay.classList.add('hidden');
-                    
-                    // IMPORTANT: loadQuestion picks from 'remainingQuestions' 
-                    // which we already shuffled in the lobby!
+                    console.log("MATCH STARTING NOW");
+                    // Clear the "Syncing" text manually just in case
+                    if (questionText) questionText.innerHTML = "";
                     loadQuestion(); 
                 }, delay);
             }
         })
-        .subscribe();
+        .on('broadcast', { event: 'player-died' }, () => {
+            survivors--;
+            updateSurvivorCountUI(survivors);
+            checkVictoryCondition();
+        });
+
+    // CRITICAL: You must track presence for the 'sync' event to count you
+    await gameChannel.subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+            console.log("Game channel subscribed. Tracking user...");
+            await gameChannel.track({
+                user_id: userId,
+                online_at: new Date().toISOString()
+            });
+        }
+    });
 }
 
 function updateSurvivorCountUI(count) {
@@ -2919,6 +2928,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
