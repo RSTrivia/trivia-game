@@ -2390,7 +2390,7 @@ function setupLobbyRealtime(lobby) {
 
 async function beginLiveMatch(countFromLobby, syncedStartTime) {
     isLiveMode = true;
-    firstQuestionSent = true; // Set this to true immediately so no other logic triggers a shuffle
+    firstQuestionSent = true; // Block any accidental secondary shuffles
     hasDiedLocally = false;
     survivors = countFromLobby || 2; 
     updateSurvivorCountUI(survivors);
@@ -2409,10 +2409,12 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
             const state = gameChannel.presenceState();
             const joinedCount = Object.keys(state).length;
 
+            // Wait for both players to be present in the GAME channel
             if (joinedCount >= survivors) {
                 const delay = Math.max(0, syncedStartTime - Date.now());
                 
-                // Final countdown to the synced start time
+                console.log(`Both players present. Starting in ${delay}ms`);
+                
                 setTimeout(() => {
                     const overlay = document.getElementById('waiting-overlay');
                     if (overlay) overlay.classList.add('hidden');
@@ -2420,33 +2422,11 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
                 }, delay);
             }
         })
-        .subscribe();
-}
-
-async function sendFirstLiveQuestion() {
-    if (firstQuestionSent) return;
-    firstQuestionSent = true;
-
-    // 1. Get all question IDs (the "Deck")
-    const { data: allQuestions } = await supabase.from('questions').select('id');
-    const masterIds = allQuestions.map(q => q.id);
-
-    // 2. Generate a random seed for this match
-    const matchSeed = Math.floor(Math.random() * 1000000);
-    
-    // 3. Set a start time 3 seconds in the future
-    const startTime = Date.now() + 3000;
-
-    // 4. Broadcast the "Game Rules" to everyone
-    gameChannel.send({
-        type: 'broadcast',
-        event: 'initialize-game-sequence',
-        payload: { 
-            seed: matchSeed, 
-            startTime: startTime,
-            masterIds: masterIds 
-        }
-    });
+        .subscribe(async (status) => {
+            if (status === 'SUBSCRIBED') {
+                await gameChannel.track({ user_id: userId, status: 'playing' });
+            }
+        });
 }
 
 function updateSurvivorCountUI(count) {
@@ -2647,7 +2627,13 @@ function isHost(channel) {
 // Phase 1: Host sends data
 async function triggerGamePrepare(lobbyId) {
     if (isStarting) return;
-    const { data: allQuestions } = await supabase.from('questions').select('id');
+    
+    // Fetch IDs in a guaranteed order
+    const { data: allQuestions } = await supabase
+        .from('questions')
+        .select('id')
+        .order('id', { ascending: true });
+
     const masterIds = allQuestions.map(q => q.id);
     const matchSeed = Math.floor(Math.random() * 1000000);
 
@@ -2927,6 +2913,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
