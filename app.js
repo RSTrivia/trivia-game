@@ -1019,22 +1019,31 @@ function startTimer() {
             clearInterval(timer);
             stopTickSound();
             
-            // THE SYNC HUB:
-            if (isLiveMode) {
-                const correctBtn = document.querySelector('[data-answered-correctly="true"]');
-                
-                if (correctBtn) {
-                    // Give a 200ms grace period for final "death" signals to arrive
-                    setTimeout(async () => {
-                        if (window.pendingVictory || survivors === 1) {
-                            await deleteCurrentLobby(currentLobby.id);
-                            transitionToSoloMode(); 
-                            window.pendingVictory = false;
-                        } else {
-                            questionText.textContent = ""; 
-                            loadQuestion();
-                        }
-                    }, 200); 
+              // THE SYNC HUB:
+              if (isLiveMode) {
+                    const correctBtn = document.querySelector('[data-answered-correctly="true"]');
+                    
+                    // CASE A: You answered correctly (or the button exists)
+                    if (correctBtn) {
+                        // Wait 200ms for final death signals from the slow-pokes
+                        setTimeout(async () => {
+                            if (window.pendingVictory || survivors === 1) {
+                                await deleteCurrentLobby(currentLobby.id);
+                                // This now shows your victory screen!
+                                await transitionToSoloMode(); 
+                                window.pendingVictory = false;
+                            } else {
+                                // Match continues to next round
+                                questionText.textContent = ""; 
+                                loadQuestion();
+                            }
+                        }, 200);
+                    } else {
+                        // Match continues
+                        questionText.textContent = ""; 
+                        loadQuestion();
+                    }
+        }, 200);
                 } else {
                     // Player was wrong or timed out
                     highlightCorrectAnswer();
@@ -1079,7 +1088,10 @@ async function handleTimeout() {
 async function checkAnswer(choiceId, btn) {
     stopTickSound(); // CUT THE SOUND IMMEDIATELY
     if (timeLeft <= 0) return;
-    clearInterval(timer);
+    // DO NOT clearInterval(timer) if in Live Mode!
+    if (!isLiveMode) {
+        clearInterval(timer); 
+    };
     // Disable all buttons immediately so they can't change their mind
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
   
@@ -1096,6 +1108,7 @@ async function checkAnswer(choiceId, btn) {
   
     if (isCorrect) {
         playSound(correctBuffer);
+        btn.dataset.answeredCorrectly = "true"; // Mark this for the Hub
         btn.classList.add('correct');
         // Update Local State & UI
         score++;
@@ -3057,6 +3070,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
