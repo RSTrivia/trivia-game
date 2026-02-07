@@ -2603,6 +2603,7 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
               
               if (survivors === 1 && !hasDiedLocally) {
                   window.pendingVictory = true;
+                  isLiveMode = false;
                   showVictoryBanner("Last Survivor! Finish the round!");
                   
                   // 1. Kill the interval (normal timer)
@@ -2617,8 +2618,6 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
                 
                   const alreadyAnswered = document.querySelector('[data-answered-correctly="true"]');
                   if (alreadyAnswered) {
-                      // Force isLiveMode to false so no other logic can trigger a round
-                      isLiveMode = false; 
                       setTimeout(() => transitionToSoloMode(), 1000);
                   }
               } else if (survivors === 0) {
@@ -3191,6 +3190,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
