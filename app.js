@@ -2682,7 +2682,6 @@ function startLiveRound() {
               endGame();
           }
       }
-    }
   }, 1000);
 
   loadQuestion();
@@ -3224,5 +3223,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
