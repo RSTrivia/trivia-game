@@ -2677,7 +2677,17 @@ gameChannel.on('broadcast', { event: 'round-ended' }, async ({ payload }) => {
       
           console.log(`Presence Sync: ${joinedCount} connected.`);
                 // ----- HOST FAILOVER -----
-          
+          // 🚀 NEW: Start the first round only when everyone from the lobby has arrived
+          // matchStartingCount is the value we saved from the start-game payload
+          if (isHost(gameChannel) && !window.matchStarted && joinedCount >= matchStartingCount) {
+              console.log(`All ${joinedCount} players arrived. Launching Match!`);
+              window.matchStarted = true;
+              
+              // Give a tiny 500ms breather for Player B's UI to settle
+              setTimeout(() => {
+                  sendStartRoundSignal(); 
+              }, 500);
+          }
           // --- NEW GUARD ---
           // Only trigger mid-game victory if the match has TRULY started
           // window.matchStarted ensures we don't end the game while people are still connecting
@@ -2731,18 +2741,7 @@ gameChannel.on('broadcast', { event: 'round-ended' }, async ({ payload }) => {
                 user_id: userId,
                 online_at: new Date().toISOString()
             });
-            // --- ADD THIS LOGIC HERE ---
-            // Small delay to ensure presence is fully synced before starting
-            setTimeout(() => {
-                window.matchStarted = true; // 🚀 THIS IS THE KEY
-                console.log("Match officially started. Ready for rounds.");
-                
-                if (isHost(gameChannel)) {
-                    console.log("Host: Triggering first round...");
-                    // If you have a function to start the first round, call it here
-                    sendStartRoundSignal();
-                }
-            }, 1000);
+          
           // Host assignment after tracking
           const state = gameChannel.presenceState();
           const presentPlayers = Object.keys(state).sort();
@@ -3379,6 +3378,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
