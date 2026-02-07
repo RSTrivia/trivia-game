@@ -2446,16 +2446,15 @@ function setupLobbyRealtime(lobby) {
         // --- NEW READY CHECK LOGIC ---
         const readyCount = players.filter(p => p.status === 'ready_to_start').length;
         console.log(`Sync: ${readyCount}/${count} players ready.`);
-
+        
         if (count >= 2 && isHost(lobbyChannel)) {
-            // If NO ONE is ready yet, send the "Prepare" command
-            if (readyCount === 0 && !isStarting) {
-                console.log("Host: Sending Prepare Command...");
+            // 1. If we have enough players and NO ONE is preparing yet
+            if (readyCount === 0 && !window.isStarting) {
+                window.isStarting = true; // Prevents spamming prepare
                 triggerGamePrepare(lobby.id); 
             } 
-            // If EVERYONE is ready, send the final "Start" command
-            else if (readyCount === count && count >= 2) {
-                console.log("Host: Everyone ready! Sending Start Signal...");
+            // 2. If EVERYONE has preloaded their questions, FIRE!
+            else if (readyCount === count && count >= 2 && !window.finalStartSent) {
                 sendFinalStartSignal(count);
             }
         }
@@ -2463,35 +2462,43 @@ function setupLobbyRealtime(lobby) {
     .on('broadcast', { event: 'chat' }, ({ payload }) => {
         appendMessage(payload.username, payload.message);
     })
-.on('broadcast', { event: 'prepare-game' }, async ({ payload }) => {
-    console.log("Received Seed:", payload.seed);
-    
-    // 1. Everyone fetches the same base list from DB
-    const { data: allQuestions } = await supabase
-        .from('questions')
-        .select('id')
-        .order('id', { ascending: true });
-
-    const masterIds = allQuestions.map(q => q.id);
-
-    // 2. Clear old data
-    preloadQueue = []; 
-    
-    // 3. Everyone shuffles that base list using the same seed
-    remainingQuestions = shuffleLiveMatch(masterIds, payload.seed);
-    
-    // 4. Preload the first few questions from the newly shuffled deck
-    isLiveMode = true; // Set this so preloader knows to pull from the top of the deck
-    await preloadNextQuestions(3);
-
-    // 5. Tell Host you are ready
-    await lobbyChannel.track({
-        online_at: new Date().toISOString(),
-        status: 'ready_to_start' 
-    });
-    
-    if (questionText) questionText.innerHTML = "Syncing with players...";
-})
+  .on('broadcast', { event: 'prepare-game' }, async ({ payload }) => {
+      console.log("Received Seed:", payload.seed);
+      
+      // 1. Setup the deck
+      const { data: allQuestions } = await supabase
+          .from('questions')
+          .select('id')
+          .order('id', { ascending: true });
+  
+      const masterIds = allQuestions.map(q => q.id);
+      preloadQueue = []; 
+      remainingQuestions = shuffleLiveMatch(masterIds, payload.seed);
+      isLiveMode = true; 
+      
+      // 2. PRELOAD WITH SAFETY TIMEOUT
+      // This prevents the game from getting "stuck" if an image fails to load
+      try {
+          if (questionText) questionText.innerHTML = "Downloading questions...";
+          
+          // Promise.race means: "Either finish loading in 5 seconds, or give up and move on"
+          await Promise.race([
+              preloadNextQuestions(3),
+              new Promise(resolve => setTimeout(resolve, 5000)) 
+          ]);
+      } catch (e) {
+          console.warn("Preloading timed out, proceeding to ready state anyway.");
+      }
+  
+      // 3. Tell Host you are ready (Moved outside the 'await' block for safety)
+      console.log("Player is READY. Tracking status...");
+      await lobbyChannel.track({
+          online_at: new Date().toISOString(),
+          status: 'ready_to_start' 
+      });
+      
+      if (questionText) questionText.innerHTML = "Synced! Waiting for Host...";
+  })
         .on('broadcast', { event: 'start-game' }, async ({ payload }) => {
         console.log("Start signal received!");
         if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -2673,7 +2680,7 @@ gameChannel.on('broadcast', { event: 'round-ended' }, async ({ payload }) => {
           }
         }
       
-          // --- START LOGIC ---
+        // --- START LOGIC --- <--- THIS IS THE SECTION
           if (joinedCount >= survivors && !window.matchStarted) {
               const delay = Math.max(0, syncedStartTime - Date.now());
               setTimeout(() => {
@@ -3327,6 +3334,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
