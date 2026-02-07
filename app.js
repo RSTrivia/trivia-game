@@ -874,7 +874,7 @@ async function startGame(isLive = false) {
         questionImage.style.display = 'none';
         questionImage.src = '';
         updateScore();
-      
+       
         // This ensures the "Live" game and the "Clock" start at the exact same millisecond
         gameStartTime = Date.now();
 
@@ -918,11 +918,23 @@ async function preloadSpecificQuestions(idsToFetch) {
 }
 
 async function loadQuestion(broadcastedId = null, startTime = null) {
-    // 1. LIVE MATCH VICTORY LOCK
-    // If we are in Live Mode and a victory is pending, stop loading new questions.
-    if (isLiveMode && window.pendingVictory) {
-        console.log("Live match won. Waiting for transition...");
-        return;
+    // --- 1. LIVE MATCH STATE CHECK ---
+    if (isLiveMode) {
+        // CASE A: Someone won, or only one person is left
+        if (survivors === 1 || window.pendingVictory) {
+            console.log("Victory detected in loadQuestion. Ending match.");
+            isLiveMode = false;
+            transitionToSoloMode(); 
+            return;
+        }
+        
+        // CASE B: Everyone died (Tie)
+        if (survivors === 0) {
+            console.log("Tie detected in loadQuestion. Ending match.");
+            isLiveMode = false;
+            transitionToSoloMode(); 
+            return;
+        }
     }
    // 1. End Game Checks
     if (isWeeklyMode && weeklyQuestionCount >= WEEKLY_LIMIT) { await endGame(); return; }
@@ -2571,14 +2583,13 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
               window.pendingVictory = true;
               showVictoryBanner("Last Survivor! Finish the round!");
               
-              // Check if the current user has already answered this specific round
-              // We look for a button that has been selected
-              const hasSelected = document.querySelector('.answer-btn.selected');
+              // Check if I already answered this round
+              const alreadyAnswered = document.querySelector('[data-answered-correctly="true"]');
               
-              if (hasSelected) {
+              if (alreadyAnswered) {
                   console.log("Opponent died and I already answered. Transitioning now.");
                   // Kill any pending loadQuestion timeouts
-                  clearAllQueuedTransitions(); 
+                  clearInterval(timer);
                   setTimeout(() => transitionToSoloMode(), 1000);
               }
           } else if (survivors === 0) {
@@ -2671,6 +2682,12 @@ async function deleteCurrentLobby(lobbyId) {
 }
 
 async function transitionToSoloMode() {
+    // --- 0. MULTI-CALL GUARD ---
+    // If the screen is already visible, stop here so we don't repeat logic or sounds.
+    const victoryScreen = document.getElementById('victory-screen');
+    if (victoryScreen && !victoryScreen.classList.contains('hidden')) {
+        return;
+    }
     clearInterval(timer);
     stopTickSound();
     
@@ -2689,10 +2706,9 @@ async function transitionToSoloMode() {
     if (timerDisplay) timerDisplay.style.visibility = 'hidden';
     if (liveStats) liveStats.style.visibility = 'hidden';
 
-    const victoryScreen = document.getElementById('victory-screen');
     const statsText = document.getElementById('player-count-stat');
     const oddsText = document.getElementById('odds-stat');
-
+    
     // Set Victory Text
     if (survivors === 0) {
         if (statsText) statsText.textContent = `Co-Victory! Total Players: ${total}`;
@@ -3125,6 +3141,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
