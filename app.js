@@ -1227,19 +1227,27 @@ async function checkAnswer(choiceId, btn) {
         // This is where the pet roll happens
         rollForPet();
         if (isLiveMode) {
-            // NEW: If the other player already died, move to victory immediately after answering!
-            if (window.pendingVictory) {
-                // Stop the game loop!
+    btn.dataset.answeredCorrectly = "true";
+
+            // 1. Check if we already know a victory is happening OR if survivors dropped to 1
+            if (window.pendingVictory || survivors <= 1) {
+                console.log("Sole survivor answered. Ending live match.");
                 isLiveMode = false;
+                window.pendingVictory = true; // Ensure this is set
                 clearInterval(timer);
+                stopTickSound();
+                
+                questionText.textContent = "Correct! Match Over.";
+                
                 setTimeout(() => {
-                   transitionToSoloMode();
+                    transitionToSoloMode();
                 }, 1000);
             } else {
-                // Standard multiplayer behavior: wait for the timer
+                // 2. We actually have competitors left
                 questionText.textContent = "Waiting for other players...";
-                btn.dataset.answeredCorrectly = "true";
-          } 
+                // The refereeTimeout (the 15s timer) will handle the transition 
+                // once everyone else answers or time runs out.
+            } 
         } else {
         setTimeout(loadQuestion, 1000);
     }
@@ -3190,6 +3198,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
