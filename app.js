@@ -2519,7 +2519,10 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
     // Ensure we are using a unique ID for this specific match instance
     const matchId = currentLobby.id;
     gameChannel = supabase.channel(`game-${matchId}`, {
-        config: { presence: { key: userId } }
+        config: { 
+        presence: { key: userId },
+        broadcast: { self: true } // CRITICAL for the Host to hear their own answer
+    }
     });
 gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
     const { outcome, winnerIds, dead, correct } = payload;
@@ -2559,16 +2562,17 @@ gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
 
     gameChannel.on('broadcast', { event: 'round-result' }, ({ payload }) => {
       if (!isHost(gameChannel)) return;
-          
+      // DEBUG: Log every incoming answer to see why it might be rejected
+      console.log(`Referee received result from ${payload.userId}. Round in msg: ${payload.roundId}, Host Round: ${roundId}`);    
           // Add a log to see if this is happening
-          if (payload.roundId !== roundId) {
+        if (payload.roundId !== roundId) {
               console.warn(`Referee ignored msg from ${payload.userId}: Payload Round ${payload.roundId} vs Host Round ${roundId}`);
               // If they are only off by 1, it's likely a sync issue; you might want to accept it anyway
               // or just remove this check for testing.
               return; 
-          }
+        }
       
-          roundResults[payload.userId] = payload.result;
+        roundResults[payload.userId] = payload.result;
     
         const state = gameChannel.presenceState();
         const aliveIds = Object.keys(state);
@@ -2718,7 +2722,7 @@ function startLiveRound() {
 }
 
 function endRoundAsReferee() {
-   
+   console.log("Referee: Executing endRound. Current results:", JSON.stringify(roundResults));
     // 1. Get ALL current players from Presence
     const state = gameChannel.presenceState();
     const allPlayerIds = Object.keys(state);
@@ -2792,7 +2796,11 @@ function endRoundAsReferee() {
             winnerIds: winners,
             newSurvivorCount: correct.length
         }
-    });
+      }).then(resp => {
+    if (resp !== 'ok') console.error("Referee: Broadcast failed!", resp);
+    else console.log("Referee: Round-ended broadcast sent successfully.");
+  });
+ 
     
    // Reset for the next round!
     roundResults = {}; 
@@ -3300,6 +3308,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
