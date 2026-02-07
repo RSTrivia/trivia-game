@@ -1011,16 +1011,15 @@ async function loadQuestion(broadcastedId = null, startTime = null) {
 };
    
 
-
 function startTimer() {
     clearInterval(timer);
-    if (activeTickSource) { activeTickSource.stop(); activeTickSource = null; } 
-  
+    if (activeTickSource) { activeTickSource.stop(); activeTickSource = null; }
+
     timeLeft = 15;
     timeDisplay.textContent = timeLeft;
     timeWrap.classList.remove('red-timer');
-  
-    timer = setInterval( () => {
+
+    timer = setInterval(() => {
         timeLeft--;
         timeDisplay.textContent = timeLeft;
 
@@ -1029,37 +1028,45 @@ function startTimer() {
         }
         if (timeLeft <= 5) timeWrap.classList.add('red-timer');
 
-        // --- ROUND END LOGIC ---
-       // --- ROUND END LOGIC ---
-    if (timeLeft <= 0) {
-      clearInterval(timer);
-      stopTickSound();
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            stopTickSound();
 
-      // LIVE MODE: report timeout once
-      if (isLiveMode) {
-        if (roundOpen) {
-          roundOpen = false;
+            if (isLiveMode) {
+                // Record timeout locally
+                if (!roundResults[userId]) {
+                    roundResults[userId] = 'timeout';
+                }
 
-          gameChannel.send({
-            type: 'broadcast',
-            event: 'round-result',
-            payload: {
-              userId,
-              roundId,
-              result: 'timeout'
+                const state = gameChannel.presenceState();
+                const allPlayers = Object.keys(state);
+
+                if (isHost(gameChannel)) {
+                    // Host marks all missing players as timeout
+                    for (const uid of allPlayers) {
+                        if (!roundResults[uid]) roundResults[uid] = 'timeout';
+                    }
+
+                    console.log("Host: all players have a result, ending round:", roundResults);
+                    endRoundAsReferee(); // <-- resolves round for everyone
+                } else {
+                    // Non-host just notifies host and waits
+                    gameChannel.send({
+                        type: 'broadcast',
+                        event: 'round-result',
+                        payload: { userId, roundId, result: 'timeout' }
+                    });
+                    questionText.textContent = "Waiting for other players...";
+                }
+                return; // never fall through in live mode
             }
-          });
 
-          questionText.textContent = "Waiting for other players...";
+            // SOLO / DAILY / WEEKLY
+            handleTimeout();
         }
-        return; // ⛔ never fall through in live mode
-      }
-
-      // SOLO / DAILY / WEEKLY
-      handleTimeout();
-    }
-  }, 1000);
+    }, 1000);
 }
+
 
 function stopTickSound() {
     if (activeTickSource) {
@@ -3268,6 +3275,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
