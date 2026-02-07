@@ -2589,7 +2589,6 @@ function setupLobbyRealtime(lobby) {
             sendFinalStartSignal(presences.length);
         }
     }, 10000); // 10s max wait
-  }
 }
 
 async function beginLiveMatch(countFromLobby, syncedStartTime) {
@@ -3364,6 +3363,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
