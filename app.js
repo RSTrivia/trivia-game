@@ -24,6 +24,7 @@ let lobbyTimerInterval = null;
 let userId = null; // Add this globally
 let gameChannel = null;
 let nextRoundTimeout = null;
+let refereeTimeout = null;
 let initialLobbySize = 0; // Default for 1v1
 let matchStartingCount = 0;
 let survivors = 0;
@@ -3190,6 +3191,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
