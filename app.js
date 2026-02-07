@@ -1084,9 +1084,47 @@ async function handleTimeout() {
     }
 }
 
+
 async function checkAnswer(choiceId, btn) {
     if (!roundOpen) return;
-    stopTickSound(); // CUT THE SOUND IMMEDIATELY
+    stopTickSound(); 
+    if (timeLeft <= 0) return;
+
+    document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
+
+    // Determine correctness (RPC)
+    const { data: isCorrect, error } = await supabase.rpc('check_my_answer', {
+        input_id: currentQuestion.id,
+        choice: choiceId
+    });
+
+    if (error) return console.error("RPC Error:", error);
+
+    // LOCAL UI
+    btn.classList.add(isCorrect ? 'correct' : 'wrong');
+
+    if (isLiveMode) {
+        roundOpen = false;
+        // Record result locally
+        roundResults[userId] = isCorrect ? 'correct' : 'wrong';
+
+        // Broadcast result to host/referee
+        gameChannel.send({
+            type: 'broadcast',
+            event: 'round-result',
+            payload: { userId, roundId, result: roundResults[userId] }
+        });
+
+        // Losers see game over immediately if they got it wrong
+        if (!isCorrect) {
+            await endGame(); // This player lost
+        }
+
+        questionText.textContent = "Waiting for other players...";
+        return; // STOP here in live mode
+    }
+
+ stopTickSound(); // CUT THE SOUND IMMEDIATELY
     if (timeLeft <= 0) return;
 
     // Disable all buttons immediately so they can't change their mind
@@ -1193,34 +1231,13 @@ async function checkAnswer(choiceId, btn) {
             setTimeout(endGame, 1000);
         }
     }
-  }
-  if (isLiveMode) {
-    roundOpen = false;
-
-    // Mark answer
-    roundResults[userId] = isCorrect ? 'correct' : 'wrong';
-
-    // Broadcast result to host/referee
-    gameChannel.send({
-        type: 'broadcast',
-        event: 'round-result',
-        payload: { userId, roundId, result: roundResults[userId] }
-    });
-
-    // Only end the match for this player if they lost OR finished the last question
-    if (roundResults[userId] === 'wrong') {
-        window.pendingVictory = true;
-        await transitionToSoloMode(); // Shows victory/loss screen safely
-    } else if (remainingQuestions.length === 0 && preloadQueue.length === 0) {
-        // Player finished the deck
-        window.pendingVictory = true;
-        await transitionToSoloMode(); // End-game for player completion
-    }
-
-    questionText.textContent = "Waiting for other players...";
-    return; // stop here in live mode
 }
 }
+
+
+
+
+
 
 function handleInstantVictory() {
     isLiveMode = false;
@@ -2536,28 +2553,31 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
     gameChannel = supabase.channel(`game-${matchId}`, {
         config: { presence: { key: userId } }
     });
-    gameChannel.on(
-  'broadcast',
-  { event: 'round-ended' },
-  ({ payload }) => {
-    const { correct, outcome } = payload;
+  gameChannel.on('broadcast', { event: 'round-ended' }, async ({ payload }) => {
+    const { correct, dead, outcome, winners } = payload;
 
+    // 1️⃣ Check if you are a winner first
+    if (outcome === 'win' && winners.includes(userId)) {
+        // You survived as one of the last players
+        await transitionToSoloMode();
+        return;
+    }
+
+    // 2️⃣ Check if you are a loser
+    if (
+        (dead.includes(userId) && !winners.includes(userId)) || // dead but not a winner
+        (outcome === 'win' && !winners.includes(userId))         // win happened but you didn't win
+    ) {
+        await endGame(); // Game over for non-winners
+        return;
+    }
+
+    // 3️⃣ Otherwise, match continues
     if (outcome === 'continue') {
-      survivors = correct.length;
-      updateSurvivorCountUI(survivors);
-      startLiveRound();
-      return;
+        roundResults = {}; // Reset for next round
+        startLiveRound();
     }
-
-    // WIN or TIE
-    isLiveMode = false;
-
-    if (outcome === 'win' && correct.includes(userId)) {
-      transitionToSoloMode();
-    } else {
-      setTimeout(endGame, 1500);
-    }
-  }
+});
 );
 
     gameChannel.on(
@@ -2646,81 +2666,94 @@ function updateSurvivorCountUI(count) {
 }
 
 function startLiveRound() {
-  roundId++;
-  roundOpen = true;
-  roundResults = {};
+    roundId++;
+    roundOpen = true;
+    roundResults = {};
 
-  // Reset the timer
-  timeLeft = 15;
-  if (timer) clearInterval(timer);
+    // Reset the timer
+    timeLeft = 15;
+    if (timer) clearInterval(timer);
 
-  timer = setInterval(async () => {
-    timeLeft--;
-    updateTimerUI(timeLeft);
+    timer = setInterval(async () => {
+        timeLeft--;
+        updateTimerUI(timeLeft);
 
-    if (timeLeft <= 0) {
-      clearInterval(timer);
-      roundOpen = false;
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            roundOpen = false;
 
-      if (isLiveMode) {
-        // Only mark as wrong if player didn't answer
-        if (!roundResults[userId]) {
-          roundResults[userId] = 'wrong';
-          console.log("Time's up! Player didn't answer.");
+            if (isLiveMode) {
+                // Mark as wrong if player didn't answer
+                if (!roundResults[userId]) {
+                    roundResults[userId] = 'wrong';
+                    console.log("Time's up! Player didn't answer.");
+                }
+
+                // Host marks all missing players
+                if (isHost(gameChannel)) {
+                    const state = gameChannel.presenceState();
+                    const allPlayers = Object.keys(state);
+                    for (const uid of allPlayers) {
+                        if (!roundResults[uid]) roundResults[uid] = 'wrong';
+                    }
+
+                    // Host decides outcome and broadcasts
+                    endRoundAsReferee(); // sends 'round-ended'
+                }
+            } else {
+                // Non-live mode: check if pool finished
+                if (remainingQuestions.length === 0 && preloadQueue.length === 0) {
+                    await endGame();
+                } else {
+                    // Load next question normally
+                    loadQuestion();
+                }
+            }
         }
+    }, 1000);
 
-        // Host marks all missing players
-        if (isHost(gameChannel)) {
-          const state = gameChannel.presenceState();
-          const allPlayers = Object.keys(state);
-          for (const uid of allPlayers) {
-            if (!roundResults[uid]) roundResults[uid] = 'wrong';
-          }
-          endRoundAsReferee(); // broadcast round-ended
-        }
-
-        // Check if the player should go to endGame
-        // Only if they lost or finished all questions
-        const playerResult = roundResults[userId];
-        if (
-          playerResult === 'wrong' || 
-          (remainingQuestions.length === 0 && preloadQueue.length === 0)
-        ) {
-          await endGame();
-        }
-      } else {
-        // Non-live mode: always check if pool finished
-        if (remainingQuestions.length === 0 && preloadQueue.length === 0) {
-          await endGame();
-        }
-      }
-    }
-  }, 1000);
-
-  loadQuestion();
+    // Load the current question
+    loadQuestion();
 }
 
 
 function endRoundAsReferee() {
-  const correct = [];
-  const dead = [];
+    const correct = [];
+    const dead = [];
 
-  for (const [uid, res] of Object.entries(roundResults)) {
-    if (res === 'correct') correct.push(uid);
-    else dead.push(uid);
-  }
+    // Separate correct vs wrong answers
+    for (const [uid, res] of Object.entries(roundResults)) {
+        if (res === 'correct') correct.push(uid);
+        else dead.push(uid);
+    }
 
-  let outcome = 'continue';
-  if (correct.length === 1) outcome = 'win';
-  if (correct.length === 0) outcome = 'tie';
+    // Determine survivors for UI
+    survivors = correct.length;
+    updateSurvivorCountUI(survivors);
 
-  gameChannel.send({
-    type: 'broadcast',
-    event: 'round-ended',
-    payload: { correct, dead, outcome }
-  });
+    let outcome = 'continue';
+    let winners = [];
+
+    // If only one survivor remains
+    if (survivors === 1) {
+        outcome = 'win';
+        winners = correct;
+    }
+    // If all remaining players died simultaneously
+    else if (survivors === 0 && Object.keys(roundResults).length > 0) {
+        outcome = 'win';
+        winners = dead;           // everyone who just died wins
+        survivors = dead.length;  // show them as “survived” in UI
+        updateSurvivorCountUI(survivors);
+    }
+
+    // Broadcast the round result to all players
+    gameChannel.send({
+        type: 'broadcast',
+        event: 'round-ended',
+        payload: { correct, dead, outcome, winners }
+    });
 }
-
 
 async function deleteCurrentLobby(lobbyId) {
     if (!lobbyId) return;
@@ -2740,26 +2773,26 @@ async function deleteCurrentLobby(lobbyId) {
     }
 }
 
-async function transitionToSoloMode() {
-  // 1. KILL the pending referee check immediately
+async function transitionToSoloMode(winners) {
+    // 1. Cancel referee timeout immediately
     if (refereeTimeout) {
         clearTimeout(refereeTimeout);
         refereeTimeout = null;
         console.log("Referee timeout cancelled - Victory takes priority.");
     }
-    // --- 0. MULTI-CALL & OVERLAP GUARD ---
-    // If we're already transitioning or the screen is visible, kill everything
+
+    // --- Overlap guard ---
     if (window.isTransitioning) return;
-    window.isTransitioning = true; 
+    window.isTransitioning = true;
 
     const victoryScreen = document.getElementById('victory-screen');
+    const continueBtn = document.getElementById('continue-solo-btn');
     if (victoryScreen && !victoryScreen.classList.contains('hidden')) return;
 
-    // --- 1. THE SILENCER (Stop the flicker) ---
+    // --- Stop any ongoing timers or game logic ---
     isLiveMode = false;
-    window.pendingVictory = true; // Global lock
+    window.pendingVictory = true;
     
-    // CANCEL any pending loadQuestion timeouts from startTimer
     if (typeof nextRoundTimeout !== 'undefined' && nextRoundTimeout) {
         clearTimeout(nextRoundTimeout);
         nextRoundTimeout = null;
@@ -2768,39 +2801,37 @@ async function transitionToSoloMode() {
     clearInterval(timer);
     stopTickSound();
 
-    // WIPE UI IMMEDIATELY: This ensures that even if loadQuestion() is 
-    // running in the background, there's nothing for it to display on.
+    // Clear UI immediately
     if (questionText) questionText.textContent = "";
     if (answersBox) answersBox.innerHTML = "";
     if (questionImage) questionImage.style.display = 'none';
 
-    // --- 2. DATA PREP ---
+    // --- Data Prep ---
     const lobbyId = currentLobby?.id;
     const total = matchStartingCount || 2; 
     const odds = Math.round((1 / total) * 100);
     currentLobby = null; 
 
-    // HUD Cleanup
     const timerDisplay = document.getElementById('timer');
     const liveStats = document.getElementById('live-stats');
     if (timerDisplay) timerDisplay.style.visibility = 'hidden';
     if (liveStats) liveStats.style.visibility = 'hidden';
 
-    // Update Stats Text
+    // Update stats text
     const statsText = document.getElementById('player-count-stat');
     const oddsText = document.getElementById('odds-stat');
-    if (survivors === 0) {
+    if (winners.length > 1) {
         if (statsText) statsText.textContent = `Co-Victory! Total Players: ${total}`;
     } else {
         if (statsText) statsText.textContent = `Sole Survivor! Total Players: ${total}`;
     }
     if (oddsText) oddsText.textContent = `Survival Odds: ${odds}%`;
 
-    // --- 3. SHOW SCREEN ---
+    // --- Show victory screen ---
     victoryScreen.classList.remove('hidden');
     playSound(bonusBuffer);
 
-    // --- 4. CLEANUP ---
+    // --- Cleanup channels ---
     if (gameChannel) {
         supabase.removeChannel(gameChannel);
         gameChannel = null;
@@ -2809,25 +2840,40 @@ async function transitionToSoloMode() {
         await deleteCurrentLobby(lobbyId);
     }
 
-    // --- 5. HANDLE "CONTINUE" ---
-    document.getElementById('continue-solo-btn').onclick = async () => {
-        // Unlock for solo play
-        window.isTransitioning = false; 
-        window.pendingVictory = false; 
-        
-        victoryScreen.classList.add('hidden');
-        
-        if (preloadQueue.length === 0 && remainingQuestions.length === 0) {
-            await endGame();
-            return;
+    // --- Continue button visibility ---
+    if (continueBtn) {
+        if (winners.includes(userId)) {
+            continueBtn.classList.remove('hidden'); // Winners see the button
+        } else {
+            continueBtn.classList.add('hidden');    // Non-winners cannot continue
         }
 
-        if (timerDisplay) timerDisplay.style.visibility = 'visible';
-        
-        await preloadNextQuestions(3);
-        loadQuestion(); 
-    };
+        continueBtn.onclick = async () => {
+            // Only allow continuation if the player was a winner
+            if (!winners.includes(userId)) {
+                await endGame(); // Non-winners go straight to game over
+                return;
+            }
+
+            // Unlock for solo play
+            window.isTransitioning = false;
+            window.pendingVictory = false;
+            
+            victoryScreen.classList.add('hidden');
+
+            if (preloadQueue.length === 0 && remainingQuestions.length === 0) {
+                await endGame();
+                return;
+            }
+
+            if (timerDisplay) timerDisplay.style.visibility = 'visible';
+            
+            await preloadNextQuestions(3);
+            loadQuestion();
+        };
+    }
 }
+
 
 function showVictoryBanner(message) {
     // Reuse your notification logic if you have it
@@ -3221,6 +3267,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
