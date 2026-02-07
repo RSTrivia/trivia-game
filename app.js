@@ -2682,35 +2682,43 @@ function startLiveRound() {
     timeLeft = 15;
     if (timer) clearInterval(timer);
 
-    timer = setInterval(async () => {
-        timeLeft--;
-        updateTimerUI(timeLeft);
+    // Inside startLiveRound() ...
+timer = setInterval(async () => {
+    timeLeft--;
+    updateTimerUI(timeLeft);
 
-        if (timeLeft <= 0) {
-            clearInterval(timer);
-            roundOpen = false;
+    if (timeLeft <= 0) {
+        clearInterval(timer);
+        roundOpen = false;
 
-            if (isLiveMode) {
-                // If I haven't answered yet, I'm 'wrong'
-                if (!roundResults[userId]) {
-                    roundResults[userId] = 'wrong';
-                    gameChannel.send({
-                        type: 'broadcast',
-                        event: 'round-result',
-                        payload: { userId, result: 'wrong', roundId }
-                    });
-                }
-
-                // UI Update for the wait
-                if (questionText) questionText.innerHTML = "Time's up! Waiting for survivors...";
-                if (answersBox) answersBox.innerHTML = '<div class="loading-spinner"></div>';
-            } else {
-                // Solo/Daily modes
-                endGame();
+        if (isLiveMode) {
+            // --- CRITICAL ADDITION HERE ---
+            // 1. Only send if we haven't already answered this round
+            if (!roundResults[userId]) {
+                roundResults[userId] = 'wrong';
+                
+                console.log("Time up: Sending 'wrong' result to Referee.");
+                gameChannel.send({
+                    type: 'broadcast',
+                    event: 'round-result',
+                    payload: { 
+                        userId, 
+                        result: 'wrong', 
+                        roundId: roundId // Ensure this matches current round
+                    }
+                });
             }
-        }
-    }, 1000);
 
+            // 2. UI Update for the wait
+            if (questionText) questionText.innerHTML = "Time's up! Waiting for survivors...";
+            if (answersBox) answersBox.innerHTML = '<div class="loading-spinner"></div>';
+            // ------------------------------
+        } else {
+            // Solo/Daily modes
+            endGame();
+        }
+    }
+}, 1000);
     loadQuestion();
 }
 
@@ -3289,6 +3297,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
