@@ -2573,14 +2573,15 @@ gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
       if (!isHost(gameChannel)) return;
       // DEBUG: Log every incoming answer to see why it might be rejected
       console.log(`Referee received result from ${payload.userId}. Round in msg: ${payload.roundId}, Host Round: ${roundId}`);    
-          // Add a log to see if this is happening
-        if (payload.roundId !== roundId) {
-              console.warn(`Referee ignored msg from ${payload.userId}: Payload Round ${payload.roundId} vs Host Round ${roundId}`);
-              // If they are only off by 1, it's likely a sync issue; you might want to accept it anyway
-              // or just remove this check for testing.
-              return; 
-        }
+          
+          // CHANGE: If the player is AHEAD of the host, the host should catch up
+          // instead of ignoring the message.
+          if (payload.roundId > roundId) {
+              console.warn(`Referee catching up: Player is at ${payload.roundId}, Host was at ${roundId}`);
+              roundId = payload.roundId; 
+          }
       
+        // Accept the result
         roundResults[payload.userId] = payload.result;
     
         const state = gameChannel.presenceState();
@@ -2589,7 +2590,7 @@ gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
     
         console.log(`Referee: ${reportedIds.length} answers received. Expected: ${aliveIds.length}`);
     
-        // CHECK: Have all players currently in the room answered?
+        // If everyone present has reported, end it
         const allPresentHaveAnswered = aliveIds.every(id => reportedIds.includes(id));
     
         if (allPresentHaveAnswered) {
@@ -2748,19 +2749,22 @@ function endRoundAsReferee() {
     const dead = players.filter(([_, res]) => res === 'wrong').map(([uid]) => uid);
     let outcome = 'continue';
     let winners = [];
-
+  
     // 1. Someone was right, someone was wrong
-    if (correct.length > 0 && dead.length > 0) {
-        if (correct.length === 1) {
-            // ONLY ONE PERSON LEFT! They win.
+        if (correct.length > 0 && dead.length > 0) {
+            if (correct.length === 1) {
+                outcome = 'win';
+                winners = [correct[0]];
+            } else {
+                outcome = 'continue';
+                winners = [];
+            }
+        } 
+        // ADD THIS CASE: Only one person is left and they were right
+        else if (correct.length === 1 && dead.length === 0) {
             outcome = 'win';
             winners = [correct[0]];
-        } else {
-            // Multiple survivors, the game continues for them
-            outcome = 'continue';
-            winners = []; // No one has won the WHOLE match yet
         }
-    } 
     // 2. Everyone got it wrong
     else if (correct.length === 0 && dead.length > 0) {
         console.log("Referee: Everyone is wrong! Declaring a Tie.");
@@ -3331,6 +3335,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
