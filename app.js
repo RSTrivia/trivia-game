@@ -65,6 +65,8 @@ const dailyBtn = document.getElementById('dailyBtn');
 const weeklyBtn = document.getElementById('weeklyBtn');
 const liteBtn = document.getElementById('liteBtn');
 const lobbyBtn = document.getElementById('lobbyBtn');
+const leaveLobbyBtn = document.getElementById('leaveLobbyBtn');
+const soloBtn = document.getElementById('soloBtn');
 
 const dailyMessages = {
   0: [
@@ -3340,6 +3342,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
