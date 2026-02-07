@@ -2577,7 +2577,10 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
     gameChannel = supabase.channel(`game-${matchId}`, {
         config: { presence: { key: userId } }
     });
-    currentHostId = players[0] || userId; // fallback to self if empty
+   // Immediately after creating the game channel:
+    const state = gameChannel.presenceState();
+    const presentPlayers = Object.keys(state).sort();
+    currentHostId = presentPlayers[0] || userId; // fallback to self if no one else is present
     console.log("Initial host is", currentHostId);
   
 gameChannel.on('broadcast', { event: 'round-ended' }, async ({ payload }) => {
@@ -3334,6 +3337,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
