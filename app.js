@@ -2543,6 +2543,8 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
     hasDiedLocally = false;
     survivors = countFromLobby || 2; 
     updateSurvivorCountUI(survivors);
+    window.pendingVictory = false;
+    window.matchStarted = false;
 
     // Ensure we are using a unique ID for this specific match instance
     const matchId = currentLobby.id;
@@ -3153,6 +3155,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
