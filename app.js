@@ -2537,29 +2537,36 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
     gameChannel = supabase.channel(`game-${matchId}`, {
         config: { presence: { key: userId } }
     });
-    gameChannel.on(
-  'broadcast',
-  { event: 'round-ended' },
-  ({ payload }) => {
+    gameChannel.on('broadcast',{ event: 'round-ended' },({ payload }) => {
     const { correct, outcome } = payload;
 
-    if (outcome === 'continue') {
-      survivors = correct.length;
-      updateSurvivorCountUI(survivors);
-      startLiveRound();
-      return;
+    // 1. Am I dead?
+    const iDied = dead.includes(userId);
+
+    if (outcome === 'tie') {
+        showGameOver("No survivors! It's a tie."); 
+        return;
     }
 
-    // WIN or TIE
-    isLiveMode = false;
+    if (outcome === 'win') {
+        if (userId === winnerId) {
+            transitionToSoloMode(); // I am the champion
+        } else {
+            showGameOver("You were eliminated! A winner has been crowned.");
+        }
+        return;
+    }
 
-    if (outcome === 'win' && correct.includes(userId)) {
-      transitionToSoloMode();
+    // If game continues...
+    if (iDied) {
+        showGameOver("Wrong answer! Game Over.");
     } else {
-      setTimeout(endGame, 1500);
+        survivors = correct.length;
+        updateSurvivorCountUI(survivors);
+        // Small delay so users see the "Correct" feedback
+        setTimeout(startLiveRound, 1500); 
     }
-  }
-);
+  });
 
     gameChannel.on(
         'broadcast',
@@ -2703,22 +2710,32 @@ function startLiveRound() {
 
 
 function endRoundAsReferee() {
-  const correct = [];
-  const dead = [];
-
-  for (const [uid, res] of Object.entries(roundResults)) {
-    if (res === 'correct') correct.push(uid);
-    else dead.push(uid);
-  }
+  const players = Object.entries(roundResults);
+  const correct = players.filter(([_, res]) => res === 'correct').map(([uid]) => uid);
+  const dead = players.filter(([_, res]) => res === 'wrong').map(([uid]) => uid);
 
   let outcome = 'continue';
-  if (correct.length === 1) outcome = 'win';
-  if (correct.length === 0) outcome = 'tie';
+
+  // 1. Check if everyone is dead
+  if (correct.length === 0) {
+    outcome = 'tie'; // Everyone loses at once
+  } 
+  // 2. Check if only one person survived
+  else if (correct.length === 1) {
+    outcome = 'win';
+  }
+  // 3. Special case: Only 1 person was in the round and they got it right
+  // (Handled by 'win' if correct.length is 1)
 
   gameChannel.send({
     type: 'broadcast',
     event: 'round-ended',
-    payload: { correct, dead, outcome }
+    payload: { 
+      correct, 
+      dead, 
+      outcome, 
+      winnerId: correct.length === 1 ? correct[0] : null 
+    }
   });
 }
 
@@ -3222,3 +3239,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
