@@ -2582,27 +2582,23 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
 gameChannel.on('broadcast', { event: 'round-ended' }, async ({ payload }) => {
     const { correct, dead, outcome, winners } = payload;
 
-    // 1. Hard Lock: Stop the timer and ticking sounds for everyone
     clearInterval(timer);
     stopTickSound();
 
-    // 2. Identify the player's status
     const isWinner = winners.includes(userId);
     const isDead = dead.includes(userId);
 
-    // 3. CASE: VICTORY (Match is over)
-    if (outcome === 'win') {
+    // ✅ Adjusted: check for 'victory' instead of 'win'
+    if (outcome === 'victory') {
         window.pendingVictory = true;
-        isLiveMode = false; // Kill the multiplayer loop
+        isLiveMode = false;
 
         if (isWinner) {
             questionText.textContent = "🏆 Victory! You are the survivor!";
-            // Give them 1.5 seconds to feel the glory before switching modes
             setTimeout(async () => {
                 await transitionToSoloMode(winners);
             }, 1500);
         } else {
-            // They were in the 'dead' list and match ended
             questionText.textContent = "Eliminated! Match Over.";
             setTimeout(async () => {
                 await endGame();
@@ -2611,7 +2607,6 @@ gameChannel.on('broadcast', { event: 'round-ended' }, async ({ payload }) => {
         return;
     }
 
-    // 4. CASE: ELIMINATION (Match continues without you)
     if (isDead && outcome === 'continue') {
         questionText.textContent = "Wrong Answer! Eliminated.";
         isLiveMode = false;
@@ -2621,19 +2616,15 @@ gameChannel.on('broadcast', { event: 'round-ended' }, async ({ payload }) => {
         return;
     }
 
-    // 5. CASE: SURVIVED (Match continues)
     if (outcome === 'continue') {
         roundResults = {}; 
         questionText.textContent = "Correct! Next round starting...";
-        
-    // Only trigger the next round if the player is actually still in the game
+
         if (correct.includes(userId)) {
-             questionText.textContent = "Correct! Next round starting...";
              setTimeout(() => {
                  startLiveRound();
              }, 1500);
         } else {
-             // Fallback: If they aren't 'dead' but aren't 'correct' (e.g. joined late)
              questionText.textContent = "Waiting for next round...";
         }
     }
@@ -2762,9 +2753,8 @@ timer = setInterval(async () => {
         roundOpen = false;
 
         if (isLiveMode) {
-            // 1️⃣ Only send result if player never answered
-            if (!roundResults[userId]) {
-              roundResults[userId] = 'wrong';
+           // Send result even if player answered or not
+            if (!roundResults[userId]) roundResults[userId] = 'wrong';
               
             // 2️⃣ Send round-result broadcast immediately
               gameChannel.send({
@@ -2805,8 +2795,8 @@ function endRoundAsReferee() {
     const dead = [];
     const participants = Object.keys(roundResults);
 
-    // 1. Sort players
-    for (const [uid, res] of participants) {
+    for (const uid of participants) {
+        const res = roundResults[uid]; // ✅ fetch the actual result
         if (res === 'correct') correct.push(uid);
         else dead.push(uid);
     }
@@ -2814,22 +2804,19 @@ function endRoundAsReferee() {
     let outcome = 'continue';
     let winners = [];
 
-    // 2. WINNER: Only one person got it right
     if (correct.length === 1) {
         outcome = 'victory';
         winners = correct;
-    } 
-    // 3. TIE/SUDDEN DEATH: Everyone got it wrong or timed out
-    else if (correct.length === 0 && dead.length > 0) {
-        outcome = 'victory'; 
-        winners = dead; // In a tie, everyone who made it this far is a winner
-    }
-    // 4. CONTINUE: Multiple people got it right
-    else if (correct.length > 1) {
+    } else if (correct.length === 0 && dead.length > 0) {
+        outcome = 'victory';
+        winners = dead;
+    } else if (correct.length > 1) {
         outcome = 'continue';
     }
 
-    // 5. Broadcast the Verdict
+    console.log('Round referee:', { correct, dead, outcome, winners });
+
+    // Broadcast the verdict to all players
     gameChannel.send({
         type: 'broadcast',
         event: 'round-ended',
@@ -2838,10 +2825,11 @@ function endRoundAsReferee() {
             dead, 
             outcome, 
             winners,
-            nextQuestionId: (outcome === 'continue') ? getNextQuestionId() : null 
+            nextQuestionId: outcome === 'continue' ? getNextQuestionId() : null 
         }
     });
 }
+
 
 async function deleteCurrentLobby(lobbyId) {
     if (!lobbyId) return;
@@ -3346,6 +3334,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
