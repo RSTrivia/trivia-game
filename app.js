@@ -2700,18 +2700,7 @@ gameChannel.on('broadcast', { event: 'round-ended' }, async ({ payload }) => {
               }
           }
         }
-    
-     gameChannel.on('broadcast', { event: 'start-round' }, ({ payload }) => {
-    const delay = Math.max(0, payload.startTime - Date.now());
-    setTimeout(() => {
-        if (isLiveMode) {
-            if (questionText) questionText.innerHTML = "";
-            startLiveRound(); // now all clients start together
-        }
-    }, delay);
-});
-  
-    // CRITICAL: You must track presence for the 'sync' event to count you
+  // CRITICAL: You must track presence for the 'sync' event to count you
     await gameChannel.subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
             console.log("Game channel subscribed. Tracking user...");
@@ -2729,6 +2718,17 @@ gameChannel.on('broadcast', { event: 'round-ended' }, async ({ payload }) => {
           }
         }
     });
+      
+     gameChannel.on('broadcast', { event: 'start-round' }, ({ payload }) => {
+    const delay = Math.max(0, payload.startTime - Date.now());
+    setTimeout(() => {
+        if (isLiveMode) {
+            if (questionText) questionText.innerHTML = "";
+            startLiveRound(); // now all clients start together
+        }
+    }, delay);
+});
+   
 }
 
 function updateSurvivorCountUI(count) {
@@ -3349,6 +3349,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
