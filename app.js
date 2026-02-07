@@ -2585,7 +2585,6 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
               } else if (survivors === 0) {
                   checkVictoryCondition();
               }
-          });
       });
 
     // CRITICAL: You must track presence for the 'sync' event to count you
@@ -3132,6 +3131,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
