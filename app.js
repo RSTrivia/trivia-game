@@ -322,6 +322,7 @@ async function init() {
     // 3. Game Buttons
     if (startBtn) {
         startBtn.onclick = async () => {
+            isLiveMode = false;
             isDailyMode = false;
             isWeeklyMode = false;
             isLiteMode = false;
@@ -343,6 +344,7 @@ lobbyBtn.onclick = async () => {
   
     if (liteBtn) {
     liteBtn.onclick = async () => {
+        isLiveMode = false; // Add this!
         isDailyMode = false;
         isWeeklyMode = false;
         isLiteMode = true; // Set the Lite mode flag
@@ -387,7 +389,8 @@ lobbyBtn.onclick = async () => {
         // 5. Setup Audio & Mode
         if (audioCtx.state === 'suspended') await audioCtx.resume();
         loadSounds();
-        
+      
+        isLiveMode = false;
         isDailyMode = true;
         isWeeklyMode = false; 
         preloadQueue = []; // Clear old stuff
@@ -1002,7 +1005,8 @@ async function loadQuestion(broadcastedId = null, startTime = null) {
         questionImage.style.display = 'none';
         questionImage.src = '';
     }
-  
+  // --- ADD THIS LINE HERE ---
+  roundOpen = true;
   startTimer();   
 };
    
@@ -1088,6 +1092,8 @@ async function handleTimeout() {
 async function checkAnswer(choiceId, btn) {
     if (!roundOpen) return;
     stopTickSound(); 
+    // IMMEDIATELY set to false to prevent double-clicking the same question
+    roundOpen = false;
     if (timeLeft <= 0) return;
 
     // Disable all buttons immediately
@@ -3073,6 +3079,8 @@ async function startWeeklyChallenge() {
     ).map(q => q.id);
 
     // Setup Mode & Data
+    isLiteMode = false;
+    isLiveMode = false;
     isDailyMode = false;
     isWeeklyMode = true;
     preloadQueue = [];
@@ -3139,6 +3147,8 @@ async function startDailyChallenge() {
     const dailyIds = shuffledList.slice(dayInCycle * questionsPerDay, (dayInCycle * questionsPerDay) + questionsPerDay).map(q => q.id);
 
     // 4. PREPARE THE DATA (Background)
+    isLiteMode = false;
+    isLiveMode = false;
     isDailyMode = true;
     isWeeklyMode = false;
     preloadQueue = []; 
@@ -3258,6 +3268,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
