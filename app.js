@@ -2435,8 +2435,8 @@ function setupLobbyRealtime(lobby) {
         }
     });
 
-   lobbyChannel
-    .on('presence', { event: 'sync' }, () => {
+   lobbyChannel.on('presence', { event: 'sync' }, () => {
+    if (window.finalStartSent || window.matchStarted || window.isStarting) return;
     const state = lobbyChannel.presenceState();
     const presenceEntries = Object.entries(state); // 👈 IMPORTANT
     
@@ -2740,7 +2740,7 @@ gameChannel.on('broadcast', { event: 'round-ended' }, async ({ payload }) => {
                 if (isHost(gameChannel)) {
                     console.log("Host: Triggering first round...");
                     // If you have a function to start the first round, call it here
-                    // e.g., sendStartRoundSignal(); 
+                    sendStartRoundSignal();
                 }
             }, 1000);
           // Host assignment after tracking
@@ -2769,64 +2769,68 @@ function updateSurvivorCountUI(count) {
 }
 
 function startLiveRound() {
-    if (timer) {
-      clearInterval(timer);
-      timer = null;
-    }
+    // 1. Clear any old timers
+    if (timer) clearInterval(timer);
+    
     roundId++;
     roundOpen = true;
-    roundResults = {};
-
-    // Reset the timer
+    roundResults = {}; 
     timeLeft = 15;
-    if (timer) clearInterval(timer);
 
-timer = setInterval(async () => {
-    if (!roundOpen) return;
+    // 2. Start the countdown
+    timer = setInterval(async () => {
+        if (!roundOpen) return;
 
-    timeLeft--;
-    updateTimerUI(timeLeft);
+        timeLeft--;
+        updateTimerUI(timeLeft);
 
-    if (timeLeft <= 0) {
-        clearInterval(timer);
-        roundOpen = false;
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            roundOpen = false;
 
-        if (isLiveMode) {
-           // Send result even if player answered or not
-            if (!roundResults[userId]) roundResults[userId] = 'wrong';
-              
-            // 2️⃣ Send round-result broadcast immediately
-              gameChannel.send({
-                type: 'broadcast',
-                event: 'round-result',
-                payload: { userId, roundId, result: 'wrong' }
-              });
-            };
-
-            // 3️⃣ Host finalizes
-            if (userId === currentHostId) {
-                const state = gameChannel.presenceState();
-                const expected = Object.keys(state).length;
-                const reported = Object.keys(roundResults).length;
-                
-                // Wait until ALL connected players have reported
-                if (reported >= expected) {
-                  endRoundAsReferee();
+            if (isLiveMode) {
+                // Auto-submit 'wrong' if no answer was chosen
+                if (!roundResults[userId]) {
+                    roundResults[userId] = 'wrong';
+                    gameChannel.send({
+                        type: 'broadcast',
+                        event: 'round-result',
+                        payload: { userId, roundId, result: 'wrong' }
+                    });
                 }
-            }
 
-            // 4️⃣ Non-host: show waiting
-            if (!isHost(gameChannel)) {
-                questionText.textContent = "Waiting for other players...";
-        } else {
-            handleTimeout();
+                if (isHost(gameChannel)) {
+                    // Check if we can end the round immediately
+                    const state = gameChannel.presenceState();
+                    const expected = Object.keys(state).length;
+                    const reported = Object.keys(roundResults).length;
+                    if (reported >= expected) endRoundAsReferee();
+                } else {
+                    questionText.textContent = "Waiting for other players...";
+                }
+            } else {
+                handleTimeout(); // Solo mode fallback
+            }
         }
-    }
-}, 1000);
-    // Load the current question
+    }, 1000);
+
+    // 3. Display the question
     loadQuestion();
 }
 
+function sendStartRoundSignal() {
+    if (!isHost(gameChannel)) return;
+
+    console.log("Host: Sending signal to start round", roundId + 1);
+    
+    gameChannel.send({
+        type: 'broadcast',
+        event: 'start-round',
+        payload: { 
+            startTime: Date.now() + 500 // 500ms buffer so everyone starts together
+        }
+    });
+}
 
 function endRoundAsReferee() {
     const correct = [];
@@ -3094,15 +3098,16 @@ async function triggerGamePrepare(lobbyId) {
 
 // Phase 2: Host sends the final "GO"
 function sendFinalStartSignal(count) {
-    if (window.finalStartSent) return;
+    if (window.finalStartSent || window.matchStarted) return; // 👈 Add matchStarted check
     window.finalStartSent = true;
 
+    console.log("Broadcasting final start signal...");
     lobbyChannel.send({
         type: 'broadcast',
         event: 'start-game',
         payload: { 
             survivorCount: count,
-            startTime: Date.now() + 2000 // Start in exactly 2 seconds
+            startTime: Date.now() + 2000 
         }
     });
 }
@@ -3374,6 +3379,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
