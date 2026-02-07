@@ -2718,14 +2718,22 @@ timer = setInterval(async () => {
 }
 
 function endRoundAsReferee() {
-    // If for some reason the host's own result isn't in the list, 
-    // it can cause a hang. Let's ensure the list isn't empty.
-    if (Object.keys(roundResults).length === 0) return;
+   
+    // 1. Get ALL current players from Presence
+    const state = gameChannel.presenceState();
+    const allPlayerIds = Object.keys(state);
+
+    // 2. FILL THE GAPS: Anyone who didn't report is 'wrong' (timed out)
+    allPlayerIds.forEach(uid => {
+        if (!roundResults[uid]) {
+            roundResults[uid] = 'wrong'; 
+        }
+    });
   
+    // 3. Now we can proceed with the logic knowing roundResults is NOT empty
     const players = Object.entries(roundResults);
     const correct = players.filter(([_, res]) => res === 'correct').map(([uid]) => uid);
     const dead = players.filter(([_, res]) => res === 'wrong').map(([uid]) => uid);
-
     let outcome = 'continue';
     let winners = [];
 
@@ -2773,7 +2781,7 @@ function endRoundAsReferee() {
         outcome = 'tie';
         winners = correct;
     }
-    // BROADCAST THE FINAL DECISION
+    // 4. BROADCAST THE FINAL DECISION (This now ALWAYS fires)
     gameChannel.send({
         type: 'broadcast',
         event: 'round-ended',
@@ -2782,7 +2790,7 @@ function endRoundAsReferee() {
             dead, 
             outcome, 
             winnerIds: winners,
-            newSurvivorCount: correct.length // Explicitly tell everyone the new count
+            newSurvivorCount: correct.length
         }
     });
     
@@ -3292,6 +3300,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
