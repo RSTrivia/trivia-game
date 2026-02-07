@@ -2781,7 +2781,7 @@ function startLiveRound() {
         if (!roundOpen) return;
 
         timeLeft--;
-        updateTimerUI(timeLeft);
+        timeDisplay.textContent = timeLeft;
 
         if (timeLeft <= 0) {
             clearInterval(timer);
@@ -3378,6 +3378,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
