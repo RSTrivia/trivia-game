@@ -931,6 +931,11 @@ async function preloadSpecificQuestions(idsToFetch) {
 }
 
 async function loadQuestion(broadcastedId = null, startTime = null) {
+  // Prevent loading if we are dead or waiting for victory screen
+    if (hasDiedLocally || window.pendingVictory) {
+        console.log("loadQuestion blocked: Player is dead or match is ending.");
+        return;
+    }
    // 1. End Game Checks
     if (isWeeklyMode && weeklyQuestionCount >= WEEKLY_LIMIT) { await endGame(); return; }
     if (isLiteMode && score >= LITE_LIMIT) { await endGame(); return; }
@@ -940,7 +945,6 @@ async function loadQuestion(broadcastedId = null, startTime = null) {
         await endGame();
         return;
     }
-
   
     // A. IMMEDIATE CLEANUP
   const allBtns = document.querySelectorAll('.answer-btn');
@@ -2363,7 +2367,7 @@ async function joinMatchmaking() {
   window.pendingVictory = false; // Add this reset
   window.lobbyDeleted = false; // Reset the deletion flag for the new session
   window.matchStarted = false;  // Reset!
-
+  hasDiedLocally = false;
 
   isLiveMode = false; // Ensure this is false until the match actually starts
   preloadQueue = [];  // Clear questions from previous rounds
@@ -2715,6 +2719,9 @@ function startLiveRound() {
         roundOpen = false;
 
         if (isLiveMode) {
+            // 1. Mark yourself as locally dead so you don't start new rounds
+            // but keep isLiveMode true just enough to receive the broadcast
+            hasDiedLocally = true;
             // --- CRITICAL ADDITION HERE ---
             // 1. Only send if we haven't already answered this round
             if (!roundResults[userId]) {
@@ -2736,6 +2743,14 @@ function startLiveRound() {
             if (questionText) questionText.innerHTML = "Time's up! Waiting for survivors...";
             if (answersBox) answersBox.innerHTML = '<div class="loading-spinner"></div>';
             // ------------------------------
+            // 3. IMPORTANT: If the referee hasn't responded in 5 seconds, force endGame
+            // This handles cases where the host disconnected
+            setTimeout(() => {
+                if (!window.pendingVictory && hasDiedLocally) {
+                    console.log("No response from Referee. Closing game.");
+                    endGame();
+                }
+            }, 5000);
         } else {
             // Solo/Daily modes
             endGame();
@@ -3342,6 +3357,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
