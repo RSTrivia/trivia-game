@@ -918,17 +918,11 @@ async function preloadSpecificQuestions(idsToFetch) {
 }
 
 async function loadQuestion(broadcastedId = null, startTime = null) {
-    // --- 1. LIVE MATCH STATE CHECK ---
-    if (isLiveMode) {
-        // If survivors is 1 or 0, the match is over.
-        if (survivors <= 1 || window.pendingVictory) {
-            console.log(`Match termination detected (Survivors: ${survivors}). Redirecting...`);
-            
-            // We DON'T set isLiveMode = false here manually. 
-            // We let transitionToSoloMode handle the state change so it's centralized.
-            transitionToSoloMode(); 
-            return; // Stop loadQuestion from doing ANYTHING else.
-        }
+    // LOCKDOWN: If victory is pending, do not wipe the UI or load a new question
+    if (isLiveMode && (survivors <= 1 || window.pendingVictory)) {
+        console.log("Blocking loadQuestion: Match is already over.");
+        transitionToSoloMode();
+        return; 
     }
    // 1. End Game Checks
     if (isWeeklyMode && weeklyQuestionCount >= WEEKLY_LIMIT) { await endGame(); return; }
@@ -1091,7 +1085,7 @@ function startTimer() {
                             }, 1500);
                         }
                     }
-                }, 5000);
+                }, 3000);
             } else {
                 // Not in Live Mode (Solo/Daily/Weekly)
                 handleTimeout(); 
@@ -2570,27 +2564,28 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
             }
         })
       
-      .on('broadcast', { event: 'player-died' }, () => {
-          survivors--;
-          updateSurvivorCountUI(survivors);
+        .on('broadcast', { event: 'player-died' }, () => {
+              survivors--;
+              updateSurvivorCountUI(survivors);
+              
+              if (survivors === 1 && !hasDiedLocally) {
+                  window.pendingVictory = true;
+                  showVictoryBanner("Last Survivor! Finish the round!");
+                  
+                  // KILL THE TIMER: This prevents startTimer from triggering a new round
+                  clearInterval(timer); 
+                  stopTickSound();
           
-          // Check if we just became the winner
-          if (survivors === 1 && !hasDiedLocally) {
-              window.pendingVictory = true;
-              showVictoryBanner("Last Survivor! Finish the round!");
-              
-              // Check if I already answered this round
-              const alreadyAnswered = document.querySelector('[data-answered-correctly="true"]');
-              
-              if (alreadyAnswered) {
-                  console.log("Opponent died and I already answered. Transitioning now.");
-                  // Kill any pending loadQuestion timeouts
-                  clearInterval(timer);
-                  setTimeout(() => transitionToSoloMode(), 1000);
+                  const alreadyAnswered = document.querySelector('[data-answered-correctly="true"]');
+                  if (alreadyAnswered) {
+                      // Force isLiveMode to false so no other logic can trigger a round
+                      isLiveMode = false; 
+                      setTimeout(() => transitionToSoloMode(), 1000);
+                  }
+              } else if (survivors === 0) {
+                  checkVictoryCondition();
               }
-          } else if (survivors === 0) {
-              checkVictoryCondition();
-          }
+          });
       });
 
     // CRITICAL: You must track presence for the 'sync' event to count you
@@ -3137,6 +3132,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
