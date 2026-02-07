@@ -2596,18 +2596,10 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
           console.log(`Presence Sync: ${joinedCount} connected.`);
                 // ----- HOST FAILOVER -----
           const activePlayers = Object.keys(state).sort();
-          if (!activePlayers.includes(currentHostId)) {
-                // Host has left! Pick a new host
-                currentHostId = activePlayers[0]; // pick first in list
-                console.log("Host left! New host is", currentHostId);
-      
-                // Notify everyone (optional)
-                gameChannel.send({
-                    type: 'broadcast',
-                    event: 'host-changed',
-                    payload: { hostId: currentHostId }
-                });
-            }
+          if (!currentHostId || !activePlayers.includes(currentHostId)) {
+              currentHostId = activePlayers[0] || null;
+              console.log("Host assigned:", currentHostId);
+          }
 
           // --- NEW GUARD ---
           // Only trigger mid-game victory if the match has TRULY started
@@ -3282,6 +3274,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
