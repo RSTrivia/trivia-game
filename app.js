@@ -2577,11 +2577,6 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
     gameChannel = supabase.channel(`game-${matchId}`, {
         config: { presence: { key: userId } }
     });
-   // Immediately after creating the game channel:
-    const state = gameChannel.presenceState();
-    const presentPlayers = Object.keys(state).sort();
-    currentHostId = presentPlayers[0] || userId; // fallback to self if no one else is present
-    console.log("Initial host is", currentHostId);
   
 gameChannel.on('broadcast', { event: 'round-ended' }, async ({ payload }) => {
     const { correct, dead, outcome, winners } = payload;
@@ -2651,15 +2646,11 @@ gameChannel.on('broadcast', { event: 'round-ended' }, async ({ payload }) => {
     gameChannel.on('presence', { event: 'sync' }, () => {
           const state = gameChannel.presenceState();
           const joinedCount = Object.keys(state).length;
-          
+          const activePlayers = Object.keys(state).sort();
+      
           console.log(`Presence Sync: ${joinedCount} connected.`);
                 // ----- HOST FAILOVER -----
-          const activePlayers = Object.keys(state).sort();
-            if (!currentHostId || !Object.keys(gameChannel.presenceState()).includes(currentHostId)) {
-                currentHostId = Object.keys(gameChannel.presenceState()).sort()[0] || null;
-                console.log("Host assigned:", currentHostId);
-            }
-
+          
           // --- NEW GUARD ---
           // Only trigger mid-game victory if the match has TRULY started
           // window.matchStarted ensures we don't end the game while people are still connecting
@@ -2695,18 +2686,29 @@ gameChannel.on('broadcast', { event: 'round-ended' }, async ({ payload }) => {
         }
       
         // --- START LOGIC --- <--- THIS IS THE SECTION
-          if (joinedCount >= survivors && !window.matchStarted) {
-              window.matchStarted = true; // THIS IS THE KEY
-              const delay = Math.max(0, syncedStartTime - Date.now());
-              setTimeout(() => {
-                  if (isLiveMode) {
-                      if (questionText) questionText.innerHTML = "";
-                      startLiveRound(); 
-                  }
-              }, delay);
+         if (joinedCount >= survivors && !window.matchStarted) {
+              if (isHost(gameChannel)) {
+                  window.matchStarted = true;
+                  console.log("Host broadcasting start-round signal...");
+          
+                  gameChannel.send({
+                      type: 'broadcast',
+                      event: 'start-round',
+                      payload: { startTime: Date.now() + 1000 } // 1 second delay for sync
+                  });
+              }
           }
       })
-      
+     gameChannel.on('broadcast', { event: 'start-round' }, ({ payload }) => {
+    const delay = Math.max(0, payload.startTime - Date.now());
+    setTimeout(() => {
+        if (isLiveMode) {
+            if (questionText) questionText.innerHTML = "";
+            startLiveRound(); // now all clients start together
+        }
+    }, delay);
+});
+  
     // CRITICAL: You must track presence for the 'sync' event to count you
     await gameChannel.subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
@@ -2715,6 +2717,14 @@ gameChannel.on('broadcast', { event: 'round-ended' }, async ({ payload }) => {
                 user_id: userId,
                 online_at: new Date().toISOString()
             });
+
+          // Host assignment after tracking
+          const state = gameChannel.presenceState();
+          const presentPlayers = Object.keys(state).sort();
+          if (!currentHostId) {
+              currentHostId = presentPlayers[0] || userId;
+              console.log("Initial host is", currentHostId);
+          }
         }
     });
 }
@@ -3337,6 +3347,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
