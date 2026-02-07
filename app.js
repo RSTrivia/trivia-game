@@ -245,7 +245,7 @@ async function syncDailyButton() {
 
     if (!played) {
         dailyBtn.classList.add('is-active');
-        dailyBtn.classList.remove('disabled');
+        dailyBtn.classList.remove('is-disabled');
         dailyBtn.style.pointerEvents = 'auto'; // UNLOCK physically
         dailyBtn.style.opacity = '1';          // Ensure it looks clickable
     } else {
@@ -698,7 +698,7 @@ async function fetchDailyStatus(userId) {
 
 function lockDailyButton() {
     if (!dailyBtn) return;
-    //dailyBtn.classList.add('disabled');
+    dailyBtn.classList.add('is-disabled');
     dailyBtn.classList.remove('is-active');
     dailyBtn.style.opacity = '0.5';
     dailyBtn.style.pointerEvents = 'none'; // Makes it ignore all clicks/touches
@@ -3297,6 +3297,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
