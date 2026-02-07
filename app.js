@@ -2700,6 +2700,7 @@ gameChannel.on('broadcast', { event: 'round-ended' }, async ({ payload }) => {
               }
           }
         }
+      });
   // CRITICAL: You must track presence for the 'sync' event to count you
     await gameChannel.subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
@@ -3349,6 +3350,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
