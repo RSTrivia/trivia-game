@@ -2521,7 +2521,7 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
     gameChannel = supabase.channel(`game-${matchId}`, {
         config: { presence: { key: userId } }
     });
-gameChannel.on('broadcast', { event: 'round-ended' }gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
+gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
     const { outcome, winnerIds, dead, correct } = payload;
     const iAmAWinner = winnerIds.includes(userId);
     const iDied = dead.includes(userId);
@@ -3232,6 +3232,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
