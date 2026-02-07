@@ -1195,27 +1195,30 @@ async function checkAnswer(choiceId, btn) {
     }
   }
   if (isLiveMode) {
-  roundOpen = false;
-    
-  // Immediately end game for this player
-  await endGame(); // shows the endgame screen
-    
- try {   
-  gameChannel.send({
-    type: 'broadcast',
-    event: 'round-result',
-    payload: {
-      userId,
-      roundId,
-      result: isCorrect ? 'correct' : 'wrong'
-    }
-  });
-  } catch (err) {
-    console.error("Failed to broadcast round result:", err);
-  }
+    roundOpen = false;
 
-  questionText.textContent = "Waiting for other players...";
-  return; // ⛔ stop here in live mode
+    // Mark answer
+    roundResults[userId] = isCorrect ? 'correct' : 'wrong';
+
+    // Broadcast result to host/referee
+    gameChannel.send({
+        type: 'broadcast',
+        event: 'round-result',
+        payload: { userId, roundId, result: roundResults[userId] }
+    });
+
+    // Only end the match for this player if they lost OR finished the last question
+    if (roundResults[userId] === 'wrong') {
+        window.pendingVictory = true;
+        await transitionToSoloMode(); // Shows victory/loss screen safely
+    } else if (remainingQuestions.length === 0 && preloadQueue.length === 0) {
+        // Player finished the deck
+        window.pendingVictory = true;
+        await transitionToSoloMode(); // End-game for player completion
+    }
+
+    questionText.textContent = "Waiting for other players...";
+    return; // stop here in live mode
 }
 }
 
@@ -2648,24 +2651,25 @@ function startLiveRound() {
   roundResults = {};
 
   // Reset the timer
-  timeLeft = 15; // Or whatever your round length is
+  timeLeft = 15;
   if (timer) clearInterval(timer);
+
   timer = setInterval(async () => {
     timeLeft--;
     updateTimerUI(timeLeft);
 
     if (timeLeft <= 0) {
-      clearInterval(timer); // stop the timer
+      clearInterval(timer);
       roundOpen = false;
 
       if (isLiveMode) {
-        // If this player never answered → mark as wrong
+        // Only mark as wrong if player didn't answer
         if (!roundResults[userId]) {
           roundResults[userId] = 'wrong';
-          await endGame(); // show endgame screen
+          console.log("Time's up! Player didn't answer.");
         }
 
-        // Host marks all missing players and triggers round result
+        // Host marks all missing players
         if (isHost(gameChannel)) {
           const state = gameChannel.presenceState();
           const allPlayers = Object.keys(state);
@@ -2673,6 +2677,21 @@ function startLiveRound() {
             if (!roundResults[uid]) roundResults[uid] = 'wrong';
           }
           endRoundAsReferee(); // broadcast round-ended
+        }
+
+        // Check if the player should go to endGame
+        // Only if they lost or finished all questions
+        const playerResult = roundResults[userId];
+        if (
+          playerResult === 'wrong' || 
+          (remainingQuestions.length === 0 && preloadQueue.length === 0)
+        ) {
+          await endGame();
+        }
+      } else {
+        // Non-live mode: always check if pool finished
+        if (remainingQuestions.length === 0 && preloadQueue.length === 0) {
+          await endGame();
         }
       }
     }
@@ -3202,6 +3221,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
