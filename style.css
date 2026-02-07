@@ -1601,7 +1601,7 @@ input.input-field:-webkit-autofill:active {
 
 
 /* Weekly button */
-#weeklyBtn.weekly-btn {
+#weeklyBtn.btn {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1618,7 +1618,7 @@ input.input-field:-webkit-autofill:active {
 }
 
 /* 1. The ACTIVE state (Only works if the class is present) */
-#weeklyBtn.weekly-btn.is-active {
+#weeklyBtn.btn.is-active {
     background: rgba(0, 0, 0, 0.6) !important;
     border: 2px solid #d4af37 !important;
     color: #d4af37 !important;
@@ -1627,7 +1627,7 @@ input.input-field:-webkit-autofill:active {
 }
 
 /* Make sure the disabled state is just as specific as the active one */
-#weeklyBtn.weekly-btn.is-disabled {
+#weeklyBtn.btn.is-disabled {
     background: rgba(0, 0, 0, 0.4) !important; 
     border: 2px solid #444 !important;
     color: #666 !important;
@@ -1637,7 +1637,7 @@ input.input-field:-webkit-autofill:active {
 }
 
 /* 3. The HOVER state (The highlight you were missing) */
-#weeklyBtn.weekly-btn.is-active:hover {
+#weeklyBtn.btn.is-active:hover {
     background: rgba(0, 0, 0, 0.85) !important;
     border-color: #ffea8a !important;
     color: #ffea8a !important;
@@ -1654,7 +1654,7 @@ input.input-field:-webkit-autofill:active {
 
 
 /* Lobby button */
-#lobbyBtn.lobby-btn {
+#lobbyBtn.btn {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1670,7 +1670,7 @@ input.input-field:-webkit-autofill:active {
     cursor: pointer;
 }
 
-#lobbyBtn.lobby-btn.is-active {
+#lobbyBtn.btn {
     background: rgba(0, 0, 0, 0.6) !important;
     border: 2px solid #d4af37 !important;
     color: #d4af37 !important;
@@ -1679,7 +1679,7 @@ input.input-field:-webkit-autofill:active {
 }
 
 /* Make sure the disabled state is just as specific as the active one */
-#lobbyBtn.lobby-btn.is-disabled {
+#lobbyBtn.btn.is-disabled {
     background: rgba(0, 0, 0, 0.4) !important; 
     border: 2px solid #444 !important;
     color: #666 !important;
@@ -1689,7 +1689,7 @@ input.input-field:-webkit-autofill:active {
 }
 
 /* 3. The HOVER state (The highlight you were missing) */
-#lobbyBtn.lobby-btn.is-active:hover {
+#lobbyBtn.btn.is-active:hover {
     background: rgba(0, 0, 0, 0.85) !important;
     border-color: #ffea8a !important;
     color: #ffea8a !important;
@@ -1768,41 +1768,6 @@ input.input-field:-webkit-autofill:active {
 }
 
 
-/* ====== MOBILE NO-FLICKER PRECISION FIX ====== */
-@media (pointer: coarse) {
-  /* 1. RESET ONLY THE STICKY BUTTONS */
-  /* This prevents Weekly, Lobby, and Daily from staying gold after a tap */
-  #dailyBtn.is-active:hover,
-  #weeklyBtn.weekly-btn.is-active:hover,
-  #lobbyBtn.lobby-btn.is-active:hover {
-    background: rgba(0, 0, 0, 0.6) !important;
-    border-color: #d4af37 !important;
-    color: #d4af37 !important;
-  }
-
-  /* 2. THE PRESS (Finger Down) */
-  /* Only these IDs will flash bright gold while being pressed */
-  #dailyBtn.is-active:active,
-  #weeklyBtn.weekly-btn.is-active:active,
-  #lobbyBtn.lobby-btn.is-active:active,
-  #dailyBtn.tapped,
-  #weeklyBtn.tapped,
-  #lobbyBtn.tapped {
-    background-color: #000000 !important;
-    border-color: #ffea8a !important;
-    color: #ffea8a !important;
-    transition: 0s !important;
-    transform: scale(0.97) !important;
-  }
-
-  /* 3. Ensure the release transition is smooth for these specific buttons */
-  #dailyBtn, #weeklyBtn, #lobbyBtn {
-    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.1s ease !important;
-  }
-
-  /* 4. Global system cleanup (keeps icons in place) */
-  * { -webkit-tap-highlight-color: transparent !important; }
-}
 
 
 
