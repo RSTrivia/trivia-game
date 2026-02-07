@@ -2435,30 +2435,42 @@ function setupLobbyRealtime(lobby) {
         }
     });
 
-    lobbyChannel
+   lobbyChannel
     .on('presence', { event: 'sync' }, () => {
-        const state = lobbyChannel.presenceState();
-        const players = Object.values(state).flat();
-        const count = players.length;
-        
-        updateLobbyUI(count, lobby.starts_at);
-
-        // --- NEW READY CHECK LOGIC ---
-        const readyCount = players.filter(p => p.status === 'ready_to_start').length;
-        console.log(`Sync: ${readyCount}/${count} players ready.`);
-        
-        if (count >= 2 && isHost(lobbyChannel)) {
-            // 1. If we have enough players and NO ONE is preparing yet
-            if (readyCount === 0 && !window.isStarting) {
-                window.isStarting = true; // Prevents spamming prepare
-                triggerGamePrepare(lobby.id); 
-            } 
-            // 2. If EVERYONE has preloaded their questions, FIRE!
-            else if (readyCount === count && count >= 2 && !window.finalStartSent) {
-                sendFinalStartSignal(count);
-            }
+      const state = lobbyChannel.presenceState();
+      const players = Object.values(state).flat();
+      const count = players.length;
+  
+      updateLobbyUI(count, lobby.starts_at);
+  
+      // Count how many players are ready
+      const readyCount = players.filter(
+        p => p.status === 'ready_to_start'
+      ).length;
+  
+      console.log(`Sync: ${readyCount}/${count} players ready`);
+  
+      // 🔹 STEP 1: Host triggers PREPARE once (seed)
+      if (count >= 2 && isHost(lobbyChannel)) {
+        if (!window.isStarting) {
+          window.isStarting = true;
+          console.log("Host: triggering prepare-game");
+          triggerGamePrepare(lobby.id);
         }
+      }
+  
+      // 🔹 STEP 2: Host starts game ONLY when everyone is ready
+      if (
+        readyCount === count &&
+        count >= 2 &&
+        isHost(lobbyChannel) &&
+        !window.finalStartSent
+      ) {
+        console.log("Host: all players ready → starting game");
+        sendFinalStartSignal(count);
+      }
     })
+
     .on('broadcast', { event: 'chat' }, ({ payload }) => {
         appendMessage(payload.username, payload.message);
     })
@@ -2554,9 +2566,6 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
     gameChannel = supabase.channel(`game-${matchId}`, {
         config: { presence: { key: userId } }
     });
-    const state = gameChannel.presenceState();
-    const allPlayers = Object.keys(state).sort();
-    currentHostId = allPlayers[0]; // assign first player as initial host
     console.log("Initial host is", currentHostId);
   
 gameChannel.on('broadcast', { event: 'round-ended' }, async ({ payload }) => {
@@ -2633,18 +2642,17 @@ gameChannel.on('broadcast', { event: 'round-ended' }, async ({ payload }) => {
         }
     });
 
-    gameChannel
-        .on('presence', { event: 'sync' }, () => {
+    gameChannel.on('presence', { event: 'sync' }, () => {
           const state = gameChannel.presenceState();
           const joinedCount = Object.keys(state).length;
           
           console.log(`Presence Sync: ${joinedCount} connected.`);
                 // ----- HOST FAILOVER -----
           const activePlayers = Object.keys(state).sort();
-          if (!currentHostId || !activePlayers.includes(currentHostId)) {
-              currentHostId = activePlayers[0] || null;
-              console.log("Host assigned:", currentHostId);
-          }
+            if (!currentHostId || !activePlayers.includes(currentHostId)) {
+                currentHostId = activePlayers[0] || null;
+                console.log("Host assigned:", currentHostId);
+            }
 
           // --- NEW GUARD ---
           // Only trigger mid-game victory if the match has TRULY started
@@ -2720,6 +2728,10 @@ function updateSurvivorCountUI(count) {
 }
 
 function startLiveRound() {
+    if (timer) {
+      clearInterval(timer);
+      timer = null;
+    }
     roundId++;
     roundOpen = true;
     roundResults = {};
@@ -2739,28 +2751,28 @@ timer = setInterval(async () => {
         roundOpen = false;
 
         if (isLiveMode) {
-            // 1️⃣ Mark self result
-            if (!roundResults[userId]) roundResults[userId] = 'wrong';
-
+            // 1️⃣ Only send result if player never answered
+            if (!roundResults[userId]) {
+              roundResults[userId] = 'wrong';
+              
             // 2️⃣ Send round-result broadcast immediately
-            gameChannel.send({
+              gameChannel.send({
                 type: 'broadcast',
                 event: 'round-result',
                 payload: { userId, roundId, result: 'wrong' }
-            });
+              });
+            };
 
             // 3️⃣ Host finalizes
             if (userId === currentHostId) {
                 const state = gameChannel.presenceState();
-                const allPlayers = Object.keys(state);
-
-                // Mark anyone missing as wrong
-                for (const uid of allPlayers) {
-                    if (!roundResults[uid]) roundResults[uid] = 'wrong';
+                const expected = Object.keys(state).length;
+                const reported = Object.keys(roundResults).length;
+                
+                // Wait until ALL connected players have reported
+                if (reported >= expected) {
+                  endRoundAsReferee();
                 }
-
-                // Use a tiny delay to let all non-hosts send their result
-                setTimeout(() => endRoundAsReferee(), 50);
             }
 
             // 4️⃣ Non-host: show waiting
@@ -3334,6 +3346,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
