@@ -921,6 +921,18 @@ async function preloadSpecificQuestions(idsToFetch) {
 }
 
 async function loadQuestion(broadcastedId = null, startTime = null) {
+  // IF we are in a victory state or someone just won, ABORT.
+    if (window.pendingVictory || !isLiveMode && window.matchStarted) {
+        console.log("Blocking loadQuestion: Match has concluded.");
+        return;
+    }
+    
+    // Check if we actually have enough players to continue a LIVE match
+    if (isLiveMode && survivors <= 1 && window.matchStarted) {
+        console.log("Not enough survivors for another round. Triggering victory.");
+        transitionToSoloMode();
+        return;
+    }
     // 1. Aggressive Lockdown
     if (isLiveMode && (survivors <= 1 || window.pendingVictory || window.isTransitioning)) {
         console.log("Blocking loadQuestion: Match is over or transitioning.");
@@ -981,9 +993,14 @@ async function loadQuestion(broadcastedId = null, startTime = null) {
     }
   
     currentQuestion = preloadQueue.shift();
-
+  
+   // FINAL GATE: One last check before we actually change the UI
+    if (window.pendingVictory || (isLiveMode && survivors <= 1)) {
+        console.log("Match ended while preloading. Aborting UI update.");
+        return; 
+    }
+  
     // --- MINIMAL CHANGE START: Define the display logic ---
-   
     // G. SET QUESTION TEXT
     questionText.textContent = currentQuestion.question;
 
@@ -1227,21 +1244,12 @@ async function checkAnswer(choiceId, btn) {
         // This is where the pet roll happens
         rollForPet();
         if (isLiveMode) {
-    btn.dataset.answeredCorrectly = "true";
+        btn.dataset.answeredCorrectly = "true";
 
             // 1. Check if we already know a victory is happening OR if survivors dropped to 1
             if (window.pendingVictory || survivors <= 1) {
                 console.log("Sole survivor answered. Ending live match.");
-                isLiveMode = false;
-                window.pendingVictory = true; // Ensure this is set
-                clearInterval(timer);
-                stopTickSound();
-                
-                questionText.textContent = "Correct! Match Over.";
-                
-                setTimeout(() => {
-                    transitionToSoloMode();
-                }, 1000);
+                handleInstantVictory();
             } else {
                 // 2. We actually have competitors left
                 questionText.textContent = "Waiting for other players...";
@@ -1272,6 +1280,27 @@ async function checkAnswer(choiceId, btn) {
             setTimeout(endGame, 1000);
         }
     }
+}
+
+function handleInstantVictory() {
+    isLiveMode = false;
+    window.pendingVictory = true;
+    
+    clearInterval(timer);
+    stopTickSound();
+    
+    if (refereeTimeout) {
+        clearTimeout(refereeTimeout);
+        refereeTimeout = null;
+    }
+
+    // WIPE THE UI SO NO NEW QUESTIONS CAN APPEAR
+    if (answersBox) answersBox.innerHTML = "";
+    if (questionText) questionText.textContent = "Victory! Preparing results...";
+
+    setTimeout(() => {
+        transitionToSoloMode();
+    }, 1000);
 }
 
 function updateLevelUI() {
@@ -2672,33 +2701,51 @@ async function onWrongAnswer() {
         console.log("Local player eliminated. Waiting for round end sync...");
         return;
     }
-
-    // 3. UI Cleanup & Results
-    document.body.classList.remove('game-active', 'lobby-active');
-    await endGame(); 
+    // NEW: If I'm the one who died, I shouldn't just sit there.
+        // I need to trigger the end-game sequence for myself.
+        isLiveMode = false;
+        clearInterval(timer);
+        stopTickSound();
+        
+        console.log("Local player eliminated. Transitioning to end screen.");
+        
+        // Wait a moment so the user sees the 'Wrong' feedback before the screen swaps
+        setTimeout(async () => {
+            document.body.classList.remove('game-active', 'lobby-active');
+            await endGame(); // Show the highscores/game over screen
+        }, 1000);
+        return;
+    }
 }
 
 async function checkVictoryCondition() {
     // 1. The Sole Winner Case
     if (survivors === 1 && !hasDiedLocally) {
-      // If we haven't already flagged victory, do it now
         if (!window.pendingVictory) {
             console.log("Victory condition met: You are the last survivor.");
             window.pendingVictory = true;
-            // We show a notification so the player knows they've already won
-            showVictoryBanner("Last Survivor! Finish the round!");
-      } 
+            isLiveMode = false; // Kill the live loop!
+
+            // If the player already answered this round, move them NOW.
+            const alreadyAnswered = document.querySelector('[data-answered-correctly="true"]');
+            if (alreadyAnswered) {
+                clearInterval(timer);
+                setTimeout(() => transitionToSoloMode(), 1000);
+            }
+        } 
     }
-    // 2. The "Everyone is Dead" Case (Tie)
-    if (survivors === 0) {
+    // 2. The "Everyone is Dead" Case (Tie/Everyone failed)
+    else if (survivors === 0) {
         console.log("Match over: No survivors.");
         isLiveMode = false;
+        window.pendingVictory = true; 
         
-        // Don't wait for the timer, go to the screen now
         clearInterval(timer);
-        await transitionToSoloMode();
+        // Added a tiny delay so they see their "Wrong" red flash before the screen swaps
+        setTimeout(() => transitionToSoloMode(), 1000);
     }
 }
+
 async function deleteCurrentLobby(lobbyId) {
     if (!lobbyId) return;
 
@@ -3198,6 +3245,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
