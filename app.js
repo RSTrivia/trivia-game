@@ -2464,23 +2464,17 @@ function setupLobbyRealtime(lobby) {
   
       // 🔹 STEP 1: Host triggers PREPARE once (seed)
       if (count >= 2 && isHost(lobbyChannel)) {
-        if (!window.isStarting) {
-          window.isStarting = true;
-          console.log("Host: triggering prepare-game");
-          triggerGamePrepare(lobby.id);
+      // Check window.isPreparing to ensure we only send the seed once
+      if (readyCount === 0 && !window.isPreparing) {
+            window.isPreparing = true; // Add this global flag
+            console.log("Host: Sending Prepare Command...");
+            triggerGamePrepare(lobby.id); 
+        } 
+        else if (readyCount === count && count >= 2 && !window.finalStartSent) {
+            console.log("Host: Everyone ready! Sending Start Signal...");
+            sendFinalStartSignal(count);
         }
-      }
-  
-      // 🔹 STEP 2: Host starts game ONLY when everyone is ready
-      if (
-        readyCount === count &&
-        count >= 2 &&
-        isHost(lobbyChannel) &&
-        !window.finalStartSent
-      ) {
-        console.log("Host: all players ready → starting game");
-        sendFinalStartSignal(count);
-      }
+    }
     })
 
     .on('broadcast', { event: 'chat' }, ({ payload }) => {
@@ -2676,17 +2670,24 @@ gameChannel.on('broadcast', { event: 'round-ended' }, async ({ payload }) => {
           const activePlayers = Object.keys(state).sort();
       
           console.log(`Presence Sync: ${joinedCount} connected.`);
-                // ----- HOST FAILOVER -----
-          // 🚀 NEW: Start the first round only when everyone from the lobby has arrived
-          // matchStartingCount is the value we saved from the start-game payload
-          if (isHost(gameChannel) && !window.matchStarted && joinedCount >= matchStartingCount) {
-              console.log(`All ${joinedCount} players arrived. Launching Match!`);
-              window.matchStarted = true;
+               // --- HOST FAILOVER ---
+          const activePlayers = Object.keys(state).sort();
+          if (!currentHostId || !activePlayers.includes(currentHostId)) {
+              currentHostId = activePlayers[0];
+          }
+          // --- START LOGIC: Only fire when everyone is truly in the game channel ---
+          if (joinedCount >= matchStartingCount && !window.matchStarted) {
+              // We add a small extra 500ms delay to ensure the UI has finished transitioning
+              const delay = Math.max(500, syncedStartTime - Date.now());
               
-              // Give a tiny 500ms breather for Player B's UI to settle
               setTimeout(() => {
-                  sendStartRoundSignal(); 
-              }, 500);
+                  if (isLiveMode && !window.matchStarted) {
+                      window.matchStarted = true; 
+                      if (questionText) questionText.innerHTML = "";
+                      console.log("Match officially starting for all players!");
+                      startLiveRound(); 
+                  }
+              }, delay);
           }
           // --- NEW GUARD ---
           // Only trigger mid-game victory if the match has TRULY started
@@ -3378,6 +3379,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
