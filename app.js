@@ -2552,29 +2552,63 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
     currentHostId = allPlayers[0]; // assign first player as initial host
     console.log("Initial host is", currentHostId);
   
-  gameChannel.on('broadcast', { event: 'round-ended' }, async ({ payload }) => {
+gameChannel.on('broadcast', { event: 'round-ended' }, async ({ payload }) => {
     const { correct, dead, outcome, winners } = payload;
 
-    // 1️⃣ Check if you are a winner first
-    if (outcome === 'win' && winners.includes(userId)) {
-        // You survived as one of the last players
-        await transitionToSoloMode(winners);
+    // 1. Hard Lock: Stop the timer and ticking sounds for everyone
+    clearInterval(timer);
+    stopTickSound();
+
+    // 2. Identify the player's status
+    const isWinner = winners.includes(userId);
+    const isDead = dead.includes(userId);
+
+    // 3. CASE: VICTORY (Match is over)
+    if (outcome === 'win') {
+        window.pendingVictory = true;
+        isLiveMode = false; // Kill the multiplayer loop
+
+        if (isWinner) {
+            questionText.textContent = "🏆 Victory! You are the survivor!";
+            // Give them 1.5 seconds to feel the glory before switching modes
+            setTimeout(async () => {
+                await transitionToSoloMode(winners);
+            }, 1500);
+        } else {
+            // They were in the 'dead' list and match ended
+            questionText.textContent = "Eliminated! Match Over.";
+            setTimeout(async () => {
+                await endGame();
+            }, 1500);
+        }
         return;
     }
 
-    // 2️⃣ Check if you are a loser
-    if (
-        (dead.includes(userId) && !winners.includes(userId)) || // dead but not a winner
-        (outcome === 'win' && !winners.includes(userId))         // win happened but you didn't win
-    ) {
-        await endGame(); // Game over for non-winners
+    // 4. CASE: ELIMINATION (Match continues without you)
+    if (isDead && outcome === 'continue') {
+        questionText.textContent = "Wrong Answer! Eliminated.";
+        isLiveMode = false;
+        setTimeout(async () => {
+            await endGame();
+        }, 1500);
         return;
     }
 
-    // 3️⃣ Otherwise, match continues
+    // 5. CASE: SURVIVED (Match continues)
     if (outcome === 'continue') {
-        roundResults = {}; // Reset for next round
-        startLiveRound();
+        roundResults = {}; 
+        questionText.textContent = "Correct! Next round starting...";
+        
+    // Only trigger the next round if the player is actually still in the game
+        if (correct.includes(userId)) {
+             questionText.textContent = "Correct! Next round starting...";
+             setTimeout(() => {
+                 startLiveRound();
+             }, 1500);
+        } else {
+             // Fallback: If they aren't 'dead' but aren't 'correct' (e.g. joined late)
+             questionText.textContent = "Waiting for next round...";
+        }
     }
 });
 
@@ -2739,38 +2773,43 @@ timer = setInterval(async () => {
 function endRoundAsReferee() {
     const correct = [];
     const dead = [];
+    const participants = Object.keys(roundResults);
 
-    // Separate correct vs wrong answers
-    for (const [uid, res] of Object.entries(roundResults)) {
+    // 1. Sort players
+    for (const [uid, res] of participants) {
         if (res === 'correct') correct.push(uid);
         else dead.push(uid);
     }
 
-    // Determine survivors for UI
-    survivors = correct.length;
-    updateSurvivorCountUI(survivors);
-
     let outcome = 'continue';
     let winners = [];
 
-    // If only one survivor remains
-    if (survivors === 1) {
-        outcome = 'win';
+    // 2. WINNER: Only one person got it right
+    if (correct.length === 1) {
+        outcome = 'victory';
         winners = correct;
+    } 
+    // 3. TIE/SUDDEN DEATH: Everyone got it wrong or timed out
+    else if (correct.length === 0 && dead.length > 0) {
+        outcome = 'victory'; 
+        winners = dead; // In a tie, everyone who made it this far is a winner
     }
-    // If all remaining players died simultaneously
-    else if (survivors === 0 && Object.keys(roundResults).length > 0) {
-        outcome = 'win';
-        winners = dead;           // everyone who just died wins
-        survivors = dead.length;  // show them as “survived” in UI
-        updateSurvivorCountUI(survivors);
+    // 4. CONTINUE: Multiple people got it right
+    else if (correct.length > 1) {
+        outcome = 'continue';
     }
 
-    // Broadcast the round result to all players
+    // 5. Broadcast the Verdict
     gameChannel.send({
         type: 'broadcast',
         event: 'round-ended',
-        payload: { correct, dead, outcome, winners }
+        payload: { 
+            correct, 
+            dead, 
+            outcome, 
+            winners,
+            nextQuestionId: (outcome === 'continue') ? getNextQuestionId() : null 
+        }
     });
 }
 
@@ -2813,8 +2852,10 @@ async function transitionToSoloMode(winners) {
     const liveStats = document.getElementById('live-stats');
     const statsText = document.getElementById('player-count-stat');
     const oddsText = document.getElementById('odds-stat');
-
+    const gameContainer = document.getElementById('game'); // Or whatever your main game div is
+  
     // --- Clear gameplay UI ---
+    if (gameContainer) gameContainer.classList.add('hidden');
     if (questionText) questionText.textContent = "";
     if (answersBox) answersBox.innerHTML = "";
     if (questionImage) questionImage.style.display = 'none';
@@ -2855,7 +2896,7 @@ async function transitionToSoloMode(winners) {
 
             victoryScreen.classList.add('hidden');
             if (timerDisplay) timerDisplay.style.visibility = 'visible';
-
+            if (gameContainer) gameContainer.classList.remove('hidden'); // Bring the game back
             // Resume the game if there are more questions
             if (preloadQueue.length === 0 && remainingQuestions.length === 0) {
                 await endGame();
@@ -2969,14 +3010,22 @@ function isHost(channel) {
     }
     
     const state = activeChannel.presenceState();
-    const players = Object.keys(state).sort(); 
+    // 1. Get all presence objects as a flat array
+    const presences = Object.values(state).flat();
     
-    // DEBUG LOGS - Check these in F12 console
-    console.log("Presence Keys:", players);
+    if (presences.length === 0) return false;
+
+    // 2. Sort by 'presence_ref' (this is a unique, incrementing string from Supabase)
+    // This ensures the person who joined first stays host.
+    presences.sort((a, b) => a.presence_ref.localeCompare(b.presence_ref));
+    
+    const hostId = presences[0].userId;
+    
+    // DEBUG LOGS
+    console.log("Current Host ID:", hostId);
     console.log("My userId:", userId);
-    console.log("Am I Host?", players[0] === userId);
     
-    return players[0] === userId; 
+    return hostId === userId; 
 }
 
 
@@ -3278,6 +3327,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
