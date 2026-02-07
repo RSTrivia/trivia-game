@@ -2513,14 +2513,19 @@ function setupLobbyRealtime(lobby) {
           console.warn("Preloading timed out, proceeding to ready state anyway.");
       }
   
-      // 3. Tell Host you are ready (Moved outside the 'await' block for safety)
-      console.log("Player is READY. Tracking status...");
-      await lobbyChannel.track({
-          online_at: new Date().toISOString(),
-          status: 'ready_to_start' 
-      });
-      
-      if (questionText) questionText.innerHTML = "Synced! Waiting for Host...";
+      // 3. Tell Host you are ready
+      console.log("Player is READY. Checking channel...");
+
+      // ✅ NULL GUARD: Ensure lobbyChannel still exists before tracking
+      if (lobbyChannel) {
+          await lobbyChannel.track({
+              online_at: new Date().toISOString(),
+              status: 'ready_to_start' 
+          });
+          if (questionText) questionText.innerHTML = "Synced! Waiting for Host...";
+      } else {
+          console.warn("Lobby channel was lost during preloading.");
+      }
   })
         .on('broadcast', { event: 'start-game' }, async ({ payload }) => {
         console.log("Start signal received!");
@@ -3350,6 +3355,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
