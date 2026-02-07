@@ -2680,26 +2680,28 @@ gameChannel.on('broadcast', { event: 'round-ended' }, async ({ payload }) => {
               survivors = joinedCount;
               updateSurvivorCountUI(survivors);
       
-          if (survivors <= 1) {
-              if (!window.isTransitioning) {
-                  window.pendingVictory = true;
-          
-                  // Determine winners dynamically from roundResults
-                  const correct = [];
-                  const dead = [];
-                  for (const [uid, res] of Object.entries(roundResults)) {
-                      if (res === 'correct') correct.push(uid);
-                      else dead.push(uid);
+              if (survivors <= 1) {
+                  if (!window.isTransitioning) {
+                      window.pendingVictory = true;
+              
+                      // Determine winners dynamically from roundResults
+                      const correct = [];
+                      const dead = [];
+                      for (const [uid, res] of Object.entries(roundResults)) {
+                          if (res === 'correct') correct.push(uid);
+                          else dead.push(uid);
+                      }
+              
+                      let winners = [];
+                      if (correct.length === 1) winners = correct;
+                      else if (correct.length === 0 && dead.length > 0) winners = dead;
+              
+                      transitionToSoloMode(winners); 
                   }
-          
-                  let winners = [];
-                  if (correct.length === 1) winners = correct;
-                  else if (correct.length === 0 && dead.length > 0) winners = dead;
-          
-                  transitionToSoloMode(winners); 
-          }
-        }
-      });
+              }
+          } // Added missing brace to close NEW GUARD
+      }); // Added missing brace to close presence event listener
+
   gameChannel.on('broadcast', { event: 'start-round' }, ({ payload }) => {
     const delay = Math.max(0, payload.startTime - Date.now());
     setTimeout(() => {
@@ -3348,6 +3350,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
