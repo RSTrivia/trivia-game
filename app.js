@@ -2578,7 +2578,7 @@ if (isHost(lobbyChannel)) {
         }
     }, 10000); // 10 seconds max wait
 }
-
+}
 
 async function beginLiveMatch(countFromLobby, syncedStartTime) {
     isLiveMode = true;
@@ -3350,6 +3350,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
