@@ -2834,12 +2834,6 @@ function endRoundAsReferee() {
     }
 }
  
-    
-   // Reset for the next round!
-    roundResults = {}; 
-    if (refereeTimeout) clearTimeout(refereeTimeout); 
-}
-
 async function deleteCurrentLobby(lobbyId) {
     if (!lobbyId) return;
 
@@ -3346,6 +3340,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
