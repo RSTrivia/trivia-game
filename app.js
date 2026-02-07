@@ -2439,7 +2439,7 @@ function setupLobbyRealtime(lobby) {
     .on('presence', { event: 'sync' }, () => {
       const state = lobbyChannel.presenceState();
       const presences = Object.values(state).flat();
-      const count = players.length;
+      const count = presences.length;
       if (presences.length > 0) {
         presences.sort((a, b) => a.presence_ref.localeCompare(b.presence_ref));
         currentHostId = presences[0].userId;
@@ -2448,7 +2448,7 @@ function setupLobbyRealtime(lobby) {
       updateLobbyUI(count, lobby.starts_at);
   
       // Count how many players are ready
-      const readyCount = players.filter(
+      const readyCount = presences.filter(
         p => p.status === 'ready_to_start'
       ).length;
   
@@ -3350,6 +3350,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
