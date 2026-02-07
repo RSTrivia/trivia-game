@@ -2527,26 +2527,29 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
 gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
     const { outcome, winnerIds, dead, correct } = payload;
 
-    // IF I AM A WINNER (Sole or Tie)
-    if (winnerIds.includes(userId)) {
-        console.log("Match Result: I am a winner.");
-        isLiveMode = false;
-        window.isTransitioning = true;
-        // This stops all game timers and shows the victory screen
-        transitionToSoloMode(outcome === 'win'); 
-        return; 
-    }
-
-    // IF I AM DEAD (And I wasn't in the winnerIds)
+    // 1. I LOST: Show the standard Game Over
     if (dead.includes(userId)) {
-        console.log("Match Result: Eliminated.");
         isLiveMode = false;
         hasDiedLocally = true;
-        endGame(); // Show Game Over
+        endGame(); 
         return;
     }
 
-    // IF GAME CONTINUES
+    // 2. I AM THE SOLE SURVIVOR:
+    // If there is only 1 winner and it's me, trigger the Victory Screen
+    if (outcome === 'win' && winnerIds.length === 1 && winnerIds[0] === userId) {
+        console.log("Sole Survivor detected. Triggering Victory Bridge...");
+        transitionToSoloMode(true); // 'true' means Sole Winner
+        return;
+    }
+
+    // 3. TIE / CO-VICTORY: Everyone got it wrong or deck empty
+    if (outcome === 'tie' && winnerIds.includes(userId)) {
+        transitionToSoloMode(false); // 'false' means Tie
+        return;
+    }
+
+    // 4. MULTIPLE SURVIVORS: Game continues normally
     survivors = correct.length;
     updateSurvivorCountUI(survivors);
     
@@ -2823,25 +2826,24 @@ async function deleteCurrentLobby(lobbyId) {
 }
 
 async function transitionToSoloMode(isSoleWinner) {
-  // 1. KILL the pending referee check immediately
+    // 1. KILL the pending referee check immediately
     if (refereeTimeout) {
         clearTimeout(refereeTimeout);
         refereeTimeout = null;
         console.log("Referee timeout cancelled - Victory takes priority.");
     }
+
     // --- 0. MULTI-CALL & OVERLAP GUARD ---
-    // If we're already transitioning or the screen is visible, kill everything
     if (window.isTransitioning) return;
     window.isTransitioning = true; 
 
     const victoryScreen = document.getElementById('victory-screen');
     if (victoryScreen && !victoryScreen.classList.contains('hidden')) return;
 
-    // --- 1. THE SILENCER (Stop the flicker) ---
-    isLiveMode = false;
-    window.pendingVictory = true; // Global lock
+    // --- 1. THE SILENCER (Stop the multiplayer overhead) ---
+    isLiveMode = false; // Important: loadQuestion() checks this to stop broadcasting
+    window.pendingVictory = true; 
     
-    // CANCEL any pending loadQuestion timeouts from startTimer
     if (typeof nextRoundTimeout !== 'undefined' && nextRoundTimeout) {
         clearTimeout(nextRoundTimeout);
         nextRoundTimeout = null;
@@ -2850,8 +2852,7 @@ async function transitionToSoloMode(isSoleWinner) {
     clearInterval(timer);
     stopTickSound();
 
-    // WIPE UI IMMEDIATELY: This ensures that even if loadQuestion() is 
-    // running in the background, there's nothing for it to display on.
+    // Clear question area so the Victory screen is the focus
     if (questionText) questionText.textContent = "";
     if (answersBox) answersBox.innerHTML = "";
     if (questionImage) questionImage.style.display = 'none';
@@ -2860,13 +2861,13 @@ async function transitionToSoloMode(isSoleWinner) {
     const lobbyId = currentLobby?.id;
     const total = matchStartingCount || 2; 
     const odds = Math.round((1 / total) * 100);
-    currentLobby = null; 
+    // Don't null currentLobby yet, we might need it for the host check in cleanup
 
-    // HUD Cleanup
+    // HUD Cleanup: Hide the 'Survivors' count but keep the Score/Level!
     const timerDisplay = document.getElementById('timer');
-    const liveStats = document.getElementById('live-stats');
+    const survivorDisplay = document.getElementById('survivor-count');
     if (timerDisplay) timerDisplay.style.visibility = 'hidden';
-    if (liveStats) liveStats.style.visibility = 'hidden';
+    if (survivorDisplay) survivorDisplay.classList.add('hidden');
 
     // Update Stats Text
     const oddsText = document.getElementById('odds-stat'); 
@@ -2882,31 +2883,40 @@ async function transitionToSoloMode(isSoleWinner) {
     victoryScreen.classList.remove('hidden');   
     playSound(bonusBuffer);
 
-    // --- 4. CLEANUP ---
-    if (gameChannel) {
-        supabase.removeChannel(gameChannel);
-        gameChannel = null;
-    }
-    if (lobbyId) {
-        await deleteCurrentLobby(lobbyId);
-    }
+    // --- 4. GRACEFUL CLEANUP (THE FIX) ---
+    // We wait 3 seconds before killing the channel/lobby.
+    // This ensures the "Loser" receives the 'round-ended' broadcast.
+    setTimeout(async () => {
+        if (gameChannel) {
+            console.log("Cleaning up game channel after grace period...");
+            supabase.removeChannel(gameChannel);
+            gameChannel = null;
+        }
+        if (lobbyId && isHost()) { 
+            console.log("Host: Deleting lobby records...");
+            await deleteCurrentLobby(lobbyId);
+        }
+        currentLobby = null; 
+    }, 3000); 
 
     // --- 5. HANDLE "CONTINUE" ---
     document.getElementById('continue-solo-btn').onclick = async () => {
-        // Unlock for solo play
         window.isTransitioning = false; 
         window.pendingVictory = false; 
         
         victoryScreen.classList.add('hidden');
         
+        // If we ran out of questions during the match, end it here
         if (preloadQueue.length === 0 && remainingQuestions.length === 0) {
             await endGame();
             return;
         }
 
+        // Show timer again for solo play
         if (timerDisplay) timerDisplay.style.visibility = 'visible';
         
-        await preloadNextQuestions(3);
+        // Resume the game loop in solo mode
+        console.log("Transitioning to Solo Mode. Good luck!");
         loadQuestion(); 
     };
 }
@@ -3305,6 +3315,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
