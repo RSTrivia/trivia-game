@@ -347,7 +347,7 @@ lobbyBtn.onclick = async () => {
         isDailyMode = false;
         isWeeklyMode = false;
         isLiteMode = true; // Set the Lite mode flag
-
+        
         if (audioCtx.state === 'suspended') await audioCtx.resume();
         loadSounds();
         startGame(false);
@@ -843,8 +843,11 @@ async function preloadNextQuestions(targetCount = 3) {
 async function startGame(isLive = false) {
     try {
         isLiveMode = isLive; // Set our global flag
+        roundOpen = true; 
         // Inside startGame(isLive = false)
         if (!isLiveMode) {
+          // Ensure no leftover timeouts from Live mode are running
+          if (typeof refereeTimeout !== 'undefined') clearTimeout(refereeTimeout);
           // 1. DATA PREP (Background - User still sees Start Screen)
           if (masterQuestionPool.length === 0) {
               const { data: idList, error } = await supabase.from('questions').select('id');
@@ -1004,6 +1007,8 @@ async function loadQuestion(broadcastedId = null, startTime = null) {
         questionImage.src = '';
     }
   
+  // IMPORTANT: Unlock the round so buttons actually work!
+  roundOpen = true;
   startTimer();   
 };
    
@@ -3097,6 +3102,7 @@ async function startWeeklyChallenge() {
     ).map(q => q.id);
 
     // Setup Mode & Data
+    roundOpen = true
     isDailyMode = false;
     isWeeklyMode = true;
     preloadQueue = [];
@@ -3165,6 +3171,7 @@ async function startDailyChallenge() {
     // 4. PREPARE THE DATA (Background)
     isDailyMode = true;
     isWeeklyMode = false;
+     roundOpen = true
     preloadQueue = []; 
     remainingQuestions = dailyIds;   
   
@@ -3282,6 +3289,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
