@@ -785,7 +785,7 @@ async function preloadNextQuestions(targetCount = 3) {
         attempts++;
         let index;
         if (isLiveMode) {
-              // In Live Mode, always take the NEXT one in the pre-shuffled list
+              // In , always take the NEXT one in the pre-shuffled list
               index = 0; 
           } else {
               // Solo modes can stay random
@@ -848,7 +848,7 @@ async function startGame(isLive = false) {
         roundOpen = true; 
         // Inside startGame(isLive = false)
         if (!isLiveMode) {
-          // Ensure no leftover timeouts from Live mode are running
+          // Ensure no leftover timeouts from  are running
           if (typeof refereeTimeout !== 'undefined') clearTimeout(refereeTimeout);
           // 1. DATA PREP (Background - User still sees Start Screen)
           if (masterQuestionPool.length === 0) {
@@ -2942,7 +2942,7 @@ async function transitionToSoloMode(isSoleWinner) {
     }, 3000); 
 
     // --- 5. HANDLE "CONTINUE" ---
-    document.getElementById('continue-solo-btn').onclick = async () => {
+    document.getElementById('soloBtn').onclick = async () => {
         window.isTransitioning = false; 
         window.pendingVictory = false; 
         
@@ -3357,6 +3357,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
