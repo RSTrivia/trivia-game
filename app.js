@@ -1132,12 +1132,6 @@ async function checkAnswer(choiceId, btn) {
   
     // increment weekly count
     if (isWeeklyMode) weeklyQuestionCount++;
-  
-    // 1. Check answer via RPC
-    const { data: isCorrect, error } = await supabase.rpc('check_my_answer', {
-        input_id: currentQuestion.id,
-        choice: choiceId
-    });
 
     if (error) return console.error("RPC Error:", error);
   
@@ -3267,6 +3261,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
