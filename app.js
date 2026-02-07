@@ -2544,12 +2544,15 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
     
         if (outcome === 'win' || outcome === 'tie') {
             isLiveMode = false;
+            window.isTransitioning = true;
+          
             if (iAmAWinner) {
                 transitionToSoloMode(outcome === 'win');
             } else {
                 // Player lost the match - trigger your endGame logic
                 endGame(); 
             }
+          
         } else if (iDied) {
             // Game continues for others, but I am out
             isLiveMode = false;
@@ -2579,22 +2582,18 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
           }
         }
       );
-    gameChannel
-        .on('presence', { event: 'sync' }, () => {
+    gameChannel.on('presence', { event: 'sync' }, () => {
           const state = gameChannel.presenceState();
           const joinedCount = Object.keys(state).length;
-          
+          // ADD THIS GUARD AT THE TOP
+          if (window.isTransitioning || window.pendingVictory) return;
+      
           console.log(`Presence Sync: ${joinedCount} connected.`);
       
           // --- NEW GUARD ---
           // Only trigger mid-game victory if the match has TRULY started
           // window.matchStarted ensures we don't end the game while people are still connecting
-          if (
-              isLiveMode &&
-              window.matchStarted &&
-              !roundOpen &&        // 🔒 only AFTER round ends
-              joinedCount < survivors
-            ) {
+          if (isLiveMode && window.matchStarted && !roundOpen && joinedCount < survivors) {
               console.log(`Mid-game drop detected: ${survivors} -> ${joinedCount}`);
               survivors = joinedCount;
               updateSurvivorCountUI(survivors);
@@ -3223,6 +3222,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
