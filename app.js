@@ -2381,6 +2381,9 @@ async function joinMatchmaking() {
   window.finalStartSent = false;
   window.pendingVictory = false; // Add this reset
   window.lobbyDeleted = false; // Reset the deletion flag for the new session
+  window.matchStarted = false;  // Reset!
+
+
   isLiveMode = false; // Ensure this is false until the match actually starts
   preloadQueue = [];  // Clear questions from previous rounds
   remainingQuestions = [];
@@ -2554,39 +2557,37 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
 
     gameChannel
         .on('presence', { event: 'sync' }, () => {
-            const state = gameChannel.presenceState();
-            const joinedCount = Object.keys(state).length;
-            
-            console.log(`Presence Sync: ${joinedCount} players connected. Variable: ${survivors}`);
-        
-            // --- 1. THE MID-GAME SYNC (Instant Update) ---
-            // If we are already playing and the presence count is lower than our variable
-            if (isLiveMode && joinedCount < survivors) {
-                console.log(`Updating survivors via Presence: ${survivors} -> ${joinedCount}`);
-                survivors = joinedCount;
-                updateSurvivorCountUI(survivors);
-        
-                // If this drop ends the game, trigger victory logic immediately
-                if (survivors <= 1) {
-                    window.pendingVictory = true;
-                    checkVictoryCondition(); 
-                }
-            }
-        
-            // --- 2. THE START-MATCH LOGIC (Your existing code) ---
-            // We only want to trigger the initial loadQuestion ONCE when the match starts
-            if (joinedCount >= survivors && !window.matchStarted) {
-                const delay = Math.max(0, syncedStartTime - Date.now());
-                
-                setTimeout(() => {
-                    if (isLiveMode) {
-                        window.matchStarted = true; // Prevents this from firing again mid-game
-                        if (questionText) questionText.innerHTML = "";
-                        loadQuestion(); 
-                    }
-                }, delay);
-            }
-        })
+          const state = gameChannel.presenceState();
+          const joinedCount = Object.keys(state).length;
+          
+          console.log(`Presence Sync: ${joinedCount} connected.`);
+      
+          // --- NEW GUARD ---
+          // Only trigger mid-game victory if the match has TRULY started
+          // window.matchStarted ensures we don't end the game while people are still connecting
+          if (isLiveMode && window.matchStarted && joinedCount < survivors) {
+              console.log(`Mid-game drop detected: ${survivors} -> ${joinedCount}`);
+              survivors = joinedCount;
+              updateSurvivorCountUI(survivors);
+      
+              if (survivors <= 1) {
+                  window.pendingVictory = true;
+                  transitionToSoloMode(); 
+              }
+          }
+      
+          // --- START LOGIC ---
+          if (joinedCount >= survivors && !window.matchStarted) {
+              const delay = Math.max(0, syncedStartTime - Date.now());
+              setTimeout(() => {
+                  if (isLiveMode) {
+                      window.matchStarted = true; // THIS IS THE KEY
+                      if (questionText) questionText.innerHTML = "";
+                      loadQuestion(); 
+                  }
+              }, delay);
+          }
+      })
       
         .on('broadcast', { event: 'player-died' }, () => {
               survivors--;
@@ -2702,16 +2703,17 @@ async function transitionToSoloMode() {
     if (victoryScreen && !victoryScreen.classList.contains('hidden')) {
         return;
     }
+    // 1. LOCK THE MULTIPLAYER GATE
+    isLiveMode = false;
+  
     clearInterval(timer);
     stopTickSound();
     
-    // 1. SAVE NECESSARY DATA BEFORE CLEARING
+    // 2. SAVE NECESSARY DATA BEFORE CLEARING
     const lobbyId = currentLobby?.id; // Capture ID for deletion
     const total = matchStartingCount || 2; 
     const odds = Math.round((1 / total) * 100);
 
-    // 2. LOCK THE MULTIPLAYER GATE
-    isLiveMode = false;
     currentLobby = null; // THIS IS CRITICAL: prevents loadQuestion from blocking
     
     // Hide standard HUD
@@ -3155,6 +3157,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
