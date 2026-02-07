@@ -18,6 +18,7 @@ let masterQuestionPool = [];
 let firstQuestionSent = false; // Reset this when a match starts
 
 //live mode
+let currentHostId = null;
 let currentLobby = null;
 let lobbyChannel = null;
 let lobbyTimerInterval = null;
@@ -3281,6 +3282,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
