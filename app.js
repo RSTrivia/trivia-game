@@ -2671,7 +2671,6 @@ gameChannel.on('broadcast', { event: 'round-ended' }, async ({ payload }) => {
       
           console.log(`Presence Sync: ${joinedCount} connected.`);
                // --- HOST FAILOVER ---
-          const activePlayers = Object.keys(state).sort();
           if (!currentHostId || !activePlayers.includes(currentHostId)) {
               currentHostId = activePlayers[0];
           }
@@ -3379,6 +3378,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
