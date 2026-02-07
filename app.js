@@ -2697,7 +2697,6 @@ gameChannel.on('broadcast', { event: 'round-ended' }, async ({ payload }) => {
                   else if (correct.length === 0 && dead.length > 0) winners = dead;
           
                   transitionToSoloMode(winners); 
-              }
           }
         }
       });
@@ -3349,6 +3348,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
