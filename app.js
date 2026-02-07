@@ -2715,7 +2715,6 @@ async function onWrongAnswer() {
             await endGame(); // Show the highscores/game over screen
         }, 1000);
         return;
-    }
 }
 
 async function checkVictoryCondition() {
@@ -3245,6 +3244,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
