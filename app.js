@@ -2539,30 +2539,43 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
 gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
     const { outcome, winnerIds, dead, correct } = payload;
 
-    // 1. IF I AM DEAD: I go to Game Over.
-    if (dead.includes(userId)) {
-        console.log("I am eliminated.");
-        isLiveMode = false;
-        hasDiedLocally = true;
-        // Small delay to let the Winner's lap initialize before I disconnect
-        setTimeout(() => endGame(), 100); 
-        return;
-    }
-
-    // 2. IF THE REFEREE DECLARED A WIN:
+    // --- 1. PRIORITY CHECK: AM I A WINNER? ---
+    // We check this first because even if you answered "wrong", 
+    // if it's a "tie" or you're the sole survivor, you win.
     if (outcome === 'win' || outcome === 'tie') {
         if (winnerIds.includes(userId)) {
-            console.log("Referee declared me a winner!");
+            console.log("Referee declared me a winner/co-winner!");
+            
+            // Mark as victory immediately to stop any auto-start logic
+            window.pendingVictory = true; 
+            isLiveMode = false;
+
             transitionToSoloMode(outcome === 'win');
             return;
         }
     }
 
-    // 3. IF THE GAME CONTINUES:
+    // --- 2. ELIMINATION CHECK ---
+    // If the game is continuing or someone else won, check if I'm out.
+    if (dead.includes(userId)) {
+        console.log("I am eliminated.");
+        isLiveMode = false;
+        hasDiedLocally = true;
+        
+        // Small delay to ensure state settles before disconnecting
+        setTimeout(() => endGame(), 100); 
+        return;
+    }
+
+    // --- 3. CONTINUATION CHECK ---
+    // If we reach here, the game is continuing and I am still alive.
     survivors = correct.length;
     updateSurvivorCountUI(survivors);
     
+    console.log(`Round ended. Survivors remaining: ${survivors}. Starting next round...`);
+
     setTimeout(() => { 
+        // Triple-check flags to prevent Round 2 starting during a victory transition
         if (isLiveMode && !hasDiedLocally && !window.pendingVictory) {
             startLiveRound(); 
         }
@@ -2731,7 +2744,8 @@ function startLiveRound() {
 }
 
 function endRoundAsReferee() {
-   console.log("Referee: Executing endRound. Current results:", JSON.stringify(roundResults));
+    console.log("Referee: Executing endRound. Current results:", JSON.stringify(roundResults));
+    
     // 1. Get ALL current players from Presence
     const state = gameChannel.presenceState();
     const allPlayerIds = Object.keys(state);
@@ -2743,71 +2757,60 @@ function endRoundAsReferee() {
         }
     });
   
-    // 3. Now we can proceed with the logic knowing roundResults is NOT empty
     const players = Object.entries(roundResults);
     const correct = players.filter(([_, res]) => res === 'correct').map(([uid]) => uid);
     const dead = players.filter(([_, res]) => res === 'wrong').map(([uid]) => uid);
+    
     let outcome = 'continue';
     let winners = [];
-  
-    // 1. Someone was right, someone was wrong
-        if (correct.length > 0 && dead.length > 0) {
-            if (correct.length === 1) {
-                outcome = 'win';
-                winners = [correct[0]];
-            } else {
-                outcome = 'continue';
-                winners = [];
-            }
-        } 
-        // ADD THIS CASE: Only one person is left and they were right
-        else if (correct.length === 1 && dead.length === 0) {
-            outcome = 'win';
-            winners = [correct[0]];
-        }
-    // 2. Everyone got it wrong
+
+    // --- LOGIC ENGINE ---
+
+    // Scenario A: Only 1 person is left and they got it right
+    if (correct.length === 1 && (dead.length > 0 || allPlayerIds.length === 1)) {
+        console.log("Referee: Sole survivor found!");
+        outcome = 'win';
+        winners = [correct[0]];
+    }
+    // Scenario B: Everyone got it wrong (Sudden Death Tie)
     else if (correct.length === 0 && dead.length > 0) {
         console.log("Referee: Everyone is wrong! Declaring a Tie.");
         outcome = 'tie';
-        winners = [...dead]; // Everyone who was 'wrong' is technically a co-winner
+        winners = [...dead]; 
     }
-    // 3. Deck is empty - Final Stand
-    if (remainingQuestions.length === 0 && preloadQueue.length === 0) {
-        if (outcome === 'continue' || correct.length > 0) {
-            outcome = correct.length === 1 ? 'win' : 'tie';
+    // Scenario C: Multiple people are right
+    else if (correct.length > 1) {
+        // Check if we just ran out of questions
+        if (remainingQuestions.length === 0 && preloadQueue.length === 0) {
+            console.log("Referee: Out of questions! Declaring co-victory.");
+            outcome = 'tie';
             winners = correct;
+        } else {
+            outcome = 'continue';
         }
     }
-    // 4. TOTAL SUCCESS: Everyone right (and deck isn't empty)
-    else if (correct.length > 0 && dead.length === 0) {
-        console.log("Referee: Total Success! Everyone moves to the next round.");
-        outcome = 'continue';
-        winners = []; // No one has won the whole match yet
-        // dead is already empty here
-    }
-    // 5. THE VOID: No one is left or something went wrong
+    // Scenario D: The "Void" / Catch-all
     else {
-        outcome = 'continue';
-    }  
-    // --- ADD THE FINAL SAFETY CHECK HERE ---
-    // If the logic above resulted in 'continue' but the game is physically 
-    // out of questions, we must end it now as a tie/co-victory.
-    if (outcome === 'continue' && remainingQuestions.length === 0 && preloadQueue.length === 0) {
-        console.log("Referee: No questions left! Forcing a tie outcome.");
-        outcome = 'tie';
+        // If somehow no one is correct and no one is dead (empty room)
+        outcome = (correct.length === 1) ? 'win' : 'continue';
         winners = correct;
     }
 
-  // --- ADD THE FIX HERE ---
-    // If the referee determines the game is over, LOCK the Host locally immediately.
-    if (outcome === 'win' || outcome === 'tie') {
-        console.log("Referee: Victory detected. Locking local state.");
-        window.pendingVictory = true; 
-        isLiveMode = false; // Stops loadQuestion from broadcasting further
-        if (timer) clearInterval(timer); // Stop the local UI timer
+    // --- FINAL OVERRIDE: OUT OF QUESTIONS ---
+    if (outcome === 'continue' && remainingQuestions.length === 0 && preloadQueue.length === 0) {
+        outcome = (correct.length === 1) ? 'win' : 'tie';
+        winners = correct;
     }
-    // ----------------------
-    // 4. BROADCAST THE FINAL DECISION (This now ALWAYS fires)
+
+    // --- LOCK HOST STATE ---
+    if (outcome === 'win' || outcome === 'tie') {
+        console.log("Referee: Match ending. Locking local state.");
+        window.pendingVictory = true; 
+        isLiveMode = false;
+        if (timer) clearInterval(timer);
+    }
+
+    // 4. BROADCAST
     gameChannel.send({
         type: 'broadcast',
         event: 'round-ended',
@@ -2818,10 +2821,18 @@ function endRoundAsReferee() {
             winnerIds: winners,
             newSurvivorCount: correct.length
         }
-      }).then(resp => {
-    if (resp !== 'ok') console.error("Referee: Broadcast failed!", resp);
-    else console.log("Referee: Round-ended broadcast sent successfully.");
-  });
+    }).then(resp => {
+        if (resp !== 'ok') console.error("Referee: Broadcast failed!", resp);
+        else console.log("Referee: Round-ended broadcast sent successfully.");
+    });
+
+    // Reset for next potential round
+    roundResults = {}; 
+    if (refereeTimeout) {
+        clearTimeout(refereeTimeout);
+        refereeTimeout = null;
+    }
+}
  
     
    // Reset for the next round!
@@ -3335,6 +3346,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
