@@ -2558,12 +2558,17 @@ gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
 });
 
     gameChannel.on('broadcast', { event: 'round-result' }, ({ payload }) => {
-        if (!isHost(gameChannel)) return;
-        
-        // Ignore results from old rounds
-        if (payload.roundId !== roundId) return; 
-    
-        roundResults[payload.userId] = payload.result;
+      if (!isHost(gameChannel)) return;
+          
+          // Add a log to see if this is happening
+          if (payload.roundId !== roundId) {
+              console.warn(`Referee ignored msg from ${payload.userId}: Payload Round ${payload.roundId} vs Host Round ${roundId}`);
+              // If they are only off by 1, it's likely a sync issue; you might want to accept it anyway
+              // or just remove this check for testing.
+              return; 
+          }
+      
+          roundResults[payload.userId] = payload.result;
     
         const state = gameChannel.presenceState();
         const aliveIds = Object.keys(state);
@@ -2648,8 +2653,10 @@ function updateSurvivorCountUI(count) {
         survivorElement.classList.add('hidden');
     }
 }
+
 function startLiveRound() {
     roundId++;
+    console.log(`--- STARTING ROUND ${roundId} ---`);
     roundOpen = true;
     roundResults = {}; 
 
@@ -2661,24 +2668,17 @@ function startLiveRound() {
 
     // 2. REFEREE SAFETY VALVE: Start the countdown now
     if (isLiveMode && isHost(gameChannel)) {
-        refereeTimeout = setTimeout(() => {
-            // Check if we are still waiting for players after 20 seconds
-            const state = gameChannel.presenceState();
-            const alive = Object.keys(state).length;
-            const reported = Object.keys(roundResults).length;
-
-            if (reported < alive) {
-                console.log(`Referee Safety: Only ${reported}/${alive} reported. Forcing end.`);
-                endRoundAsReferee();
-            }
-        }, 22000); // 15s round + 7s network/animation buffer
+      refereeTimeout = setTimeout(() => {
+              console.log("Referee Safety Valve Triggered.");
+              endRoundAsReferee(); // Don't check reported < alive here, just call it.
+          }, 22000);
     }
 
     timeLeft = 15;
     if (timer) clearInterval(timer);
 
     // Inside startLiveRound() ...
-timer = setInterval(async () => {
+    timer = setInterval(async () => {
     timeLeft--;
     updateTimerUI(timeLeft);
 
@@ -3300,6 +3300,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
