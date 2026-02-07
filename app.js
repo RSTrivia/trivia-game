@@ -2538,32 +2538,34 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
         config: { presence: { key: userId } }
     });
     gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
-        const { outcome, winnerIds, dead } = payload;
-        const iAmAWinner = winnerIds.includes(userId);
-        const iDied = dead.includes(userId);
-    
-        if (outcome === 'win' || outcome === 'tie') {
-            isLiveMode = false;
+    const { outcome, winnerIds, dead } = payload;
+    const iAmAWinner = winnerIds.includes(userId);
+    const iDied = dead.includes(userId);
+
+    if (outcome === 'win' || outcome === 'tie') {
+        isLiveMode = false;
+        
+        if (iAmAWinner) {
+            // Only winners get the transition to solo/victory
             window.isTransitioning = true;
-          
-            if (iAmAWinner) {
-                transitionToSoloMode(outcome === 'win');
-            } else {
-                // Player lost the match - trigger your endGame logic
-                endGame(); 
-            }
-          
-        } else if (iDied) {
-            // Game continues for others, but I am out
-            isLiveMode = false;
-            endGame();
+            transitionToSoloMode(outcome === 'win');
         } else {
-            // I survived! Next round...
-            survivors = payload.correct.length;
-            updateSurvivorCountUI(survivors);
-            setTimeout(() => { if (isLiveMode) startLiveRound(); }, 1500);
+            // If the game ended and I'm not a winner, I lost.
+            hasDiedLocally = true;
+            endGame(); 
         }
-    });
+    } else if (iDied) {
+        // Game is continuing for others, but I am out
+        isLiveMode = false;
+        hasDiedLocally = true;
+        endGame();
+    } else {
+        // I survived and the game continues
+        survivors = payload.correct.length;
+        updateSurvivorCountUI(survivors);
+        setTimeout(() => { if (isLiveMode) startLiveRound(); }, 1500);
+    }
+});
 
     gameChannel.on(
         'broadcast',
@@ -2694,20 +2696,21 @@ function endRoundAsReferee() {
     let outcome = 'continue';
     let winners = [];
 
-    // 1. TIE: Everyone got it wrong. 
-    // The people who were alive this round are ALL winners.
+    // 1. TIE: Everyone got it wrong at the same time
     if (correct.length === 0) {
         outcome = 'tie';
-        winners = dead; // Everyone who played this round wins together
+        winners = dead; 
     } 
-    // 2. CLEAR WINNER: Only one person got it right.
+    // 2. WIN: Only one person (or a subset) got it right while others failed
+    // and the number of survivors is now 1
     else if (correct.length === 1) {
         outcome = 'win';
         winners = [correct[0]];
     }
-    // 3. SURVIVAL: Multiple people got it right, game continues.
+    // 3. SURVIVAL: More than 1 person got it right
     else {
         outcome = 'continue';
+        winners = []; // No winners yet, game carries on
     }
 
     gameChannel.send({
@@ -2717,11 +2720,10 @@ function endRoundAsReferee() {
             correct, 
             dead, 
             outcome, 
-            winnerIds: winners // Changed to an array to support multiple winners
+            winnerIds: winners 
         }
     });
 }
-
 
 async function deleteCurrentLobby(lobbyId) {
     if (!lobbyId) return;
@@ -3222,6 +3224,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
