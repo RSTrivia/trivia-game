@@ -2731,7 +2731,18 @@ gameChannel.on('broadcast', { event: 'round-ended' }, async ({ payload }) => {
                 user_id: userId,
                 online_at: new Date().toISOString()
             });
-
+            // --- ADD THIS LOGIC HERE ---
+            // Small delay to ensure presence is fully synced before starting
+            setTimeout(() => {
+                window.matchStarted = true; // 🚀 THIS IS THE KEY
+                console.log("Match officially started. Ready for rounds.");
+                
+                if (isHost(gameChannel)) {
+                    console.log("Host: Triggering first round...");
+                    // If you have a function to start the first round, call it here
+                    // e.g., sendStartRoundSignal(); 
+                }
+            }, 1000);
           // Host assignment after tracking
           const state = gameChannel.presenceState();
           const presentPlayers = Object.keys(state).sort();
@@ -3363,6 +3374,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
