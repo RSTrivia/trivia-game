@@ -2438,7 +2438,7 @@ function setupLobbyRealtime(lobby) {
    lobbyChannel
     .on('presence', { event: 'sync' }, () => {
       const state = lobbyChannel.presenceState();
-      const players = Object.values(state).flat();
+      const presences = Object.values(state).flat();
       const count = players.length;
       if (presences.length > 0) {
         presences.sort((a, b) => a.presence_ref.localeCompare(b.presence_ref));
@@ -3350,6 +3350,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
