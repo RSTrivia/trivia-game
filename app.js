@@ -2601,10 +2601,16 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
                   window.pendingVictory = true;
                   showVictoryBanner("Last Survivor! Finish the round!");
                   
-                  // KILL THE TIMER: This prevents startTimer from triggering a new round
+                  // 1. Kill the interval (normal timer)
                   clearInterval(timer); 
                   stopTickSound();
-          
+                
+                  // 2. NEW: Kill the referee timeout (prevents the ghost question)
+                  if (refereeTimeout) {
+                      clearTimeout(refereeTimeout);
+                      refereeTimeout = null;
+                  }
+                
                   const alreadyAnswered = document.querySelector('[data-answered-correctly="true"]');
                   if (alreadyAnswered) {
                       // Force isLiveMode to false so no other logic can trigger a round
@@ -3181,6 +3187,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
