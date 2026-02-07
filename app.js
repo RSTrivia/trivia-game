@@ -1044,12 +1044,10 @@ function startTimer() {
                 document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
                 const youSurvived = document.querySelector('[data-answered-correctly="true"]');
                 if (questionText) questionText.textContent = "Checking survivors...";
-              
+                // CLEAR any existing timeout just in case
+                if (refereeTimeout) clearTimeout(refereeTimeout);
                 // 1.5s buffer is safe for network lag
-                setTimeout(async () => {
-                    // Check if you personally got it right
-                    const youSurvived = document.querySelector('[data-answered-correctly="true"]');
-                
+                refereeTimeout = setTimeout(async () => {
                     // CASE A: Match is Over (Victory or Tie)
                     if (survivors <= 1 || window.pendingVictory) {
                         console.log("Match Over detected by Referee.");
@@ -1057,7 +1055,8 @@ function startTimer() {
                         await transitionToSoloMode();
                         return; // EXIT - Do not load question
                     }
-
+                    // Check if you personally got it right
+                    const youSurvived = document.querySelector('[data-answered-correctly="true"]');
                     // CASE B: You survived, and others are still in
                     if (youSurvived && survivors > 1) {
                       if (!window.pendingVictory) {
@@ -2702,6 +2701,12 @@ async function deleteCurrentLobby(lobbyId) {
 }
 
 async function transitionToSoloMode() {
+  // 1. KILL the pending referee check immediately
+    if (refereeTimeout) {
+        clearTimeout(refereeTimeout);
+        refereeTimeout = null;
+        console.log("Referee timeout cancelled - Victory takes priority.");
+    }
     // --- 0. MULTI-CALL & OVERLAP GUARD ---
     // If we're already transitioning or the screen is visible, kill everything
     if (window.isTransitioning) return;
@@ -3176,6 +3181,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
