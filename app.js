@@ -1195,53 +1195,37 @@ async function checkAnswer(choiceId, btn) {
         }
     }
   }
-  if (isLiveMode) {
+if (isLiveMode) {
     roundOpen = false;
 
-    // Mark answer
-    roundResults[userId] = isCorrect ? 'correct' : 'wrong';
+    // 1. Save local result
+    const resultStatus = isCorrect ? 'correct' : 'wrong';
+    roundResults[userId] = resultStatus;
 
-    // Broadcast result to host/referee
+    // 2. Tell the Referee what happened
     gameChannel.send({
         type: 'broadcast',
         event: 'round-result',
-        payload: { userId, roundId, result: roundResults[userId] }
+        payload: { 
+            userId, 
+            roundId, 
+            result: resultStatus 
+        }
     });
 
-    // Only end the match for this player if they lost OR finished the last question
-    if (roundResults[userId] === 'wrong') {
-        window.pendingVictory = true;
-        await transitionToSoloMode(); // Shows victory/loss screen safely
-    } else if (remainingQuestions.length === 0 && preloadQueue.length === 0) {
-        // Player finished the deck
-        window.pendingVictory = true;
-        await transitionToSoloMode(); // End-game for player completion
+    // 3. UI Update: Don't end the game yet! 
+    // Wait for the 'round-ended' broadcast to decide if it's Game Over or a Tie.
+    if (questionText) {
+        questionText.textContent = isCorrect 
+            ? "Correct! Waiting for survivors..." 
+            : "Wrong! Waiting for match results...";
     }
-
-    questionText.textContent = "Waiting for other players...";
-    return; // stop here in live mode
-}
-}
-
-function handleInstantVictory() {
-    isLiveMode = false;
-    window.pendingVictory = true;
     
-    clearInterval(timer);
-    stopTickSound();
+    // Clear answers so they can't click again during the wait
+    if (answersBox) answersBox.innerHTML = '<div class="loading-spinner"></div>';
     
-    if (refereeTimeout) {
-        clearTimeout(refereeTimeout);
-        refereeTimeout = null;
-    }
-
-    // WIPE THE UI SO NO NEW QUESTIONS CAN APPEAR
-    if (answersBox) answersBox.innerHTML = "";
-    if (questionText) questionText.textContent = "Victory! Preparing results...";
-
-    setTimeout(() => {
-        transitionToSoloMode();
-    }, 1000);
+    return; // STOP HERE. The 'round-ended' listener handles the rest.
+}
 }
 
 function updateLevelUI() {
@@ -2537,36 +2521,39 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
     gameChannel = supabase.channel(`game-${matchId}`, {
         config: { presence: { key: userId } }
     });
-gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
+gameChannel.on('broadcast', { event: 'round-ended' }gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
     const { outcome, winnerIds, dead, correct } = payload;
     const iAmAWinner = winnerIds.includes(userId);
     const iDied = dead.includes(userId);
 
-    // CRITICAL: If I am in the dead list, I am OUT. 
-    // No matter if the match ended or continues.
-    if (iDied) {
-        isLiveMode = false;
-        hasDiedLocally = true;
-        console.log("Local player eliminated.");
-        endGame(); 
-        return; // Stop here for this player
-    }
-
-    // If I survived, check the match status
+    // 1. CHECK FOR MATCH END FIRST
+    // If the match is over, and I am a winner (even a tie-winner), I transition.
     if (outcome === 'win' || outcome === 'tie') {
         isLiveMode = false;
         if (iAmAWinner) {
             window.isTransitioning = true;
-            transitionToSoloMode(outcome === 'win');
+            // Pass 'true' if it was a 'win' (Sole Survivor)
+            // Pass 'false' if it was a 'tie' (Co-Victory)
+            transitionToSoloMode(outcome === 'win'); 
+            return; // Exit here!
         }
-    } else {
-        // Match continues and I survived
-        survivors = correct.length;
-        updateSurvivorCountUI(survivors);
-        setTimeout(() => { 
-            if (isLiveMode && !hasDiedLocally) startLiveRound(); 
-        }, 1500);
     }
+
+    // 2. CHECK FOR ELIMINATION SECOND
+    // If the match is CONTINUING but I died, then I'm out.
+    if (iDied) {
+        isLiveMode = false;
+        hasDiedLocally = true;
+        endGame(); 
+        return;
+    }
+
+    // 3. MATCH CONTINUES
+    survivors = correct.length;
+    updateSurvivorCountUI(survivors);
+    setTimeout(() => { 
+        if (isLiveMode && !hasDiedLocally) startLiveRound(); 
+    }, 1500);
 });
 
     gameChannel.on(
@@ -2606,7 +2593,9 @@ gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
                 // Only transition if we aren't already in the middle of a transition
                 if (!window.isTransitioning) {
                   window.pendingVictory = true;
-                  transitionToSoloMode(); 
+                  // If survivors is 1, you are the Sole Survivor (pass true)
+                  // If survivors is 0, it was a weird crash/tie (pass false)
+                  transitionToSoloMode(survivors === 1); 
                 }
               }
           }
@@ -2698,31 +2687,49 @@ function endRoundAsReferee() {
     let outcome = 'continue';
     let winners = [];
 
-    // 1. ELIMINATION: Someone got it right, someone got it wrong
-    if (correct.length > 0 && dead.length > 0) {
-        if (correct.length === 1) {
-            outcome = 'win'; // One sole survivor
-            winners = [correct[0]];
+    // 1. COMPLETION CHECK: Deck is empty
+    if (remainingQuestions.length === 0 && preloadQueue.length === 0) {
+        console.log("Referee: Deck finished! Declaring winners.");
+        
+        if (correct.length > 0) {
+            // Everyone who got the final question right wins together
+            outcome = correct.length === 1 ? 'win' : 'tie';
+            winners = correct;
         } else {
-            outcome = 'continue'; // Multiple survivors, match goes on
-            winners = []; 
+            // Everyone got the final question wrong? It's a tie-loss (Co-Victory)
+            outcome = 'tie';
+            winners = dead;
         }
     } 
-    // 2. TOTAL FAILURE: Everyone got it wrong
+    // 2. ELIMINATION CHECK: Someone was right, someone was wrong
+    else if (correct.length > 0 && dead.length > 0) {
+        if (correct.length === 1) {
+            outcome = 'win'; // Only one person left
+            winners = [correct[0]];
+        } else {
+            outcome = 'continue'; // Multiple survivors, deck still has questions
+        }
+    } 
+    // 3. TOTAL FAILURE: Everyone wrong (but deck wasn't empty)
     else if (correct.length === 0 && dead.length > 0) {
-        outcome = 'win'; // Or call it 'tie-end'
-        winners = dead; // Everyone is "winners" only if you want them to continue to solo
-        // If you want them to JUST lose, change this to outcome = 'lose'
+        outcome = 'tie';
+        winners = dead; // Everyone gets the victory screen
     }
-    // 3. TOTAL SUCCESS: Everyone got it right
-    else if (correct.length > 1 && dead.length === 0) {
+    // 4. TOTAL SUCCESS: Everyone right (and deck isn't empty)
+    else {
         outcome = 'continue';
     }
 
+    // BROADCAST THE FINAL DECISION
     gameChannel.send({
         type: 'broadcast',
         event: 'round-ended',
-        payload: { correct, dead, outcome, winnerIds: winners }
+        payload: { 
+            correct, 
+            dead, 
+            outcome, 
+            winnerIds: winners 
+        }
     });
 }
 
@@ -2744,7 +2751,7 @@ async function deleteCurrentLobby(lobbyId) {
     }
 }
 
-async function transitionToSoloMode() {
+async function transitionToSoloMode(isSoleWinner) {
   // 1. KILL the pending referee check immediately
     if (refereeTimeout) {
         clearTimeout(refereeTimeout);
@@ -2791,9 +2798,9 @@ async function transitionToSoloMode() {
     if (liveStats) liveStats.style.visibility = 'hidden';
 
     // Update Stats Text
+    const oddsText = document.getElementById('odds-stat'); 
     const statsText = document.getElementById('player-count-stat');
-    const oddsText = document.getElementById('odds-stat');
-    if (survivors === 0) {
+    if (!isSoleWinner) {
         if (statsText) statsText.textContent = `Co-Victory! Total Players: ${total}`;
     } else {
         if (statsText) statsText.textContent = `Sole Survivor! Total Players: ${total}`;
@@ -2801,7 +2808,7 @@ async function transitionToSoloMode() {
     if (oddsText) oddsText.textContent = `Survival Odds: ${odds}%`;
 
     // --- 3. SHOW SCREEN ---
-    victoryScreen.classList.remove('hidden');
+    victoryScreen.classList.remove('hidden');   
     playSound(bonusBuffer);
 
     // --- 4. CLEANUP ---
@@ -3225,6 +3232,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
