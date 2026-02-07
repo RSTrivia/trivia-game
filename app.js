@@ -1093,6 +1093,21 @@ async function handleTimeout() {
 async function checkAnswer(choiceId, btn) {
     if (!roundOpen) return;
     stopTickSound(); // CUT THE SOUND IMMEDIATELY
+    // If timeLeft is 0, we treat it as a 'wrong' answer automatically
+    let isCorrect = false; 
+
+    if (timeLeft > 0) {
+        // Disable buttons only if there was actually time left to click
+        document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
+
+        // 1. Check answer via RPC
+        const { data: correct, error } = await supabase.rpc('check_my_answer', {
+            input_id: currentQuestion.id,
+            choice: choiceId
+        });
+        if (error) return console.error("RPC Error:", error);
+        isCorrect = correct;
+    }
     if (timeLeft <= 0) return;
 
     // Disable all buttons immediately so they can't change their mind
@@ -1201,36 +1216,29 @@ async function checkAnswer(choiceId, btn) {
     }
   }
 if (isLiveMode) {
-    roundOpen = false;
+        roundOpen = false;
+        const resultStatus = isCorrect ? 'correct' : 'wrong';
+        
+        // CRITICAL: This must run even if timeLeft <= 0
+        gameChannel.send({
+            type: 'broadcast',
+            event: 'round-result',
+            payload: { 
+                userId, 
+                roundId, 
+                result: resultStatus 
+            }
+        });
 
-    // 1. Save local result
-    const resultStatus = isCorrect ? 'correct' : 'wrong';
-    roundResults[userId] = resultStatus;
-
-    // 2. Tell the Referee what happened
-    gameChannel.send({
-        type: 'broadcast',
-        event: 'round-result',
-        payload: { 
-            userId, 
-            roundId, 
-            result: resultStatus 
+        if (questionText) {
+            questionText.textContent = isCorrect 
+                ? "Correct! Waiting for survivors..." 
+                : "Timed out! Waiting for match results...";
         }
-    });
-
-    // 3. UI Update: Don't end the game yet! 
-    // Wait for the 'round-ended' broadcast to decide if it's Game Over or a Tie.
-    if (questionText) {
-        questionText.textContent = isCorrect 
-            ? "Correct! Waiting for survivors..." 
-            : "Wrong! Waiting for match results...";
+        
+        if (answersBox) answersBox.innerHTML = '<div class="loading-spinner"></div>';
+        return; 
     }
-    
-    // Clear answers so they can't click again during the wait
-    if (answersBox) answersBox.innerHTML = '<div class="loading-spinner"></div>';
-    
-    return; // STOP HERE. The 'round-ended' listener handles the rest.
-}
 }
 
 function updateLevelUI() {
@@ -3297,6 +3305,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
