@@ -1090,21 +1090,22 @@ async function checkAnswer(choiceId, btn) {
     stopTickSound(); 
     if (timeLeft <= 0) return;
 
+    // Disable all buttons immediately
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
 
-    // Determine correctness (RPC)
+    // 1. Check correctness via RPC
     const { data: isCorrect, error } = await supabase.rpc('check_my_answer', {
         input_id: currentQuestion.id,
         choice: choiceId
     });
-
     if (error) return console.error("RPC Error:", error);
 
-    // LOCAL UI
+    // 2. Local UI feedback
     btn.classList.add(isCorrect ? 'correct' : 'wrong');
 
     if (isLiveMode) {
         roundOpen = false;
+
         // Record result locally
         roundResults[userId] = isCorrect ? 'correct' : 'wrong';
 
@@ -1115,117 +1116,98 @@ async function checkAnswer(choiceId, btn) {
             payload: { userId, roundId, result: roundResults[userId] }
         });
 
-        // Losers see game over immediately if they got it wrong
+        // Non-winners who answer wrong see game over immediately
         if (!isCorrect) {
-            await endGame(); // This player lost
+            await endGame(); // You lost
+            return;
         }
 
+        // If correct, show waiting for others
         questionText.textContent = "Waiting for other players...";
         return; // STOP here in live mode
     }
 
- stopTickSound(); // CUT THE SOUND IMMEDIATELY
-    if (timeLeft <= 0) return;
-
-    // Disable all buttons immediately so they can't change their mind
-    document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
-  
-    // increment weekly count
-    if (isWeeklyMode) weeklyQuestionCount++;
-
-    if (error) return console.error("RPC Error:", error);
-  
+    // === Non-live modes (Normal, Daily, Weekly) ===
+    stopTickSound();
+    
+    // Update streak, score, and achievements
     if (isCorrect) {
         playSound(correctBuffer);
-        btn.dataset.answeredCorrectly = "true"; // Mark this for the Hub
-        btn.classList.add('correct');
-        // Update Local State & UI
+        btn.dataset.answeredCorrectly = "true";
+
         score++;
         updateScore();
-        const currentUsername = localStorage.getItem('cachedUsername') || 'Player';
-       
-        // 1. Get the session
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session) { 
-            let gained = isDailyMode ? 50 : 5;
-            let isBonusEarned = false; // Track for sound
-            if (isDailyMode) {
-                    dailyQuestionCount++; // Only track daily count in daily mode
-                    if (dailyQuestionCount === 10) {
-                      gained += 100;
-                      isBonusEarned = true; // Daily bonus!
-                    }
-                } else {
-                    // NORMAL & WEEKLY both use the 10-streak logic
-                    streak++; // Only track streak in normal mode
-                    if (streak === 10) { // change this back to 10
-                        gained += 30;
-                        streak = 0; 
-                        isBonusEarned = true; // Normal bonus!
-                    }
-            }
-            // 4. TRIGGER BONUS SECOND (This goes behind Level Up in the queue)
-            if (isBonusEarned) {
-                showNotification("BONUS XP!", bonusBuffer, "#a335ee"); //purple
-            }
-          
-            // A. Check for Level Up / Milestones BEFORE updating the global XP
-            checkLevelUp(gained);
 
-            // 2. Lucky Guess Check (< 1 second)
-            if (timeLeft >= 14) {
-                saveAchievement('fastest_guess', true); // This triggers the "Lucky Guess"
-            }
-            if (timeLeft <= 1 && timeLeft > 0) {
-                saveAchievement('just_in_time', true); // 2. Just in Time
-            }
+        // Handle XP, bonuses, and achievements
+        await handleXPandAchievements();
 
-            // halfway 50/100 lite mode score
-            if (isLiteMode && score === 50) {
-                saveAchievement('lite_50', true); // Sync to Supabase
-            }
-          
-            // halfway 25/50 weekly mode score
-            if (isWeeklyMode && score === 25) {
-                saveAchievement('weekly_25', true); // Sync to Supabase
-            }
-
-            // normal mode scores - achievements
-            checkNormalScoreAchievements(currentUsername, score);
-          
-            // 5. UPDATE DATA
-            currentProfileXp += gained; // Add the XP to local state
-            localStorage.setItem('cached_xp', currentProfileXp);
-            updateLevelUI(); // Refresh the Player/Level row
-            triggerXpDrop(gained);
-            
-            await supabase.from('profiles')
-            .update({ xp: currentProfileXp })
-            .eq('id', session.user.id);
-        }
-      
-        // This is where the pet roll happens
+        // Pet roll
         rollForPet();
-      if (!isLiveMode) {
+
+        // Preload next question
         setTimeout(loadQuestion, 1000);
-      } 
+
     } else {
-      // wrong answer
         playSound(wrongBuffer);
-        streak = 0; // Reset streak on wrong answer in both Normal and Weekly modes
+        streak = 0;
         btn.classList.add('wrong');
         await highlightCorrectAnswer();
-      if (!isLiveMode) {
-       if (isDailyMode || isWeeklyMode) {
-            // Challenges keep going until the limit is reached
+
+        // Daily/Weekly challenges continue until limit; Normal ends on wrong
+        if (isDailyMode || isWeeklyMode) {
             setTimeout(loadQuestion, 1500);
         } else {
-            // Only Normal and Lite modes end on a wrong answer
             setTimeout(endGame, 1000);
         }
     }
 }
+
+async function handleXPandAchievements() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    let gained = isDailyMode ? 50 : 5;
+    let isBonusEarned = false;
+
+    if (isDailyMode) {
+        dailyQuestionCount++;
+        if (dailyQuestionCount === 10) {
+            gained += 100;
+            isBonusEarned = true;
+        }
+    } else {
+        streak++;
+        if (streak === 10) {
+            gained += 30;
+            streak = 0;
+            isBonusEarned = true;
+        }
+    }
+
+    if (isBonusEarned) showNotification("BONUS XP!", bonusBuffer, "#a335ee");
+
+    checkLevelUp(gained);
+
+    // Fastest guess / just in time
+    if (timeLeft >= 14) saveAchievement('fastest_guess', true);
+    if (timeLeft <= 1 && timeLeft > 0) saveAchievement('just_in_time', true);
+
+    // Lite / Weekly milestones
+    if (isLiteMode && score === 50) saveAchievement('lite_50', true);
+    if (isWeeklyMode && score === 25) saveAchievement('weekly_25', true);
+
+    const currentUsername = localStorage.getItem('cachedUsername') || 'Player';
+    checkNormalScoreAchievements(currentUsername, score);
+
+    // Update local XP & server
+    currentProfileXp += gained;
+    localStorage.setItem('cached_xp', currentProfileXp);
+    updateLevelUI();
+    triggerXpDrop(gained);
+
+    await supabase.from('profiles')
+        .update({ xp: currentProfileXp })
+        .eq('id', session.user.id);
 }
 
 
@@ -2553,7 +2535,7 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
     // 1️⃣ Check if you are a winner first
     if (outcome === 'win' && winners.includes(userId)) {
         // You survived as one of the last players
-        await transitionToSoloMode();
+        await transitionToSoloMode(winners);
         return;
     }
 
@@ -2610,14 +2592,26 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
               survivors = joinedCount;
               updateSurvivorCountUI(survivors);
       
-              if (survivors <= 1) {
-                // Only transition if we aren't already in the middle of a transition
-                if (!window.isTransitioning) {
+          if (survivors <= 1) {
+              if (!window.isTransitioning) {
                   window.pendingVictory = true;
-                  transitionToSoloMode(); 
-                }
+          
+                  // Determine winners dynamically from roundResults
+                  const correct = [];
+                  const dead = [];
+                  for (const [uid, res] of Object.entries(roundResults)) {
+                      if (res === 'correct') correct.push(uid);
+                      else dead.push(uid);
+                  }
+          
+                  let winners = [];
+                  if (correct.length === 1) winners = correct;
+                  else if (correct.length === 0 && dead.length > 0) winners = dead;
+          
+                  transitionToSoloMode(winners); 
               }
           }
+        }
       
           // --- START LOGIC ---
           if (joinedCount >= survivors && !window.matchStarted) {
@@ -3260,6 +3254,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
