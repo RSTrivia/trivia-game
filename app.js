@@ -2548,19 +2548,35 @@ function setupLobbyRealtime(lobby) {
         }, 1000);
     })
     .subscribe(async (status) => {
-        if (status === 'SUBSCRIBED') {
-            await lobbyChannel.track({ online_at: new Date().toISOString() });
-            if (chatInput) {
-                chatInput.disabled = false;
-                chatInput.placeholder = "Type a message...";
-            }
-        }
+    if (status === 'SUBSCRIBED') {
+        // ✅ Track player as ready immediately
+        await lobbyChannel.track({ 
+            online_at: new Date().toISOString(),
+            status: 'ready_to_start'
+        });
 
-        if ((status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') && !isStarting) {
-            console.log("Connection lost. Retrying...");
-            setTimeout(() => joinMatchmaking(), 3000);
+        if (chatInput) {
+            chatInput.disabled = false;
+            chatInput.placeholder = "Type a message...";
         }
-    });
+    }
+
+    if ((status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') && !isStarting) {
+        console.log("Connection lost. Retrying...");
+        setTimeout(() => joinMatchmaking(), 3000);
+    }
+});
+
+// ✅ Put fallback timer for host right here
+if (isHost(lobbyChannel)) {
+    setTimeout(() => {
+        if (!window.finalStartSent) {
+            const state = lobbyChannel.presenceState();
+            const count = Object.values(state).flat().length;
+            console.log("Fallback: sending start signal for", count, "players");
+            sendFinalStartSignal(count);
+        }
+    }, 10000); // 10 seconds max wait
 }
 
 
@@ -2684,21 +2700,7 @@ gameChannel.on('broadcast', { event: 'round-ended' }, async ({ payload }) => {
               }
           }
         }
-      
-        // --- START LOGIC --- <--- THIS IS THE SECTION
-         if (joinedCount >= survivors && !window.matchStarted) {
-              if (isHost(gameChannel)) {
-                  window.matchStarted = true;
-                  console.log("Host broadcasting start-round signal...");
-          
-                  gameChannel.send({
-                      type: 'broadcast',
-                      event: 'start-round',
-                      payload: { startTime: Date.now() + 1000 } // 1 second delay for sync
-                  });
-              }
-          }
-      })
+    
      gameChannel.on('broadcast', { event: 'start-round' }, ({ payload }) => {
     const delay = Math.max(0, payload.startTime - Date.now());
     setTimeout(() => {
@@ -3347,6 +3349,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
