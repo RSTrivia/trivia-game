@@ -2440,13 +2440,14 @@ function setupLobbyRealtime(lobby) {
     const state = lobbyChannel.presenceState();
     const presenceEntries = Object.entries(state); // 👈 IMPORTANT
     
-    if (presenceEntries.length > 0) {
+    if (presenceEntries.length > 0 && !currentHostId) {
       presenceEntries.sort((a, b) =>
         a[1][0].presence_ref.localeCompare(b[1][0].presence_ref)
       );
     
-      currentHostId = presenceEntries[0][0]; // 👈 THIS IS THE USER ID
-    }
+      // Only assign host if not already assigned
+      currentHostId = presenceEntries[0][0];
+    }  
 
       const presences = Object.values(state).flat();
       const count = presences.length;
@@ -2559,7 +2560,15 @@ function setupLobbyRealtime(lobby) {
             online_at: new Date().toISOString(),
             status: 'ready_to_start'
         });
-
+      
+        // Now safe to check for host
+        if (isHost(lobbyChannel) && !window.finalStartSent) {
+            setTimeout(() => {
+                const presences = Object.values(lobbyChannel.presenceState()).flat();
+                if (presences.length >= 2) sendFinalStartSignal(presences.length);
+            }, 500); // small delay
+        }
+      
         if (chatInput) {
             chatInput.disabled = false;
             chatInput.placeholder = "Type a message...";
@@ -2573,16 +2582,14 @@ function setupLobbyRealtime(lobby) {
 });
 
 // ✅ Put fallback timer for host right here
-if (isHost(lobbyChannel)) {
     setTimeout(() => {
-        if (!window.finalStartSent) {
-            const state = lobbyChannel.presenceState();
-            const count = Object.values(state).flat().length;
-            console.log("Fallback: sending start signal for", count, "players");
-            sendFinalStartSignal(count);
+        if (isHost(lobbyChannel) && !window.finalStartSent) {
+            const presences = Object.values(lobbyChannel.presenceState()).flat();
+            console.log("Fallback: sending start signal for", presences.length, "players");
+            sendFinalStartSignal(presences.length);
         }
-    }, 10000); // 10 seconds max wait
-}
+    }, 10000); // 10s max wait
+  }
 }
 
 async function beginLiveMatch(countFromLobby, syncedStartTime) {
@@ -3042,18 +3049,20 @@ function appendMessage(user, msg) {
 }
 
 function isHost(channel) {
-  const state = channel?.presenceState?.();
-  if (!state) return false;
+    const state = channel?.presenceState?.();
+    if (!state) return false;
 
-  const entries = Object.entries(state);
-  if (entries.length === 0) return false;
+    const entries = Object.entries(state).filter(e => e[1]?.length);
+    if (entries.length === 0) return false;
 
-  entries.sort((a, b) =>
-    a[1][0].presence_ref.localeCompare(b[1][0].presence_ref)
-  );
+    entries.sort((a, b) =>
+        a[1][0].presence_ref.localeCompare(b[1][0].presence_ref)
+    );
 
-  const hostId = entries[0][0]; // 👈 presence key
-  return hostId === userId;
+    const hostId = entries[0][0];
+    if (!hostId) return false;
+
+    return hostId === userId;
 }
 
 
@@ -3355,6 +3364,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
