@@ -1046,30 +1046,32 @@ function startTimer() {
             stopTickSound();
             
             if (isLiveMode) {
-                //const myAnswer = document.querySelector('.answer-btn.selected'); // Or however you track selection
+                // Disable buttons immediately so no one can click during the 'sync'
+                document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
                 const youSurvived = document.querySelector('[data-answered-correctly="true"]');
-
+                if (questionText) questionText.textContent = "Checking survivors...";
+              
                 // 1.5s buffer is safe for network lag
                 setTimeout(async () => {
                     // Check if you personally got it right
                     const youSurvived = document.querySelector('[data-answered-correctly="true"]');
                 
+                    // CASE A: Match is Over (Victory or Tie)
+                    if (survivors <= 1 || window.pendingVictory) {
+                        console.log("Match Over detected by Referee.");
+                        isLiveMode = false;
+                        await transitionToSoloMode();
+                        return; // EXIT - Do not load question
+                    }
+
+                    // CASE B: You survived, and others are still in
                     if (youSurvived) {
-                        // CASE A: You are still in. Is anyone else?
-                        if (survivors === 1 || window.pendingVictory) {
-                            // Sole Winner!
-                            isLiveMode = false; 
-                            const lobbyId = currentLobby?.id;
-                            currentLobby = null; 
-                            if (lobbyId) await deleteCurrentLobby(lobbyId);
-                            await transitionToSoloMode(); 
-                        } else {
-                            // Multiple people still alive. Next round!
-                            if (questionText) questionText.textContent = ""; 
-                            loadQuestion();
-                        }
+                        console.log("Multiple survivors. Next round.");
+                        if (questionText) questionText.textContent = ""; 
+                        loadQuestion();
+          
                     } else {
-                        // CASE B: You got it wrong or timed out.
+                        // CASE C: You got it wrong or timed out.
                         if (survivors === 0) {
                             // TIE: Everyone died this round.
                             // In Battle Royale, a tie is usually treated as a Co-Victory.
@@ -1095,7 +1097,7 @@ function startTimer() {
                             }, 1500);
                         }
                     }
-                }, 1500);
+                }, 3000);
             } else {
                 // Not in Live Mode (Solo/Daily/Weekly)
                 handleTimeout(); 
@@ -3141,6 +3143,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
