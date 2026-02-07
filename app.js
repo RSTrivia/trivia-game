@@ -2538,34 +2538,31 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
         config: { presence: { key: userId } }
     });
 gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
-    const { outcome, winnerIds, dead } = payload;
+    const { outcome, winnerIds, dead, correct } = payload;
     const iAmAWinner = winnerIds.includes(userId);
     const iDied = dead.includes(userId);
 
-    // Stop the live heartbeat
-    if (outcome === 'win' || outcome === 'tie') {
-        isLiveMode = false; 
-        
-        if (iAmAWinner) {
-            // Only winners/survivors get the victory/solo transition
-            window.isTransitioning = true;
-            transitionToSoloMode(outcome === 'win'); 
-        } else {
-            // You are not in the winner list. You are dead.
-            hasDiedLocally = true;
-            endGame(); 
-        }
-    } else if (iDied) {
-        // Match continues for others, but you failed this round
+    // CRITICAL: If I am in the dead list, I am OUT. 
+    // No matter if the match ended or continues.
+    if (iDied) {
         isLiveMode = false;
         hasDiedLocally = true;
-        endGame();
+        console.log("Local player eliminated.");
+        endGame(); 
+        return; // Stop here for this player
+    }
+
+    // If I survived, check the match status
+    if (outcome === 'win' || outcome === 'tie') {
+        isLiveMode = false;
+        if (iAmAWinner) {
+            window.isTransitioning = true;
+            transitionToSoloMode(outcome === 'win');
+        }
     } else {
-        // You survived and the game continues to next round
-        survivors = payload.correct.length;
+        // Match continues and I survived
+        survivors = correct.length;
         updateSurvivorCountUI(survivors);
-        
-        // Use a slight delay so users can see the result before next question
         setTimeout(() => { 
             if (isLiveMode && !hasDiedLocally) startLiveRound(); 
         }, 1500);
@@ -2701,20 +2698,25 @@ function endRoundAsReferee() {
     let outcome = 'continue';
     let winners = [];
 
-    // CASE 1: Everyone got it wrong (Total failure)
-    if (correct.length === 0) {
-        outcome = 'tie'; 
-        winners = dead; // All get "Co-Victory" or "Continue"
+    // 1. ELIMINATION: Someone got it right, someone got it wrong
+    if (correct.length > 0 && dead.length > 0) {
+        if (correct.length === 1) {
+            outcome = 'win'; // One sole survivor
+            winners = [correct[0]];
+        } else {
+            outcome = 'continue'; // Multiple survivors, match goes on
+            winners = []; 
+        }
     } 
-    // CASE 2: Only one person got it right (Sole Survivor)
-    else if (correct.length === 1) {
-        outcome = 'win';
-        winners = [correct[0]];
+    // 2. TOTAL FAILURE: Everyone got it wrong
+    else if (correct.length === 0 && dead.length > 0) {
+        outcome = 'win'; // Or call it 'tie-end'
+        winners = dead; // Everyone is "winners" only if you want them to continue to solo
+        // If you want them to JUST lose, change this to outcome = 'lose'
     }
-    // CASE 3: Multiple people got it right (Match continues)
-    else {
+    // 3. TOTAL SUCCESS: Everyone got it right
+    else if (correct.length > 1 && dead.length === 0) {
         outcome = 'continue';
-        winners = []; 
     }
 
     gameChannel.send({
@@ -3223,6 +3225,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
