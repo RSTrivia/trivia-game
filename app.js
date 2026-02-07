@@ -2437,13 +2437,16 @@ function setupLobbyRealtime(lobby) {
 
    lobbyChannel
     .on('presence', { event: 'sync' }, () => {
-      const state = lobbyChannel.presenceState();
-      const presences = Object.values(state).flat();
-      const count = presences.length;
-      if (presences.length > 0) {
-        presences.sort((a, b) => a.presence_ref.localeCompare(b.presence_ref));
-        currentHostId = presences[0].userId;
-      }
+    const state = lobbyChannel.presenceState();
+    const presenceEntries = Object.entries(state); // 👈 IMPORTANT
+    
+    if (presenceEntries.length > 0) {
+      presenceEntries.sort((a, b) =>
+        a[1][0].presence_ref.localeCompare(b[1][0].presence_ref)
+      );
+    
+      currentHostId = presenceEntries[0][0]; // 👈 THIS IS THE USER ID
+    }
       console.log("Lobby Host:", currentHostId);
       updateLobbyUI(count, lobby.starts_at);
   
@@ -3026,29 +3029,18 @@ function appendMessage(user, msg) {
 }
 
 function isHost(channel) {
-    const activeChannel = channel || gameChannel || lobbyChannel;
-    
-    if (!activeChannel || typeof activeChannel.presenceState !== 'function') {
-        return false;
-    }
-    
-    const state = activeChannel.presenceState();
-    // 1. Get all presence objects as a flat array
-    const presences = Object.values(state).flat();
-    
-    if (presences.length === 0) return false;
+  const state = channel?.presenceState?.();
+  if (!state) return false;
 
-    // 2. Sort by 'presence_ref' (this is a unique, incrementing string from Supabase)
-    // This ensures the person who joined first stays host.
-    presences.sort((a, b) => a.presence_ref.localeCompare(b.presence_ref));
-    
-    const hostId = presences[0].userId;
-    
-    // DEBUG LOGS
-    console.log("Current Host ID:", hostId);
-    console.log("My userId:", userId);
-    
-    return hostId === userId; 
+  const entries = Object.entries(state);
+  if (entries.length === 0) return false;
+
+  entries.sort((a, b) =>
+    a[1][0].presence_ref.localeCompare(b[1][0].presence_ref)
+  );
+
+  const hostId = entries[0][0]; // 👈 presence key
+  return hostId === userId;
 }
 
 
@@ -3350,6 +3342,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
