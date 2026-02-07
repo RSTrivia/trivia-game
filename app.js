@@ -1196,7 +1196,11 @@ async function checkAnswer(choiceId, btn) {
   }
   if (isLiveMode) {
   roundOpen = false;
-
+    
+  // Immediately end game for this player
+  await endGame(); // shows the endgame screen
+    
+ try {   
   gameChannel.send({
     type: 'broadcast',
     event: 'round-result',
@@ -1206,6 +1210,9 @@ async function checkAnswer(choiceId, btn) {
       result: isCorrect ? 'correct' : 'wrong'
     }
   });
+  } catch (err) {
+    console.error("Failed to broadcast round result:", err);
+  }
 
   questionText.textContent = "Waiting for other players...";
   return; // ⛔ stop here in live mode
@@ -2639,8 +2646,41 @@ function startLiveRound() {
   roundId++;
   roundOpen = true;
   roundResults = {};
+
+  // Reset the timer
+  timeLeft = 15; // Or whatever your round length is
+  if (timer) clearInterval(timer);
+  timer = setInterval(async () => {
+    timeLeft--;
+    updateTimerUI(timeLeft);
+
+    if (timeLeft <= 0) {
+      clearInterval(timer); // stop the timer
+      roundOpen = false;
+
+      if (isLiveMode) {
+        // If this player never answered → mark as wrong
+        if (!roundResults[userId]) {
+          roundResults[userId] = 'wrong';
+          await endGame(); // show endgame screen
+        }
+
+        // Host marks all missing players and triggers round result
+        if (isHost(gameChannel)) {
+          const state = gameChannel.presenceState();
+          const allPlayers = Object.keys(state);
+          for (const uid of allPlayers) {
+            if (!roundResults[uid]) roundResults[uid] = 'wrong';
+          }
+          endRoundAsReferee(); // broadcast round-ended
+        }
+      }
+    }
+  }, 1000);
+
   loadQuestion();
 }
+
 
 function endRoundAsReferee() {
   const correct = [];
@@ -3162,6 +3202,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
