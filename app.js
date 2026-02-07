@@ -2527,34 +2527,31 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
 gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
     const { outcome, winnerIds, dead, correct } = payload;
 
-    // 1. I LOST: Show the standard Game Over
+    // 1. IF I AM DEAD: I go to Game Over.
     if (dead.includes(userId)) {
+        console.log("I am eliminated.");
         isLiveMode = false;
         hasDiedLocally = true;
-        endGame(); 
+        // Small delay to let the Winner's lap initialize before I disconnect
+        setTimeout(() => endGame(), 100); 
         return;
     }
 
-    // 2. I AM THE SOLE SURVIVOR:
-    // If there is only 1 winner and it's me, trigger the Victory Screen
-    if (outcome === 'win' && winnerIds.length === 1 && winnerIds[0] === userId) {
-        console.log("Sole Survivor detected. Triggering Victory Bridge...");
-        transitionToSoloMode(true); // 'true' means Sole Winner
-        return;
+    // 2. IF THE REFEREE DECLARED A WIN:
+    if (outcome === 'win' || outcome === 'tie') {
+        if (winnerIds.includes(userId)) {
+            console.log("Referee declared me a winner!");
+            transitionToSoloMode(outcome === 'win');
+            return;
+        }
     }
 
-    // 3. TIE / CO-VICTORY: Everyone got it wrong or deck empty
-    if (outcome === 'tie' && winnerIds.includes(userId)) {
-        transitionToSoloMode(false); // 'false' means Tie
-        return;
-    }
-
-    // 4. MULTIPLE SURVIVORS: Game continues normally
+    // 3. IF THE GAME CONTINUES:
     survivors = correct.length;
     updateSurvivorCountUI(survivors);
     
     setTimeout(() => { 
-        if (isLiveMode && !hasDiedLocally) {
+        if (isLiveMode && !hasDiedLocally && !window.pendingVictory) {
             startLiveRound(); 
         }
     }, 1500);
@@ -2591,34 +2588,33 @@ gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
     gameChannel.on('presence', { event: 'sync' }, () => {
           const state = gameChannel.presenceState();
           const joinedCount = Object.keys(state).length;
-          // ADD THIS GUARD AT THE TOP
+         // GUARD: If we are already showing a victory or transitioning, do nothing
           if (window.isTransitioning || window.pendingVictory) return;
       
           console.log(`Presence Sync: ${joinedCount} connected.`);
       
          // --- REFINED MID-GAME VICTORY CHECK ---
         if (isLiveMode && window.matchStarted) {
-            
-            // 1. THE ULTIMATE SAFETY: If you are the last person standing, you win. Period.
-            if (joinedCount === 1) {
-                console.log("Presence Sync: Sole survivor detected. Ending game.");
-                window.pendingVictory = true;
-                transitionToSoloMode(true);
-                return;
-            }
-        
-            // 2. YOUR ORIGINAL GUARD: Handles drops during the "Waiting" phase
-            if (!roundOpen && joinedCount < survivors) {
-                console.log(`Mid-game drop detected: ${survivors} -> ${joinedCount}`);
-                survivors = joinedCount;
-                updateSurvivorCountUI(survivors);
-        
-                if (survivors <= 1 && !window.isTransitioning) {
+                // ONLY trigger auto-victory if NO round is currently open.
+                // If roundOpen is true, let the Referee handle the logic instead.
+                if (joinedCount === 1 && !roundOpen) {
+                    console.log("Presence Sync: Natural sole survivor (drop-out). Ending game.");
                     window.pendingVictory = true;
-                    transitionToSoloMode(survivors === 1);
+                    transitionToSoloMode(true);
+                    return;
+                }
+        
+                // Mid-game drop logic
+                if (!roundOpen && joinedCount < survivors) {
+                    survivors = joinedCount;
+                    updateSurvivorCountUI(survivors);
+        
+                    if (survivors <= 1) {
+                        window.pendingVictory = true;
+                        transitionToSoloMode(survivors === 1);
+                    }
                 }
             }
-        }
           // --- START LOGIC ---
           if (joinedCount >= survivors && !window.matchStarted) {
               const delay = Math.max(0, syncedStartTime - Date.now());
@@ -3315,6 +3311,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
