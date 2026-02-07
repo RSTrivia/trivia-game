@@ -2661,43 +2661,47 @@ function startLiveRound() {
     timeLeft = 15;
     if (timer) clearInterval(timer);
 
-    timer = setInterval(async () => {
-        timeLeft--;
-        updateTimerUI(timeLeft);
+timer = setInterval(async () => {
+    if (!roundOpen) return; // 🔒 prevent double execution
 
-        if (timeLeft <= 0) {
-            clearInterval(timer);
-            roundOpen = false;
+    timeLeft--;
+    updateTimerUI(timeLeft);
 
-            if (isLiveMode) {
-                // Mark as wrong if player didn't answer
-                if (!roundResults[userId]) {
-                    roundResults[userId] = 'wrong';
-                    console.log("Time's up! Player didn't answer.");
+    if (timeLeft <= 0) {
+        clearInterval(timer);
+        roundOpen = false;
+
+        if (isLiveMode) {
+            // Mark self wrong if didn't answer
+            if (!roundResults[userId]) {
+                roundResults[userId] = 'wrong';
+                console.log("Time's up! Player didn't answer.");
+            }
+
+            // Host finalizes the round
+            if (isHost(gameChannel)) {
+                const state = gameChannel.presenceState();
+                const allPlayers = Object.keys(state);
+                for (const uid of allPlayers) {
+                    if (!roundResults[uid]) roundResults[uid] = 'wrong';
                 }
 
-                // Host marks all missing players
-                if (isHost(gameChannel)) {
-                    const state = gameChannel.presenceState();
-                    const allPlayers = Object.keys(state);
-                    for (const uid of allPlayers) {
-                        if (!roundResults[uid]) roundResults[uid] = 'wrong';
-                    }
+                // 🔥 Broadcast round-ended
+                endRoundAsReferee();
+            }
 
-                    // Host decides outcome and broadcasts
-                    endRoundAsReferee(); // sends 'round-ended'
-                }
+            // Non-hosts just wait for the 'round-ended' broadcast
+            questionText.textContent = "Waiting for other players...";
+        } else {
+            // Non-live mode: check if pool finished
+            if (remainingQuestions.length === 0 && preloadQueue.length === 0) {
+                await endGame();
             } else {
-                // Non-live mode: check if pool finished
-                if (remainingQuestions.length === 0 && preloadQueue.length === 0) {
-                    await endGame();
-                } else {
-                    // Load next question normally
-                    loadQuestion();
-                }
+                loadQuestion();
             }
         }
-    }, 1000);
+    }
+}, 1000);
 
     // Load the current question
     loadQuestion();
@@ -3254,6 +3258,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
