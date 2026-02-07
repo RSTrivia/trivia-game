@@ -465,6 +465,17 @@ if (playAgainBtn) {
         mainMenuBtn.onclick = async () => {
         preloadQueue = []; // Clear the buffer only when going back to menu
         // Manual UI Reset instead:
+        await resetLiveModeState();
+        document.getElementById('end-screen').classList.add('hidden');
+        document.getElementById('start-screen').classList.remove('hidden');
+        document.body.classList.remove('game-active');
+    };
+  }
+  if (leaveLobbyBtn) {  
+        leaveLobbyBtn.onclick = async () => {
+        preloadQueue = []; // Clear the buffer only when going back to menu
+        // Manual UI Reset instead:
+        await resetLiveModeState();
         document.getElementById('end-screen').classList.add('hidden');
         document.getElementById('start-screen').classList.remove('hidden');
         document.body.classList.remove('game-active');
@@ -941,11 +952,16 @@ async function loadQuestion(broadcastedId = null, startTime = null) {
     if (isLiteMode && score >= LITE_LIMIT) { await endGame(); return; }
         
     // Normal Mode "Out of questions" check
-    if (!isLiveMode && preloadQueue.length === 0 && remainingQuestions.length === 0 && currentQuestion !== null) {
-        await endGame();
-        return;
-    }
-  
+    //if (!isLiveMode && preloadQueue.length === 0 && remainingQuestions.length === 0 && currentQuestion !== null) {
+        //await endGame();
+        //return;
+   // }
+    if (!isLiveMode && !window.isTransitioning && preloadQueue.length === 0 && remainingQuestions.length === 0) {
+      if (currentQuestion !== null) {
+          await endGame();
+          return;
+      }
+  }
     // A. IMMEDIATE CLEANUP
   const allBtns = document.querySelectorAll('.answer-btn');
     allBtns.forEach(btn => {
@@ -2356,6 +2372,7 @@ window.showAchievementNotification = showAchievementNotification;
 
 //live mode
 async function joinMatchmaking() {
+   await resetLiveModeState();
   // 1. AUTH CHECK: This prevents the "Cannot read properties of null (reading 'id')" error
     const { data: { session } } = await supabase.auth.getSession();
     
@@ -2675,6 +2692,75 @@ gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
     });
 }
 
+async function resetLiveModeState() {
+    console.log("Full reset of Live Mode state...");
+
+    // --- 1. NETWORK CLEANUP ---
+    // Kill the Lobby Channel
+    if (lobbyChannel) {
+        await supabase.removeChannel(lobbyChannel);
+        lobbyChannel = null;
+    }
+    // Kill the Game Channel
+    if (gameChannel) {
+        await supabase.removeChannel(gameChannel);
+        gameChannel = null;
+    }
+
+    // --- 2. TIMER & INTERVAL CLEANUP ---
+    if (lobbyTimerInterval) clearInterval(lobbyTimerInterval);
+    if (timer) clearInterval(timer);
+    if (refereeTimeout) clearTimeout(refereeTimeout);
+    
+    // Clear any pending transition timeouts
+    if (typeof nextRoundTimeout !== 'undefined' && nextRoundTimeout) {
+        clearTimeout(nextRoundTimeout);
+        nextRoundTimeout = null;
+    }
+
+    // --- 3. VARIABLE STATE RESET ---
+    isLiveMode = false;
+    isStarting = false;
+    hasDiedLocally = false;
+    roundOpen = false;
+    
+    window.matchStarted = false;
+    window.pendingVictory = false;
+    window.isTransitioning = false;
+    window.finalStartSent = false;
+    
+    roundId = 0;
+    survivors = 0;
+    roundResults = {};
+    preloadQueue = [];
+    remainingQuestions = [];
+
+    // --- 4. UI CLEANUP ---
+    document.body.classList.remove('lobby-active', 'game-active');
+    
+    // Hide specific live UI elements
+    const survivorDisplay = document.getElementById('survivor-count');
+    if (survivorDisplay) survivorDisplay.classList.add('hidden');
+    
+    const victoryScreen = document.getElementById('victory-screen');
+    if (victoryScreen) victoryScreen.classList.add('hidden');
+
+    const lobbyScreen = document.getElementById('lobby-screen');
+    if (lobbyScreen) lobbyScreen.classList.add('hidden');
+
+    // Reset Chat UI
+    if (chatMessages) chatMessages.innerHTML = "";
+    if (chatInput) {
+        chatInput.value = "";
+        chatInput.disabled = true;
+    }
+
+    // Stop sounds
+    stopTickSound(); 
+    
+    console.log("Live Mode Reset Complete.");
+}
+
 function updateSurvivorCountUI(count) {
     const survivorElement = document.getElementById('survivor-count');
     if (!survivorElement) return;
@@ -2948,21 +3034,29 @@ async function transitionToSoloMode(isSoleWinner) {
   const soloBtn = document.getElementById('soloBtn');
     // --- 5. HANDLE "CONTINUE" ---
    if (soloBtn) {
-     soloBtn.onclick = async () => {
+     soloBtn.onclick = async () => { 
+       // 1. Reset the logic flags
         window.isTransitioning = false; 
         window.pendingVictory = false; 
-        
+        isLiveMode = false; // We are now in Solo Mode
+        hasDiedLocally = false;
         victoryScreen.classList.add('hidden');
-        
-        // If we ran out of questions during the match, end it here
-        if (preloadQueue.length === 0 && remainingQuestions.length === 0) {
-            await endGame();
-            return;
-        }
-
-        // Show timer again for solo play
+       
+        document.body.classList.remove('lobby-active'); // Ensure lobby styles are gone
+        document.body.classList.add('game-active');
+       // Make sure the main game container is visible
+        const gameContainer = document.getElementById('game'); 
+        if (gameContainer) gameContainer.classList.remove('hidden');
+    
         if (timerDisplay) timerDisplay.style.visibility = 'visible';
-        
+         
+       // 3. Queue Check
+      if (preloadQueue.length === 0 && remainingQuestions.length === 0) {
+          console.log("No questions left for solo mode.");
+          await endGame();
+          return;
+      }
+
         // Resume the game loop in solo mode
         console.log("Transitioning to Solo Mode. Good luck!");
         loadQuestion(); 
@@ -3366,6 +3460,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
