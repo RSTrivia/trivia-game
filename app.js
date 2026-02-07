@@ -920,20 +920,14 @@ async function preloadSpecificQuestions(idsToFetch) {
 async function loadQuestion(broadcastedId = null, startTime = null) {
     // --- 1. LIVE MATCH STATE CHECK ---
     if (isLiveMode) {
-        // CASE A: Someone won, or only one person is left
-        if (survivors === 1 || window.pendingVictory) {
-            console.log("Victory detected in loadQuestion. Ending match.");
-            isLiveMode = false;
+        // If survivors is 1 or 0, the match is over.
+        if (survivors <= 1 || window.pendingVictory) {
+            console.log(`Match termination detected (Survivors: ${survivors}). Redirecting...`);
+            
+            // We DON'T set isLiveMode = false here manually. 
+            // We let transitionToSoloMode handle the state change so it's centralized.
             transitionToSoloMode(); 
-            return;
-        }
-        
-        // CASE B: Everyone died (Tie)
-        if (survivors === 0) {
-            console.log("Tie detected in loadQuestion. Ending match.");
-            isLiveMode = false;
-            transitionToSoloMode(); 
-            return;
+            return; // Stop loadQuestion from doing ANYTHING else.
         }
     }
    // 1. End Game Checks
@@ -3143,6 +3137,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
