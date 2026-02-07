@@ -2526,37 +2526,38 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
     });
 gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
     const { outcome, winnerIds, dead, correct } = payload;
-    const iAmAWinner = winnerIds.includes(userId);
-    const iDied = dead.includes(userId);
 
-    // 1. CHECK FOR MATCH END FIRST
-    // If the match is over, and I am a winner (even a tie-winner), I transition.
-    if (outcome === 'win' || outcome === 'tie') {
+    // 1. PRIORITY 1: VICTORY/TIE
+    // If I am in the winnerIds, I don't care about the 'dead' list.
+    if (winnerIds.includes(userId)) {
         isLiveMode = false;
-        if (iAmAWinner) {
-            window.isTransitioning = true;
-            // Pass 'true' if it was a 'win' (Sole Survivor)
-            // Pass 'false' if it was a 'tie' (Co-Victory)
-            transitionToSoloMode(outcome === 'win'); 
-            return; // Exit here!
-        }
+        window.isTransitioning = true;
+        console.log(`Match over: ${outcome}. Transitioning to Solo.`);
+        
+        // Pass 'true' only if outcome is exactly 'win'
+        transitionToSoloMode(outcome === 'win'); 
+        return; 
     }
 
-    // 2. CHECK FOR ELIMINATION SECOND
-    // If the match is CONTINUING but I died, then I'm out.
-    if (iDied) {
+    // 2. PRIORITY 2: ELIMINATION
+    // I only check this if I wasn't a winner.
+    if (dead.includes(userId)) {
+        console.log("Eliminated! Showing Game Over.");
         isLiveMode = false;
         hasDiedLocally = true;
         endGame(); 
         return;
     }
 
-    // 3. MATCH CONTINUES
+    // 3. PRIORITY 3: CONTINUE
+    // If I'm not a winner and I'm not dead, the game must be continuing.
     survivors = correct.length;
     updateSurvivorCountUI(survivors);
-    console.log(`Round ended. Survivors: ${survivors}. Starting next round in 1.5s...`);
+    
     setTimeout(() => { 
-        if (isLiveMode && !hasDiedLocally) startLiveRound(); 
+        if (isLiveMode && !hasDiedLocally) {
+            startLiveRound(); 
+        }
     }, 1500);
 });
 
@@ -2753,6 +2754,8 @@ function endRoundAsReferee() {
             // Everyone got the final question wrong? It's a tie-loss (Co-Victory)
             outcome = 'tie';
             winners = dead;
+          // FIX: If they are winners, they shouldn't be "dead" for the UI
+            dead.length = 0;
         }
     } 
     // 2. ELIMINATION CHECK: Someone was right, someone was wrong
@@ -2771,6 +2774,8 @@ function endRoundAsReferee() {
     else if (correct.length === 0 && dead.length > 0) {
         outcome = 'tie';
         winners = dead; // Everyone gets the victory screen
+        // FIX: Remove them from dead list so they don't trigger Game Over screen
+        dead.length = 0;
     }
     // 4. TOTAL SUCCESS: Everyone right (and deck isn't empty)
     else {
@@ -3308,6 +3313,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
