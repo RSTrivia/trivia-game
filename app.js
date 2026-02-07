@@ -2447,9 +2447,13 @@ function setupLobbyRealtime(lobby) {
     
       currentHostId = presenceEntries[0][0]; // 👈 THIS IS THE USER ID
     }
+
+      const presences = Object.values(state).flat();
+      const count = presences.length;
+      
       console.log("Lobby Host:", currentHostId);
       updateLobbyUI(count, lobby.starts_at);
-  
+      
       // Count how many players are ready
       const readyCount = presences.filter(
         p => p.status === 'ready_to_start'
@@ -3342,6 +3346,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
