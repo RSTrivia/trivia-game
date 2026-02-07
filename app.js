@@ -329,7 +329,8 @@ lobbyBtn.onclick = async () => {
     // 1. Show the Lobby UI (Hide the start screen)
     document.getElementById('start-screen').classList.add('hidden');
     document.getElementById('lobby-screen').classList.remove('hidden');
-
+    if (audioCtx.state === 'suspended') await audioCtx.resume();
+    loadSounds();
     // 2. Initialize the search for a match
     await joinMatchmaking();
 };
@@ -1054,9 +1055,14 @@ function startTimer() {
 
                     // CASE B: You survived, and others are still in
                     if (youSurvived) {
+                      if (survivors > 1) {
                         console.log("Multiple survivors. Next round.");
                         if (questionText) questionText.textContent = ""; 
                         loadQuestion();
+                      }  else {
+                            isLiveMode = false;
+                            await transitionToSoloMode();
+                      }
           
                     } else {
                         // CASE C: You got it wrong or timed out.
@@ -2549,14 +2555,30 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
             const state = gameChannel.presenceState();
             const joinedCount = Object.keys(state).length;
             
-            console.log(`Players in Game Channel: ${joinedCount}/${survivors}`);
-
-            // If everyone is here, trigger the start timer
-            if (joinedCount >= survivors) {
+            console.log(`Presence Sync: ${joinedCount} players connected. Variable: ${survivors}`);
+        
+            // --- 1. THE MID-GAME SYNC (Instant Update) ---
+            // If we are already playing and the presence count is lower than our variable
+            if (isLiveMode && joinedCount < survivors) {
+                console.log(`Updating survivors via Presence: ${survivors} -> ${joinedCount}`);
+                survivors = joinedCount;
+                updateSurvivorCountUI(survivors);
+        
+                // If this drop ends the game, trigger victory logic immediately
+                if (survivors <= 1) {
+                    window.pendingVictory = true;
+                    checkVictoryCondition(); 
+                }
+            }
+        
+            // --- 2. THE START-MATCH LOGIC (Your existing code) ---
+            // We only want to trigger the initial loadQuestion ONCE when the match starts
+            if (joinedCount >= survivors && !window.matchStarted) {
                 const delay = Math.max(0, syncedStartTime - Date.now());
                 
-              setTimeout(() => {
-                    if (isLiveMode) { // Ensure user didn't quit/crash during delay
+                setTimeout(() => {
+                    if (isLiveMode) {
+                        window.matchStarted = true; // Prevents this from firing again mid-game
                         if (questionText) questionText.innerHTML = "";
                         loadQuestion(); 
                     }
@@ -3131,6 +3153,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
