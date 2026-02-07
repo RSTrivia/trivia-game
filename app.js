@@ -2575,8 +2575,11 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
               updateSurvivorCountUI(survivors);
       
               if (survivors <= 1) {
+                // Only transition if we aren't already in the middle of a transition
+                if (!window.isTransitioning) {
                   window.pendingVictory = true;
                   transitionToSoloMode(); 
+                }
               }
           }
       
@@ -3187,6 +3190,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
