@@ -2763,9 +2763,9 @@ function endRoundAsReferee() {
     } 
     // 2. Everyone got it wrong
     else if (correct.length === 0 && dead.length > 0) {
+        console.log("Referee: Everyone is wrong! Declaring a Tie.");
         outcome = 'tie';
-        winners = [...dead];
-        dead.length = 0; // Clear dead so they don't trigger endGame()
+        winners = [...dead]; // Everyone who was 'wrong' is technically a co-winner
     }
     // 3. Deck is empty - Final Stand
     if (remainingQuestions.length === 0 && preloadQueue.length === 0) {
@@ -3331,6 +3331,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
