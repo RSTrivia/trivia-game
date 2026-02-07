@@ -1091,7 +1091,7 @@ function startTimer() {
                             }, 1500);
                         }
                     }
-                }, 3000);
+                }, 5000);
             } else {
                 // Not in Live Mode (Solo/Daily/Weekly)
                 handleTimeout(); 
@@ -3137,6 +3137,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
