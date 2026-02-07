@@ -2582,7 +2582,7 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
               window.matchStarted &&
               !roundOpen &&        // 🔒 only AFTER round ends
               joinedCount < survivors
-            )
+            ) {
               console.log(`Mid-game drop detected: ${survivors} -> ${joinedCount}`);
               survivors = joinedCount;
               updateSurvivorCountUI(survivors);
@@ -3162,6 +3162,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
