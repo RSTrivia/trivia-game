@@ -2577,6 +2577,7 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
     gameChannel = supabase.channel(`game-${matchId}`, {
         config: { presence: { key: userId } }
     });
+    currentHostId = players[0] || userId; // fallback to self if empty
     console.log("Initial host is", currentHostId);
   
 gameChannel.on('broadcast', { event: 'round-ended' }, async ({ payload }) => {
@@ -2651,8 +2652,8 @@ gameChannel.on('broadcast', { event: 'round-ended' }, async ({ payload }) => {
           console.log(`Presence Sync: ${joinedCount} connected.`);
                 // ----- HOST FAILOVER -----
           const activePlayers = Object.keys(state).sort();
-            if (!currentHostId || !activePlayers.includes(currentHostId)) {
-                currentHostId = activePlayers[0] || null;
+            if (!currentHostId || !Object.keys(gameChannel.presenceState()).includes(currentHostId)) {
+                currentHostId = Object.keys(gameChannel.presenceState()).sort()[0] || null;
                 console.log("Host assigned:", currentHostId);
             }
 
@@ -2692,10 +2693,10 @@ gameChannel.on('broadcast', { event: 'round-ended' }, async ({ payload }) => {
       
         // --- START LOGIC --- <--- THIS IS THE SECTION
           if (joinedCount >= survivors && !window.matchStarted) {
+              window.matchStarted = true; // THIS IS THE KEY
               const delay = Math.max(0, syncedStartTime - Date.now());
               setTimeout(() => {
                   if (isLiveMode) {
-                      window.matchStarted = true; // THIS IS THE KEY
                       if (questionText) questionText.innerHTML = "";
                       startLiveRound(); 
                   }
@@ -3333,6 +3334,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
