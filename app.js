@@ -2561,18 +2561,21 @@ gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
         }
     }
 
-    // --- 2. ELIMINATION CHECK ---
-    // If the game is continuing or someone else won, check if I'm out.
-    if (dead.includes(userId)) {
-        console.log("I am eliminated.");
+    // --- 2. ELIMINATION CHECK (The Critical Fix) ---
+    // If I'm in the 'dead' list, OR if someone else won and I'm not them
+    if (dead.includes(userId) || (outcome === 'win' && !winnerIds.includes(userId))) {
+        console.log("I am eliminated. Closing game.");
         isLiveMode = false;
         hasDiedLocally = true;
         
-        // Small delay to ensure state settles before disconnecting
-        setTimeout(() => endGame(), 100); 
+        // Clear the screen so they don't see the next question
+        if (questionText) questionText.innerHTML = "Eliminated! Better luck next time.";
+        if (answersBox) answersBox.innerHTML = "";
+        
+        setTimeout(() => endGame(), 1000); 
         return;
     }
-
+  
     // --- 3. CONTINUATION CHECK ---
     // If we reach here, the game is continuing and I am still alive.
     survivors = correct.length;
@@ -2870,6 +2873,7 @@ async function deleteCurrentLobby(lobbyId) {
 }
 
 async function transitionToSoloMode(isSoleWinner) {
+    if (hasDiedLocally) return;
     window.pendingVictory = true; 
     isLiveMode = false;
     // 1. KILL the pending referee check immediately
@@ -3362,6 +3366,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
