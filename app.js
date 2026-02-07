@@ -23,6 +23,7 @@ let lobbyChannel = null;
 let lobbyTimerInterval = null;
 let userId = null; // Add this globally
 let gameChannel = null;
+let nextRoundTimeout = null;
 let initialLobbySize = 0; // Default for 1v1
 let matchStartingCount = 0;
 let survivors = 0;
@@ -919,12 +920,13 @@ async function preloadSpecificQuestions(idsToFetch) {
 }
 
 async function loadQuestion(broadcastedId = null, startTime = null) {
-    // LOCKDOWN: If victory is pending, do not wipe the UI or load a new question
-    if (isLiveMode && (survivors <= 1 || window.pendingVictory)) {
-        console.log("Blocking loadQuestion: Match is already over.");
-        transitionToSoloMode();
+    // 1. Aggressive Lockdown
+    if (isLiveMode && (survivors <= 1 || window.pendingVictory || window.isTransitioning)) {
+        console.log("Blocking loadQuestion: Match is over or transitioning.");
+        if (!window.isTransitioning) transitionToSoloMode();
         return; 
     }
+  
    // 1. End Game Checks
     if (isWeeklyMode && weeklyQuestionCount >= WEEKLY_LIMIT) { await endGame(); return; }
     if (isLiteMode && score >= LITE_LIMIT) { await endGame(); return; }
@@ -939,6 +941,9 @@ async function loadQuestion(broadcastedId = null, startTime = null) {
         // Optional: Log the ID to verify both players have the same one
         console.log("Live Question ID:", preloadQueue[0].id);
     }
+  
+    // 2. STOP everything if we are about to wipe the UI but a win was just detected
+    if (window.pendingVictory) return;
   
     // A. IMMEDIATE CLEANUP
   const allBtns = document.querySelectorAll('.answer-btn');
@@ -1054,12 +1059,12 @@ function startTimer() {
                     }
 
                     // CASE B: You survived, and others are still in
-                    if (youSurvived) {
-                      if (survivors > 1) {
+                    if (youSurvived && survivors > 1) {
+                      if (!window.pendingVictory) {
                         console.log("Multiple survivors. Next round.");
                         if (questionText) questionText.textContent = ""; 
                         loadQuestion();
-                      }  else {
+                      } else {
                             isLiveMode = false;
                             await transitionToSoloMode();
                       }
@@ -2697,35 +2702,48 @@ async function deleteCurrentLobby(lobbyId) {
 }
 
 async function transitionToSoloMode() {
-    // --- 0. MULTI-CALL GUARD ---
-    // If the screen is already visible, stop here so we don't repeat logic or sounds.
+    // --- 0. MULTI-CALL & OVERLAP GUARD ---
+    // If we're already transitioning or the screen is visible, kill everything
+    if (window.isTransitioning) return;
+    window.isTransitioning = true; 
+
     const victoryScreen = document.getElementById('victory-screen');
-    if (victoryScreen && !victoryScreen.classList.contains('hidden')) {
-        return;
-    }
-    // 1. LOCK THE MULTIPLAYER GATE
+    if (victoryScreen && !victoryScreen.classList.contains('hidden')) return;
+
+    // --- 1. THE SILENCER (Stop the flicker) ---
     isLiveMode = false;
-  
+    window.pendingVictory = true; // Global lock
+    
+    // CANCEL any pending loadQuestion timeouts from startTimer
+    if (typeof nextRoundTimeout !== 'undefined' && nextRoundTimeout) {
+        clearTimeout(nextRoundTimeout);
+        nextRoundTimeout = null;
+    }
+
     clearInterval(timer);
     stopTickSound();
-    
-    // 2. SAVE NECESSARY DATA BEFORE CLEARING
-    const lobbyId = currentLobby?.id; // Capture ID for deletion
+
+    // WIPE UI IMMEDIATELY: This ensures that even if loadQuestion() is 
+    // running in the background, there's nothing for it to display on.
+    if (questionText) questionText.textContent = "";
+    if (answersBox) answersBox.innerHTML = "";
+    if (questionImage) questionImage.style.display = 'none';
+
+    // --- 2. DATA PREP ---
+    const lobbyId = currentLobby?.id;
     const total = matchStartingCount || 2; 
     const odds = Math.round((1 / total) * 100);
+    currentLobby = null; 
 
-    currentLobby = null; // THIS IS CRITICAL: prevents loadQuestion from blocking
-    
-    // Hide standard HUD
+    // HUD Cleanup
     const timerDisplay = document.getElementById('timer');
     const liveStats = document.getElementById('live-stats');
     if (timerDisplay) timerDisplay.style.visibility = 'hidden';
     if (liveStats) liveStats.style.visibility = 'hidden';
 
+    // Update Stats Text
     const statsText = document.getElementById('player-count-stat');
     const oddsText = document.getElementById('odds-stat');
-    
-    // Set Victory Text
     if (survivors === 0) {
         if (statsText) statsText.textContent = `Co-Victory! Total Players: ${total}`;
     } else {
@@ -2733,11 +2751,11 @@ async function transitionToSoloMode() {
     }
     if (oddsText) oddsText.textContent = `Survival Odds: ${odds}%`;
 
-    // 3. SHOW SCREEN & PLAY SOUND
+    // --- 3. SHOW SCREEN ---
     victoryScreen.classList.remove('hidden');
     playSound(bonusBuffer);
 
-    // 4. CLEANUP REALTIME CHANNELS & DATABASE
+    // --- 4. CLEANUP ---
     if (gameChannel) {
         supabase.removeChannel(gameChannel);
         gameChannel = null;
@@ -2746,8 +2764,12 @@ async function transitionToSoloMode() {
         await deleteCurrentLobby(lobbyId);
     }
 
-    // 5. HANDLE "CONTINUE"
+    // --- 5. HANDLE "CONTINUE" ---
     document.getElementById('continue-solo-btn').onclick = async () => {
+        // Unlock for solo play
+        window.isTransitioning = false; 
+        window.pendingVictory = false; 
+        
         victoryScreen.classList.add('hidden');
         
         if (preloadQueue.length === 0 && remainingQuestions.length === 0) {
@@ -2757,11 +2779,8 @@ async function transitionToSoloMode() {
 
         if (timerDisplay) timerDisplay.style.visibility = 'visible';
         
-        // Resetting state for the Solo Sprint
-        window.pendingVictory = false; 
-        
         await preloadNextQuestions(3);
-        loadQuestion(); // Now this won't be blocked!
+        loadQuestion(); 
     };
 }
 
@@ -3157,6 +3176,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
