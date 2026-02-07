@@ -1095,46 +1095,31 @@ async function checkAnswer(choiceId, btn) {
     stopTickSound(); // CUT THE SOUND IMMEDIATELY
     // If timeLeft is 0, we treat it as a 'wrong' answer automatically
     let isCorrect = false; 
-
+  
+    // --- 1. HANDLE INPUT (Only if time remains) ---
     if (timeLeft > 0) {
-        // Disable buttons only if there was actually time left to click
         document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
-
-        // 1. Check answer via RPC
+        
+        // Check answer
         const { data: correct, error } = await supabase.rpc('check_my_answer', {
             input_id: currentQuestion.id,
             choice: choiceId
         });
+
         if (error) return console.error("RPC Error:", error);
         isCorrect = correct;
-    }
-    if (timeLeft <= 0) return;
 
-    // Disable all buttons immediately so they can't change their mind
-    document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
-  
-    // increment weekly count
-    if (isWeeklyMode) weeklyQuestionCount++;
-  
-    // 1. Check answer via RPC
-    const { data: isCorrect, error } = await supabase.rpc('check_my_answer', {
-        input_id: currentQuestion.id,
-        choice: choiceId
-    });
-
-    if (error) return console.error("RPC Error:", error);
-  
-    if (isCorrect) {
-        playSound(correctBuffer);
-        btn.dataset.answeredCorrectly = "true"; // Mark this for the Hub
-        btn.classList.add('correct');
-        // Update Local State & UI
-        score++;
-        updateScore();
-        const currentUsername = localStorage.getItem('cachedUsername') || 'Player';
-       
-        // 1. Get the session
-        const { data: { session } } = await supabase.auth.getSession();
+        if (isCorrect) {
+          playSound(correctBuffer);
+          if (btn) btn.dataset.answeredCorrectly = "true"; // Mark this for the Hub
+          if (btn) btn.classList.add('correct');
+          // Update Local State & UI
+          score++;
+          updateScore();
+          const currentUsername = localStorage.getItem('cachedUsername') || 'Player';
+         
+          // 1. Get the session
+          const { data: { session } } = await supabase.auth.getSession();
         
         if (session) { 
             let gained = isDailyMode ? 50 : 5;
@@ -1196,30 +1181,21 @@ async function checkAnswer(choiceId, btn) {
       
         // This is where the pet roll happens
         rollForPet();
-      if (!isLiveMode) {
-        setTimeout(loadQuestion, 1000);
-      } 
-    } else {
+        
+      } else {
       // wrong answer
         playSound(wrongBuffer);
         streak = 0; // Reset streak on wrong answer in both Normal and Weekly modes
-        btn.classList.add('wrong');
+        if (btn) btn.classList.add('wrong');
         await highlightCorrectAnswer();
-      if (!isLiveMode) {
-       if (isDailyMode || isWeeklyMode) {
-            // Challenges keep going until the limit is reached
-            setTimeout(loadQuestion, 1500);
-        } else {
-            // Only Normal and Lite modes end on a wrong answer
-            setTimeout(endGame, 1000);
-        }
+      
     }
   }
-if (isLiveMode) {
+    // --- 2. LIVE MODE BROADCAST (Must run even if timeLeft <= 0) ---
+    if (isLiveMode) {
         roundOpen = false;
         const resultStatus = isCorrect ? 'correct' : 'wrong';
-        
-        // CRITICAL: This must run even if timeLeft <= 0
+
         gameChannel.send({
             type: 'broadcast',
             event: 'round-result',
@@ -1233,11 +1209,22 @@ if (isLiveMode) {
         if (questionText) {
             questionText.textContent = isCorrect 
                 ? "Correct! Waiting for survivors..." 
-                : "Timed out! Waiting for match results...";
+                : "Time up / Wrong! Waiting for match results...";
         }
         
         if (answersBox) answersBox.innerHTML = '<div class="loading-spinner"></div>';
         return; 
+    }
+
+    // --- 3. NON-LIVE MODE CONTINUATION ---
+    if (!isLiveMode) {
+       if (isCorrect || isDailyMode || isWeeklyMode) {
+            // Challenges keep going until the limit is reached
+            setTimeout(loadQuestion, 1500);
+        } else {
+            // Only Normal and Lite modes end on a wrong answer
+            setTimeout(endGame, 1000);
+        }
     }
 }
 
@@ -3305,6 +3292,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
