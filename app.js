@@ -2941,8 +2941,10 @@ async function transitionToSoloMode(isSoleWinner) {
         currentLobby = null; 
     }, 3000); 
 
+  const soloBtn = document.getElementById('soloBtn');
     // --- 5. HANDLE "CONTINUE" ---
-    document.getElementById('soloBtn').onclick = async () => {
+   if (soloBtn) {
+     soloBtn.onclick = async () => {
         window.isTransitioning = false; 
         window.pendingVictory = false; 
         
@@ -2961,6 +2963,9 @@ async function transitionToSoloMode(isSoleWinner) {
         console.log("Transitioning to Solo Mode. Good luck!");
         loadQuestion(); 
     };
+     } else {
+    console.error("Button 'continue-solo-btn' not found in the DOM.");
+}
 }
 
 function showVictoryBanner(message) {
@@ -3357,6 +3362,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
