@@ -2537,33 +2537,38 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
     gameChannel = supabase.channel(`game-${matchId}`, {
         config: { presence: { key: userId } }
     });
-    gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
+gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
     const { outcome, winnerIds, dead } = payload;
     const iAmAWinner = winnerIds.includes(userId);
     const iDied = dead.includes(userId);
 
+    // Stop the live heartbeat
     if (outcome === 'win' || outcome === 'tie') {
-        isLiveMode = false;
+        isLiveMode = false; 
         
         if (iAmAWinner) {
-            // Only winners get the transition to solo/victory
+            // Only winners/survivors get the victory/solo transition
             window.isTransitioning = true;
-            transitionToSoloMode(outcome === 'win');
+            transitionToSoloMode(outcome === 'win'); 
         } else {
-            // If the game ended and I'm not a winner, I lost.
+            // You are not in the winner list. You are dead.
             hasDiedLocally = true;
             endGame(); 
         }
     } else if (iDied) {
-        // Game is continuing for others, but I am out
+        // Match continues for others, but you failed this round
         isLiveMode = false;
         hasDiedLocally = true;
         endGame();
     } else {
-        // I survived and the game continues
+        // You survived and the game continues to next round
         survivors = payload.correct.length;
         updateSurvivorCountUI(survivors);
-        setTimeout(() => { if (isLiveMode) startLiveRound(); }, 1500);
+        
+        // Use a slight delay so users can see the result before next question
+        setTimeout(() => { 
+            if (isLiveMode && !hasDiedLocally) startLiveRound(); 
+        }, 1500);
     }
 });
 
@@ -2696,32 +2701,26 @@ function endRoundAsReferee() {
     let outcome = 'continue';
     let winners = [];
 
-    // 1. TIE: Everyone got it wrong at the same time
+    // CASE 1: Everyone got it wrong (Total failure)
     if (correct.length === 0) {
-        outcome = 'tie';
-        winners = dead; 
+        outcome = 'tie'; 
+        winners = dead; // All get "Co-Victory" or "Continue"
     } 
-    // 2. WIN: Only one person (or a subset) got it right while others failed
-    // and the number of survivors is now 1
+    // CASE 2: Only one person got it right (Sole Survivor)
     else if (correct.length === 1) {
         outcome = 'win';
         winners = [correct[0]];
     }
-    // 3. SURVIVAL: More than 1 person got it right
+    // CASE 3: Multiple people got it right (Match continues)
     else {
         outcome = 'continue';
-        winners = []; // No winners yet, game carries on
+        winners = []; 
     }
 
     gameChannel.send({
         type: 'broadcast',
         event: 'round-ended',
-        payload: { 
-            correct, 
-            dead, 
-            outcome, 
-            winnerIds: winners 
-        }
+        payload: { correct, dead, outcome, winnerIds: winners }
     });
 }
 
@@ -3224,6 +3223,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
