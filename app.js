@@ -1385,6 +1385,18 @@ async function endGame() {
     gameEnding = true;
     clearInterval(timer);
     stopTickSound();
+
+    // --- ADD THIS BLOCK HERE ---
+    // If we are in a live match, leave the channel immediately.
+    // This prevents the Referee from thinking we are still an "active" survivor.
+    if (isLiveMode && gameChannel) {
+        console.log("Leaving Live Match channel...");
+        isLiveMode = false; // Kill the flag immediately
+        supabase.removeChannel(gameChannel);
+        gameChannel = null;
+    }
+    // ---------------------------
+  
    // 1. Calculate time IMMEDIATELY for all modes
     const endTime = Date.now();
     const startValue = isWeeklyMode ? weeklyStartTime : gameStartTime;
@@ -2781,6 +2793,16 @@ function endRoundAsReferee() {
         outcome = 'tie';
         winners = correct;
     }
+
+  // --- ADD THE FIX HERE ---
+    // If the referee determines the game is over, LOCK the Host locally immediately.
+    if (outcome === 'win' || outcome === 'tie') {
+        console.log("Referee: Victory detected. Locking local state.");
+        window.pendingVictory = true; 
+        isLiveMode = false; // Stops loadQuestion from broadcasting further
+        if (timer) clearInterval(timer); // Stop the local UI timer
+    }
+    // ----------------------
     // 4. BROADCAST THE FINAL DECISION (This now ALWAYS fires)
     gameChannel.send({
         type: 'broadcast',
@@ -2822,13 +2844,17 @@ async function deleteCurrentLobby(lobbyId) {
 }
 
 async function transitionToSoloMode(isSoleWinner) {
+    window.pendingVictory = true; 
+    isLiveMode = false;
     // 1. KILL the pending referee check immediately
     if (refereeTimeout) {
         clearTimeout(refereeTimeout);
         refereeTimeout = null;
         console.log("Referee timeout cancelled - Victory takes priority.");
     }
-
+  
+    if (timer) clearInterval(timer);
+     stopTickSound();
     // --- 0. MULTI-CALL & OVERLAP GUARD ---
     if (window.isTransitioning) return;
     window.isTransitioning = true; 
@@ -2836,17 +2862,11 @@ async function transitionToSoloMode(isSoleWinner) {
     const victoryScreen = document.getElementById('victory-screen');
     if (victoryScreen && !victoryScreen.classList.contains('hidden')) return;
 
-    // --- 1. THE SILENCER (Stop the multiplayer overhead) ---
-    isLiveMode = false; // Important: loadQuestion() checks this to stop broadcasting
-    window.pendingVictory = true; 
     
     if (typeof nextRoundTimeout !== 'undefined' && nextRoundTimeout) {
         clearTimeout(nextRoundTimeout);
         nextRoundTimeout = null;
     }
-
-    clearInterval(timer);
-    stopTickSound();
 
     // Clear question area so the Victory screen is the focus
     if (questionText) questionText.textContent = "";
@@ -3311,6 +3331,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
