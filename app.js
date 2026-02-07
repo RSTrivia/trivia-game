@@ -2527,30 +2527,26 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
 gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
     const { outcome, winnerIds, dead, correct } = payload;
 
-    // 1. PRIORITY 1: VICTORY/TIE
-    // If I am in the winnerIds, I don't care about the 'dead' list.
+    // IF I AM A WINNER (Sole or Tie)
     if (winnerIds.includes(userId)) {
+        console.log("Match Result: I am a winner.");
         isLiveMode = false;
         window.isTransitioning = true;
-        console.log(`Match over: ${outcome}. Transitioning to Solo.`);
-        
-        // Pass 'true' only if outcome is exactly 'win'
+        // This stops all game timers and shows the victory screen
         transitionToSoloMode(outcome === 'win'); 
         return; 
     }
 
-    // 2. PRIORITY 2: ELIMINATION
-    // I only check this if I wasn't a winner.
+    // IF I AM DEAD (And I wasn't in the winnerIds)
     if (dead.includes(userId)) {
-        console.log("Eliminated! Showing Game Over.");
+        console.log("Match Result: Eliminated.");
         isLiveMode = false;
         hasDiedLocally = true;
-        endGame(); 
+        endGame(); // Show Game Over
         return;
     }
 
-    // 3. PRIORITY 3: CONTINUE
-    // If I'm not a winner and I'm not dead, the game must be continuing.
+    // IF GAME CONTINUES
     survivors = correct.length;
     updateSurvivorCountUI(survivors);
     
@@ -2742,46 +2738,42 @@ function endRoundAsReferee() {
     let outcome = 'continue';
     let winners = [];
 
-    // 1. COMPLETION CHECK: Deck is empty
-    if (remainingQuestions.length === 0 && preloadQueue.length === 0) {
-        console.log("Referee: Deck finished! Declaring winners.");
-        
-        if (correct.length > 0) {
-            // Everyone who got the final question right wins together
-            outcome = correct.length === 1 ? 'win' : 'tie';
-            winners = correct;
-        } else {
-            // Everyone got the final question wrong? It's a tie-loss (Co-Victory)
-            outcome = 'tie';
-            winners = dead;
-          // FIX: If they are winners, they shouldn't be "dead" for the UI
-            dead.length = 0;
-        }
-    } 
-    // 2. ELIMINATION CHECK: Someone was right, someone was wrong
-    else if (correct.length > 0 && dead.length > 0) {
+    // 1. Someone was right, someone was wrong
+    if (correct.length > 0 && dead.length > 0) {
         if (correct.length === 1) {
-            outcome = 'win'; // Only one person left
+            // ONLY ONE PERSON LEFT! They win.
+            outcome = 'win';
             winners = [correct[0]];
         } else {
-            // If multiple people got it right, but everyone else is dead
-            // This keeps the game moving or ends it if no one else is in the lobby
-            outcome = 'continue'; // Multiple survivors, deck still has questions
-            winners = [];
+            // Multiple survivors, the game continues for them
+            outcome = 'continue';
+            winners = []; // No one has won the WHOLE match yet
         }
     } 
-    // 3. TOTAL FAILURE: Everyone wrong (but deck wasn't empty)
+    // 2. Everyone got it wrong
     else if (correct.length === 0 && dead.length > 0) {
         outcome = 'tie';
-        winners = dead; // Everyone gets the victory screen
-        // FIX: Remove them from dead list so they don't trigger Game Over screen
-        dead.length = 0;
+        winners = [...dead];
+        dead.length = 0; // Clear dead so they don't trigger endGame()
+    }
+    // 3. Deck is empty - Final Stand
+    if (remainingQuestions.length === 0 && preloadQueue.length === 0) {
+        if (outcome === 'continue' || correct.length > 0) {
+            outcome = correct.length === 1 ? 'win' : 'tie';
+            winners = correct;
+        }
     }
     // 4. TOTAL SUCCESS: Everyone right (and deck isn't empty)
+    else if (correct.length > 0 && dead.length === 0) {
+        console.log("Referee: Total Success! Everyone moves to the next round.");
+        outcome = 'continue';
+        winners = []; // No one has won the whole match yet
+        // dead is already empty here
+    }
+    // 5. THE VOID: No one is left or something went wrong
     else {
         outcome = 'continue';
-    }
-  
+    }  
     // --- ADD THE FINAL SAFETY CHECK HERE ---
     // If the logic above resulted in 'continue' but the game is physically 
     // out of questions, we must end it now as a tie/co-victory.
@@ -3313,6 +3305,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
