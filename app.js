@@ -2537,36 +2537,30 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
     gameChannel = supabase.channel(`game-${matchId}`, {
         config: { presence: { key: userId } }
     });
-    gameChannel.on('broadcast',{ event: 'round-ended' },({ payload }) => {
-    const { correct, outcome } = payload;
-
-    // 1. Am I dead?
-    const iDied = dead.includes(userId);
-
-    if (outcome === 'tie') {
-        showGameOver("No survivors! It's a tie."); 
-        return;
-    }
-
-    if (outcome === 'win') {
-        if (userId === winnerId) {
-            transitionToSoloMode(); // I am the champion
+    gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
+        const { outcome, winnerIds, dead } = payload;
+        const iAmAWinner = winnerIds.includes(userId);
+        const iDied = dead.includes(userId);
+    
+        if (outcome === 'win' || outcome === 'tie') {
+            isLiveMode = false;
+            if (iAmAWinner) {
+                transitionToSoloMode(outcome === 'win');
+            } else {
+                // Player lost the match - trigger your endGame logic
+                endGame(); 
+            }
+        } else if (iDied) {
+            // Game continues for others, but I am out
+            isLiveMode = false;
+            endGame();
         } else {
-            showGameOver("You were eliminated! A winner has been crowned.");
+            // I survived! Next round...
+            survivors = payload.correct.length;
+            updateSurvivorCountUI(survivors);
+            setTimeout(() => { if (isLiveMode) startLiveRound(); }, 1500);
         }
-        return;
-    }
-
-    // If game continues...
-    if (iDied) {
-        showGameOver("Wrong answer! Game Over.");
-    } else {
-        survivors = correct.length;
-        updateSurvivorCountUI(survivors);
-        // Small delay so users see the "Correct" feedback
-        setTimeout(startLiveRound, 1500); 
-    }
-  });
+    });
 
     gameChannel.on(
         'broadcast',
@@ -2658,7 +2652,6 @@ function startLiveRound() {
   roundOpen = true;
   roundResults = {};
 
-  // Reset the timer
   timeLeft = 15;
   if (timer) clearInterval(timer);
 
@@ -2667,40 +2660,27 @@ function startLiveRound() {
     updateTimerUI(timeLeft);
 
     if (timeLeft <= 0) {
-      clearInterval(timer);
-      roundOpen = false;
-
-      if (isLiveMode) {
-        // Only mark as wrong if player didn't answer
-        if (!roundResults[userId]) {
-          roundResults[userId] = 'wrong';
-          console.log("Time's up! Player didn't answer.");
-        }
-
-        // Host marks all missing players
-        if (isHost(gameChannel)) {
-          const state = gameChannel.presenceState();
-          const allPlayers = Object.keys(state);
-          for (const uid of allPlayers) {
-            if (!roundResults[uid]) roundResults[uid] = 'wrong';
+          clearInterval(timer);
+          roundOpen = false;
+      
+          if (isLiveMode) {
+              // REPORT and WAIT for the Referee
+              if (!roundResults[userId]) {
+                  roundResults[userId] = 'wrong';
+                  gameChannel.send({
+                      type: 'broadcast',
+                      event: 'round-result',
+                      payload: { userId, result: 'wrong', roundId }
+                  });
+              }
+              if (isHost(gameChannel)) endRoundAsReferee();
+              
+              // Show a "Waiting" message so they don't think it's stuck
+              if (questionText) questionText.innerHTML = "Time's up! Waiting for survivors...";
+          } else {
+              // Solo/Daily modes can end immediately
+              endGame();
           }
-          endRoundAsReferee(); // broadcast round-ended
-        }
-
-        // Check if the player should go to endGame
-        // Only if they lost or finished all questions
-        const playerResult = roundResults[userId];
-        if (
-          playerResult === 'wrong' || 
-          (remainingQuestions.length === 0 && preloadQueue.length === 0)
-        ) {
-          await endGame();
-        }
-      } else {
-        // Non-live mode: always check if pool finished
-        if (remainingQuestions.length === 0 && preloadQueue.length === 0) {
-          await endGame();
-        }
       }
     }
   }, 1000);
@@ -2708,35 +2688,40 @@ function startLiveRound() {
   loadQuestion();
 }
 
-
 function endRoundAsReferee() {
-  const players = Object.entries(roundResults);
-  const correct = players.filter(([_, res]) => res === 'correct').map(([uid]) => uid);
-  const dead = players.filter(([_, res]) => res === 'wrong').map(([uid]) => uid);
+    const players = Object.entries(roundResults);
+    const correct = players.filter(([_, res]) => res === 'correct').map(([uid]) => uid);
+    const dead = players.filter(([_, res]) => res === 'wrong').map(([uid]) => uid);
 
-  let outcome = 'continue';
+    let outcome = 'continue';
+    let winners = [];
 
-  // 1. Check if everyone is dead
-  if (correct.length === 0) {
-    outcome = 'tie'; // Everyone loses at once
-  } 
-  // 2. Check if only one person survived
-  else if (correct.length === 1) {
-    outcome = 'win';
-  }
-  // 3. Special case: Only 1 person was in the round and they got it right
-  // (Handled by 'win' if correct.length is 1)
-
-  gameChannel.send({
-    type: 'broadcast',
-    event: 'round-ended',
-    payload: { 
-      correct, 
-      dead, 
-      outcome, 
-      winnerId: correct.length === 1 ? correct[0] : null 
+    // 1. TIE: Everyone got it wrong. 
+    // The people who were alive this round are ALL winners.
+    if (correct.length === 0) {
+        outcome = 'tie';
+        winners = dead; // Everyone who played this round wins together
+    } 
+    // 2. CLEAR WINNER: Only one person got it right.
+    else if (correct.length === 1) {
+        outcome = 'win';
+        winners = [correct[0]];
     }
-  });
+    // 3. SURVIVAL: Multiple people got it right, game continues.
+    else {
+        outcome = 'continue';
+    }
+
+    gameChannel.send({
+        type: 'broadcast',
+        event: 'round-ended',
+        payload: { 
+            correct, 
+            dead, 
+            outcome, 
+            winnerIds: winners // Changed to an array to support multiple winners
+        }
+    });
 }
 
 
@@ -3239,4 +3224,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
