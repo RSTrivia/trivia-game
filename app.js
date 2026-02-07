@@ -2779,7 +2779,6 @@ timer = setInterval(async () => {
             // 4️⃣ Non-host: show waiting
             if (!isHost(gameChannel)) {
                 questionText.textContent = "Waiting for other players...";
-            }
         } else {
             handleTimeout();
         }
@@ -3334,6 +3333,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
