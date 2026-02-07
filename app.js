@@ -2556,21 +2556,24 @@ gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
     }, 1500);
 });
 
-    gameChannel.on(
-        'broadcast',
-        { event: 'round-result' },
-        ({ payload }) => {
+    gameChannel.on('broadcast',{ event: 'round-result' },({ payload }) => {
           if (!isHost(gameChannel)) return;
-          if (payload.roundId !== roundId) return;
-      
-          roundResults[payload.userId] = payload.result;
-      
-          const alive = Object.keys(gameChannel.presenceState()).length;
-          const reported = Object.keys(roundResults).length;
-      
-          if (reported >= alive) {
+        
+        // RELAX THIS CHECK: If the roundId is from the current or next round, accept it.
+        // Sometimes network lag makes these slightly out of sync.
+        if (Math.abs(payload.roundId - roundId) > 1) return; 
+
+        roundResults[payload.userId] = payload.result;
+
+        const state = gameChannel.presenceState();
+        const alive = Object.keys(state).length;
+        const reported = Object.keys(roundResults).length;
+
+        console.log(`Referee Check: ${reported}/${alive} players reported.`);
+
+        if (reported >= alive) {
             endRoundAsReferee();
-          }
+        }
         }
       );
     gameChannel.on('presence', { event: 'sync' }, () => {
@@ -2638,45 +2641,65 @@ function updateSurvivorCountUI(count) {
         survivorElement.classList.add('hidden');
     }
 }
-
 function startLiveRound() {
-  roundId++;
-  roundOpen = true;
-  roundResults = {};
+    roundId++;
+    roundOpen = true;
+    roundResults = {}; 
 
-  timeLeft = 15;
-  if (timer) clearInterval(timer);
+    // 1. SAFETY: Clear any old referee timeouts
+    if (refereeTimeout) {
+        clearTimeout(refereeTimeout);
+        refereeTimeout = null;
+    }
 
-  timer = setInterval(async () => {
-    timeLeft--;
-    updateTimerUI(timeLeft);
+    // 2. REFEREE SAFETY VALVE: Start the countdown now
+    if (isLiveMode && isHost(gameChannel)) {
+        refereeTimeout = setTimeout(() => {
+            // Check if we are still waiting for players after 20 seconds
+            const state = gameChannel.presenceState();
+            const alive = Object.keys(state).length;
+            const reported = Object.keys(roundResults).length;
 
-    if (timeLeft <= 0) {
-          clearInterval(timer);
-          roundOpen = false;
-      
-          if (isLiveMode) {
-              // REPORT and WAIT for the Referee
-              if (!roundResults[userId]) {
-                  roundResults[userId] = 'wrong';
-                  gameChannel.send({
-                      type: 'broadcast',
-                      event: 'round-result',
-                      payload: { userId, result: 'wrong', roundId }
-                  });
-              }
-              if (isHost(gameChannel)) endRoundAsReferee();
-              
-              // Show a "Waiting" message so they don't think it's stuck
-              if (questionText) questionText.innerHTML = "Time's up! Waiting for survivors...";
-          } else {
-              // Solo/Daily modes can end immediately
-              endGame();
-          }
-      }
-  }, 1000);
+            if (reported < alive) {
+                console.log(`Referee Safety: Only ${reported}/${alive} reported. Forcing end.`);
+                endRoundAsReferee();
+            }
+        }, 22000); // 15s round + 7s network/animation buffer
+    }
 
-  loadQuestion();
+    timeLeft = 15;
+    if (timer) clearInterval(timer);
+
+    timer = setInterval(async () => {
+        timeLeft--;
+        updateTimerUI(timeLeft);
+
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            roundOpen = false;
+
+            if (isLiveMode) {
+                // If I haven't answered yet, I'm 'wrong'
+                if (!roundResults[userId]) {
+                    roundResults[userId] = 'wrong';
+                    gameChannel.send({
+                        type: 'broadcast',
+                        event: 'round-result',
+                        payload: { userId, result: 'wrong', roundId }
+                    });
+                }
+
+                // UI Update for the wait
+                if (questionText) questionText.innerHTML = "Time's up! Waiting for survivors...";
+                if (answersBox) answersBox.innerHTML = '<div class="loading-spinner"></div>';
+            } else {
+                // Solo/Daily modes
+                endGame();
+            }
+        }
+    }, 1000);
+
+    loadQuestion();
 }
 
 function endRoundAsReferee() {
@@ -2722,15 +2745,14 @@ function endRoundAsReferee() {
 
     // BROADCAST THE FINAL DECISION
     gameChannel.send({
-        type: 'broadcast',
-        event: 'round-ended',
-        payload: { 
-            correct, 
-            dead, 
-            outcome, 
-            winnerIds: winners 
-        }
-    });
+            type: 'broadcast',
+            event: 'round-ended',
+            payload: { correct, dead, outcome, winnerIds: winners }
+        });
+    
+   // Reset for the next round!
+    roundResults = {}; 
+    if (refereeTimeout) clearTimeout(refereeTimeout); 
 }
 
 async function deleteCurrentLobby(lobbyId) {
@@ -3232,6 +3254,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
