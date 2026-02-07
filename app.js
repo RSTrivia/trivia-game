@@ -2584,25 +2584,29 @@ gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
       
           console.log(`Presence Sync: ${joinedCount} connected.`);
       
-          // --- NEW GUARD ---
-          // Only trigger mid-game victory if the match has TRULY started
-          // window.matchStarted ensures we don't end the game while people are still connecting
-          if (isLiveMode && window.matchStarted && !roundOpen && joinedCount < survivors) {
-              console.log(`Mid-game drop detected: ${survivors} -> ${joinedCount}`);
-              survivors = joinedCount;
-              updateSurvivorCountUI(survivors);
-      
-              if (survivors <= 1) {
-                // Only transition if we aren't already in the middle of a transition
-                if (!window.isTransitioning) {
-                  window.pendingVictory = true;
-                  // If survivors is 1, you are the Sole Survivor (pass true)
-                  // If survivors is 0, it was a weird crash/tie (pass false)
-                  transitionToSoloMode(survivors === 1); 
+         // --- REFINED MID-GAME VICTORY CHECK ---
+        if (isLiveMode && window.matchStarted) {
+            
+            // 1. THE ULTIMATE SAFETY: If you are the last person standing, you win. Period.
+            if (joinedCount === 1) {
+                console.log("Presence Sync: Sole survivor detected. Ending game.");
+                window.pendingVictory = true;
+                transitionToSoloMode(true);
+                return;
+            }
+        
+            // 2. YOUR ORIGINAL GUARD: Handles drops during the "Waiting" phase
+            if (!roundOpen && joinedCount < survivors) {
+                console.log(`Mid-game drop detected: ${survivors} -> ${joinedCount}`);
+                survivors = joinedCount;
+                updateSurvivorCountUI(survivors);
+        
+                if (survivors <= 1 && !window.isTransitioning) {
+                    window.pendingVictory = true;
+                    transitionToSoloMode(survivors === 1);
                 }
-              }
-          }
-      
+            }
+        }
           // --- START LOGIC ---
           if (joinedCount >= survivors && !window.matchStarted) {
               const delay = Math.max(0, syncedStartTime - Date.now());
@@ -2703,6 +2707,10 @@ function startLiveRound() {
 }
 
 function endRoundAsReferee() {
+    // If for some reason the host's own result isn't in the list, 
+    // it can cause a hang. Let's ensure the list isn't empty.
+    if (Object.keys(roundResults).length === 0) return;
+  
     const players = Object.entries(roundResults);
     const correct = players.filter(([_, res]) => res === 'correct').map(([uid]) => uid);
     const dead = players.filter(([_, res]) => res === 'wrong').map(([uid]) => uid);
@@ -2730,7 +2738,10 @@ function endRoundAsReferee() {
             outcome = 'win'; // Only one person left
             winners = [correct[0]];
         } else {
+            // If multiple people got it right, but everyone else is dead
+            // This keeps the game moving or ends it if no one else is in the lobby
             outcome = 'continue'; // Multiple survivors, deck still has questions
+            winners = [];
         }
     } 
     // 3. TOTAL FAILURE: Everyone wrong (but deck wasn't empty)
@@ -2742,7 +2753,15 @@ function endRoundAsReferee() {
     else {
         outcome = 'continue';
     }
-
+  
+    // --- ADD THE FINAL SAFETY CHECK HERE ---
+    // If the logic above resulted in 'continue' but the game is physically 
+    // out of questions, we must end it now as a tie/co-victory.
+    if (outcome === 'continue' && remainingQuestions.length === 0 && preloadQueue.length === 0) {
+        console.log("Referee: No questions left! Forcing a tie outcome.");
+        outcome = 'tie';
+        winners = correct;
+    }
     // BROADCAST THE FINAL DECISION
     gameChannel.send({
             type: 'broadcast',
@@ -3254,6 +3273,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
