@@ -2551,31 +2551,34 @@ gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
     // 3. MATCH CONTINUES
     survivors = correct.length;
     updateSurvivorCountUI(survivors);
+    console.log(`Round ended. Survivors: ${survivors}. Starting next round in 1.5s...`);
     setTimeout(() => { 
         if (isLiveMode && !hasDiedLocally) startLiveRound(); 
     }, 1500);
 });
 
-    gameChannel.on('broadcast',{ event: 'round-result' },({ payload }) => {
-          if (!isHost(gameChannel)) return;
+    gameChannel.on('broadcast', { event: 'round-result' }, ({ payload }) => {
+        if (!isHost(gameChannel)) return;
         
-        // RELAX THIS CHECK: If the roundId is from the current or next round, accept it.
-        // Sometimes network lag makes these slightly out of sync.
-        if (Math.abs(payload.roundId - roundId) > 1) return; 
-
+        // Ignore results from old rounds
+        if (payload.roundId !== roundId) return; 
+    
         roundResults[payload.userId] = payload.result;
-
+    
         const state = gameChannel.presenceState();
-        const alive = Object.keys(state).length;
-        const reported = Object.keys(roundResults).length;
-
-        console.log(`Referee Check: ${reported}/${alive} players reported.`);
-
-        if (reported >= alive) {
+        const aliveIds = Object.keys(state);
+        const reportedIds = Object.keys(roundResults);
+    
+        console.log(`Referee: ${reportedIds.length} answers received. Expected: ${aliveIds.length}`);
+    
+        // CHECK: Have all players currently in the room answered?
+        const allPresentHaveAnswered = aliveIds.every(id => reportedIds.includes(id));
+    
+        if (allPresentHaveAnswered) {
+            console.log("Referee: Everyone accounted for. Ending round.");
             endRoundAsReferee();
         }
-        }
-      );
+    });
     gameChannel.on('presence', { event: 'sync' }, () => {
           const state = gameChannel.presenceState();
           const joinedCount = Object.keys(state).length;
@@ -2764,10 +2767,16 @@ function endRoundAsReferee() {
     }
     // BROADCAST THE FINAL DECISION
     gameChannel.send({
-            type: 'broadcast',
-            event: 'round-ended',
-            payload: { correct, dead, outcome, winnerIds: winners }
-        });
+        type: 'broadcast',
+        event: 'round-ended',
+        payload: { 
+            correct, 
+            dead, 
+            outcome, 
+            winnerIds: winners,
+            newSurvivorCount: correct.length // Explicitly tell everyone the new count
+        }
+    });
     
    // Reset for the next round!
     roundResults = {}; 
@@ -3273,6 +3282,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
