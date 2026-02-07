@@ -2572,7 +2572,6 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
         startLiveRound();
     }
 });
-);
 
     gameChannel.on(
         'broadcast',
@@ -3261,6 +3260,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
