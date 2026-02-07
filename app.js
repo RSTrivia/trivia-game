@@ -1099,46 +1099,50 @@ async function handleTimeout() {
 
 async function checkAnswer(choiceId, btn) {
     if (!roundOpen) return;
-    stopTickSound(); 
-    // IMMEDIATELY set to false to prevent double-clicking the same question
-    roundOpen = false;
-    if (timeLeft <= 0) return;
 
-    // Disable all buttons immediately
+    stopTickSound();
+
+    // Disable immediately to prevent double answers
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
 
-    // 1. Check correctness via RPC
+    // Lock this round locally
+    roundOpen = false;
+
+    // 1. Check correctness
     const { data: isCorrect, error } = await supabase.rpc('check_my_answer', {
         input_id: currentQuestion.id,
         choice: choiceId
     });
-    if (error) return console.error("RPC Error:", error);
+    if (error) {
+        console.error("RPC Error:", error);
+        return;
+    }
 
     // 2. Local UI feedback
     btn.classList.add(isCorrect ? 'correct' : 'wrong');
 
+    // ================= LIVE MODE =================
     if (isLiveMode) {
-        roundOpen = false;
+        const result = isCorrect ? 'correct' : 'wrong';
 
-        // Record result locally
-        roundResults[userId] = isCorrect ? 'correct' : 'wrong';
+        // Record locally
+        roundResults[userId] = result;
 
-        // Broadcast result to host/referee
+        // 🚨 ALWAYS broadcast (no early returns before this)
         gameChannel.send({
             type: 'broadcast',
             event: 'round-result',
-            payload: { userId, roundId, result: roundResults[userId] }
+            payload: { userId, roundId, result }
         });
 
-        // Non-winners who answer wrong see game over immediately
+        // Immediate loss feedback (UX only)
         if (!isCorrect) {
-            await endGame(); // You lost
+            await endGame();
             return;
         }
 
-        // If correct, show waiting for others
         questionText.textContent = "Waiting for other players...";
-        return; // STOP here in live mode
+        return;
     }
 
     // === Non-live modes (Normal, Daily, Weekly) ===
@@ -3274,6 +3278,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
