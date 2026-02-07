@@ -2380,6 +2380,12 @@ async function joinMatchmaking() {
         showNotification("Please log in to join Live Matches!", null, "#ff4444");
         return; // Stop the function here
     }
+
+  // 3. UI SWAP: Make sure the lobby is visible and screens are toggled
+  document.body.classList.add('lobby-active');
+  document.getElementById('start-screen')?.classList.add('hidden');
+  document.getElementById('lobby-screen')?.classList.remove('hidden'); // Ensure this isn't hidden!
+  
   window.finalStartSent = false;
   window.pendingVictory = false; // Add this reset
   window.lobbyDeleted = false; // Reset the deletion flag for the new session
@@ -3460,6 +3466,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
