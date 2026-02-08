@@ -2468,11 +2468,14 @@ async function joinMatchmaking() {
           const startTimestamp = new Date();
           startTimestamp.setMinutes(startTimestamp.getMinutes() + 1);
       
-          // 1. Get all possible IDs (or a large sample)
-          const { data: idList } = await supabase.from('questions').select('id');
-          
-          // 2. Shuffle them once here (this becomes the master seed)
-          const shuffledIds = idList.map(q => q.id).sort(() => Math.random() - 0.5);
+          // 1. Get all IDs in a STABLE order (ascending)
+          const { data: idList } = await supabase
+              .from('questions')
+              .select('id')
+              .order('id', { ascending: true }); // Always start with the same base list
+              
+          // 2. Shuffle that stable list
+          const shuffledIds = idList.map(q => q.id).sort(() => Math.random() - 0.5);;
       
           // 3. Save this array into the lobby row
           const { data: newLobby } = await supabase
@@ -2527,21 +2530,19 @@ function setupLobbyRealtime(lobby) {
         appendMessage(payload.username, payload.message);
     })
 .on('broadcast', { event: 'prepare-game' }, async ({ payload }) => {
-    console.log("Received Seed:", payload.seed);
-    
-    // 1. Everyone fetches the same base list from DB
-    const { data: allQuestions } = await supabase
-        .from('questions')
-        .select('id')
-        .order('id', { ascending: true });
+    // 1. Get the list directly from the lobby record (The Source of Truth)
+    const { data: lobbyData } = await supabase
+        .from('live_lobbies')
+        .select('question_ids')
+        .eq('id', currentLobby.id)
+        .single();
 
-    const masterIds = allQuestions.map(q => q.id);
+    if (lobbyData && lobbyData.question_ids) {
+        // No need to shuffle! It's already shuffled in the DB.
+        remainingQuestions = lobbyData.question_ids;
 
     // 2. Clear old data
     preloadQueue = []; 
-    
-    // 3. Everyone shuffles that base list using the same seed
-    remainingQuestions = shuffleLiveMatch(masterIds, payload.seed);
     
     // 4. Preload the first few questions from the newly shuffled deck
     isLiveMode = true; // Set this so preloader knows to pull from the top of the deck
@@ -3520,6 +3521,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
