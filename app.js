@@ -36,6 +36,7 @@ const chatInput = document.getElementById('chatInput');
 const chatMessages = document.getElementById('chat-messages');
 let roundId = 0;
 let roundOpen = false;
+let accumulatedTime = 0; // Global scope
 // referee-only
 let roundResults = {};
 
@@ -2986,15 +2987,20 @@ async function transitionToSoloMode(isSoleWinner) {
     if (hasDiedLocally) return;
     window.pendingVictory = true; 
     isLiveMode = false;
+    
+    // 1. Capture the time spent in the Live Match exactly when it ends
+    accumulatedTime = Date.now() - gameStartTime;    
+    console.log(`Live Match lasted: ${accumulatedTime / 1000}s. Timer paused.`);
+    if (timer) clearInterval(timer);
+    stopTickSound();
+    
     // 1. KILL the pending referee check immediately
     if (refereeTimeout) {
         clearTimeout(refereeTimeout);
         refereeTimeout = null;
         console.log("Referee timeout cancelled - Victory takes priority.");
     }
-  
-    if (timer) clearInterval(timer);
-     stopTickSound();
+
     // --- 0. MULTI-CALL & OVERLAP GUARD ---
     if (window.isTransitioning) return;
     window.isTransitioning = true; 
@@ -3059,6 +3065,8 @@ async function transitionToSoloMode(isSoleWinner) {
     // --- 5. HANDLE "CONTINUE" ---
    if (soloBtn) {
      soloBtn.onclick = async () => { 
+       // 1. Hide the transition UI
+      //document.getElementById('victory-transition-overlay').classList.add('hidden');
        // 1. Reset the logic flags
         window.isTransitioning = false; 
         window.pendingVictory = false; 
@@ -3083,10 +3091,13 @@ async function transitionToSoloMode(isSoleWinner) {
 
         // Resume the game loop in solo mode
         console.log("Transitioning to Solo Mode. Good luck!");
-        loadQuestion(); 
+       // 2. RESUME THE CLOCK
+      // We set the start time to (Now minus the time already spent in Live)
+      gameStartTime = Date.now() - accumulatedTime;
+      loadQuestion(); 
     };
      } else {
-    console.error("Button 'continue-solo-btn' not found in the DOM.");
+    console.error("Button 'soloBtn' not found in the DOM.");
 }
 }
 
@@ -3484,6 +3495,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
