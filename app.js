@@ -2704,7 +2704,12 @@ gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
         if (questionText) questionText.innerHTML = "Eliminated! Better luck next time.";
         if (answersBox) answersBox.innerHTML = "";
         // ADD THIS LINE:
-        if (questionImage) questionImage.style.display = 'none';
+        // 4. Handle Images
+        if (questionImage) {
+          questionImage.style.display = 'none';
+          questionImage.style.opacity = '0';
+          //questionImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+        }
         
         setTimeout(() => endGame(), 1000); 
         return;
@@ -3611,6 +3616,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
