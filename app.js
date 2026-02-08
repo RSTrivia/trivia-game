@@ -493,10 +493,11 @@ if (playAgainBtn) {
   }
   if (rejoinLobbyBtn) {  
         rejoinLobbyBtn.onclick = async () => {
-        // 1. Clean up the current victory state/channels
-        await resetLiveModeState();
+        // 1. Hide victory immediately so it doesn't flicker
+        document.getElementById('victory-screen').classList.add('hidden');
+        window.isTransitioning = false; // Reset the gatekeeper
         // 2. Immediately trigger matchmaking again
-        joinMatchmaking();
+        await joinMatchmaking();
     };
   }
   // Logic for "Main Menu" in victory screen
@@ -2450,10 +2451,15 @@ async function joinMatchmaking() {
         showNotification("Please log in to join Live Matches!", null, "#ff4444");
         return; // Stop the function here
     }
-
-  // 3. UI SWAP: Make sure the lobby is visible and screens are toggled
-  document.body.classList.add('lobby-active');
+  // 3. UI SWAP: Total reset of visibility
+  document.body.classList.remove('game-active'); // Remove game state
+  document.body.classList.add('lobby-active');    // Add lobby state
+  // Hide EVERY other screen
   document.getElementById('start-screen')?.classList.add('hidden');
+  document.getElementById('victory-screen')?.classList.add('hidden'); // CRITICAL
+  document.getElementById('game')?.classList.add('hidden');
+  
+  // Show the Lobby
   document.getElementById('lobby-screen')?.classList.remove('hidden'); // Ensure this isn't hidden!
   
   window.finalStartSent = false;
@@ -2496,8 +2502,12 @@ async function joinMatchmaking() {
               .select('id')
               .order('id', { ascending: true }); // Always start with the same base list
               
-          // 2. Shuffle that stable list
-          const shuffledIds = idList.map(q => q.id).sort(() => Math.random() - 0.5);;
+          // 2. TRUE Fisher-Yates Shuffle
+          const shuffledIds = idList.map(q => q.id);
+          for (let i = shuffledIds.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [shuffledIds[i], shuffledIds[j]] = [shuffledIds[j], shuffledIds[i]];
+          }
       
           // 3. Save this array into the lobby row
           const { data: newLobby } = await supabase
@@ -3570,6 +3580,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
