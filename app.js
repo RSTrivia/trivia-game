@@ -1184,7 +1184,7 @@ async function handleTimeout() {
         setTimeout(loadQuestion, 1500);
     } else {
         // End the game
-        setTimeout(endGame(), 1000);
+        setTimeout(endGame, 1000);
     }
 }
 
@@ -1327,7 +1327,7 @@ async function checkAnswer(choiceId, btn) {
             setTimeout(loadQuestion, 1500);
         } else {
             // Only Normal and Lite modes end on a wrong answer
-            setTimeout(endGame(), 1000);
+            setTimeout(endGame, 1000);
         }
     }
 }
@@ -3795,6 +3795,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
