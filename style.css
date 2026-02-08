@@ -896,7 +896,7 @@ input.input-field:-webkit-autofill:active {
   /*#dailyBtn.is-active:not(.is-disabled):hover,
   #weeklyBtn.is-active:hover,   /* ADDED THIS */
   /*#lobbyBtn.is-active:hover     /* ADDED THIS */
-    background: rgba(0, 0, 0, 0.6) !important;
+   /*background: rgba(0, 0, 0, 0.6) !important;*/
     border-color: #d4af37 !important;
     color: #d4af37 !important;
   }
@@ -1660,6 +1660,7 @@ input.input-field:-webkit-autofill:active {
     background: #6d5a47;
     filter: brightness(1.2);
 }
+
 
 
 
