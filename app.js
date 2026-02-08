@@ -1467,7 +1467,7 @@ async function highlightCorrectAnswer() {
     });
 }
 
-async function endGame() {
+async function endGame(isSilent = false) {
     if (gameEnding) return;
     gameEnding = true;
     clearInterval(timer);
@@ -1643,6 +1643,8 @@ async function endGame() {
     }
     // 4. THE BIG SWAP (Final step)
     // Use a tiny timeout or requestAnimationFrame to ensure DOM updates are ready
+    // Only switch to the standard End Screen if isSilent is false
+    if (!isSilent) {
     requestAnimationFrame(() => {
         document.body.classList.remove('game-active'); 
         game.classList.add('hidden');
@@ -1658,7 +1660,39 @@ async function endGame() {
         updateShareButtonState();
         gameEnding = false;
     });
+    } else {
+      // If it IS silent, we just reset the flag so another game can start later
+      console.log("EndGame (Silent): Data saved, UI transition skipped.");
+      gameEnding = false;
 }
+
+
+async function showLiveResults(isWinner) {
+    // We pass 'true' here because we want the custom Victory UI, 
+    // not the standard "Game Over" screen.
+    await endGame(true); 
+
+    const victoryScreen = document.getElementById('victory-screen');
+    const title = victoryScreen.querySelector('.victory-title');
+    const statsText = document.getElementById('victory-stats');
+    
+    // UI Styling
+    if (isWinner) {
+        title.innerHTML = "🏆 VICTORY 🏆";
+        title.className = "victory-title win-theme"; // Add a CSS class for gold
+        statsText.textContent = "You are the last Survivor!";
+        document.getElementById('soloBtn').classList.remove('hidden');
+    } else {
+        title.innerHTML = "💀 ELIMINATED 💀";
+        title.className = "victory-title lose-theme"; // Add a CSS class for red
+        statsText.textContent = "Better luck next time!";
+        document.getElementById('soloBtn').classList.add('hidden');
+    }
+
+    victoryScreen.classList.remove('hidden');
+    document.getElementById('game').classList.add('hidden');
+}
+
 
 function displayFinalTime(ms) {
     const totalSeconds = ms / 1000;
@@ -2708,7 +2742,8 @@ gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
         if (answersBox) answersBox.innerHTML = "";
         if (questionImage) questionImage.style.display = 'none';
         
-        setTimeout(() => endGame(), 1000); 
+       // Show the results (which now triggers the silent endGame logic)
+        setTimeout(() => showLiveResults(false), 1000); 
         return;
     }
   
@@ -3613,6 +3648,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
