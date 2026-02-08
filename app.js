@@ -1670,7 +1670,6 @@ async function endGame(isSilent = false) {
       gameEnding = false;
       }
     }
-  }
 
 async function showLiveResults(isWinner) {
     // 1. Process data silently (Saves to Supabase, checks achievements)
@@ -3680,6 +3679,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
