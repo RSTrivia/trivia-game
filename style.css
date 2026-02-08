@@ -888,7 +888,7 @@ input.input-field:-webkit-autofill:active {
 } */
 
 /* ====== MOBILE NO-FLICKER BUTTONS ====== */
-@media (pointer: coarse) {
+@media (hover: none) and (pointer: coarse) {
   /* 1. Reset all hover/active for the big .btn and .btn-small */
  .btn:not(.is-disabled):hover, 
   .btn-small:not(.is-disabled):hover,
@@ -1660,6 +1660,7 @@ input.input-field:-webkit-autofill:active {
     background: #6d5a47;
     filter: brightness(1.2);
 }
+
 
 
 
