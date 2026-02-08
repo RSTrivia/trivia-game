@@ -754,8 +754,8 @@ function lockDailyButton() {
     if (!dailyBtn) return;
     dailyBtn.classList.add('is-disabled');
     dailyBtn.classList.remove('is-active');
-    dailyBtn.style.opacity = '0.5';
-    dailyBtn.style.pointerEvents = 'none'; // Makes it ignore all clicks/touches
+    //dailyBtn.style.opacity = '0.5';
+    //dailyBtn.style.pointerEvents = 'none'; // Makes it ignore all clicks/touches
     //dailyBtn.onclick = () => alert("You've already played today!");
 }
 
@@ -763,16 +763,16 @@ function lockWeeklyButton() {
     if (!weeklyBtn) return;
     weeklyBtn.classList.add('is-disabled'); // fix ??
     weeklyBtn.classList.remove('is-active');
-    weeklyBtn.style.opacity = '0.5';
-    weeklyBtn.style.pointerEvents = 'none'; // Makes it ignore all clicks/touches
+    //weeklyBtn.style.opacity = '0.5';
+    //weeklyBtn.style.pointerEvents = 'none'; // Makes it ignore all clicks/touches
     
 }
 function lockLobbyButton() {
     if (!lobbyBtn) return;
     lobbyBtn.classList.add('is-disabled');
     lobbyBtn.classList.remove('is-active');
-    lobbyBtn.style.opacity = '0.5';
-    lobbyBtn.style.pointerEvents = 'none'; // Makes it ignore all clicks/touches   
+    //lobbyBtn.style.opacity = '0.5';
+    //lobbyBtn.style.pointerEvents = 'none'; // Makes it ignore all clicks/touches   
 }
 // ====== GAME ENGINE ======
 
@@ -3519,6 +3519,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
