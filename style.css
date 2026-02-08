@@ -1589,82 +1589,92 @@ input.input-field:-webkit-autofill:active {
 
 
 /* Live Mode Victory/Elimination Screen */
+/* ====== LIVE MODE VICTORY/ELIMINATION SCREEN ====== */
 #victory-screen {
-    position: absolute;
-    inset: 0; /* Shorthand for top:0, left:0, etc. */
+    position: fixed; /* Ensures it stays locked to the viewport */
+    inset: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.7); 
+    background-color: rgba(0, 0, 0, 0.75); 
     display: flex;
     justify-content: center;
-    align-items: flex-start; /* Align to top to match your #app padding */
-    padding-top: 20px;       /* Match your #app padding */
+    /* This is the secret: it matches your #app's alignment and padding */
+    align-items: flex-start; 
+    padding-top: 20px;       
     z-index: 9999;
     backdrop-filter: blur(6px);
 }
 
 .victory-content {
-    /* MATCHING YOUR .CONTAINER CSS EXACTLY */
+    /* 1:1 MATCH WITH YOUR .CONTAINER CLASS */
     width: 440px;                 
     max-width: 95%;               
     min-height: 500px;            
-    padding: 25px;                /* Match .container padding */
-    background: rgba(0,0,0,0.85); /* Match .container background */
-    border-radius: 10px;          /* Match .container radius */
-    box-shadow: 0 0 30px rgba(0,0,0,0.5);
+    padding: 25px;                
+    background: rgba(0, 0, 0, 0.85); 
+    border-radius: 10px;          
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
     
-    border: 2px solid #d4af37;    /* Your gold border */
+    /* THE GOLD FRAME */
+    border: 2px solid #d4af37;    
     display: flex;
     flex-direction: column;
-    box-sizing: border-box;
+    box-sizing: border-box; /* Crucial: border stays INSIDE the 440px */
     text-align: center;
+    position: relative;
+    overflow: visible; /* Prevents emoji clipping */
 }
 
 .victory-title {
     color: #d4af37;
     font-family: 'Cinzel', serif;
-    font-size: 1.8rem;            /* Slightly smaller to prevent emoji overflow */
+    font-size: 1.8rem;
+    margin-top: 10px;
     margin-bottom: 20px;
     text-shadow: 2px 2px 0px #000;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 15px;                    /* More space for emojis */
-    width: 100%;                  /* Ensure title doesn't shrink */
-    flex-wrap: nowrap;            /* Prevent emojis from dropping to next line */
+    gap: 15px;
+    width: 100%;
+    flex-wrap: nowrap;
+    line-height: 1.2; 
 }
 
-/* Fix for Emojis */
+/* Fix for Emojis - No more cutting off! */
 .emoji {
     font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
     font-size: 1.6rem;
-    line-height: 1;               /* Prevents emoji height from clipping */
     display: inline-block;
-    flex-shrink: 0;               /* Don't let the emoji get squished */
+    flex-shrink: 0;
+    line-height: 1;
+    /* Added tiny padding to ensure the crown/trophy top isn't shaved off */
+    padding-top: 2px;
 }
 
 #victory-stats {
     color: #fff;
     font-size: 1.2rem;
     margin-bottom: 10px;
-    padding: 0 10px;              /* Extra breathing room */
+    padding: 0 10px;
 }
 
 .match-info {
     color: #d4af37;
     font-size: 0.95rem;
     margin-bottom: 30px;
+    opacity: 0.9;
 }
 
 .victory-actions {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    margin-top: auto; 
+    margin-top: auto; /* Keeps buttons at the bottom */
     width: 100%;
 }
 
-/* Button Styling - NOW MATCHES YOUR .BTN CLASS */
+/* Button Styling - Matches your .btn logic */
 #victory-screen .btn {
     width: 100%;
     padding: 14px 22px;
@@ -1672,10 +1682,11 @@ input.input-field:-webkit-autofill:active {
     border: 2px solid #d4af37;
     color: #d4af37;
     border-radius: 8px;
-    font-family: 'Cinzel', serif; /* Keeps the fantasy font for impact */
+    font-family: 'Cinzel', serif;
     font-size: 1.1rem;
     cursor: pointer;
     transition: 0.2s;
+    margin: 0 !important; /* Overrides any global margins */
 }
 
 #victory-screen .btn:hover {
@@ -1684,11 +1695,9 @@ input.input-field:-webkit-autofill:active {
     color: #ffea8a;
 }
 
-/* Theme Classes for Win/Loss Text */
+/* Outcome Colors */
 .win-theme { color: #d4af37 !important; }
-.lose-theme { color: #a63232 !important; } /* Matches your .wrong class color */
-
-
+.lose-theme { color: #a63232 !important; }
 
 
 /* PC HOVER FIX */
@@ -1711,6 +1720,7 @@ input.input-field:-webkit-autofill:active {
   opacity: 0.5 !important;
   filter: grayscale(1);
 }
+
 
 
 
