@@ -1591,64 +1591,71 @@ input.input-field:-webkit-autofill:active {
 /* Live Mode Victory/Elimination Screen */
 #victory-screen {
     position: absolute;
-    top: 0;
-    left: 0;
+    inset: 0; /* Shorthand for top:0, left:0, etc. */
     width: 100%;
     height: 100%;
-    /* Use the same semi-transparent black as your .container */
     background-color: rgba(0, 0, 0, 0.7); 
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start; /* Align to top to match your #app padding */
+    padding-top: 20px;       /* Match your #app padding */
     z-index: 9999;
     backdrop-filter: blur(6px);
 }
 
 .victory-content {
-    /* MATCHING YOUR .CONTAINER STYLE */
-    background: rgba(0, 0, 0, 0.9); /* Same dark vibe as game */
-    border: 2px solid #d4af37;     /* The gold border from your .input-field */
-    border-radius: 10px;           /* Match .container radius */
+    /* MATCHING YOUR .CONTAINER CSS EXACTLY */
+    width: 440px;                 
+    max-width: 95%;               
+    min-height: 500px;            
+    padding: 25px;                /* Match .container padding */
+    background: rgba(0,0,0,0.85); /* Match .container background */
+    border-radius: 10px;          /* Match .container radius */
+    box-shadow: 0 0 30px rgba(0,0,0,0.5);
     
-    padding: 30px;
-    text-align: center;
-    width: 440px;                 /* MATCH YOUR MAIN CONTAINER WIDTH */
-    max-width: 95%;               /* Mobile safety */
-    min-height: 500px;            /* MATCH YOUR MAIN CONTAINER MIN-HEIGHT */
-    
-    box-shadow: 0 0 30px rgba(0,0,0,0.8);
+    border: 2px solid #d4af37;    /* Your gold border */
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
+    text-align: center;
 }
 
 .victory-title {
-    color: #d4af37;               /* Using your specific gold */
+    color: #d4af37;
     font-family: 'Cinzel', serif;
-    font-size: 2.2rem;
-    margin-bottom: 15px;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    font-size: 1.8rem;            /* Slightly smaller to prevent emoji overflow */
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 0px #000;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 12px;
+    gap: 15px;                    /* More space for emojis */
+    width: 100%;                  /* Ensure title doesn't shrink */
+    flex-wrap: nowrap;            /* Prevent emojis from dropping to next line */
+}
+
+/* Fix for Emojis */
+.emoji {
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+    font-size: 1.6rem;
+    line-height: 1;               /* Prevents emoji height from clipping */
+    display: inline-block;
+    flex-shrink: 0;               /* Don't let the emoji get squished */
 }
 
 #victory-stats {
-    color: #fff;                  /* Matching your standard text color */
+    color: #fff;
     font-size: 1.2rem;
-    margin-bottom: 8px;
-    font-weight: 500;
+    margin-bottom: 10px;
+    padding: 0 10px;              /* Extra breathing room */
 }
 
 .match-info {
-    color: #d4af37;               /* Use gold for stats labels */
-    font-size: 0.9rem;
-    margin-bottom: 25px;
-    opacity: 0.8;
+    color: #d4af37;
+    font-size: 0.95rem;
+    margin-bottom: 30px;
 }
 
-/* Container for the 3 Buttons */
 .victory-actions {
     display: flex;
     flex-direction: column;
@@ -1704,6 +1711,7 @@ input.input-field:-webkit-autofill:active {
   opacity: 0.5 !important;
   filter: grayscale(1);
 }
+
 
 
 
