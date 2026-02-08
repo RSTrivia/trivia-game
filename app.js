@@ -1672,29 +1672,54 @@ async function endGame(isSilent = false) {
 
 
 async function showLiveResults(isWinner) {
-    // We pass 'true' here because we want the custom Victory UI, 
-    // not the standard "Game Over" screen.
+    // 1. Process data silently (Saves to Supabase, checks achievements)
     await endGame(true); 
 
     const victoryScreen = document.getElementById('victory-screen');
-    const title = victoryScreen.querySelector('.victory-title');
+    const statusText = document.getElementById('victory-status-text');
+    const titleContainer = document.getElementById('vic-title-text');
     const statsText = document.getElementById('victory-stats');
+    const emojis = victoryScreen.querySelectorAll('.emoji');
+    const soloBtn = document.getElementById('soloBtn');
     
-    // UI Styling
+    // 2. Apply Win/Loss UI Changes
     if (isWinner) {
-        title.innerHTML = "🏆 VICTORY 🏆";
-        title.className = "victory-title win-theme"; // Add a CSS class for gold
+        statusText.textContent = "VICTORY";
+        titleContainer.className = "victory-title win-theme";
         statsText.textContent = "You are the last Survivor!";
-        document.getElementById('soloBtn').classList.remove('hidden');
+        
+        // Update emojis to Trophy
+        emojis.forEach(e => e.textContent = "🏆");
+        
+        // Show "Continue" button
+        if (soloBtn) soloBtn.classList.remove('hidden');
+        
+        // Optional: Play a victory sound if you have one
+        // playSound(bonusBuffer); 
     } else {
-        title.innerHTML = "💀 ELIMINATED 💀";
-        title.className = "victory-title lose-theme"; // Add a CSS class for red
+        statusText.textContent = "ELIMINATED";
+        titleContainer.className = "victory-title lose-theme";
         statsText.textContent = "Better luck next time!";
-        document.getElementById('soloBtn').classList.add('hidden');
+        
+        // Update emojis to Skull
+        emojis.forEach(e => e.textContent = "💀");
+        
+        // Hide "Continue" button (Losers can't continue for high score)
+        if (soloBtn) soloBtn.classList.add('hidden');
+        
+        // Optional: Play a fail sound
+        // playSound(failBuffer);
     }
 
-    victoryScreen.classList.remove('hidden');
+    // 3. Update Match Stats (Optional: pull from your current game state)
+    const playerCountStat = document.getElementById('player-count-stat');
+    if (playerCountStat && window.lastPlayerCount) {
+        playerCountStat.textContent = `Players: ${window.lastPlayerCount}`;
+    }
+
+    // 4. THE BIG SWAP: Hide Game, Show Results
     document.getElementById('game').classList.add('hidden');
+    victoryScreen.classList.remove('hidden');
 }
 
 
@@ -3654,6 +3679,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
