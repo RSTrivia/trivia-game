@@ -3008,7 +3008,7 @@ function startLiveRound() {
             setTimeout(() => {
                 if (!window.pendingVictory && hasDiedLocally) {
                     console.log("No response from Referee. Closing game.");
-                    endGame();
+                    showLiveResults(false); // This calls endGame(true) inside it
                 }
             }, 5000);
         } else {
@@ -3648,6 +3648,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
