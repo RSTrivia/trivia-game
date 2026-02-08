@@ -1734,8 +1734,10 @@ async function showLiveResults(isWinner, matchData = {}) {
           // If it's NOT a sole winner, it's a tie/co-victory
         if (matchData.isSoleWinner) {
             victoryStats.textContent = "You are the Winner!";
+            if (soloBtn) soloBtn.classList.remove('hidden'); // SHOW BUTTON
         } else {
             victoryStats.textContent = "It's a Tie!";
+            if (soloBtn) soloBtn.classList.add('hidden'); // HIDE BUTTON
         }
     
         if (soloBtn) soloBtn.classList.remove('hidden');
@@ -3760,6 +3762,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
