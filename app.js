@@ -1681,52 +1681,49 @@ async function endGame(isSilent = false) {
 
 
 async function showLiveResults(isWinner) {
-    console.log("Showing Live Results. Winner?", isWinner);
+    console.log("Processing Live Results. Winner:", isWinner);
     const victoryScreen = document.getElementById('victory-screen');
     const gameContainer = document.getElementById('game');
 
-    // 1. UI SWAP IMMEDIATELY
+    // 1. Swap UI Containers
     if (gameContainer) gameContainer.classList.add('hidden');
-    document.body.classList.remove('game-active');
-    
     if (victoryScreen) {
         victoryScreen.classList.remove('hidden');
-        // If you use 'display: none' in CSS, force it to flex/block here
-        victoryScreen.style.display = 'flex'; 
+        victoryScreen.style.display = 'flex'; // Force bypass any CSS 'hidden'
     }
 
-    // 2. Set the text/theme based on win/loss
+    // 2. Update Content
     const statusText = document.getElementById('victory-status-text');
-    const titleContainer = document.getElementById('vic-title-text');
     const statsText = document.getElementById('victory-stats');
+    const soloBtn = document.getElementById('soloBtn');
     const emojis = victoryScreen.querySelectorAll('.emoji');
 
     if (isWinner) {
         statusText.textContent = "VICTORY";
-        if (titleContainer) titleContainer.className = "victory-title win-theme";
         statsText.textContent = "You are the last Survivor!";
+        if (soloBtn) soloBtn.classList.remove('hidden');
         emojis.forEach(e => e.textContent = "🏆");
     } else {
         statusText.textContent = "ELIMINATED";
-        if (titleContainer) titleContainer.className = "victory-title lose-theme";
         statsText.textContent = "Better luck next time!";
+        if (soloBtn) soloBtn.classList.add('hidden'); // Losers can't continue
         emojis.forEach(e => e.textContent = "💀");
     }
 
-    // 3. BACKGROUND DATA PROCESSING
+    // 3. Save Data Silently
     try {
-        // We call this with TRUE so resetLiveModeState knows NOT to hide our screen
+        // Passing 'true' tells the reset function to keep the victory screen visible
         await endGame(true); 
         
-        // --- THE CRITICAL SAFETY NET ---
-        // In case endGame's reset function hid the screen anyway, we turn it back ON here.
-        if (victoryScreen) {
+        // RE-ASSERT VISIBILITY: In case endGame()'s internal reset logic 
+        // accidentally toggled the 'hidden' class back on.
+        if (victoryScreen && victoryScreen.classList.contains('hidden')) {
+            console.log("Forcing victory screen back to visible after reset.");
             victoryScreen.classList.remove('hidden');
             victoryScreen.style.display = 'flex';
         }
-        console.log("Victory screen forced visible after reset.");
     } catch (err) {
-        console.error("Silent data save failed:", err);
+        console.error("End-game processing failed:", err);
     }
 }
 
@@ -2951,7 +2948,10 @@ async function resetLiveModeState(keepVictoryVisible = false) {
     if (survivorDisplay) survivorDisplay.classList.add('hidden');
     if (!keepVictoryVisible) {
       const victoryScreen = document.getElementById('victory-screen');
-      if (victoryScreen) victoryScreen.classList.add('hidden');
+      if (victoryScreen) {
+        victoryScreen.classList.add('hidden');
+        victoryScreen.style.display = 'none';
+        }
     }
 
     const lobbyScreen = document.getElementById('lobby-screen');
@@ -3696,6 +3696,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
