@@ -1651,12 +1651,20 @@ async function endGame(isSilent = false) {
     // At the very end of your endGame function:
     if (!isSilent) {
         requestAnimationFrame(() => {
-            document.body.classList.remove('game-active'); 
-            game.classList.add('hidden');
-            endScreen.classList.remove('hidden');
-            // ...
-            gameEnding = false;
-        });
+        document.body.classList.remove('game-active'); 
+        game.classList.add('hidden');
+        endScreen.classList.remove('hidden');
+
+        // 2. WIPE GAME UI IMMEDIATELY 
+        // This prevents seeing old questions/answers behind the transition
+        questionText.textContent = ''; 
+        answersBox.innerHTML = '';
+        questionImage.style.display = 'none';
+        questionImage.src = ''; 
+      
+        updateShareButtonState();
+        gameEnding = false;
+    });
     } else {
         // Just ensure the game is hidden and flag is reset.
         // The victory-screen is handled by showLiveResults.
@@ -3662,6 +3670,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
