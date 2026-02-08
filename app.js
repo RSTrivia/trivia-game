@@ -815,11 +815,6 @@ function resetGame() {
     questionText.textContent = '';
     answersBox.innerHTML = '';
     
-    // 4. Handle Images
-    questionImage.style.display = 'none';
-    questionImage.style.opacity = '0';
-    questionImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
-
     // 5. Reset Timer Visuals
     timeLeft = 15;
     timeDisplay.textContent = timeLeft;
@@ -1137,7 +1132,13 @@ function startTimer() {
           });
 
           questionText.textContent = "Waiting for other players...";
-          if (questionImage) questionImage.style.display = 'none';
+          // Image cleanup
+          if (questionImage) {
+            questionImage.style.display = 'none';
+            questionImage.style.opacity = '0';
+            // Use a blank transparent pixel to clear the previous image immediately
+            questionImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+          }
         }
         return; // ⛔ never fall through in live mode
       }
@@ -2709,7 +2710,7 @@ gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
         if (questionImage) {
           questionImage.style.display = 'none';
           questionImage.style.opacity = '0';
-          //questionImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+          questionImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
         }
         
         setTimeout(() => endGame(), 1000); 
@@ -2969,8 +2970,13 @@ function startLiveRound() {
             // 2. UI Update for the wait
             if (questionText) questionText.innerHTML = "Time's up! Waiting for survivors...";
             if (answersBox) answersBox.innerHTML = '<div class="loading-spinner"></div>';
-            // ADD THIS LINE:
-            if (questionImage) questionImage.style.display = 'none';
+            // Image cleanup
+            if (questionImage) {    
+            questionImage.style.display = 'none';
+            questionImage.style.opacity = '0';
+            // Use a blank transparent pixel to clear the previous image immediately
+            questionImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+            }
             // ------------------------------
             // 3. IMPORTANT: If the referee hasn't responded in 5 seconds, force endGame
             // This handles cases where the host disconnected
@@ -3617,6 +3623,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
