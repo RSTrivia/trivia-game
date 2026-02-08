@@ -2764,7 +2764,7 @@ gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
             deleteCurrentLobby(lobbyIdToDelete);
         }
         // Clear the screen so they don't see the next question
-        /if (questionText) questionText.innerHTML = "";
+        if (questionText) questionText.innerHTML = "";
         if (answersBox) answersBox.innerHTML = "";
         if (questionImage) questionImage.style.display = 'none';
       
@@ -3686,6 +3686,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
