@@ -261,6 +261,8 @@ let isRefreshing = false;
 
 // ====== INITIALIZATION ======
 async function init() {
+    // Define all your UI elements first
+    const victoryScreen = document.getElementById('victory-screen');
     // 1. Immediately sync the button based on CACHE only (Instant)
     // This stops the flicker because the button starts in the 'locked' state 
     // if they played, before any network request happens.
@@ -3491,6 +3493,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
