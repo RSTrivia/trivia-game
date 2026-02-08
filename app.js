@@ -1685,43 +1685,64 @@ async function endGame(isSilent = false) {
 
 
 
-async function showLiveResults(isWinner) {
+async function showLiveResults(isWinner, matchData = {}) {
     console.log("Processing Live Results. Winner:", isWinner);
+    
+    // 1. DATA CALCULATIONS (Using your local logic)
+    const total = matchData.totalPlayers || matchStartingCount || 0;
+    const odds = total > 0 ? Math.round((1 / total) * 100) : 0;
+    
     const victoryScreen = document.getElementById('victory-screen');
     const gameContainer = document.getElementById('game');
-
-    // 1. Swap UI Containers
-    if (gameContainer) gameContainer.classList.add('hidden');
-    if (victoryScreen) {
-        victoryScreen.classList.remove('hidden');
-        victoryScreen.style.display = 'flex'; // Force bypass any CSS 'hidden'
-    }
-
-    // 2. Update Content
     const statusText = document.getElementById('victory-status-text');
-    const statsText = document.getElementById('victory-stats');
+    const victoryStats = document.getElementById('victory-stats'); // Main description
+    const playerCountStat = document.getElementById('player-count-stat'); // Small detail
+    const oddsStat = document.getElementById('odds-stat'); // Small detail
     const soloBtn = document.getElementById('soloBtn');
     const emojis = victoryScreen.querySelectorAll('.emoji');
 
+    // 2. UI SWAP: Hide game, show victory screen immediately
+    if (gameContainer) gameContainer.classList.add('hidden');
+    if (victoryScreen) {
+        victoryScreen.classList.remove('hidden');
+        victoryScreen.style.display = 'flex'; 
+    }
+
+    // 3. APPLY STATS TO THE UI
+    if (playerCountStat) {
+        playerCountStat.textContent = `Total Players: ${total}`;
+    }
+    if (oddsStat) {
+        oddsStat.textContent = `Winning Odds: ${odds}%`;
+    }
+
+    // 4. THEME UPDATE (Winner vs. Loser)
     if (isWinner) {
         statusText.textContent = "VICTORY";
-        statsText.textContent = "You are the last Survivor!";
+          // If it's NOT a sole winner, it's a tie/co-victory
+        if (matchData.isSoleWinner) {
+            victoryStats.textContent = "You are the Winner!";
+        } else {
+            victoryStats.textContent = "It's a Tie!";
+        }
+    
         if (soloBtn) soloBtn.classList.remove('hidden');
         emojis.forEach(e => e.textContent = "🏆");
     } else {
+        // Standard Loser Path
         statusText.textContent = "ELIMINATED";
-        statsText.textContent = "Better luck next time!";
-        if (soloBtn) soloBtn.classList.add('hidden'); // Losers can't continue
+        victoryStats.textContent = "Better luck next time!";
+        
+        if (soloBtn) soloBtn.classList.add('hidden'); 
         emojis.forEach(e => e.textContent = "💀");
     }
 
-    // 3. Save Data Silently
+    // 5. DATA SAVE & SAFETY RE-ASSERT
     try {
-        // Passing 'true' tells the reset function to keep the victory screen visible
+        // 'true' ensures resetLiveModeState doesn't hide our screen
         await endGame(true); 
         
-        // RE-ASSERT VISIBILITY: In case endGame()'s internal reset logic 
-        // accidentally toggled the 'hidden' class back on.
+        // Re-check visibility because endGame might trigger resets
         if (victoryScreen && victoryScreen.classList.contains('hidden')) {
             console.log("Forcing victory screen back to visible after reset.");
             victoryScreen.classList.remove('hidden');
@@ -2749,7 +2770,12 @@ gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
             window.pendingVictory = true; 
             isLiveMode = false;
             if (timer) clearInterval(timer);
-
+            // 3. SHOW VICTORY UI
+            // Prepare the stats object locally using the matchStartingCount we saved at start
+            const matchData = {
+                totalPlayers: matchStartingCount || 2,
+                isSoleWinner: (outcome === 'win'), // 'win' = sole winner, 'tie' = co-winner
+            };
             // 2. LOBBY CLEANUP (Ensuring host wipes the DB record)
             const amIHost = isHost(); 
             const lobbyIdToDelete = currentLobby?.id;
@@ -2761,7 +2787,7 @@ gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
             // 3. SHOW VICTORY UI
             // We pass 'true' so the screen shows "VICTORY" instead of "ELIMINATED"
             setTimeout(() => {
-                showLiveResults(true);
+                showLiveResults(true, matchData);
             }, 500);
 
             return;
@@ -2776,6 +2802,11 @@ gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
         hasDiedLocally = true;
         window.matchStarted = false; // Prevent auto-starting new rounds
         if (timer) clearInterval(timer);
+        // Use a small object to pass the data you saved at the start
+        const matchData = {
+            totalPlayers: matchStartingCount || 2,
+            isSoleWinner: false
+        };
       
         // --- NEW: LOBBY CLEANUP LOGIC ---
         const amIHost = isHost(); // Check host status before we disconnect
@@ -2799,7 +2830,7 @@ gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
             document.body.classList.remove('game-active');
     
             // Show the victory/eliminated screen
-            showLiveResults(false); 
+            showLiveResults(false, matchData); 
         }, 100);
         return;
     }
@@ -3717,6 +3748,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
