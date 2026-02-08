@@ -1666,13 +1666,19 @@ async function endGame(isSilent = false) {
         gameEnding = false;
     });
     } else {
-        // Just ensure the game is hidden and flag is reset.
-        // The victory-screen is handled by showLiveResults.
-        if (game) game.classList.add('hidden');
+        // --- LIVE MODE / SILENT PATH ---
+        console.log("EndGame (Silent) processing background tasks...");
+        
+        // Don't touch the victory-screen titles here anymore! 
+        // showLiveResults has already handled it.
+        
+        // Just do the cleanup
+        await resetLiveModeState(true); 
         gameEnding = false;
-        console.log("EndGame (Silent) Complete.");
     }
-    }
+}
+
+
 
 async function showLiveResults(isWinner) {
     const victoryScreen = document.getElementById('victory-screen');
@@ -2497,7 +2503,7 @@ function showAchievementNotification(achievementName) {
 window.showAchievementNotification = showAchievementNotification;
 
 
-//live mode
+//live mode..
 async function joinMatchmaking() {
    await resetLiveModeState();
   // 1. AUTH CHECK: This prevents the "Cannot read properties of null (reading 'id')" error
@@ -2866,7 +2872,7 @@ gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
     });
 }
 
-async function resetLiveModeState() {
+async function resetLiveModeState(keepVictoryVisible = false) {
     console.log("Full reset of Live Mode state...");
   
     // --- 1. NETWORK CLEANUP ---
@@ -2924,9 +2930,10 @@ async function resetLiveModeState() {
     // Hide specific live UI elements
     const survivorDisplay = document.getElementById('survivor-count');
     if (survivorDisplay) survivorDisplay.classList.add('hidden');
-    
-    const victoryScreen = document.getElementById('victory-screen');
-    if (victoryScreen) victoryScreen.classList.add('hidden');
+    if (!keepVictoryVisible) {
+      const victoryScreen = document.getElementById('victory-screen');
+      if (victoryScreen) victoryScreen.classList.add('hidden');
+    }
 
     const lobbyScreen = document.getElementById('lobby-screen');
     if (lobbyScreen) lobbyScreen.classList.add('hidden');
@@ -3670,6 +3677,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
