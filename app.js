@@ -1184,7 +1184,7 @@ async function handleTimeout() {
         setTimeout(loadQuestion, 1500);
     } else {
         // End the game
-        setTimeout(, 1000);
+        setTimeout(endGame(), 1000);
     }
 }
 
@@ -3795,6 +3795,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
