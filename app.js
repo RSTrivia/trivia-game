@@ -341,8 +341,6 @@ async function init() {
 
 lobbyBtn.onclick = async () => {
     // 1. Show the Lobby UI (Hide the start screen)
-    document.getElementById('start-screen').classList.add('hidden');
-    document.getElementById('lobby-screen').classList.remove('hidden');
     if (audioCtx.state === 'suspended') await audioCtx.resume();
     loadSounds();
     // 2. Initialize the search for a match
@@ -3580,6 +3578,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
