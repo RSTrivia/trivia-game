@@ -1681,42 +1681,52 @@ async function endGame(isSilent = false) {
 
 
 async function showLiveResults(isWinner) {
+    console.log("Showing Live Results. Winner?", isWinner);
     const victoryScreen = document.getElementById('victory-screen');
     const gameContainer = document.getElementById('game');
 
-    // --- 1. THE CRITICAL FIX: SWAP UI IMMEDIATELY ---
-    // Do not 'await' anything before this.
+    // 1. UI SWAP IMMEDIATELY
     if (gameContainer) gameContainer.classList.add('hidden');
-    if (victoryScreen) victoryScreen.classList.remove('hidden');
+    document.body.classList.remove('game-active');
+    
+    if (victoryScreen) {
+        victoryScreen.classList.remove('hidden');
+        // If you use 'display: none' in CSS, force it to flex/block here
+        victoryScreen.style.display = 'flex'; 
+    }
 
     // 2. Set the text/theme based on win/loss
     const statusText = document.getElementById('victory-status-text');
     const titleContainer = document.getElementById('vic-title-text');
     const statsText = document.getElementById('victory-stats');
     const emojis = victoryScreen.querySelectorAll('.emoji');
-    const soloBtn = document.getElementById('soloBtn');
 
     if (isWinner) {
         statusText.textContent = "VICTORY";
         if (titleContainer) titleContainer.className = "victory-title win-theme";
         statsText.textContent = "You are the last Survivor!";
         emojis.forEach(e => e.textContent = "🏆");
-        if (soloBtn) soloBtn.classList.remove('hidden');
     } else {
         statusText.textContent = "ELIMINATED";
         if (titleContainer) titleContainer.className = "victory-title lose-theme";
         statsText.textContent = "Better luck next time!";
         emojis.forEach(e => e.textContent = "💀");
-        if (soloBtn) soloBtn.classList.add('hidden');
     }
 
-    // --- 3. BACKGROUND DATA PROCESSING ---
-    // Now that the user sees the "Eliminated" screen, we do the slow DB work.
+    // 3. BACKGROUND DATA PROCESSING
     try {
+        // We call this with TRUE so resetLiveModeState knows NOT to hide our screen
         await endGame(true); 
+        
+        // --- THE CRITICAL SAFETY NET ---
+        // In case endGame's reset function hid the screen anyway, we turn it back ON here.
+        if (victoryScreen) {
+            victoryScreen.classList.remove('hidden');
+            victoryScreen.style.display = 'flex';
+        }
+        console.log("Victory screen forced visible after reset.");
     } catch (err) {
         console.error("Silent data save failed:", err);
-        // Even if DB fails, the user is already on the result screen, so they don't care.
     }
 }
 
@@ -3686,6 +3696,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
