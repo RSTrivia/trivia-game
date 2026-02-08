@@ -1306,7 +1306,7 @@ async function checkAnswer(choiceId, btn) {
         if (questionText) {
             questionText.textContent = isCorrect 
                 ? "Correct! Waiting for survivors..." 
-                : "Time up / Wrong! Waiting for match results...";
+                : "Wrong! Waiting for match results...";
         }
          // 1. VISUAL FEEDBACK: Hide the question assets immediately
         if (questionImage) {
@@ -3190,9 +3190,13 @@ function endRoundAsReferee() {
     }
 
     // --- FINAL OVERRIDE: OUT OF QUESTIONS ---
-    if (outcome === 'continue' && remainingQuestions.length === 0 && preloadQueue.length === 0) {
-        outcome = (correct.length === 1) ? 'win' : 'tie';
-        winners = correct;
+    if (remainingQuestions.length === 0 && preloadQueue.length === 0) {
+        if (outcome === 'continue') {
+            // If the game was going to continue but we have no more questions,
+            // we MUST end it now as a win (if 1 left) or tie (if 2+ left).
+            outcome = (correct.length === 1) ? 'win' : 'tie';
+            winners = correct;
+        }
     }
 
     // --- LOCK HOST STATE ---
@@ -3297,25 +3301,37 @@ async function transitionToSoloMode(isSoleWinner, userWasCorrect = true) {
     const victoryStats = document.getElementById('victory-stats');
     const oddsText = document.getElementById('odds-stat'); 
   
-    // Update Stats Text
-    // --- THE FIX ---
+    // --- THE REFINED FIX ---
+    const hasQuestionsLeft = remainingQuestions.length > 0 || preloadQueue.length > 0;
+    
     if (!userWasCorrect) {
-        // If they tied because everyone was wrong, don't let them continue
-        if (soloBtn) soloBtn.classList.add('hidden'); // Hide the button
+        // CASE 1: Everyone failed the round
+        if (soloBtn) soloBtn.classList.add('hidden'); 
         if (victoryStats) victoryStats.textContent = "Everyone answered incorrectly! Match Over.";
         if (statsText) statsText.textContent = `Tie (No Winners)`;
     } else {
-        // Normal path: They were right (either sole winner or a tie of correct answers)
-        if (soloBtn) soloBtn.classList.remove('hidden'); 
-        if (victoryStats) victoryStats.textContent = isSoleWinner ? "You are the last Survivor!" : "You survived the round!";
-        
-        if (!isSoleWinner) {
-            if (statsText) statsText.textContent = `Co-Victory! Total Players: ${matchStartingCount}`;
-        } else {
+        // User was correct! Now check if they are the ONLY one and if the game CAN continue
+        if (isSoleWinner && hasQuestionsLeft) {
+            // CASE 2: Perfect Solo Win with more content available
+            if (soloBtn) soloBtn.classList.remove('hidden'); 
+            if (victoryStats) victoryStats.textContent = "You are the last Survivor!";
             if (statsText) statsText.textContent = `Sole Survivor! Total Players: ${matchStartingCount}`;
+        } else {
+            // CASE 3: It's a Tie OR the question pool is empty
+            if (soloBtn) soloBtn.classList.add('hidden'); 
+    
+            if (!isSoleWinner) {
+                // It was a tie of correct answers
+                victoryStats.textContent = "Co-Victory! You both survived the match.";
+                statsText.textContent = `Match Result: Tie`;
+            } else {
+                // Sole winner, but ran out of questions
+                victoryStats.textContent = "Ultimate Champion! You've cleared the entire pool.";
+                statsText.textContent = `Sole Survivor! (No more questions)`;
+            }
         }
     }
-  
+      
     if (oddsText) oddsText.textContent = `Survival Odds: ${odds}%`;
 
     // --- 3. SHOW SCREEN ---
@@ -3762,6 +3778,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
