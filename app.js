@@ -1137,6 +1137,7 @@ function startTimer() {
           });
 
           questionText.textContent = "Waiting for other players...";
+          if (questionImage) questionImage.style.display = 'none';
         }
         return; // ⛔ never fall through in live mode
       }
@@ -3616,6 +3617,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
