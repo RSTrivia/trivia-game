@@ -1589,77 +1589,102 @@ input.input-field:-webkit-autofill:active {
 
 
 /* live mode */
+/* Live Mode Victory/Elimination Screen */
 #victory-screen {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.85); /* Darken play area */
+    background-color: rgba(0, 0, 0, 0.8); 
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 9999;
+    backdrop-filter: blur(4px); /* Modern touch for mobile focus */
 }
 
 .victory-content {
-    background: #4a3b2c; /* OSRS Brown */
-    border: 3px solid #d4af37; /* Gold Border */
-    padding: 30px;
-    border-radius: 4px;
+    /* Background: A subtle shiny radial gradient to match container */
+    background: radial-gradient(circle at center, #5d4a37 0%, #4a3b2c 100%);
+    border: 3px solid #d4af37;
+    /* The "Shiny" OSRS Border effect */
+    outline: 2px solid #221a10; 
+    outline-offset: -5px; 
+    
+    padding: 25px;
+    border-radius: 2px;
     text-align: center;
-    max-width: 350px;
-    width: 90%;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+    width: 85%;
+    max-width: 320px;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 1);
+    display: flex;
+    flex-direction: column;
 }
 
 .victory-title {
-    color: #ff981f; /* OSRS Golden-Orange */
+    color: #ff981f;
     font-family: 'Cinzel', serif;
-    font-size: 1.6rem; /* Scaled down from huge */
-    margin-bottom: 15px;
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 0px #000;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
 }
 
-/* Specifically scale the emoji icons */
-.victory-title span, .victory-title::before, .victory-title::after {
-    font-size: 1.2rem; 
+/* Fix for Emojis on Mobile */
+.emoji {
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+    font-size: 1.4rem;
+    display: inline-block;
+    vertical-align: middle;
 }
 
 #victory-stats {
-    color: #ffffff;
+    color: #e3d7c3;
     font-size: 1.1rem;
-    margin-bottom: 10px;
-    font-weight: bold;
+    margin-bottom: 5px;
+    font-weight: 500;
 }
 
 .match-info {
-    color: #c2c2c2;
-    font-size: 0.85rem;
-    margin-bottom: 25px;
-    border-top: 1px solid #382418;
-    padding-top: 10px;
+    color: #8f8f8f;
+    font-size: 0.8rem;
+    margin-bottom: 20px;
+    padding-top: 5px;
 }
 
-#soloBtn {
+/* Container for the 3 Buttons */
+.victory-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Space between buttons */
+    margin-top: auto; /* Pushes buttons to the bottom */
+}
+
+/* Button Styling for consistency */
+#victory-screen .btn, #soloBtn, #rejoinLobbyBtn, #victoryMainMenuBtn {
     width: 100%;
-    padding: 12px;
-    font-size: 1rem;
-    cursor: pointer;
-    background: #5d4a37;
-    border: 2px solid #382418;
+    padding: 10px;
+    background: #3d2f23;
+    border: 2px solid #221a10;
     color: #ff981f;
     font-family: 'Cinzel', serif;
-    transition: all 0.2s;
+    font-size: 0.9rem;
+    cursor: pointer;
+    box-shadow: inset 0 0 5px rgba(255,152,31,0.1);
 }
 
-#soloBtn:hover {
-    background: #6d5a47;
+#victory-screen .btn:active, #victory-screen .btn:hover {
+    background: #4e3c2d;
     filter: brightness(1.2);
 }
+
+/* Theme Classes for Win/Loss */
+.win-theme { color: #ff981f !important; }
+.lose-theme { color: #ff4444 !important; }
 
 
 
@@ -1683,6 +1708,7 @@ input.input-field:-webkit-autofill:active {
   opacity: 0.5 !important;
   filter: grayscale(1);
 }
+
 
 
 
