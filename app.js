@@ -2536,10 +2536,14 @@ function setupLobbyRealtime(lobby) {
         .select('question_ids')
         .eq('id', currentLobby.id)
         .single();
-
-    if (lobbyData && lobbyData.question_ids) {
-        // No need to shuffle! It's already shuffled in the DB.
-        remainingQuestions = lobbyData.question_ids;
+    // ERROR CHECK: Ensure data exists before proceeding
+    if (error || !lobbyData?.question_ids) {
+        console.error("Failed to sync questions from DB:", error);
+        return; 
+    }
+  
+    // No need to shuffle! It's already shuffled in the DB.
+    remainingQuestions = lobbyData.question_ids;
 
     // 2. Clear old data
     preloadQueue = []; 
@@ -3521,6 +3525,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
