@@ -2685,8 +2685,20 @@ gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
     // If I'm in the 'dead' list, OR if someone else won and I'm not them
     if (dead.includes(userId) || (outcome === 'win' && !winnerIds.includes(userId))) {
         console.log("I am eliminated. Closing game.");
+      
+        // --- NEW: LOBBY CLEANUP LOGIC ---
+        const amIHost = isHost(); // Check host status before we disconnect
+        const lobbyIdToDelete = currentLobby?.id;
+        
         isLiveMode = false;
         hasDiedLocally = true;
+        
+        // If I'm the host and I just lost, I must kill the lobby records
+        if (amIHost && lobbyIdToDelete) {
+            console.log("Host eliminated: Cleaning up lobby records...");
+            deleteCurrentLobby(lobbyIdToDelete);
+        }
+        // -------------------------------
         
         // Clear the screen so they don't see the next question
         if (questionText) questionText.innerHTML = "Eliminated! Better luck next time.";
@@ -3156,22 +3168,25 @@ async function transitionToSoloMode(isSoleWinner, userWasCorrect = true) {
     if (victoryScreen) victoryScreen.classList.remove('hidden');
     playSound(bonusBuffer);
 
-    // --- 4. GRACEFUL CLEANUP (THE FIX) ---
-    // We wait 3 seconds before killing the channel/lobby.
-    // This ensures the "Loser" receives the 'round-ended' broadcast.
+    // --- 4. GRACEFUL CLEANUP ---
+    const amIHost = isHost(); // Check host status BEFORE removing the channel
+    const lobbyIdToDelete = currentLobby?.id;
+    
     setTimeout(async () => {
+        // 1. Delete from DB first while we still have the ID
+        if (lobbyIdToDelete && amIHost) { 
+            console.log("Host: Deleting lobby records...");
+            await deleteCurrentLobby(lobbyIdToDelete);
+        }
+    
+        // 2. Then cleanup the network
         if (gameChannel) {
-            console.log("Cleaning up game channel after grace period...");
+            console.log("Cleaning up game channel...");
             supabase.removeChannel(gameChannel);
             gameChannel = null;
         }
-        if (lobbyId && isHost()) { 
-            console.log("Host: Deleting lobby records...");
-            await deleteCurrentLobby(lobbyId);
-        }
         currentLobby = null; 
-    }, 3000); 
-
+    }, 3000);
 }
 
 function showVictoryBanner(message) {
@@ -3578,6 +3593,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
