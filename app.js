@@ -1667,19 +1667,30 @@ async function endGame(isSilent = false) {
     } else {
       // If it IS silent, we just reset the flag so another game can start later
       console.log("EndGame (Silent): Data saved, UI transition skipped.");
+      // We still need to hide the game element even if we aren't 
+      // showing the STANDARD end screen, because showLiveResults 
+      // is about to show the VICTORY screen.
+      document.getElementById('game').classList.add('hidden');
+      
       gameEnding = false;
       }
     }
 
 async function showLiveResults(isWinner) {
-    // 1. UPDATE UI IMMEDIATELY (Don't wait for DB)
     const victoryScreen = document.getElementById('victory-screen');
+    const gameContainer = document.getElementById('game');
+
+    // 1. IMMEDIATE UI SWAP (Do this before anything else!)
+    gameContainer.classList.add('hidden');
+    victoryScreen.classList.remove('hidden');
+
+    // 2. Set the text/theme based on win/loss
     const statusText = document.getElementById('victory-status-text');
     const titleContainer = document.getElementById('vic-title-text');
     const statsText = document.getElementById('victory-stats');
     const emojis = victoryScreen.querySelectorAll('.emoji');
     const soloBtn = document.getElementById('soloBtn');
-    
+
     if (isWinner) {
         statusText.textContent = "VICTORY";
         titleContainer.className = "victory-title win-theme";
@@ -1694,17 +1705,10 @@ async function showLiveResults(isWinner) {
         if (soloBtn) soloBtn.classList.add('hidden');
     }
 
-    // 2. THE BIG SWAP: Do this NOW so the player feels the game ended
-    document.getElementById('game').classList.add('hidden');
-    victoryScreen.classList.remove('hidden');
-
-    // 3. BACKGROUND WORK: Now save data quietly
-    // Using try/catch so a DB error doesn't break the UI
-    try {
-        await endGame(true); 
-    } catch (err) {
-        console.error("Live Mode Score Save Failed:", err);
-    }
+    // 3. BACKGROUND DATA PROCESSING
+    // We don't 'await' this if we want the UI to be instant, 
+    // OR we await it at the end so it doesn't block the screen swap.
+    await endGame(true); 
 }
 
 
@@ -3663,6 +3667,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
