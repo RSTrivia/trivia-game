@@ -2530,15 +2530,28 @@ function setupLobbyRealtime(lobby) {
         appendMessage(payload.username, payload.message);
     })
 .on('broadcast', { event: 'prepare-game' }, async ({ payload }) => {
-    // 1. Get the list directly from the lobby record (The Source of Truth)
-    const { data: lobbyData } = await supabase
+    // 1. Fetch data with both data and error defined
+    let { data: lobbyData, error } = await supabase
         .from('live_lobbies')
         .select('question_ids')
         .eq('id', currentLobby.id)
         .single();
-    // ERROR CHECK: Ensure data exists before proceeding
+
+    // 2. Tiny retry logic: if DB is slow, wait 200ms and try one more time
+    if (!lobbyData?.question_ids) {
+        await new Promise(resolve => setTimeout(resolve, 200));
+        const retry = await supabase
+            .from('live_lobbies')
+            .select('question_ids')
+            .eq('id', currentLobby.id)
+            .single();
+        lobbyData = retry.data;
+        error = retry.error;
+    }
+  
     if (error || !lobbyData?.question_ids) {
-        console.error("Failed to sync questions from DB:", error);
+        console.error("Failed to sync questions:", error);
+        if (questionText) questionText.innerHTML = "Sync Error. Please rejoin.";
         return; 
     }
   
@@ -3525,6 +3538,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
