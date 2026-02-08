@@ -1133,12 +1133,7 @@ function startTimer() {
 
           questionText.textContent = "Waiting for other players...";
           // Image cleanup
-          if (questionImage) {
-            questionImage.style.display = 'none';
-            questionImage.style.opacity = '0';
-            // Use a blank transparent pixel to clear the previous image immediately
-            questionImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
-          }
+          if (questionImage) questionImage.style.display = 'none';
         }
         return; // ⛔ never fall through in live mode
       }
@@ -1181,7 +1176,7 @@ async function checkAnswer(choiceId, btn) {
     stopTickSound(); // CUT THE SOUND IMMEDIATELY
     // If timeLeft is 0, we treat it as a 'wrong' answer automatically
     let isCorrect = false; 
-  
+    
     // --- 1. HANDLE INPUT (Only if time remains) ---
     if (timeLeft > 0) {
         document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
@@ -1279,6 +1274,7 @@ async function checkAnswer(choiceId, btn) {
   }
     // --- 2. LIVE MODE BROADCAST (Must run even if timeLeft <= 0) ---
     if (isLiveMode) {
+
         roundOpen = false;
         const resultStatus = isCorrect ? 'correct' : 'wrong';
 
@@ -1297,7 +1293,12 @@ async function checkAnswer(choiceId, btn) {
                 ? "Correct! Waiting for survivors..." 
                 : "Time up / Wrong! Waiting for match results...";
         }
-        
+         // 1. VISUAL FEEDBACK: Hide the question assets immediately
+        if (questionImage) {
+            questionImage.style.display = 'none';
+            questionImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+        }
+      
         if (answersBox) answersBox.innerHTML = '<div class="loading-spinner"></div>';
         return; 
     }
@@ -2705,13 +2706,7 @@ gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
         // Clear the screen so they don't see the next question
         if (questionText) questionText.innerHTML = "Eliminated! Better luck next time.";
         if (answersBox) answersBox.innerHTML = "";
-        // ADD THIS LINE:
-        // 4. Handle Images
-        if (questionImage) {
-          questionImage.style.display = 'none';
-          questionImage.style.opacity = '0';
-          questionImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
-        }
+        if (questionImage) questionImage.style.display = 'none';
         
         setTimeout(() => endGame(), 1000); 
         return;
@@ -2723,11 +2718,6 @@ gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
     updateSurvivorCountUI(survivors);
     
     console.log(`Round ended. Survivors remaining: ${survivors}. Starting next round...`);
-    if (questionImage) {
-          questionImage.style.display = 'none';
-          questionImage.style.opacity = '0';
-          questionImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
-    }
   
     setTimeout(() => { 
         // Triple-check flags to prevent Round 2 starting during a victory transition
@@ -2976,12 +2966,7 @@ function startLiveRound() {
             if (questionText) questionText.innerHTML = "Time's up! Waiting for survivors...";
             if (answersBox) answersBox.innerHTML = '<div class="loading-spinner"></div>';
             // Image cleanup
-            if (questionImage) {    
-            questionImage.style.display = 'none';
-            questionImage.style.opacity = '0';
-            // Use a blank transparent pixel to clear the previous image immediately
-            questionImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
-            }
+            if (questionImage) questionImage.style.display = 'none';
             // ------------------------------
             // 3. IMPORTANT: If the referee hasn't responded in 5 seconds, force endGame
             // This handles cases where the host disconnected
@@ -3628,6 +3613,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
