@@ -1662,6 +1662,26 @@ input.input-field:-webkit-autofill:active {
 }
 
 
+/* PC HOVER FIX */
+@media (hover: hover) {
+  /* Targets Normal/Lite buttons OR Active Weekly/Daily/Lobby buttons */
+  .btn:not(.is-disabled):hover,
+  .btn.is-active:hover,
+  .btn-small:not(.is-disabled):hover {
+    background: rgba(212, 175, 55, 0.2) !important; /* Semi-transparent gold */
+    border-color: #ffea8a !important;
+    color: #ffea8a !important;
+    cursor: pointer !important;
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.5) !important;
+  }
+}
+
+/* Ensure disabled buttons NEVER trigger hover */
+.is-disabled {
+  pointer-events: none !important;
+  opacity: 0.5 !important;
+  filter: grayscale(1);
+}
 
 
 
