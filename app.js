@@ -1648,41 +1648,32 @@ async function endGame(isSilent = false) {
     // 4. THE BIG SWAP (Final step)
     // Use a tiny timeout or requestAnimationFrame to ensure DOM updates are ready
     // Only switch to the standard End Screen if isSilent is false
+    // At the very end of your endGame function:
     if (!isSilent) {
-    requestAnimationFrame(() => {
-        document.body.classList.remove('game-active'); 
-        game.classList.add('hidden');
-        endScreen.classList.remove('hidden');
-
-        // 2. WIPE GAME UI IMMEDIATELY 
-        // This prevents seeing old questions/answers behind the transition
-        questionText.textContent = ''; 
-        answersBox.innerHTML = '';
-        questionImage.style.display = 'none';
-        questionImage.src = ''; 
-      
-        updateShareButtonState();
-        gameEnding = false;
-    });
+        requestAnimationFrame(() => {
+            document.body.classList.remove('game-active'); 
+            game.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+            // ...
+            gameEnding = false;
+        });
     } else {
-      // If it IS silent, we just reset the flag so another game can start later
-      console.log("EndGame (Silent): Data saved, UI transition skipped.");
-      // We still need to hide the game element even if we aren't 
-      // showing the STANDARD end screen, because showLiveResults 
-      // is about to show the VICTORY screen.
-      document.getElementById('game').classList.add('hidden');
-      
-      gameEnding = false;
-      }
+        // Just ensure the game is hidden and flag is reset.
+        // The victory-screen is handled by showLiveResults.
+        if (game) game.classList.add('hidden');
+        gameEnding = false;
+        console.log("EndGame (Silent) Complete.");
+    }
     }
 
 async function showLiveResults(isWinner) {
     const victoryScreen = document.getElementById('victory-screen');
     const gameContainer = document.getElementById('game');
 
-    // 1. IMMEDIATE UI SWAP (Do this before anything else!)
-    gameContainer.classList.add('hidden');
-    victoryScreen.classList.remove('hidden');
+    // --- 1. THE CRITICAL FIX: SWAP UI IMMEDIATELY ---
+    // Do not 'await' anything before this.
+    if (gameContainer) gameContainer.classList.add('hidden');
+    if (victoryScreen) victoryScreen.classList.remove('hidden');
 
     // 2. Set the text/theme based on win/loss
     const statusText = document.getElementById('victory-status-text');
@@ -1693,22 +1684,26 @@ async function showLiveResults(isWinner) {
 
     if (isWinner) {
         statusText.textContent = "VICTORY";
-        titleContainer.className = "victory-title win-theme";
+        if (titleContainer) titleContainer.className = "victory-title win-theme";
         statsText.textContent = "You are the last Survivor!";
         emojis.forEach(e => e.textContent = "🏆");
         if (soloBtn) soloBtn.classList.remove('hidden');
     } else {
         statusText.textContent = "ELIMINATED";
-        titleContainer.className = "victory-title lose-theme";
+        if (titleContainer) titleContainer.className = "victory-title lose-theme";
         statsText.textContent = "Better luck next time!";
         emojis.forEach(e => e.textContent = "💀");
         if (soloBtn) soloBtn.classList.add('hidden');
     }
 
-    // 3. BACKGROUND DATA PROCESSING
-    // We don't 'await' this if we want the UI to be instant, 
-    // OR we await it at the end so it doesn't block the screen swap.
-    await endGame(true); 
+    // --- 3. BACKGROUND DATA PROCESSING ---
+    // Now that the user sees the "Eliminated" screen, we do the slow DB work.
+    try {
+        await endGame(true); 
+    } catch (err) {
+        console.error("Silent data save failed:", err);
+        // Even if DB fails, the user is already on the result screen, so they don't care.
+    }
 }
 
 
@@ -3667,6 +3662,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
