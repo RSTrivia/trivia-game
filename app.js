@@ -2749,27 +2749,36 @@ gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
     // If I'm in the 'dead' list, OR if someone else won and I'm not them
     if (dead.includes(userId) || (outcome === 'win' && !winnerIds.includes(userId))) {
         console.log("I am eliminated. Closing game.");
+        // 1. STATE LOCK: Stop everything immediately
+        isLiveMode = false;
+        hasDiedLocally = true;
+        window.matchStarted = false; // Prevent auto-starting new rounds
+        if (timer) clearInterval(timer);
       
         // --- NEW: LOBBY CLEANUP LOGIC ---
         const amIHost = isHost(); // Check host status before we disconnect
         const lobbyIdToDelete = currentLobby?.id;
-      
-        // Clear the screen so they don't see the next question
-        if (questionText) questionText.innerHTML = "Eliminated! Better luck next time.";
-        if (answersBox) answersBox.innerHTML = "";
-        if (questionImage) questionImage.style.display = 'none';
-      
         // If I'm the host and I just lost, I must kill the lobby records
         if (amIHost && lobbyIdToDelete) {
             console.log("Host eliminated: Cleaning up lobby records...");
             deleteCurrentLobby(lobbyIdToDelete);
         }
-        // -------------------------------
-        isLiveMode = false;
-        hasDiedLocally = true;
+        // Clear the screen so they don't see the next question
+        /if (questionText) questionText.innerHTML = "";
+        if (answersBox) answersBox.innerHTML = "";
+        if (questionImage) questionImage.style.display = 'none';
       
-       // Show the results (which now triggers the silent endGame logic)
-        setTimeout(() => showLiveResults(false), 1000); 
+        // 4. THE FIX: Hide Game Container and Show Results Screen
+        // We do this immediately or with a very short delay (100ms)
+        setTimeout(() => {
+            // Force hide the game UI
+            const gameContainer = document.getElementById('game');
+            if (gameContainer) gameContainer.classList.add('hidden');
+            document.body.classList.remove('game-active');
+    
+            // Show the victory/eliminated screen
+            showLiveResults(false); 
+        }, 100);
         return;
     }
   
@@ -3677,6 +3686,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
