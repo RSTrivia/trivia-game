@@ -165,7 +165,6 @@ a {
     opacity: 0.5 !important;
     pointer-events: none !important;
     filter: grayscale(1);
-    cursor: default !important;
 }
 
 .btn.is-active {
@@ -174,7 +173,7 @@ a {
     color: #d4af37 !important;
     opacity: 1 !important;
     pointer-events: auto !important;
-    cursor: default !important;
+    cursor: pointer !important;
 }
 
 /* ====== SMALL BUTTONS ====== */
@@ -1662,6 +1661,7 @@ input.input-field:-webkit-autofill:active {
     background: #6d5a47;
     filter: brightness(1.2);
 }
+
 
 
 
