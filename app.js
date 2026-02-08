@@ -2723,7 +2723,12 @@ gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
     updateSurvivorCountUI(survivors);
     
     console.log(`Round ended. Survivors remaining: ${survivors}. Starting next round...`);
-
+    if (questionImage) {
+          questionImage.style.display = 'none';
+          questionImage.style.opacity = '0';
+          questionImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+    }
+  
     setTimeout(() => { 
         // Triple-check flags to prevent Round 2 starting during a victory transition
         if (isLiveMode && !hasDiedLocally && !window.pendingVictory) {
@@ -3623,6 +3628,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
