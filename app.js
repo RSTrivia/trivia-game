@@ -3242,19 +3242,29 @@ function isHost(channel) {
 }
 
 
-// Phase 1: Host ONLY sends the seed
 async function triggerGamePrepare(lobbyId) {
     if (isStarting) return;
-    
-    // Just roll the dice
-    const matchSeed = Math.floor(Math.random() * 1000000);
+    isStarting = true; // Prevent double-clicks
 
-    console.log("Host: Broadcasting Seed", matchSeed);
+    console.log("Host: Ensuring lobby data is saved before preparation...");
 
+    // 1. Double-check that we actually have the lobby data locally
+    // If currentLobby.question_ids is missing, we shouldn't start yet.
+    if (!currentLobby || !currentLobby.question_ids) {
+        console.error("Host: No question IDs found in local lobby state!");
+        isStarting = false;
+        return;
+    }
+
+    console.log("Host: Notifying all players to sync from DB...");
+
+    // 2. Broadcast the signal
+    // We don't need to send a 'seed' anymore because everyone will 
+    // fetch the array directly from the 'live_lobbies' table.
     lobbyChannel.send({
         type: 'broadcast',
         event: 'prepare-game',
-        payload: { seed: matchSeed } // masterIds is removed!
+        payload: { lobbyId: lobbyId } 
     });
 }
 
@@ -3538,6 +3548,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
