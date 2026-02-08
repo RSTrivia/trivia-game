@@ -525,8 +525,12 @@ if (soloBtn) {
         isLiveMode = false; 
         hasDiedLocally = false;
         gameEnding = false;
+       // 2. Restart the Anchor
+        // Instead of pushing the start into the past, we start a NEW anchor.
+        // Our endGame() will later do: accumulatedTime + (Date.now() - gameStartTime)
+        gameStartTime = Date.now();
       
-        // 2. UI Reset
+        // 3. UI Reset
         if (victoryScreen) {
             victoryScreen.classList.add('hidden');
             victoryScreen.style.display = 'none';
@@ -540,10 +544,7 @@ if (soloBtn) {
         document.body.classList.remove('lobby-active');
         document.body.classList.add('game-active');
 
-        // 2. Adjust Clock
-        gameStartTime = Date.now() - (accumulatedTime || 0);
-
-        // 3. Kick off the solo loop
+        // 4. Kick off the solo loop
         if (preloadQueue.length === 0 && remainingQuestions.length === 0) {
             await endGame(false);
         } else {
@@ -962,7 +963,7 @@ async function startGame(isLive = false) {
         dailyQuestionCount = 0;
         currentQuestion = null;
         gameEnding = false;
-
+      
         // 4. UI PREP
         // Use resetGame() or manual wipe here
         questionText.textContent = '';
@@ -973,7 +974,8 @@ async function startGame(isLive = false) {
        
         // This ensures the "Live" game and the "Clock" start at the exact same millisecond
         gameStartTime = Date.now();
-
+        accumulatedTime = 0; // Reset any previous match data
+      
         // 5. THE BIG SWAP (User finally sees the game)
         document.body.classList.add('game-active');
         game.classList.remove('hidden');
@@ -1020,17 +1022,17 @@ async function loadQuestion(broadcastedId = null, startTime = null) {
         return;
     }
    // 1. End Game Checks
-    if (isWeeklyMode && weeklyQuestionCount >= WEEKLY_LIMIT) { await endGame(); return; }
-    if (isLiteMode && score >= LITE_LIMIT) { await endGame(); return; }
+    if (isWeeklyMode && weeklyQuestionCount >= WEEKLY_LIMIT) { await (); return; }
+    if (isLiteMode && score >= LITE_LIMIT) { await (); return; }
         
     // Normal Mode "Out of questions" check
     //if (!isLiveMode && preloadQueue.length === 0 && remainingQuestions.length === 0 && currentQuestion !== null) {
-        //await endGame();
+        //await ();
         //return;
    // }
     if (!isLiveMode && !window.isTransitioning && preloadQueue.length === 0 && remainingQuestions.length === 0) {
       if (currentQuestion !== null) {
-          await endGame();
+          await ();
           return;
       }
   }
@@ -1062,9 +1064,9 @@ async function loadQuestion(broadcastedId = null, startTime = null) {
     // C. FINAL SAFETY CHECK
     if (preloadQueue.length === 0) {
         console.error("No questions available.");
-        // Only trigger endGame if we aren't in a Live Match, 
+        // Only trigger  if we aren't in a Live Match, 
         // or if the Live Match is truly over.
-        if (!isLiveMode) await endGame();
+        if (!isLiveMode) await ();
         return;
     }
   
@@ -1182,7 +1184,7 @@ async function handleTimeout() {
         setTimeout(loadQuestion, 1500);
     } else {
         // End the game
-        setTimeout(endGame, 1000);
+        setTimeout(, 1000);
     }
 }
 
@@ -1325,7 +1327,7 @@ async function checkAnswer(choiceId, btn) {
             setTimeout(loadQuestion, 1500);
         } else {
             // Only Normal and Lite modes end on a wrong answer
-            setTimeout(endGame, 1000);
+            setTimeout(, 1000);
         }
     }
 }
@@ -1499,17 +1501,18 @@ async function endGame(isSilent = false) {
     }
     // ---------------------------
   
-   // 1. Calculate time IMMEDIATELY for all modes
+    // 1. Calculate time for the CURRENT segment (Solo)
     const endTime = Date.now();
+     
     // Determine which start time to use
-    let startValue;
+    let totalMs;
     if (isWeeklyMode) {
-        startValue = weeklyStartTime;
+        totalMs = endTime - weeklyStartTime;
     } else {
         // This covers Normal, Lite, and now Live Mode
-        startValue = gameStartTime; 
+         const currentSessionMs = endTime - gameStartTime;
+         totalMs = currentSessionMs + (accumulatedTime || 0);
     }
-    const totalMs = endTime - startValue;
     const totalSeconds = totalMs / 1000;
   
     // 1. PREPARE DATA FIRST (Quietly in background)
@@ -3063,12 +3066,6 @@ function updateSurvivorCountUI(count) {
 }
 
 function startLiveRound() {
-    // If this is the first round, mark the start time for the total game duration.
-    if (roundId === 0 || roundId === 1) { 
-        gameStartTime = Date.now();
-        console.log("Match duration tracking started.");
-    }
-    // ----------------------
     roundId++;
     console.log(`--- STARTING ROUND ${roundId} ---`);
     roundOpen = true;
@@ -3274,8 +3271,10 @@ async function transitionToSoloMode(isSoleWinner, userWasCorrect = true) {
     
     // 1. Capture the time spent in the Live Match exactly when it ends
     accumulatedTime = Date.now() - gameStartTime;    
-    console.log(`Live Match lasted: ${accumulatedTime / 1000}s. Timer paused.`);
+    // 2. STOP the clock visually
     if (timer) clearInterval(timer);
+  
+    console.log(`Live Match lasted: ${accumulatedTime / 1000}s. Timer paused.`);
     stopTickSound();
     
     // 1. KILL the pending referee check immediately
@@ -3796,6 +3795,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
