@@ -3074,9 +3074,9 @@ async function transitionToSoloMode(isSoleWinner, userWasCorrect = true) {
     // Don't null currentLobby yet, we might need it for the host check in cleanup
 
     // HUD Cleanup: Hide the 'Survivors' count but keep the Score/Level!
-    const timerDisplay = document.getElementById('timer');
+    //const timerDisplay = document.getElementById('timer');
     const survivorDisplay = document.getElementById('survivor-count');
-    if (timerDisplay) timerDisplay.style.visibility = 'hidden';
+    //if (timerDisplay) timerDisplay.style.visibility = 'hidden';
     if (survivorDisplay) survivorDisplay.classList.add('hidden');
     
     const statsText = document.getElementById('player-count-stat');
@@ -3520,6 +3520,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
