@@ -2784,7 +2784,8 @@ async function resetLiveModeState() {
     window.pendingVictory = false;
     window.isTransitioning = false;
     window.finalStartSent = false;
-    
+
+    score = 0;
     roundId = 0;
     survivors = 0;
     roundResults = {};
@@ -3519,6 +3520,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
