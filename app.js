@@ -1672,9 +1672,7 @@ async function endGame(isSilent = false) {
     }
 
 async function showLiveResults(isWinner) {
-    // 1. Process data silently (Saves to Supabase, checks achievements)
-    await endGame(true); 
-
+    // 1. UPDATE UI IMMEDIATELY (Don't wait for DB)
     const victoryScreen = document.getElementById('victory-screen');
     const statusText = document.getElementById('victory-status-text');
     const titleContainer = document.getElementById('vic-title-text');
@@ -1682,44 +1680,31 @@ async function showLiveResults(isWinner) {
     const emojis = victoryScreen.querySelectorAll('.emoji');
     const soloBtn = document.getElementById('soloBtn');
     
-    // 2. Apply Win/Loss UI Changes
     if (isWinner) {
         statusText.textContent = "VICTORY";
         titleContainer.className = "victory-title win-theme";
         statsText.textContent = "You are the last Survivor!";
-        
-        // Update emojis to Trophy
         emojis.forEach(e => e.textContent = "🏆");
-        
-        // Show "Continue" button
         if (soloBtn) soloBtn.classList.remove('hidden');
-        
-        // Optional: Play a victory sound if you have one
-        // playSound(bonusBuffer); 
     } else {
         statusText.textContent = "ELIMINATED";
         titleContainer.className = "victory-title lose-theme";
         statsText.textContent = "Better luck next time!";
-        
-        // Update emojis to Skull
         emojis.forEach(e => e.textContent = "💀");
-        
-        // Hide "Continue" button (Losers can't continue for high score)
         if (soloBtn) soloBtn.classList.add('hidden');
-        
-        // Optional: Play a fail sound
-        // playSound(failBuffer);
     }
 
-    // 3. Update Match Stats (Optional: pull from your current game state)
-    const playerCountStat = document.getElementById('player-count-stat');
-    if (playerCountStat && window.lastPlayerCount) {
-        playerCountStat.textContent = `Players: ${window.lastPlayerCount}`;
-    }
-
-    // 4. THE BIG SWAP: Hide Game, Show Results
+    // 2. THE BIG SWAP: Do this NOW so the player feels the game ended
     document.getElementById('game').classList.add('hidden');
     victoryScreen.classList.remove('hidden');
+
+    // 3. BACKGROUND WORK: Now save data quietly
+    // Using try/catch so a DB error doesn't break the UI
+    try {
+        await endGame(true); 
+    } catch (err) {
+        console.error("Live Mode Score Save Failed:", err);
+    }
 }
 
 
@@ -2755,22 +2740,21 @@ gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
         // --- NEW: LOBBY CLEANUP LOGIC ---
         const amIHost = isHost(); // Check host status before we disconnect
         const lobbyIdToDelete = currentLobby?.id;
-        
-        isLiveMode = false;
-        hasDiedLocally = true;
-        
+      
+        // Clear the screen so they don't see the next question
+        if (questionText) questionText.innerHTML = "Eliminated! Better luck next time.";
+        if (answersBox) answersBox.innerHTML = "";
+        if (questionImage) questionImage.style.display = 'none';
+      
         // If I'm the host and I just lost, I must kill the lobby records
         if (amIHost && lobbyIdToDelete) {
             console.log("Host eliminated: Cleaning up lobby records...");
             deleteCurrentLobby(lobbyIdToDelete);
         }
         // -------------------------------
-        
-        // Clear the screen so they don't see the next question
-        if (questionText) questionText.innerHTML = "Eliminated! Better luck next time.";
-        if (answersBox) answersBox.innerHTML = "";
-        if (questionImage) questionImage.style.display = 'none';
-        
+        isLiveMode = false;
+        hasDiedLocally = true;
+      
        // Show the results (which now triggers the silent endGame logic)
         setTimeout(() => showLiveResults(false), 1000); 
         return;
@@ -3679,6 +3663,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
