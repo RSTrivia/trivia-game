@@ -527,7 +527,12 @@ if (soloBtn) {
         
         // Use a safer way to hide the victory screen
         if (victoryScreen) victoryScreen.classList.add('hidden');
-        
+        // --- ADD THIS: Ensure the game board is actually visible ---
+        const gameContainer = document.getElementById('game');
+        if (gameContainer) {
+            gameContainer.classList.remove('hidden');
+            gameContainer.style.display = 'block'; // Or 'flex' depending on your CSS
+        }
         document.body.classList.remove('lobby-active');
         document.body.classList.add('game-active');
 
@@ -2735,23 +2740,33 @@ async function beginLiveMatch(countFromLobby, syncedStartTime) {
 gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
     const { outcome, winnerIds, dead, correct } = payload;
 
-    // --- 1. PRIORITY CHECK: AM I A WINNER? ---
-    // We check this first because even if you answered "wrong", 
-    // if it's a "tie" or you're the sole survivor, you win.
+// --- 1. PRIORITY CHECK: AM I A WINNER? ---
     if (outcome === 'win' || outcome === 'tie') {
         if (winnerIds.includes(userId)) {
             console.log("Referee declared me a winner/co-winner!");
             
-            // Mark as victory immediately to stop any auto-start logic
+            // 1. Lock state
             window.pendingVictory = true; 
             isLiveMode = false;
-            // NEW: Pass whether this specific user was in the 'correct' list
-            const userWasCorrect = correct.includes(userId);
-            transitionToSoloMode(outcome === 'win', userWasCorrect);
+            if (timer) clearInterval(timer);
+
+            // 2. LOBBY CLEANUP (Ensuring host wipes the DB record)
+            const amIHost = isHost(); 
+            const lobbyIdToDelete = currentLobby?.id;
+            if (amIHost && lobbyIdToDelete) {
+                console.log("Host won: Cleaning up lobby...");
+                deleteCurrentLobby(lobbyIdToDelete);
+            }
+
+            // 3. SHOW VICTORY UI
+            // We pass 'true' so the screen shows "VICTORY" instead of "ELIMINATED"
+            setTimeout(() => {
+                showLiveResults(true);
+            }, 500);
+
             return;
         }
     }
-
     // --- 2. ELIMINATION CHECK (The Critical Fix) ---
     // If I'm in the 'dead' list, OR if someone else won and I'm not them
     if (dead.includes(userId) || (outcome === 'win' && !winnerIds.includes(userId))) {
@@ -3259,20 +3274,26 @@ async function transitionToSoloMode(isSoleWinner, userWasCorrect = true) {
     if (oddsText) oddsText.textContent = `Survival Odds: ${odds}%`;
 
     // --- 3. SHOW SCREEN ---
-    if (victoryScreen) victoryScreen.classList.remove('hidden');
+    if (victoryScreen) {
+        victoryScreen.classList.remove('hidden');
+        victoryScreen.style.display = 'flex'; // Force it visible
+    }
     playSound(bonusBuffer);
 
     // --- 4. GRACEFUL CLEANUP ---
     const amIHost = isHost(); // Check host status BEFORE removing the channel
     const lobbyIdToDelete = currentLobby?.id;
-    
+  
+    // Add this before the setTimeout
+    await endGame(true); // Saves stats but keeps victoryScreen visible
+  
     setTimeout(async () => {
         // 1. Delete from DB first while we still have the ID
         if (lobbyIdToDelete && amIHost) { 
             console.log("Host: Deleting lobby records...");
             await deleteCurrentLobby(lobbyIdToDelete);
         }
-    
+        
         // 2. Then cleanup the network
         if (gameChannel) {
             console.log("Cleaning up game channel...");
@@ -3696,6 +3717,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
