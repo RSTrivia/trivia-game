@@ -432,6 +432,11 @@ if (playAgainBtn) {
     if (isLiveMode) {
             preloadQueue = []; // Clear old match questions
             remainingQuestions = [];
+            isWeeklyMode = false;
+            isDailyMode = false;
+            isLiteMode = false;
+            resetGame();
+            await joinmatchmaking();
         }  
     // 2. wipe old text/images, but DO NOT show the game screen yet
     resetGame(); 
@@ -1421,7 +1426,14 @@ async function endGame() {
   
    // 1. Calculate time IMMEDIATELY for all modes
     const endTime = Date.now();
-    const startValue = isWeeklyMode ? weeklyStartTime : gameStartTime;
+    // Determine which start time to use
+    let startValue;
+    if (isWeeklyMode) {
+        startValue = weeklyStartTime;
+    } else {
+        // This covers Normal, Lite, and now Live Mode
+        startValue = gameStartTime; 
+    }
     const totalMs = endTime - startValue;
     const totalSeconds = totalMs / 1000;
   
@@ -2782,6 +2794,12 @@ function updateSurvivorCountUI(count) {
 }
 
 function startLiveRound() {
+    // If this is the first round, mark the start time for the total game duration.
+    if (roundId === 0 || roundId === 1) { 
+        gameStartTime = Date.now();
+        console.log("Match duration tracking started.");
+    }
+    // ----------------------
     roundId++;
     console.log(`--- STARTING ROUND ${roundId} ---`);
     roundOpen = true;
@@ -3466,6 +3484,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
