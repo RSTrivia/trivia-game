@@ -1505,14 +1505,15 @@ async function endGame(isSilent = false) {
     const endTime = Date.now();
      
     // Determine which start time to use
-    let totalMs;
+    let calctotal;
     if (isWeeklyMode) {
-        totalMs = endTime - weeklyStartTime;
+        calctotal = endTime - weeklyStartTime;
     } else {
         // This covers Normal, Lite, and now Live Mode
          const currentSessionMs = endTime - gameStartTime;
-         totalMs = currentSessionMs + (accumulatedTime || 0);
+         calctotal = currentSessionMs + (accumulatedTime || 0);
     }
+    const totalMs = calctotal;
     const totalSeconds = totalMs / 1000;
   
     // 1. PREPARE DATA FIRST (Quietly in background)
@@ -3270,7 +3271,8 @@ async function transitionToSoloMode(isSoleWinner, userWasCorrect = true) {
     isLiveMode = false;
     
     // 1. Capture the time spent in the Live Match exactly when it ends
-    accumulatedTime = Date.now() - gameStartTime;    
+    const liveMatchSession = Date.now() - gameStartTime;
+    accumulatedTime = (accumulatedTime || 0) + liveMatchSession;   
     // 2. STOP the clock visually
     if (timer) clearInterval(timer);
   
@@ -3795,6 +3797,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
