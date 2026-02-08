@@ -252,23 +252,25 @@
           Time: <span id="time-wrap"><span id="time">15</span>s</span>
         </div>
         <div id="victory-screen" class="hidden">
-    <div class="victory-content">
-        <h1 class="victory-title">
-          <span class="emoji">🏆</span> 
-            VICTORY 
-            <span class="emoji">🏆</span>
-        </h1>
-        <p id="victory-stats">You are the last Survivor!</p>
-        <div class="match-info">
-            <span id="player-count-stat">Players: 2</span> | 
-            <span id="odds-stat">Win Odds: 50%</span>
+            <div class="victory-content">
+                <h1 class="victory-title" id="vic-title-text">
+                    <span class="emoji">🏆</span> 
+                    <span id="victory-status-text">VICTORY</span>
+                    <span class="emoji">🏆</span>
+                </h1>
+                <p id="victory-stats">You are the last Survivor!</p>
+                <div class="match-info">
+                    <span id="player-count-stat">Players: 2</span> | 
+                    <span id="odds-stat">Win Odds: 50%</span>
+                </div>
+                <div class="victory-actions">
+                    <button id="soloBtn" class="btn">Continue for High Score</button>
+                    <button id="rejoinLobbyBtn" class="btn">Re-join Lobby</button>
+                    <button id="victoryMainMenuBtn" class="btn">Main Menu</button>
+                </div>
+            </div>
         </div>
-        <button id="soloBtn" class="btn">Continue for High Score</button>
-        <button id="rejoinLobbyBtn" class="btn">Re-join Lobby</button>
-        <button id="victoryMainMenuBtn" class="btn">Main Menu</button>
     </div>
-</div>
-      </div>
 
       <!-- Start Screen -->
       <div id="start-screen">
@@ -432,6 +434,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
 
 
