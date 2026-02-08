@@ -1668,8 +1668,9 @@ async function endGame(isSilent = false) {
       // If it IS silent, we just reset the flag so another game can start later
       console.log("EndGame (Silent): Data saved, UI transition skipped.");
       gameEnding = false;
-}
-
+      }
+    }
+  }
 
 async function showLiveResults(isWinner) {
     // 1. Process data silently (Saves to Supabase, checks achievements)
@@ -3679,6 +3680,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
