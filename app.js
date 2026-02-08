@@ -1022,8 +1022,8 @@ async function loadQuestion(broadcastedId = null, startTime = null) {
         return;
     }
    // 1. End Game Checks
-    if (isWeeklyMode && weeklyQuestionCount >= WEEKLY_LIMIT) { await (); return; }
-    if (isLiteMode && score >= LITE_LIMIT) { await (); return; }
+    if (isWeeklyMode && weeklyQuestionCount >= WEEKLY_LIMIT) { await endGame(); return; }
+    if (isLiteMode && score >= LITE_LIMIT) { await endGame(); return; }
         
     // Normal Mode "Out of questions" check
     //if (!isLiveMode && preloadQueue.length === 0 && remainingQuestions.length === 0 && currentQuestion !== null) {
@@ -1032,7 +1032,7 @@ async function loadQuestion(broadcastedId = null, startTime = null) {
    // }
     if (!isLiveMode && !window.isTransitioning && preloadQueue.length === 0 && remainingQuestions.length === 0) {
       if (currentQuestion !== null) {
-          await ();
+          await endGame();
           return;
       }
   }
@@ -1066,7 +1066,7 @@ async function loadQuestion(broadcastedId = null, startTime = null) {
         console.error("No questions available.");
         // Only trigger  if we aren't in a Live Match, 
         // or if the Live Match is truly over.
-        if (!isLiveMode) await ();
+        if (!isLiveMode) await endGame();
         return;
     }
   
@@ -3795,6 +3795,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
