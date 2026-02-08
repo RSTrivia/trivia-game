@@ -488,42 +488,38 @@ if (playAgainBtn) {
     };
   }
   // --- 5. HANDLE "CONTINUE" ---
-   if (soloBtn) {
-     soloBtn.onclick = async () => { 
-       // 1. Hide the transition UI
-      //document.getElementById('victory-transition-overlay').classList.add('hidden');
-       // 1. Reset the logic flags
+if (soloBtn) {
+    // Using addEventListener is more reliable than .onclick
+    soloBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        e.stopPropagation(); // Prevents parent containers from stealing the click
+        
+        console.log("Solo button clicked! Starting transition...");
+
+        // 1. Reset the logic flags
         window.isTransitioning = false; 
         window.pendingVictory = false; 
-        isLiveMode = false; // We are now in Solo Mode
+        isLiveMode = false; 
         hasDiedLocally = false;
-        victoryScreen.classList.add('hidden');
-       
-        document.body.classList.remove('lobby-active'); // Ensure lobby styles are gone
+        
+        // Use a safer way to hide the victory screen
+        if (victoryScreen) victoryScreen.classList.add('hidden');
+        
+        document.body.classList.remove('lobby-active');
         document.body.classList.add('game-active');
-       // Make sure the main game container is visible
-        const gameContainer = document.getElementById('game'); 
-        if (gameContainer) gameContainer.classList.remove('hidden');
-    
-        if (timerDisplay) timerDisplay.style.visibility = 'visible';
-         
-       // 3. Queue Check
-      if (preloadQueue.length === 0 && remainingQuestions.length === 0) {
-          console.log("No questions left for solo mode.");
-          await endGame();
-          return;
-      }
 
-        // Resume the game loop in solo mode
-        console.log("Transitioning to Solo Mode. Good luck!");
-       // 2. RESUME THE CLOCK
-      // We set the start time to (Now minus the time already spent in Live)
-      gameStartTime = Date.now() - accumulatedTime;
-      loadQuestion(); 
-    };
-     } else {
-    console.error("Button 'soloBtn' not found in the DOM.");
+        // 2. Adjust Clock
+        gameStartTime = Date.now() - (accumulatedTime || 0);
+
+        // 3. Kick off the solo loop
+        if (preloadQueue.length === 0 && remainingQuestions.length === 0) {
+            await endGame();
+        } else {
+            loadQuestion(); 
+        }
+    });
 }
+     
   if (muteBtn) {
     // --- ADD THESE TWO LINES TO SYNC ON REFRESH ---
     muteBtn.querySelector('#muteIcon').textContent = muted ? '🔇' : '🔊';
@@ -3495,6 +3491,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
