@@ -1591,37 +1591,78 @@ input.input-field:-webkit-autofill:active {
 }
 
 
-/* Update your existing #victory-screen */
+
+/* live mode */
 #victory-screen {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.9);
+    background-color: rgba(0, 0, 0, 0.85); /* Darken play area */
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
-    z-index: 9999; /* Crank this up to be safe */
-    border: 2px solid #d4af37;
-    border-radius: 8px;
-    pointer-events: auto; /* Ensure it accepts clicks */
+    z-index: 9999;
 }
 
-/* Add styling for the container inside the screen */
 .victory-content {
+    background: #4a3b2c; /* OSRS Brown */
+    border: 3px solid #d4af37; /* Gold Border */
+    padding: 30px;
+    border-radius: 4px;
     text-align: center;
-    pointer-events: auto;
-    z-index: 10000;
+    max-width: 350px;
+    width: 90%;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
 }
 
-/* Ensure the button looks and acts like a button */
+.victory-title {
+    color: #ff981f; /* OSRS Golden-Orange */
+    font-family: 'Cinzel', serif;
+    font-size: 1.6rem; /* Scaled down from huge */
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+/* Specifically scale the emoji icons */
+.victory-title span, .victory-title::before, .victory-title::after {
+    font-size: 1.2rem; 
+}
+
+#victory-stats {
+    color: #ffffff;
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.match-info {
+    color: #c2c2c2;
+    font-size: 0.85rem;
+    margin-bottom: 25px;
+    border-top: 1px solid #382418;
+    padding-top: 10px;
+}
+
 #soloBtn {
+    width: 100%;
+    padding: 12px;
+    font-size: 1rem;
     cursor: pointer;
-    position: relative;
-    z-index: 10001;
-    pointer-events: auto !important;
+    background: #5d4a37;
+    border: 2px solid #382418;
+    color: #ff981f;
+    font-family: 'Cinzel', serif;
+    transition: all 0.2s;
+}
+
+#soloBtn:hover {
+    background: #6d5a47;
+    filter: brightness(1.2);
 }
 
 
