@@ -2841,7 +2841,12 @@ async function resetLiveModeState() {
     hasDiedLocally = false;
     roundOpen = false;
     accumulatedTime = 0;
-    
+        
+    // 5. Reset Timer Visuals
+    timeLeft = 15;
+    timeDisplay.textContent = timeLeft;
+    timeWrap.classList.remove('red-timer');
+  
     window.matchStarted = false;
     window.pendingVictory = false;
     window.isTransitioning = false;
@@ -3606,6 +3611,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
