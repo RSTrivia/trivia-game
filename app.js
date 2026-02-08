@@ -3077,7 +3077,7 @@ async function transitionToSoloMode(isSoleWinner, userWasCorrect = true) {
     const survivorDisplay = document.getElementById('survivor-count');
     if (timerDisplay) timerDisplay.style.visibility = 'hidden';
     if (survivorDisplay) survivorDisplay.classList.add('hidden');
-    const victoryScreen = document.getElementById('victory-screen');
+    
     const statsText = document.getElementById('player-count-stat');
     const victoryStats = document.getElementById('victory-stats');
   
@@ -3518,6 +3518,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
