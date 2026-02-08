@@ -2703,6 +2703,8 @@ gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
         // Clear the screen so they don't see the next question
         if (questionText) questionText.innerHTML = "Eliminated! Better luck next time.";
         if (answersBox) answersBox.innerHTML = "";
+        // ADD THIS LINE:
+        if (questionImage) questionImage.style.display = 'none';
         
         setTimeout(() => endGame(), 1000); 
         return;
@@ -2956,6 +2958,8 @@ function startLiveRound() {
             // 2. UI Update for the wait
             if (questionText) questionText.innerHTML = "Time's up! Waiting for survivors...";
             if (answersBox) answersBox.innerHTML = '<div class="loading-spinner"></div>';
+            // ADD THIS LINE:
+            if (questionImage) questionImage.style.display = 'none';
             // ------------------------------
             // 3. IMPORTANT: If the referee hasn't responded in 5 seconds, force endGame
             // This handles cases where the host disconnected
@@ -3314,9 +3318,19 @@ async function triggerGamePrepare(lobbyId) {
 }
 
 // Phase 2: Host sends the final "GO"
-function sendFinalStartSignal(count) {
+async function sendFinalStartSignal(count) {
     if (window.finalStartSent) return;
     window.finalStartSent = true;
+
+    // --- NEW: LOCK THE LOBBY IN THE DATABASE ---
+    // This prevents joinMatchmaking() from finding this lobby while it's active
+    if (currentLobby?.id) {
+        await supabase
+            .from('live_lobbies')
+            .update({ status: 'playing' }) 
+            .eq('id', currentLobby.id);
+        console.log("Lobby status updated to 'playing'.");
+    }
 
     lobbyChannel.send({
         type: 'broadcast',
@@ -3327,7 +3341,6 @@ function sendFinalStartSignal(count) {
         }
     });
 }
-
 
 
 
@@ -3593,6 +3606,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
