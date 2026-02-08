@@ -2626,8 +2626,9 @@ gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
             // Mark as victory immediately to stop any auto-start logic
             window.pendingVictory = true; 
             isLiveMode = false;
-
-            transitionToSoloMode(outcome === 'win');
+            // NEW: Pass whether this specific user was in the 'correct' list
+            const userWasCorrect = correct.includes(userId);
+            transitionToSoloMode(outcome === 'win', userWasCorrect);
             return;
         }
     }
@@ -2850,10 +2851,12 @@ function startLiveRound() {
 
     // 2. REFEREE SAFETY VALVE: Start the countdown now
     if (isLiveMode && isHost(gameChannel)) {
-      refereeTimeout = setTimeout(() => {
-              console.log("Referee Safety Valve Triggered.");
-              endRoundAsReferee(); // Don't check reported < alive here, just call it.
-          }, 22000);
+        // 15s (game) + 2s (buffer) = 17s. 
+        // If no one has answered by then, the Referee FORCES the end.
+        refereeTimeout = setTimeout(() => {
+            console.log("Referee Safety Valve: No responses received. Forcing endRound.");
+            endRoundAsReferee(); 
+        }, 17000); 
     }
 
     timeLeft = 15;
@@ -2932,18 +2935,26 @@ function endRoundAsReferee() {
     let winners = [];
 
     // --- LOGIC ENGINE ---
-
+    
     // Scenario A: Only 1 person is left and they got it right
     if (correct.length === 1 && (dead.length > 0 || allPlayerIds.length === 1)) {
         console.log("Referee: Sole survivor found!");
         outcome = 'win';
         winners = [correct[0]];
     }
-    // Scenario B: Everyone got it wrong (Sudden Death Tie)
-    else if (correct.length === 0 && dead.length > 0) {
-        console.log("Referee: Everyone is wrong! Declaring a Tie.");
+    // Scenario B: Everyone got it wrong OR Everyone was idle (Silent Tie)
+    else if (correct.length === 0) {
+        // If dead.length is 0 but correct.length is 0, it means 
+        // the Referee timeout fired before any messages arrived.
+        // We treat everyone in the room as 'dead' for the sake of the tie.
+        console.log("Referee: Silent Tie (No correct answers).");
         outcome = 'tie';
-        winners = [...dead]; 
+        winners = allPlayerIds; // Everyone is included in the tie result
+        
+        // Ensure 'dead' contains everyone so the UI knows they failed
+        allPlayerIds.forEach(id => {
+            if (!dead.includes(id)) dead.push(id);
+        });
     }
     // Scenario C: Multiple people are right
     else if (correct.length > 1) {
@@ -3019,7 +3030,7 @@ async function deleteCurrentLobby(lobbyId) {
     }
 }
 
-async function transitionToSoloMode(isSoleWinner) {
+async function transitionToSoloMode(isSoleWinner, userWasCorrect = true) {
     if (hasDiedLocally) return;
     window.pendingVictory = true; 
     isLiveMode = false;
@@ -3066,19 +3077,33 @@ async function transitionToSoloMode(isSoleWinner) {
     const survivorDisplay = document.getElementById('survivor-count');
     if (timerDisplay) timerDisplay.style.visibility = 'hidden';
     if (survivorDisplay) survivorDisplay.classList.add('hidden');
-
-    // Update Stats Text
-    const oddsText = document.getElementById('odds-stat'); 
+    const victoryScreen = document.getElementById('victory-screen');
     const statsText = document.getElementById('player-count-stat');
-    if (!isSoleWinner) {
-        if (statsText) statsText.textContent = `Co-Victory! Total Players: ${total}`;
+    const victoryStats = document.getElementById('victory-stats');
+  
+    // Update Stats Text
+    // --- THE FIX ---
+    if (!userWasCorrect) {
+        // If they tied because everyone was wrong, don't let them continue
+        if (soloBtn) soloBtn.classList.add('hidden'); // Hide the button
+        if (victoryStats) victoryStats.textContent = "Everyone answered incorrectly! Match Over.";
+        if (statsText) statsText.textContent = `Tie (No Winners)`;
     } else {
-        if (statsText) statsText.textContent = `Sole Survivor! Total Players: ${total}`;
+        // Normal path: They were right (either sole winner or a tie of correct answers)
+        if (soloBtn) soloBtn.classList.remove('hidden'); 
+        if (victoryStats) victoryStats.textContent = isSoleWinner ? "You are the last Survivor!" : "You survived the round!";
+        
+        if (!isSoleWinner) {
+            if (statsText) statsText.textContent = `Co-Victory! Total Players: ${matchStartingCount}`;
+        } else {
+            if (statsText) statsText.textContent = `Sole Survivor! Total Players: ${matchStartingCount}`;
+        }
     }
+  
     if (oddsText) oddsText.textContent = `Survival Odds: ${odds}%`;
 
     // --- 3. SHOW SCREEN ---
-    victoryScreen.classList.remove('hidden');   
+    if (victoryScreen) victoryScreen.classList.remove('hidden');
     playSound(bonusBuffer);
 
     // --- 4. GRACEFUL CLEANUP (THE FIX) ---
@@ -3493,6 +3518,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
