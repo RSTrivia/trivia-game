@@ -524,9 +524,13 @@ if (soloBtn) {
         window.pendingVictory = false; 
         isLiveMode = false; 
         hasDiedLocally = false;
-        
-        // Use a safer way to hide the victory screen
-        if (victoryScreen) victoryScreen.classList.add('hidden');
+        gameEnding = false;
+      
+        // 2. UI Reset
+        if (victoryScreen) {
+            victoryScreen.classList.add('hidden');
+            victoryScreen.style.display = 'none';
+        }
         // --- ADD THIS: Ensure the game board is actually visible ---
         const gameContainer = document.getElementById('game');
         if (gameContainer) {
@@ -541,8 +545,10 @@ if (soloBtn) {
 
         // 3. Kick off the solo loop
         if (preloadQueue.length === 0 && remainingQuestions.length === 0) {
-            await endGame();
+            await endGame(false);
         } else {
+            // Force a timer clear just in case
+            if (timer) clearInterval(timer);
             loadQuestion(); 
         }
     });
@@ -1674,12 +1680,18 @@ async function endGame(isSilent = false) {
         // --- LIVE MODE / SILENT PATH ---
         console.log("EndGame (Silent) processing background tasks...");
         
-        // Don't touch the victory-screen titles here anymore! 
-        // showLiveResults has already handled it.
+        // 1. Remove the network channel so the referee stops tracking us
+        if (gameChannel) {
+            supabase.removeChannel(gameChannel);
+            gameChannel = null;
+        }
+
+        // 2. STOP the timer, but DO NOT call resetLiveModeState yet!
+        // If we reset now, your score becomes 0 and you can't continue solo.
+        clearInterval(timer);
+        stopTickSound();
         
-        // Just do the cleanup
-        await resetLiveModeState(true); 
-        gameEnding = false;
+        gameEnding = false; // Reset the lock so we can finish for real later
     }
 }
 
@@ -3748,6 +3760,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
