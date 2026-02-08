@@ -68,6 +68,8 @@ const liteBtn = document.getElementById('liteBtn');
 const lobbyBtn = document.getElementById('lobbyBtn');
 const leaveLobbyBtn = document.getElementById('leaveLobbyBtn');
 const soloBtn = document.getElementById('soloBtn');
+const rejoinLobbyBtn = document.getElementById('rejoinLobbyBtn');
+const victoryMainMenuBtn = document.getElementById('victoryMainMenuBtn');
 
 const dailyMessages = {
   0: [
@@ -474,6 +476,7 @@ if (playAgainBtn) {
         preloadQueue = []; // Clear the buffer only when going back to menu
         // Manual UI Reset instead:
         await resetLiveModeState();
+        document.getElementById('victory-screen').classList.add('hidden');
         document.getElementById('end-screen').classList.add('hidden');
         document.getElementById('start-screen').classList.remove('hidden');
         document.body.classList.remove('game-active');
@@ -481,7 +484,6 @@ if (playAgainBtn) {
   }
   if (leaveLobbyBtn) {  
         leaveLobbyBtn.onclick = async () => {
-        preloadQueue = []; // Clear the buffer only when going back to menu
         // Manual UI Reset instead:
         await resetLiveModeState();
         document.getElementById('end-screen').classList.add('hidden');
@@ -489,6 +491,26 @@ if (playAgainBtn) {
         document.body.classList.remove('game-active');
     };
   }
+  if (rejoinLobbyBtn) {  
+        rejoinLobbyBtn.onclick = async () => {
+        // 1. Clean up the current victory state/channels
+        await resetLiveModeState();
+        // 2. Immediately trigger matchmaking again
+        joinMatchmaking();
+    };
+  }
+  // Logic for "Main Menu" in victory screen
+    if (victoryMainMenuBtn) {
+        victoryMainMenuBtn.onclick = async () => {
+            // 1. Full reset of network/UI
+            await resetLiveModeState();
+            // 2. Ensure we are back at the start screen
+            document.getElementById('victory-screen').classList.add('hidden');
+            document.getElementById('game').classList.add('hidden');
+            document.getElementById('start-screen').classList.remove('hidden');
+            document.body.classList.remove('game-active');
+        };
+    }
   // --- 5. HANDLE "CONTINUE" ---
 if (soloBtn) {
     // Using addEventListener is more reliable than .onclick
@@ -3548,6 +3570,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
