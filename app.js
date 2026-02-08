@@ -1683,7 +1683,12 @@ async function endGame(isSilent = false) {
     } else {
         // --- LIVE MODE / SILENT PATH ---
         console.log("EndGame (Silent) processing background tasks...");
-        
+        // BANK the time so the solo session starts fresh
+        accumulatedTime = calctotal; 
+        // IMPORTANT: gameStartTime must be reset to 'Now' 
+        // so the NEXT time endGame runs, currentSessionMs starts from 0
+        gameStartTime = Date.now();
+      
         // 1. Remove the network channel so the referee stops tracking us
         if (gameChannel) {
             supabase.removeChannel(gameChannel);
@@ -1696,6 +1701,7 @@ async function endGame(isSilent = false) {
         stopTickSound();
         
         gameEnding = false; // Reset the lock so we can finish for real later
+        return; // Exit early
     }
 }
 
@@ -3270,15 +3276,15 @@ async function transitionToSoloMode(isSoleWinner, userWasCorrect = true) {
     window.pendingVictory = true; 
     isLiveMode = false;
     
-    // 1. Capture the time spent in the Live Match exactly when it ends
-    const liveMatchSession = Date.now() - gameStartTime;
-    accumulatedTime = (accumulatedTime || 0) + liveMatchSession;   
     // 2. STOP the clock visually
     if (timer) clearInterval(timer);
   
     console.log(`Live Match lasted: ${accumulatedTime / 1000}s. Timer paused.`);
     stopTickSound();
-    
+  
+    // Call endGame(true) to "Bank" the live match time and save stats
+    await endGame(true);
+  
     // 1. KILL the pending referee check immediately
     if (refereeTimeout) {
         clearTimeout(refereeTimeout);
@@ -3363,9 +3369,6 @@ async function transitionToSoloMode(isSoleWinner, userWasCorrect = true) {
     // --- 4. GRACEFUL CLEANUP ---
     const amIHost = isHost(); // Check host status BEFORE removing the channel
     const lobbyIdToDelete = currentLobby?.id;
-  
-    // Add this before the setTimeout
-    await endGame(true); // Saves stats but keeps victoryScreen visible
   
     setTimeout(async () => {
         // 1. Delete from DB first while we still have the ID
@@ -3797,6 +3800,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
