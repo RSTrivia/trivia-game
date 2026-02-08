@@ -798,49 +798,53 @@ function lockLobbyButton() {
 // ====== GAME ENGINE ======
 
 function resetGame() {
-    // 1. Stop any active logic
+    // 1. CRITICAL: Reset logical gates
+    gameEnding = false;        // Required so the NEXT game can save data
+    hasDiedLocally = false;    // Required so you can click answers in the next live match
+    window.isTransitioning = false;
     window.pendingVictory = false;
+
+    // 2. Stop any active logic
     clearInterval(timer);
     stopTickSound(); 
-    // Wipe any existing firework particles that didn't get removed
     document.querySelectorAll('.firework-particle').forEach(p => p.remove());
   
-    // 2. Reset numerical state
+    // 3. Reset numerical state
     score = 0;
     currentQuestion = null;
-    // NOTE: We do NOT reset preloadQueue here. 
-    // This allows "Play Again" to use the 3 questions already buffered.
 
-    // 3. WIPE UI IMMEDIATELY (Prevents the flicker)
+    // 4. WIPE UI IMMEDIATELY
     questionText.textContent = '';
     answersBox.innerHTML = '';
     
     // 5. Reset Timer Visuals
     timeLeft = 15;
-    timeDisplay.textContent = timeLeft;
-    timeWrap.classList.remove('red-timer');
+    if (timeDisplay) timeDisplay.textContent = timeLeft;
+    if (timeWrap) timeWrap.classList.remove('red-timer');
     
     // 6. Reset Score Visual
-    if (scoreDisplay) {
-        scoreDisplay.textContent = `Score: 0`;
-        //updateScore(); 
-    }
+    if (scoreDisplay) scoreDisplay.textContent = `Score: 0`;
       
-    // Image cleanup
+    // 7. Image cleanup
     questionImage.style.display = 'none';
     questionImage.style.opacity = '0';
-    // Use a blank transparent pixel to clear the previous image immediately
     questionImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
   
-    // maybe delete?
+    // 8. Title cleanup
     const gameOverTitle = document.getElementById('game-over-title');
     const gzTitle = document.getElementById('gz-title');
-    if (gameOverTitle) gameOverTitle.classList.add('hidden');
-    if (gzTitle) gzTitle.classList.add('hidden');
+    if (gameOverTitle) {
+        gameOverTitle.classList.add('hidden');
+        gameOverTitle.textContent = ""; // Clear text too
+    }
+    if (gzTitle) {
+        gzTitle.classList.add('hidden');
+        gzTitle.textContent = "";
+    }
 
-    // reset time container
     if (weeklyTimeContainer) weeklyTimeContainer.style.display = 'none';
 }
+
 
 async function preloadNextQuestions(targetCount = 3) {
     let attempts = 0;
@@ -2848,7 +2852,7 @@ gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
 
 async function resetLiveModeState() {
     console.log("Full reset of Live Mode state...");
-
+  
     // --- 1. NETWORK CLEANUP ---
     // Kill the Lobby Channel
     if (lobbyChannel) {
@@ -2875,10 +2879,12 @@ async function resetLiveModeState() {
     // --- 3. VARIABLE STATE RESET ---
     isLiveMode = false;
     isStarting = false;
-    hasDiedLocally = false;
+    hasDiedLocally = false; // Required so you can click answers in the next live match
     roundOpen = false;
     accumulatedTime = 0;
-        
+    // 1. CRITICAL: Reset logical gates
+    gameEnding = false;        // Required so the NEXT game can save data
+  
     // 5. Reset Timer Visuals
     timeLeft = 15;
     timeDisplay.textContent = timeLeft;
@@ -3648,6 +3654,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
