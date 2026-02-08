@@ -76,8 +76,6 @@
     if (btn) {
         btn.classList.remove('is-active');
         btn.classList.add('is-disabled');
-        btn.style.setProperty('opacity', '0.5', 'important');
-        btn.style.pointerEvents = 'none';
     }
    }); 
     // 1. Instant Text/Emoji Sync
@@ -112,8 +110,6 @@
           if (btn) {
               btn.classList.add('is-active');
               btn.classList.remove('is-disabled');
-              btn.style.opacity = '1';
-              btn.style.pointerEvents = 'auto';
           }
       });
       // 2. ONLY unlock if they are logged in AND haven't played
@@ -431,6 +427,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
 
 
