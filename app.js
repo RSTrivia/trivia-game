@@ -487,6 +487,43 @@ if (playAgainBtn) {
         document.body.classList.remove('game-active');
     };
   }
+  // --- 5. HANDLE "CONTINUE" ---
+   if (soloBtn) {
+     soloBtn.onclick = async () => { 
+       // 1. Hide the transition UI
+      //document.getElementById('victory-transition-overlay').classList.add('hidden');
+       // 1. Reset the logic flags
+        window.isTransitioning = false; 
+        window.pendingVictory = false; 
+        isLiveMode = false; // We are now in Solo Mode
+        hasDiedLocally = false;
+        victoryScreen.classList.add('hidden');
+       
+        document.body.classList.remove('lobby-active'); // Ensure lobby styles are gone
+        document.body.classList.add('game-active');
+       // Make sure the main game container is visible
+        const gameContainer = document.getElementById('game'); 
+        if (gameContainer) gameContainer.classList.remove('hidden');
+    
+        if (timerDisplay) timerDisplay.style.visibility = 'visible';
+         
+       // 3. Queue Check
+      if (preloadQueue.length === 0 && remainingQuestions.length === 0) {
+          console.log("No questions left for solo mode.");
+          await endGame();
+          return;
+      }
+
+        // Resume the game loop in solo mode
+        console.log("Transitioning to Solo Mode. Good luck!");
+       // 2. RESUME THE CLOCK
+      // We set the start time to (Now minus the time already spent in Live)
+      gameStartTime = Date.now() - accumulatedTime;
+      loadQuestion(); 
+    };
+     } else {
+    console.error("Button 'soloBtn' not found in the DOM.");
+}
   if (muteBtn) {
     // --- ADD THESE TWO LINES TO SYNC ON REFRESH ---
     muteBtn.querySelector('#muteIcon').textContent = muted ? '🔇' : '🔊';
@@ -2742,6 +2779,7 @@ async function resetLiveModeState() {
     isStarting = false;
     hasDiedLocally = false;
     roundOpen = false;
+    accumulatedTime = 0;
     
     window.matchStarted = false;
     window.pendingVictory = false;
@@ -3061,44 +3099,6 @@ async function transitionToSoloMode(isSoleWinner) {
         currentLobby = null; 
     }, 3000); 
 
-  const soloBtn = document.getElementById('soloBtn');
-    // --- 5. HANDLE "CONTINUE" ---
-   if (soloBtn) {
-     soloBtn.onclick = async () => { 
-       // 1. Hide the transition UI
-      //document.getElementById('victory-transition-overlay').classList.add('hidden');
-       // 1. Reset the logic flags
-        window.isTransitioning = false; 
-        window.pendingVictory = false; 
-        isLiveMode = false; // We are now in Solo Mode
-        hasDiedLocally = false;
-        victoryScreen.classList.add('hidden');
-       
-        document.body.classList.remove('lobby-active'); // Ensure lobby styles are gone
-        document.body.classList.add('game-active');
-       // Make sure the main game container is visible
-        const gameContainer = document.getElementById('game'); 
-        if (gameContainer) gameContainer.classList.remove('hidden');
-    
-        if (timerDisplay) timerDisplay.style.visibility = 'visible';
-         
-       // 3. Queue Check
-      if (preloadQueue.length === 0 && remainingQuestions.length === 0) {
-          console.log("No questions left for solo mode.");
-          await endGame();
-          return;
-      }
-
-        // Resume the game loop in solo mode
-        console.log("Transitioning to Solo Mode. Good luck!");
-       // 2. RESUME THE CLOCK
-      // We set the start time to (Now minus the time already spent in Live)
-      gameStartTime = Date.now() - accumulatedTime;
-      loadQuestion(); 
-    };
-     } else {
-    console.error("Button 'soloBtn' not found in the DOM.");
-}
 }
 
 function showVictoryBanner(message) {
@@ -3495,6 +3495,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
