@@ -1728,25 +1728,37 @@ async function showLiveResults(isWinner, matchData = {}) {
         oddsStat.textContent = `Winning Odds: ${odds}%`;
     }
 
-    // 4. THEME UPDATE (Winner vs. Loser)
+    
+    // --- 4. THEME UPDATE (Winner vs. Loser) ---
     if (isWinner) {
         statusText.textContent = "VICTORY";
-          // If it's NOT a sole winner, it's a tie/co-victory
-        if (matchData.isSoleWinner) {
-            victoryStats.textContent = "You are the Winner!";
-            if (soloBtn) soloBtn.classList.remove('hidden'); // SHOW BUTTON
-        } else {
-            victoryStats.textContent = "It's a Tie!";
-            if (soloBtn) soloBtn.classList.add('hidden'); // HIDE BUTTON
-        }
-    
-        if (soloBtn) soloBtn.classList.remove('hidden');
         emojis.forEach(e => e.textContent = "🏆");
+    
+        // NEW: Check if the user was actually correct (passed from matchData)
+        const userFailed = matchData.userWasCorrect === false;
+    
+        if (userFailed) {
+            // CASE: Tie where everyone got it wrong
+            victoryStats.textContent = "Everyone was wrong! It's a Tie!";
+            if (soloBtn) soloBtn.classList.add('hidden');
+        } 
+        else if (matchData.isSoleWinner) {
+            // CASE: True Sole Winner (and correct)
+            victoryStats.textContent = "You are the Winner!";
+            if (soloBtn) soloBtn.classList.remove('hidden'); 
+        } 
+        else {
+            // CASE: Co-Victory (Tie where people were correct)
+            victoryStats.textContent = "It's a Tie!";
+            if (soloBtn) soloBtn.classList.add('hidden'); 
+        }
+        
+        // REMOVED: the line that was forcing the button to show here!
+        
     } else {
         // Standard Loser Path
         statusText.textContent = "ELIMINATED";
         victoryStats.textContent = "Better luck next time!";
-        
         if (soloBtn) soloBtn.classList.add('hidden'); 
         emojis.forEach(e => e.textContent = "💀");
     }
@@ -2779,16 +2791,20 @@ gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
     if (outcome === 'win' || outcome === 'tie') {
         if (winnerIds.includes(userId)) {
             console.log("Referee declared me a winner/co-winner!");
-            
             // 1. Lock state
             window.pendingVictory = true; 
             isLiveMode = false;
             if (timer) clearInterval(timer);
+          
+            // CHECK: Did I actually get it right?
+            const iWasCorrect = correct.includes(userId);
+          
             // 3. SHOW VICTORY UI
             // Prepare the stats object locally using the matchStartingCount we saved at start
             const matchData = {
                 totalPlayers: matchStartingCount || 2,
                 isSoleWinner: (outcome === 'win'), // 'win' = sole winner, 'tie' = co-winner
+                userWasCorrect: iWasCorrect
             };
             // 2. LOBBY CLEANUP (Ensuring host wipes the DB record)
             const amIHost = isHost(); 
@@ -2819,7 +2835,8 @@ gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
         // Use a small object to pass the data you saved at the start
         const matchData = {
             totalPlayers: matchStartingCount || 2,
-            isSoleWinner: false
+            isSoleWinner: false,
+            userWasCorrect: false
         };
       
         // --- NEW: LOBBY CLEANUP LOGIC ---
@@ -2908,7 +2925,7 @@ gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
                 if (joinedCount === 1 && !roundOpen) {
                     console.log("Presence Sync: Natural sole survivor (drop-out). Ending game.");
                     window.pendingVictory = true;
-                    transitionToSoloMode(true);
+                    transitionToSoloMode(true, true); // FIX: Pass 'true' because the user is still alive/correct
                     return;
                 }
         
@@ -2919,7 +2936,8 @@ gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
         
                     if (survivors <= 1) {
                         window.pendingVictory = true;
-                        transitionToSoloMode(survivors === 1);
+                        // FIX: Pass 'true' for userWasCorrect since they survived the drop-outs
+                        transitionToSoloMode(survivors === 1, true);
                     }
                 }
             }
@@ -3778,6 +3796,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
