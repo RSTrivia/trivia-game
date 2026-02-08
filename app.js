@@ -3080,6 +3080,7 @@ async function transitionToSoloMode(isSoleWinner, userWasCorrect = true) {
     
     const statsText = document.getElementById('player-count-stat');
     const victoryStats = document.getElementById('victory-stats');
+    const oddsText = document.getElementById('odds-stat'); 
   
     // Update Stats Text
     // --- THE FIX ---
@@ -3518,6 +3519,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
