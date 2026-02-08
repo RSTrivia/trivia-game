@@ -3278,11 +3278,10 @@ async function transitionToSoloMode(isSoleWinner, userWasCorrect = true) {
     
     // 2. STOP the clock visually
     if (timer) clearInterval(timer);
-  
-    console.log(`Live Match lasted: ${accumulatedTime / 1000}s. Timer paused.`);
     stopTickSound();
   
     // Call endGame(true) to "Bank" the live match time and save stats
+    console.log(`Live Match lasted: ${accumulatedTime / 1000}s. Timer paused.`);
     await endGame(true);
   
     // 1. KILL the pending referee check immediately
@@ -3800,6 +3799,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
