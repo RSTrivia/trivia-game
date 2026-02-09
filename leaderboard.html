@@ -21,7 +21,7 @@
 <link rel="stylesheet" href="style.css">
 
 <style>
- html, body {
+  html, body {
     margin: 0; padding: 0; height: 100%; overflow-x: hidden;
     font-family: Arial, sans-serif; color: #fff;
   }
@@ -29,13 +29,6 @@
   #app {
     min-height: 100vh; display: flex; justify-content: center;
     align-items: flex-start; padding: 20px; position: relative; z-index: 1;
-  }
-
-  .container {
-    display: flex; min-height: 720px; flex-direction: column; align-items: center;
-    background: rgba(0, 0, 0, 0.85); padding: 40px 25px 25px 25px; 
-    border-radius: 10px; width: 440px; max-width: 95%;      
-    text-align: center; margin: 0 auto; box-sizing: border-box; justify-content: flex-start;
   }
   
   #leaderboard {
@@ -53,7 +46,7 @@
   #leaderboard li.first { background: rgba(255, 215, 0, 0.3); color: #d4af37; font-weight: 700; }
   #leaderboard li.second { background: linear-gradient(135deg, rgba(220,220,220,0.3) 0%, rgba(192,192,192,0.3) 100%); color: #C0C0C0; font-weight: 700; }
   #leaderboard li.third { background: rgba(205, 127, 50, 0.3); color: #CD7F32; font-weight: 700; }
-  
+
   /* ALIGNMENT CLASSES */
   .rank-slot { display: inline-block; width: 38px; text-align: left; }
   .number-nudge { position: relative; left: 6px; }
@@ -65,11 +58,27 @@
       min-height: 640px !important; padding: 15px 20px 15px 20px !important;
       display: flex !important; flex-direction: column !important; justify-content: flex-start !important;
     }
-    h1#leaderboard-title { font-size: 2.3rem !important; margin-bottom: 15px !important; margin-top: 5px !important;}
+    h1#leaderboard-title { font-size: 2.3rem !important; margin-bottom: 5px !important; margin-top: 5px !important;}
     #leaderboard { height: 430px !important; min-height: 430px !important; margin: 0 !important; }
     #leaderboard li { height: 38px !important; min-height: 38px !important; margin-bottom: 4px !important; font-size: 0.9rem !important; }
     .btn { margin-top: auto !important; margin-bottom: auto !important; align-self: center !important; }
-  }
+    
+  .leaderboard-tabs {
+      display: flex !important;
+      overflow-x: auto !important; /* Allows swiping */
+      white-space: nowrap !important; /* Prevents stacking */
+      scrollbar-width: none; /* Hides scrollbar on Firefox */
+    }
+  
+    .leaderboard-tabs::-webkit-scrollbar {
+      display: none; /* Hides scrollbar on Chrome/Safari */
+    }
+  
+    .tab-btn {
+      flex: 0 0 auto !important; /* Prevents buttons from shrinking */
+      font-size: 0.8rem !important;
+    }
+}
   
 </style>
 </style>
@@ -79,13 +88,19 @@
   <div id="background-root"><div id="bg-fade-layer"></div></div>
 
   <div id="app">
-   <div class="container">
+    <div class="container">
       <h1 id="leaderboard-title">Leaderboard</h1>
       <div class="leaderboard-tabs">
-    <button id="scoreTab" class="tab-btn active">Score</button>
-    <button id="weeklyTab" class="tab-btn">Weekly</button>   
-    <button id="xpTab" class="tab-btn">Total XP</button>
-      </div>
+        <button id="mainModesTab" class="tab-btn active">Modes</button>
+        <button id="scoreTab" class="tab-btn active">Normal</button>
+        <button id="liteTab" class="tab-btn">Lite</button>   
+        <button id="weeklyTab" class="tab-btn">Weekly</button>  
+    </div>
+
+    <div id="sub-tabs" class="leaderboard-tabs sub-row">
+        <button id="LiveTab" class="tab-btn">Live</button>
+        <button id="xpTab" class="tab-btn">Total XP</button>
+    </div>
       
       </div>
       <ul id="leaderboard">
@@ -307,11 +322,6 @@ if(liteTab) liteTab.onclick = () => handleTabClick('lite', liteTab);
 </script>
 </body>
 </html>
-
-
-
-
-
 
 
 
