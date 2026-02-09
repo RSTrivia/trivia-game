@@ -91,11 +91,16 @@
     <div class="container">
       <h1 id="leaderboard-title">Leaderboard</h1>
       <div class="leaderboard-tabs">
-    <button id="scoreTab" class="tab-btn active">Normal</button>
-    <button id="liteTab" class="tab-btn">Lite</button>   
-    <button id="weeklyTab" class="tab-btn">Weekly</button>   
-    <button id="xpTab" class="tab-btn">Total XP</button>
-    <button id="LiveTab" class="tab-btn">Live</button> </div>
+        <button id="mainModesTab" class="tab-btn active">Modes</button>
+        <button id="scoreTab" class="tab-btn active">Normal</button>
+        <button id="liteTab" class="tab-btn">Lite</button>   
+        <button id="weeklyTab" class="tab-btn">Weekly</button>  
+    </div>
+
+    <div id="sub-tabs" class="leaderboard-tabs sub-row">
+        <button id="LiveTab" class="tab-btn">Live</button>
+        <button id="xpTab" class="tab-btn">Total XP</button>
+    </div>
       
       </div>
       <ul id="leaderboard">
@@ -317,6 +322,7 @@ if(liteTab) liteTab.onclick = () => handleTabClick('lite', liteTab);
 </script>
 </body>
 </html>
+
 
 
 
