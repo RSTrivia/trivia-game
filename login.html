@@ -24,6 +24,26 @@
   <!-- Main CSS -->
   <link rel="stylesheet" href="style.css">
 </head>
+  <style>
+  @media (max-width: 480px) {
+    /* 1. Shrink the gap above the title */
+    .login-container h1 {
+      margin-top: -10px !important; /* Adjust this number to match Main Menu */
+      margin-bottom: 20px !important; 
+    }
+
+    /* 2. Optional: If the whole box feels too low, reduce container padding */
+    .login-container {
+      padding-top: 20px !important;
+      justify-content: flex-start !important; /* Align content to top instead of center */
+    }
+
+    /* 3. Space out the rows slightly if they look cramped after moving title */
+    .login-container .row {
+      margin-bottom: 12px !important;
+    }
+  }
+</style>
 <body>
 
   <!-- Background -->
@@ -84,6 +104,7 @@
 
 </body>
 </html>
+
 
 
 
