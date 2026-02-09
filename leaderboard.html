@@ -70,14 +70,21 @@
   .name-part { display: flex; align-items: center; }
 
   .btn-small {
-    background: #111111 !important; /* rgba(0, 0, 0, 0.6); color: #d4af37; border: 2px solid #d4af37;*/
-    border-radius: 8px; padding: 0 16px; font-size: 1rem;
-    display: inline-flex; align-items: center; justify-content: center;
-    text-decoration: none; width: 175px !important; height: 45px !important;
-    min-height: 45px !important; max-height: 45px !important; flex-shrink: 0 !important;
-    margin-top: 20px !important; margin-bottom: 5px; transition: all 0.2s ease; box-sizing: border-box !important;
+    display: inline-flex;  /*block*/
+    align-items: center;        /* vertical centering */
+    justify-content: center;    /* horizontal centering */
+    text-align: center;         /* fallback */
+    background: rgba(0, 0, 0, 0.6);
+    color: #d4af37; /*#ffd700;*/
+    padding: 14px 22px;
+    border: 2px solid #d4af37; /*#ffd700;*/
+    border-radius: 8px;
+    font-size: 1.1rem;
+    width: 100%;
+    margin: 0;
+    transition: 0.2s;
+    cursor: pointer;
   }
-
   @media (max-width: 480px) {
     #app .container {
       width: 440px !important; max-width: 95% !important; height: 640px !important; 
@@ -304,6 +311,7 @@ if(liteTab) liteTab.onclick = () => handleTabClick('lite', liteTab);
 </script>
 </body>
 </html>
+
 
 
 
