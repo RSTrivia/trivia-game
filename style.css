@@ -996,9 +996,9 @@ input.input-field:-webkit-autofill:active {
     display: none !important;
   }
   
-  /* This controls the gap between the very top of the phone screen and your UI */
+  /* This controls the gap between the very top of the phone screen and your UI check here*/
   body.game-active #app {
-    padding-top: 18px !important;
+    padding-top: 13px !important;
   }
   
   /* 2. ADD THE GAP: Internal padding at the top of the box */
@@ -1720,6 +1720,7 @@ input.input-field:-webkit-autofill:active {
   opacity: 0.5 !important;
   filter: grayscale(1);
 }
+
 
 
 
