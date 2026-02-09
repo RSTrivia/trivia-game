@@ -30,7 +30,24 @@
     min-height: 100vh; display: flex; justify-content: center;
     align-items: flex-start; padding: 20px; position: relative; z-index: 1;
   }
+
+  .container {
+    display: flex; min-height: 720px; flex-direction: column; align-items: center;
+    background: rgba(0, 0, 0, 0.85); padding: 40px 25px 25px 25px; 
+    border-radius: 10px; width: 440px; max-width: 95%;      
+    text-align: center; margin: 0 auto; box-sizing: border-box; justify-content: flex-start;
+  }
   
+  h1#leaderboard-title {
+    font-family: 'Cinzel', serif; font-size: 3.2rem; margin: 23px 0 25px 0 !important;
+    padding: 0 !important; line-height: 1.2; letter-spacing: 2px;
+    background: linear-gradient(145deg, #fff8dc 0%, #ffdd44 25%, #f2b705 50%, #c28f0c 75%, #a77b0a 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 4px rgba(0,0,0,0.9), 1px 1px 0 #000, 0 0 12px rgba(212, 175, 55, 1.0), 
+                 0 0 25px rgba(212, 175, 55, 0.8), 0 0 50px rgba(212, 175, 55, 0.5), 0 0 80px rgba(212, 175, 55, 0.3);
+    filter: saturate(1.2) drop-shadow(0 0 20px rgba(212, 175, 55, 0.4)); z-index: 100;
+  }
+
   #leaderboard {
     width: 100%; list-style: none; padding: 0; margin: 0 0 20px 0; min-height: 440px;
   }
@@ -52,6 +69,15 @@
   .number-nudge { position: relative; left: 6px; }
   .name-part { display: flex; align-items: center; }
 
+  .btn-small {
+    background: #111111 !important; /* rgba(0, 0, 0, 0.6); color: #d4af37; border: 2px solid #d4af37;*/
+    border-radius: 8px; padding: 0 16px; font-size: 1rem;
+    display: inline-flex; align-items: center; justify-content: center;
+    text-decoration: none; width: 175px !important; height: 45px !important;
+    min-height: 45px !important; max-height: 45px !important; flex-shrink: 0 !important;
+    margin-top: 20px !important; margin-bottom: 5px; transition: all 0.2s ease; box-sizing: border-box !important;
+  }
+
   @media (max-width: 480px) {
     #app .container {
       width: 440px !important; max-width: 95% !important; height: 640px !important; 
@@ -63,23 +89,6 @@
     #leaderboard li { height: 38px !important; min-height: 38px !important; margin-bottom: 4px !important; font-size: 0.9rem !important; }
     .btn-small { margin-top: auto !important; margin-bottom: auto !important; align-self: center !important; }
   }
-  
-  /* ====== MOBILE NO-STICKY FIX ====== */
-@media (hover: none) and (pointer: coarse) {
-  /* 1. Reset Hover: Make the 'hover' look like the normal state */
-  .btn:hover {
-    background: rgba(0, 0, 0, 0.6) !important;
-    border-color: #d4af37 !important;
-    color: #d4af37 !important;
-  }
-
-  /* 2. Instant Press: Zero delay when your finger hits the button */
-  .btn:active {
-    background-color: #000000 !important;
-    border-color: #ffea8a !important;
-    color: #ffea8a !important;
-    
-</style>
 </style>
 </head>
 
@@ -90,11 +99,9 @@
     <div class="container">
       <h1 id="leaderboard-title">Leaderboard</h1>
       <div class="leaderboard-tabs">
-    <button id="scoreTab" class="tab-btn active">Normal</button>
-    <button id="liteTab" class="tab-btn">Lite</button>   
+    <button id="scoreTab" class="tab-btn active">Score</button>
     <button id="weeklyTab" class="tab-btn">Weekly</button>   
     <button id="xpTab" class="tab-btn">Total XP</button>
-    
       </div>
       <ul id="leaderboard">
           <li class="first"><span class="name-part"><span class="rank-slot">🥇</span><span class="user-txt"></span></span><span class="score-part"></span></li>
@@ -108,7 +115,7 @@
           <li><span class="name-part"><span class="rank-slot"><span class="number-nudge">9.</span></span><span class="user-txt"></span></span><span class="score-part"></span></li>
           <li><span class="name-part"><span class="rank-slot"><span class="number-nudge">10.</span></span><span class="user-txt"></span></span><span class="score-part"></span></li>
       </ul>
-      <button onclick="window.location.href='index.html'" class="btn">Main Menu</button>
+      <a href="index.html" class="btn-small">Main Menu</a>
     </div>
   </div>
 
@@ -120,11 +127,9 @@ const leaderboardRows = document.querySelectorAll('#leaderboard li');
 const scoreTab = document.getElementById('scoreTab');
 const weeklyTab = document.getElementById('weeklyTab');
 const xpTab = document.getElementById('xpTab');
-const liteTab = document.getElementById('liteTab');
-  
+
 let currentMode = 'score'; 
-let realtimeSubscription = null; // Track the active listener
-  
+
 function getLevel(xp) {
     if (!xp || xp <= 0) return 1;
     if (xp >= 100000) return 99;
@@ -135,26 +140,9 @@ function getLevel(xp) {
     return 99;
 }
 
-function formatLeaderboardTime(ms) {
-    // Hide if 0, null, or the default "empty" values
-    if (!ms || ms <= 0 || ms === 9999 || ms === 9999999) return "";
-    
-    const totalSeconds = ms / 1000;
-    
-    if (totalSeconds < 60) {
-        // Format: 45.23s
-        return ` <span style="font-size: 0.85em; opacity: 0.6;">(${totalSeconds.toFixed(2)}s)</span>`;
-    } else {
-        // Format: 1:23.34
-        const minutes = Math.floor(totalSeconds / 60);
-        const seconds = (totalSeconds % 60).toFixed(2).padStart(5, '0');
-        return ` <span style="font-size: 0.85em; opacity: 0.6;">(${minutes}:${seconds})</span>`;
-    }
-}
-
 function updateLeaderboard(data) {
   leaderboardRows.forEach((row, i) => {
-    const entry = data[i] || { username: '', val: '', weekly_data: null, time_ms: null };
+    const entry = data[i] || { username: '', val: '', weekly_data: null };
     const userTxt = row.querySelector('.user-txt');
     const scoreSpan = row.querySelector('.score-part');
 
@@ -164,70 +152,41 @@ function updateLeaderboard(data) {
       return;
     }
 
+    // 1. Username Part (Direct text content)
     if (userTxt.textContent !== entry.username) {
         userTxt.textContent = entry.username;
     }
 
+    // 2. Score/XP Part (Calculate Target first)
     let finalHTML = "";
-    
     if (currentMode === 'xp') {
       const level = getLevel(entry.val);
       finalHTML = `${entry.val.toLocaleString()} <span style="font-size: 0.85em; opacity: 0.6;">(Lvl ${level})</span>`;
-      
-    } else if (currentMode === 'weekly' || currentMode === 'lite') {
-      const dataKey = currentMode === 'weekly' ? 'weekly_data' : 'lite_data';
-      const s = entry[dataKey]?.score || 0;
-      const t = entry[dataKey]?.time || 0;
-      // Pass true for isWeekly to check against the 9999 default
-      finalHTML = `${s.toLocaleString()}${formatLeaderboardTime(t)}`;
-      
+    } else if (currentMode === 'weekly') {
+      const s = entry.weekly_data?.score || 0;
+      const t = entry.weekly_data?.time || 0;
+      const totalSeconds = t / 1000;
+      const timeStr = totalSeconds < 60 ? totalSeconds.toFixed(2) + "s" : `${Math.floor(totalSeconds / 60)}:${(totalSeconds % 60).toFixed(2).toString().padStart(5, '0')}`;
+      finalHTML = `${s.toLocaleString()} <span style="font-size: 0.85em; opacity: 0.6;">(${timeStr})</span>`;
     } else {
-      // NORMAL MODE (using val and time_ms)
-      const s = entry.val || 0;
-      const t = entry.time_ms || 0; 
-      // Pass false for isWeekly to check against the 9999999 default
-      finalHTML = `${s.toLocaleString()}${formatLeaderboardTime(t)}`;
+      finalHTML = (entry.val || 0).toLocaleString();
     }
-    
+
     // Anti-flicker: Only update if different
     if (scoreSpan.innerHTML !== finalHTML) {
       scoreSpan.innerHTML = finalHTML;
     }
   });
 }
+
 async function fetchLeaderboard() {
   let query;
   if (currentMode === 'score') {
-    query = supabase
-      .from('scores')
-      .select('username, val:score, time_ms') // 1. Added time_ms to the selection
-      .gt('score', 0)
-      .order('score', { ascending: false })    // 2. Primary sort: Highest Score
-      .order('time_ms', { ascending: true }); // 3. Tie-breaker: Fastest Time (lowest ms)
-      
-  } else if (currentMode === 'lite') {
-    query = supabase
-      .from('scores')
-      .select('username, lite_data') // Pull the JSONB object
-      .not('lite_data', 'is', null)
-      .gt('lite_data->score', 0)     // Only rows with a score
-      .order('lite_data->score', { ascending: false }) // Sort by nested score
-      .order('lite_data->time', { ascending: true });  // Sort by nested time
+    query = supabase.from('scores').select('username, val:score').gt('score', 0).order('score', { ascending: false });
   } else if (currentMode === 'weekly') {
-    query = supabase
-      .from('scores')
-      .select('username, weekly_data')
-      .not('weekly_data', 'is', null)
-      .gt('weekly_data->score', 0)
-      .order('weekly_data->score', { ascending: false })
-      .order('weekly_data->time', { ascending: true });
-      
+    query = supabase.from('scores').select('username, weekly_data').not('weekly_data', 'is', null).gt('weekly_data->score', 0).order('weekly_data->score', { ascending: false }).order('weekly_data->time', { ascending: true });
   } else {
-    query = supabase
-      .from('profiles')
-      .select('username, val:xp')
-      .gt('xp', 0)
-      .order('xp', { ascending: false });
+    query = supabase.from('profiles').select('username, val:xp').gt('xp', 0).order('xp', { ascending: false });
   }
 
   const { data, error } = await query.limit(10);
@@ -239,30 +198,6 @@ async function fetchLeaderboard() {
   }
 }
 
-  // --- NEW: REALTIME SUBSCRIPTION LOGIC ---
-function subscribeToLeaderboard() {
-    // 1. Clean up existing subscription if it exists
-    if (realtimeSubscription) {
-        supabase.removeChannel(realtimeSubscription);
-    }
-
-    // 2. Determine which table to watch
-    const tableToWatch = (currentMode === 'xp') ? 'profiles' : 'scores';
-
-    // 3. Create the listener
-    realtimeSubscription = supabase
-        .channel('live-leaderboard')
-        .on(
-            'postgres_changes', 
-            { event: '*', schema: 'public', table: tableToWatch }, 
-            (payload) => {
-                console.log('Change detected!', payload);
-                fetchLeaderboard(); // Refresh the data when a change happens
-            }
-        )
-        .subscribe();
-}
-  
 // Unified Tab Click Logic
 function handleTabClick(mode, btn) {
     if (currentMode === mode || !btn) return;
@@ -275,13 +210,11 @@ function handleTabClick(mode, btn) {
     if (cached) updateLeaderboard(JSON.parse(cached));
 
     fetchLeaderboard();
-    subscribeToLeaderboard(); // Re-subscribe to the correct table
 }
 
 scoreTab.onclick = () => handleTabClick('score', scoreTab);
 xpTab.onclick = () => handleTabClick('xp', xpTab);
 if(weeklyTab) weeklyTab.onclick = () => handleTabClick('weekly', weeklyTab);
-if(liteTab) liteTab.onclick = () => handleTabClick('lite', liteTab);
 
 // Initial Run (Immediately pull from Score cache)
 (async () => {
@@ -290,12 +223,10 @@ if(liteTab) liteTab.onclick = () => handleTabClick('lite', liteTab);
     updateLeaderboard(JSON.parse(cachedString));
   }
   await fetchLeaderboard();
-  subscribeToLeaderboard(); // Start the first listener
 })();
 </script>
 </body>
 </html>
-
 
 
 
