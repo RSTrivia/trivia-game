@@ -3544,11 +3544,12 @@ function updateRefereeStatus(channel) {
         return;
     }
 
-    // Sort by join time - Oldest first
+    // Sort by join time - Deterministic string comparison
+    // If online_at is missing, they are treated as "newest"
     const sorted = players.sort((a, b) => {
-        const timeA = new Date(a.online_at || Date.now()).getTime();
-        const timeB = new Date(b.online_at || Date.now()).getTime();
-        return timeA - timeB;
+        const tA = a.online_at || '9999-12-31'; 
+        const tB = b.online_at || '9999-12-31';
+        return tA.localeCompare(tB);
     });
 
     const elder = sorted[0];
@@ -3567,7 +3568,14 @@ function updateRefereeStatus(channel) {
             if (refereeTimeout) clearTimeout(refereeTimeout);
             refereeTimeout = setTimeout(() => endRoundAsReferee(), 17000);
         }
-
+        if (roundOpen) {
+            console.log("Referee: Requesting answer re-sync from all players...");
+            channel.send({
+                type: 'broadcast',
+                event: 'request-sync',
+                payload: { roundId: roundId }
+            });
+        }
         // If the game was stuck in the "gap" between rounds:
         if (isLiveMode && !roundOpen && window.matchStarted && !window.pendingVictory) {
             console.log("Referee Succession: Kickstarting next round...");
@@ -3890,6 +3898,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
