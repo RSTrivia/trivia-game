@@ -1683,10 +1683,14 @@ async function endGame(isSilent = false) {
     } else {
         // --- LIVE MODE / SILENT PATH ---
         console.log("EndGame (Silent) processing background tasks...");
-        // BANK the time so the solo session starts fresh
-        accumulatedTime = calctotal; 
-        // IMPORTANT: gameStartTime must be reset to 'Now' 
-        // so the NEXT time endGame runs, currentSessionMs starts from 0
+        // 1. BANK the time carefully
+        // We ensure totalMs is a valid number before adding it
+        if (!isNaN(totalMs) && totalMs > 0) {
+            accumulatedTime = totalMs; 
+        }
+        // 2. CRITICAL RESET: Reset gameStartTime to NOW
+        // This ensures that when the user starts Solo mode, 
+        // the "new" session starts at 0 seconds.
         gameStartTime = Date.now();
       
         // 1. Remove the network channel so the referee stops tracking us
@@ -1699,7 +1703,8 @@ async function endGame(isSilent = false) {
         // If we reset now, your score becomes 0 and you can't continue solo.
         clearInterval(timer);
         stopTickSound();
-        
+      
+        isLiveMode = false;
         gameEnding = false; // Reset the lock so we can finish for real later
         return; // Exit early
     }
@@ -3077,7 +3082,13 @@ function startLiveRound() {
     console.log(`--- STARTING ROUND ${roundId} ---`);
     roundOpen = true;
     roundResults = {}; 
-
+  
+    if (roundId === 1) {
+        gameStartTime = Date.now();
+        accumulatedTime = 0; 
+        console.log("Match Timer Started at:", gameStartTime);
+    }
+  
     // 1. SAFETY: Clear any old referee timeouts
     if (refereeTimeout) {
         clearTimeout(refereeTimeout);
@@ -3799,6 +3810,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
