@@ -41,6 +41,8 @@ let accumulatedTime = 0; // Global scope
 let roundResults = {};
 // New Global State
 window.isReferee = false;
+// Get the ID from your local cache so you don't have to keep pinging Supabase
+const currentPet = localStorage.getItem('equipped_pet_id');
 
 const RELEASE_DATE = '2025-12-22';
 const WEEKLY_LIMIT = 50; // Change to 50 when ready to go live
@@ -342,6 +344,7 @@ async function init() {
     }
 
 lobbyBtn.onclick = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
     if (!session) return alert("Log in to enter the lobby!");
     // 1. Show the Lobby UI (Hide the start screen)
     if (audioCtx.state === 'suspended') await audioCtx.resume();
@@ -1501,7 +1504,7 @@ async function endGame(isSilent = false) {
     if (isLiveMode && gameChannel) {
         console.log("Leaving Live Match channel...");
         isLiveMode = false; // Kill the flag immediately
-        supabase.removeChannel(gameChannel);
+        await supabase.removeChannel(gameChannel);
         gameChannel = null;
     }
     // ---------------------------
@@ -2702,7 +2705,7 @@ function setupLobbyRealtime(lobby) {
       }
     })
     .on('broadcast', { event: 'chat' }, ({ payload }) => {
-        appendMessage(payload.username, payload.message);
+        appendMessage(payload.username, payload.message, payload.petId);
     })
 .on('broadcast', { event: 'prepare-game' }, async ({ payload }) => {
     // 1. Fetch data with both data and error defined
@@ -3507,6 +3510,8 @@ chatInput.onkeydown = (e) => {
 // 2. Function to broadcast your message
 function sendChatMessage(msg) {
     if (!lobbyChannel) return;
+    // Grab the latest pet from your variable or localStorage
+    const equippedPet = currentPet || localStorage.getItem('equipped_pet_id') || null;
 
     lobbyChannel.send({
         type: 'broadcast',
@@ -3514,24 +3519,43 @@ function sendChatMessage(msg) {
         payload: {
             username: username,
             message: msg,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            petId: equippedPet
         }
     });
 }
 
-
-function appendMessage(user, msg) {
+function appendMessage(user, msg, petId) {
     const msgDiv = document.createElement('div');
-    // OSRS style: Blue for name, Yellow for text
-    //msgDiv.innerHTML = `<span style="color: #00ffff;">${user}:</span> ${msg}`;
-    msgDiv.innerHTML = `<span style="color: #00ffff; font-weight: bold;">${user}:</span> <span style="color: #ffff00;">${msg}</span>`;
-    msgDiv.style.marginBottom = "2px";
-    msgDiv.style.textShadow = "1px 1px 0px #000"; // Makes it look like OSRS font
-    chatMessages.appendChild(msgDiv);
+    const nameColor = "#00A8A8"; // Silver color    
+    const textColor = "#d4af37"; // Gold color
+    const cleanPetId = petId ? petId.replace('pet_', '') : null;
+
+    const petImgHtml = cleanPetId 
+        ? `<img src="/pets/${cleanPetId}.png" style="width: 18px; height: 18px; margin-right: 6px; image-rendering: pixelated; flex-shrink: 0; margin-top: 1px;">` 
+        : '';
+
+    msgDiv.innerHTML = `
+        ${petImgHtml}
+        <span style="color: ${nameColor}; font-weight: bold; margin-right: 6px; white-space: nowrap; flex-shrink: 0;">${user}:</span> 
+        <span style="color: ${textColor}; word-break: break-word; overflow-wrap: any-where; line-height: 1.2;">${msg}</span>
+    `;
+
+    msgDiv.style.marginBottom = "5px";
+    msgDiv.style.textShadow = "1px 1px 1px rgba(0,0,0,0.8)"; 
+    msgDiv.style.fontSize = "14px";
+    msgDiv.style.fontFamily = "monospace";
+    msgDiv.style.display = "flex";
+    msgDiv.style.alignItems = "flex-start"; 
     
-    // Auto-scroll to bottom
+    // REMOVES HORIZONTAL SCROLLBARS
+    msgDiv.style.overflowX = "hidden"; 
+    msgDiv.style.width = "100%";
+
+    chatMessages.appendChild(msgDiv);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
+
 
 // 2. The Updated isHost (Very fast, no calculations)
 function isHost() {
