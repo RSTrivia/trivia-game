@@ -146,7 +146,10 @@ a {
   margin: 0;
   transition: 0.2s;
   cursor: pointer;
-  text-decoration: none;
+  text-decoration: none; /* Removes link underline */
+  appearance: none; /* Removes default browser link styling */
+  user-select: none;
+  -webkit-touch-callout: none; /* Prevents long-press menu on mobile */
 }
 
 .btn:hover {
@@ -189,6 +192,8 @@ a {
   text-decoration: none;
   transition: all 0.2s ease; /* This ensures color, border, and bg all flash together */
   cursor: pointer;
+  user-select: none;
+  -webkit-touch-callout: none; /* Prevents long-press menu on mobile */
 }
 
 
@@ -974,7 +979,7 @@ input.input-field:-webkit-autofill:active {
     border-color: #ffea8a !important;
     color: #ffea8a !important;
     transition: 0s !important; /* Force instant highlight */
-    transform: scale(0.97);     /* Physical "click" feel */
+    transform: scale(0.97) !important;   /* Physical "click" feel */
   }
   
 /* Ensure disabled buttons on mobile stay flat and grey */
@@ -1770,8 +1775,6 @@ input.input-field:-webkit-autofill:active {
   opacity: 0.5 !important;
   filter: grayscale(1);
 }
-
-
 
 
 
