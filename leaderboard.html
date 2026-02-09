@@ -278,8 +278,29 @@ if(liteTab) liteTab.onclick = () => handleTabClick('lite', liteTab);
   subscribeToLeaderboard(); // Start the first listener
 })();
 </script>
+  <script>
+  // This looks for EVERY button and the Main Menu link
+  const allButtons = document.querySelectorAll('.btn, .btn-small, .tab-btn');
+
+  allButtons.forEach(button => {
+    button.addEventListener('touchstart', () => {
+      button.classList.add('tapped');
+    }, { passive: true });
+
+    button.addEventListener('touchend', () => {
+      setTimeout(() => {
+        button.classList.remove('tapped');
+      }, 100); 
+    });
+
+    button.addEventListener('touchcancel', () => {
+      button.classList.remove('tapped');
+    });
+  });
+</script>
 </body>
 </html>
+
 
 
 
