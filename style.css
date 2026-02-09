@@ -130,6 +130,8 @@ a {
 
 /* ====== BIG GOLD BUTTONS ====== */
 .btn {
+  /* Forces the <a> to act like a <button> */
+  box-sizing: border-box; /* CRITICAL: ensures padding doesn't stretch links differently */
   display: inline-flex;  /*block*/
   align-items: center;        /* vertical centering */
   justify-content: center;    /* horizontal centering */
@@ -1768,6 +1770,7 @@ input.input-field:-webkit-autofill:active {
   opacity: 0.5 !important;
   filter: grayscale(1);
 }
+
 
 
 
