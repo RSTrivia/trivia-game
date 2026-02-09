@@ -2685,7 +2685,8 @@ function setupLobbyRealtime(lobby) {
 
         if (count >= 2 && isHost()) {
             // If NO ONE is ready yet, send the "Prepare" command
-            if (readyCount < count && !isStarting) {
+            if (readyCount === 0 && !isStarting) {
+                isStarting = true;
                 console.log("Host: Sending Prepare Command...");
                 triggerGamePrepare(lobby.id); 
             } 
@@ -3878,6 +3879,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
