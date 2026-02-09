@@ -1192,14 +1192,16 @@ async function handleTimeout() {
 
 async function checkAnswer(choiceId, btn) {
     if (!roundOpen) return;
+    if (timer) clearInterval(timer);
     stopTickSound(); // CUT THE SOUND IMMEDIATELY
+    const capturedTimeLeft = timeLeft;
+    document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
     // If timeLeft is 0, we treat it as a 'wrong' answer automatically
     let isCorrect = false; 
-    
     // --- 1. HANDLE INPUT (Only if time remains) ---
-    if (timeLeft > 0) {
-        document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
-        
+    // Save the time left at the exact moment of the click
+    
+    if (capturedTimeLeft > 0) {
         // Check answer
         const { data: correct, error } = await supabase.rpc('check_my_answer', {
             input_id: currentQuestion.id,
@@ -3898,6 +3900,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
