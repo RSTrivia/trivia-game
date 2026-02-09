@@ -52,49 +52,18 @@
   .number-nudge { position: relative; left: 6px; }
   .name-part { display: flex; align-items: center; }
 
-/* ====== MOBILE OPTIMIZATIONS & STICKY FIX ====== */
   @media (max-width: 480px) {
     #app .container {
-      width: 440px !important; 
-      max-width: 95% !important; 
-      height: 640px !important; 
-      min-height: 640px !important; 
-      padding: 15px 20px 15px 20px !important;
-      display: flex !important; 
-      flex-direction: column !important; 
-      justify-content: flex-start !important;
+      width: 440px !important; max-width: 95% !important; height: 640px !important; 
+      min-height: 640px !important; padding: 15px 20px 15px 20px !important;
+      display: flex !important; flex-direction: column !important; justify-content: flex-start !important;
     }
-
     h1#leaderboard-title { font-size: 2.3rem !important; margin-bottom: 15px !important; margin-top: 5px !important;}
     #leaderboard { height: 430px !important; min-height: 430px !important; margin: 0 !important; }
     #leaderboard li { height: 38px !important; min-height: 38px !important; margin-bottom: 4px !important; font-size: 0.9rem !important; }
-    
-    /* Center the Main Menu link */
-    .btn { 
-      margin-top: auto !important; 
-      margin-bottom: 10px !important; 
-      align-self: center !important; 
-    }
+    .btn-small { margin-top: auto !important; margin-bottom: auto !important; align-self: center !important; }
   }
-
-  /* ====== CRITICAL: FIX STICKY HOVER ON MOBILE ====== */
-  @media (hover: none) and (pointer: coarse) {
-    /* Force the link to look normal even when the browser thinks it's 'hovered' */
-    a.btn:hover {
-      background: rgba(0, 0, 0, 0.6) !important;
-      border-color: #d4af37 !important;
-      color: #d4af37 !important;
-    }
-
-    /* Use the active state for the actual gold flash */
-    a.btn:active {
-      background-color: #000000 !important;
-      border-color: #ffea8a !important;
-      color: #ffea8a !important;
-      transform: scale(0.97) !important;
-      transition: 0s !important;
-    }
-  }
+  
 </style>
 </style>
 </head>
@@ -311,6 +280,7 @@ if(liteTab) liteTab.onclick = () => handleTabClick('lite', liteTab);
 </script>
 </body>
 </html>
+
 
 
 
