@@ -62,25 +62,14 @@
     #leaderboard { height: 430px !important; min-height: 430px !important; margin: 0 !important; }
     #leaderboard li { height: 38px !important; min-height: 38px !important; margin-bottom: 4px !important; font-size: 0.9rem !important; }
     .btn { margin-top: auto !important; margin-bottom: auto !important; align-self: center !important; }
-    .leaderboard-tabs {
-    display: flex !important;
-    overflow-x: auto !important; /* Allows swiping */
-    white-space: nowrap !important; /* Prevents stacking */
-    gap: 8px;
-    padding-bottom: 5px;
-    scrollbar-width: none; /* Hides scrollbar on Firefox */
-  }
-
-  .leaderboard-tabs::-webkit-scrollbar {
-    display: none; /* Hides scrollbar on Chrome/Safari */
-  }
-
-  .tab-btn {
-    flex: 0 0 auto !important; /* Prevents buttons from shrinking */
-    padding: 8px 15px !important;
-    font-size: 0.8rem !important;
-  }
-}
+    
+    .tab-btn {
+        padding: 6px 4px !important; /* Very tight horizontal padding */
+        font-size: 0.75rem !important; /* Slightly smaller font */
+        flex: 1; /* Makes them all equal width */
+        text-align: center;
+      }
+    }
   
 </style>
 </style>
@@ -318,6 +307,7 @@ if(liteTab) liteTab.onclick = () => handleTabClick('lite', liteTab);
 </script>
 </body>
 </html>
+
 
 
 
