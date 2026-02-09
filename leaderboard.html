@@ -52,6 +52,38 @@
   .number-nudge { position: relative; left: 6px; }
   .name-part { display: flex; align-items: center; }
 
+
+  .sub-row {
+    margin-top: 5px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 5px;
+    border-radius: 5px;
+}
+
+.tab-btn {
+    background: none;
+    border: 1px solid #d4af37;
+    color: #d4af37;
+    padding: 4px 10px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border-radius: 3px;
+    flex: 1;
+}
+
+.tab-btn.active {
+    background: #d4af37;
+    color: #000;
+}
+
+@media (max-width: 480px) {
+    /* Tighten everything to fit the 640px height limit */
+    h1#leaderboard-title { margin-bottom: 5px !important; }
+    .leaderboard-tabs { margin-bottom: 5px !important; }
+    #leaderboard { height: 380px !important; min-height: 380px !important; }
+}
+
+  
   @media (max-width: 480px) {
     #app .container {
       width: 440px !important; max-width: 95% !important; height: 640px !important; 
@@ -322,6 +354,7 @@ if(liteTab) liteTab.onclick = () => handleTabClick('lite', liteTab);
 </script>
 </body>
 </html>
+
 
 
 
