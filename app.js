@@ -342,6 +342,7 @@ async function init() {
     }
 
 lobbyBtn.onclick = async () => {
+    if (!session) return alert("Log in to enter the lobby!");
     // 1. Show the Lobby UI (Hide the start screen)
     if (audioCtx.state === 'suspended') await audioCtx.resume();
     loadSounds();
@@ -3600,6 +3601,13 @@ async function triggerGamePrepare(lobbyId) {
         payload: { lobbyId: lobbyId } 
     });
   
+    // 2. THE FIX: The Host must also set themselves to ready!
+    await lobbyChannel.track({
+        user_id: userId,
+        status: 'ready_to_start',
+        online_at: new Date().toISOString()
+    });
+  
     // 1. Double-check that we actually have the lobby data locally
     // If currentLobby.question_ids is missing, we shouldn't start yet.
     if (!currentLobby || !currentLobby.question_ids) {
@@ -3900,6 +3908,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
