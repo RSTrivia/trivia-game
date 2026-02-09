@@ -2736,7 +2736,8 @@ function setupLobbyRealtime(lobby) {
     // 4. Preload the first few questions from the newly shuffled deck
     isLiveMode = true; // Set this so preloader knows to pull from the top of the deck
     await preloadNextQuestions(3);
-
+  
+    console.log("Preparation complete. Sending 'ready_to_start' status...");
     // 5. Tell Host you are ready
     await lobbyChannel.track({
         online_at: new Date().toISOString(),
@@ -3889,6 +3890,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
