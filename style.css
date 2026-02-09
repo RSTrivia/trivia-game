@@ -1450,42 +1450,47 @@ input.input-field:-webkit-autofill:active {
 /* ====== HELP MODAL STYLES ====== */
 
 
-/*                  scroll bar              */
+/* ------------------ scroll bar ------------------ */
 
 /* Target the scrollbar area */
 #achievementList::-webkit-scrollbar,
-.modal-content::-webkit-scrollbar {
-    width: 8px; /* Slim scrollbar */
+.modal-content::-webkit-scrollbar,
+#chat-messages::-webkit-scrollbar {
+    width: 8px;
 }
 
-/* The background of the scrollbar (the track) */
+/* The Track - Deep charcoal brown */
 #achievementList::-webkit-scrollbar-track,
-.modal-content::-webkit-scrollbar-track {
-    background: rgba(30, 30, 30, 0.8);
+.modal-content::-webkit-scrollbar-track,
+#chat-messages::-webkit-scrollbar-track {
+    background: #120d09; 
     border-radius: 10px;
 }
 
-/* The draggable handle (the thumb) */
+/* The Thumb (Idle State) - Muted Bronze/Brass */
 #achievementList::-webkit-scrollbar-thumb,
-.modal-content::-webkit-scrollbar-thumb {
-    background: #c28f0c; /* Base Gold */
-    border: 1px solid #ffdd44; /* Shiny edge */
+.modal-content::-webkit-scrollbar-thumb,
+#chat-messages::-webkit-scrollbar-thumb {
+    /* Changed from #d4af37 to a more "matte" brownish-gold */
+    background: #8c7332; 
+    border: 1px solid #2a1d15; /* Darker border to kill the shine */
     border-radius: 10px;
 }
 
-/* Handle on hover */
+/* Handle on hover - This is where the "Live Lobby" Gold kicks in */
 #achievementList::-webkit-scrollbar-thumb:hover,
-.modal-content::-webkit-scrollbar-thumb:hover {
-    background: #ffdd44;
+.modal-content::-webkit-scrollbar-thumb:hover,
+#chat-messages::-webkit-scrollbar-thumb:hover {
+    background: #d4af37; /* The lobby gold only appears on hover now */
 }
 
-/* Firefox Support */
-#achievementList, .modal-content {
+/* Firefox Support - Matching the matte look */
+#achievementList, .modal-content, #chat-messages {
     scrollbar-width: thin;
-    scrollbar-color: #c28f0c rgba(30, 30, 30, 0.8);
+    scrollbar-color: #8c7332 #120d09;
 }
 
-/*                  scroll bar              */
+/* ------------------ scroll bar ------------------ */
 
 
 
@@ -1720,6 +1725,7 @@ input.input-field:-webkit-autofill:active {
   opacity: 0.5 !important;
   filter: grayscale(1);
 }
+
 
 
 
