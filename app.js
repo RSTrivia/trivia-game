@@ -2680,11 +2680,10 @@ function setupLobbyRealtime(lobby) {
         updateLobbyUI(count, lobby.starts_at);
 
         // --- NEW READY CHECK LOGIC ---
-     
+       const readyCount = players.filter(p => p.status === 'ready_to_start').length;
         console.log(`Sync: ${readyCount}/${count} players ready.`);
 
         if (count >= 2 && isHost()) {
-            const readyCount = players.filter(p => p.status === 'ready_to_start').length;
             // If NO ONE is ready yet, send the "Prepare" command
             if (readyCount < count && !isStarting) {
                 console.log("Host: Sending Prepare Command...");
@@ -3879,6 +3878,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
