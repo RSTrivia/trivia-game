@@ -58,7 +58,7 @@
       min-height: 640px !important; padding: 15px 20px 15px 20px !important;
       display: flex !important; flex-direction: column !important; justify-content: flex-start !important;
     }
-    h1#leaderboard-title { font-size: 2.3rem !important; margin-bottom: 15px !important; margin-top: 5px !important;}
+    h1#leaderboard-title { font-size: 2.3rem !important; margin-bottom: -10px !important; margin-top: 5px !important;}
     #leaderboard { height: 430px !important; min-height: 430px !important; margin: 0 !important; }
     #leaderboard li { height: 38px !important; min-height: 38px !important; margin-bottom: 4px !important; font-size: 0.9rem !important; }
     .btn { margin-top: auto !important; margin-bottom: auto !important; align-self: center !important; }
@@ -75,11 +75,11 @@
     <div class="container">
       <h1 id="leaderboard-title">Leaderboard</h1>
       <div class="leaderboard-tabs">
-    <button id="scoreTab" class="tab-btn active">Normal</button>
-    <button id="liteTab" class="tab-btn">Lite</button>   
-    <button id="weeklyTab" class="tab-btn">Weekly</button>   
-    <button id="xpTab" class="tab-btn">Total XP</button>
-    
+    <button id="scoreTab" class="tab-btn active">🛡️</button>
+    <button id="liteTab" class="tab-btn">⚡</button>   
+    <button id="weeklyTab" class="tab-btn">🏃‍♂️</button>   
+    <button id="xpTab" class="tab-btn">📈</button>
+    <button id="LiveTab" class="tab-btn">🔴</button>
       </div>
       <ul id="leaderboard">
           <li class="first"><span class="name-part"><span class="rank-slot">🥇</span><span class="user-txt"></span></span><span class="score-part"></span></li>
@@ -106,7 +106,8 @@ const scoreTab = document.getElementById('scoreTab');
 const weeklyTab = document.getElementById('weeklyTab');
 const xpTab = document.getElementById('xpTab');
 const liteTab = document.getElementById('liteTab');
-  
+const LiveTab = document.getElementById('liveTab');
+
 let currentMode = 'score'; 
 let realtimeSubscription = null; // Track the active listener
   
@@ -300,30 +301,6 @@ if(liteTab) liteTab.onclick = () => handleTabClick('lite', liteTab);
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
