@@ -52,38 +52,6 @@
   .number-nudge { position: relative; left: 6px; }
   .name-part { display: flex; align-items: center; }
 
-
-  .sub-row {
-    margin-top: 5px;
-    background: rgba(0, 0, 0, 0.3);
-    padding: 5px;
-    border-radius: 5px;
-}
-
-.tab-btn {
-    background: none;
-    border: 1px solid #d4af37;
-    color: #d4af37;
-    padding: 4px 10px;
-    font-size: 0.8rem;
-    cursor: pointer;
-    border-radius: 3px;
-    flex: 1;
-}
-
-.tab-btn.active {
-    background: #d4af37;
-    color: #000;
-}
-
-@media (max-width: 480px) {
-    /* Tighten everything to fit the 640px height limit */
-    h1#leaderboard-title { margin-bottom: 5px !important; }
-    .leaderboard-tabs { margin-bottom: 5px !important; }
-    #leaderboard { height: 380px !important; min-height: 380px !important; }
-}
-
-  
   @media (max-width: 480px) {
     #app .container {
       width: 440px !important; max-width: 95% !important; height: 640px !important; 
@@ -94,22 +62,6 @@
     #leaderboard { height: 430px !important; min-height: 430px !important; margin: 0 !important; }
     #leaderboard li { height: 38px !important; min-height: 38px !important; margin-bottom: 4px !important; font-size: 0.9rem !important; }
     .btn { margin-top: auto !important; margin-bottom: auto !important; align-self: center !important; }
-    
-  .leaderboard-tabs {
-      display: flex !important;
-      overflow-x: auto !important; /* Allows swiping */
-      white-space: nowrap !important; /* Prevents stacking */
-      scrollbar-width: none; /* Hides scrollbar on Firefox */
-    }
-  
-    .leaderboard-tabs::-webkit-scrollbar {
-      display: none; /* Hides scrollbar on Chrome/Safari */
-    }
-  
-    .tab-btn {
-      flex: 0 0 auto !important; /* Prevents buttons from shrinking */
-      font-size: 0.8rem !important;
-    }
 }
   
 </style>
@@ -123,16 +75,11 @@
     <div class="container">
       <h1 id="leaderboard-title">Leaderboard</h1>
       <div class="leaderboard-tabs">
-        <button id="mainModesTab" class="tab-btn active">Modes</button>
         <button id="scoreTab" class="tab-btn active">Normal</button>
         <button id="liteTab" class="tab-btn">Lite</button>   
-        <button id="weeklyTab" class="tab-btn">Weekly</button>  
-    </div>
-
-    <div id="sub-tabs" class="leaderboard-tabs sub-row">
-        <button id="LiveTab" class="tab-btn">Live</button>
+        <button id="weeklyTab" class="tab-btn">Weekly</button> 
         <button id="xpTab" class="tab-btn">Total XP</button>
-    </div>
+  </div>
       
       </div>
       <ul id="leaderboard">
@@ -354,6 +301,7 @@ if(liteTab) liteTab.onclick = () => handleTabClick('lite', liteTab);
 </script>
 </body>
 </html>
+
 
 
 
