@@ -97,12 +97,6 @@ a, button {
 }
 
 
-/* Login row spacing */
-.login-row {
-  margin-bottom: 15px;
-  width: 100%;
-}
-
 /* Input fields */
 /* The actual thin fields */
 .input-field {
@@ -643,65 +637,106 @@ h1 {
     white-space: nowrap !important;     /* prevent wrapping */
 }
 
-/* ====== LOGIN PAGE SPECIFIC (CLEAN & SNUG) ====== */
 
-/* Update the container to use a consistent gap */
-#app.login-page .login-container {
-  width: 440px;
-  display: flex;
-  flex-direction: column;
-  padding: 25px;
-  box-sizing: border-box;
-  /* Add this line to control the gap between ALL rows */
-  gap: 20px !important; 
+/* ====== LOGIN PAGE SPECIFIC (CLEAN FONTS & MENU MATCHED) ====== */
 
-  /* ADD THESE TWO LINES */
-  height: auto !important;
-  min-height: 0 !important;
+/* Force the login app wrapper to align like the start screen */
+#app.login-page {
+    align-items: flex-start; 
+    padding-top: 20px;
 }
+
+#app.login-page .login-container {
+    width: 440px;
+    background: rgba(0, 0, 0, 0.85);     
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    padding: 25px; /* gap between container to the title in login page */
+    gap: 20px !important;            
+    height: auto !important;
+    min-height: 0 !important;
+}
+
 
 /* Sharp, thin login fields */
 #app.login-page .input-field {
   height: 28px !important;
-  padding: 0 10px !important;
+  padding: 10px 10px !important;
   font-size: 0.85rem !important;
   margin-bottom: 4px !important;
   line-height: 28px !important;
-  
+
   /* Thinner Border */
-  border: 1px solid #d4af37 !important; 
-  background: rgba(15, 15, 15, 0.95) !important; /* Slightly darker to pop the gold */
+  border: 1px solid #d4af37 !important;
+  background: rgba(15, 15, 15, 0.95) !important; /* Slightly darker to pop the gold */ 
+}
+
+/* NEW: Input Hover State */
+#app.login-page .input-field:hover {
+    border-color: #ffea8a !important;
 }
 
 /* Update focus state to match */
 #app.login-page .input-field:focus {
   border-color: #ffea8a !important;
   box-shadow: 0 0 5px rgba(212, 175, 55, 0.2); /* Optional: subtle glow */
+
 }
 
-/* AUTH BUTTON ROW (Log In / Sign Up) */
+/* Buttons: Side-by-Side row */
+/* Buttons: Side-by-Side row - UPDATED TO MATCH MAIN MENU */
 #app.login-page .menu-row {
-  margin-top: 10px;
-  gap: 10px;
+    display: flex !important;
+    gap: 20px !important; /* Matches the new button row gap */
+    width: 100%;
+    margin-top: 10px !important;
 }
 
 #app.login-page .btn-small {
-  height: 45px;             /* Slightly shorter than main menu for login */
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    
+    /* Exact match to your new button specs */
+    height: auto !important; 
+    min-height: 10px !important; 
+    padding: 14px 10px !important;
+    
+    font-size: 1.1rem !important; 
+    font-family: Arial, sans-serif;
+    font-weight: normal;
+    
+    border: 2px solid #d4af37 !important;
+    border-radius: 8px !important;
+    background: rgba(0, 0, 0, 0.6) !important;
+    color: #d4af37 !important;
+    box-sizing: border-box;
 }
 
-/* BACK TO GAME BUTTON */
-/* Remove the margin-top that was pushing the 'Back to Game' button away */
+/* Ensure hover state matches too */
+#app.login-page .btn-small:hover {
+    background: rgba(0, 0, 0, 0.85) !important;
+    border-color: #ffea8a !important;
+    color: #ffea8a !important;
+}
+
+/* Back to Menu Button */
 #app.login-page .btn {
-  margin-top: 0 !important; 
-  padding: 12px 0;
-  text-decoration: none !important;
-  font-size: 1rem;
+    width: 100%;
+    padding: 14px 0;
+    text-decoration: none;
 }
 
-/* Ensure the login rows don't add their own extra vertical margins */
-#app.login-page .row {
-  margin: 0 !important;
-  width: 100%;
+/* Removes the specific negative margins to let the 20px gap do the work */
+#app.login-page .login-container .row:has(.input-field) {
+    margin-bottom: 0 !important; 
+}
+
+/* Target the specific container for the inputs to push the buttons down */
+#app.login-page .login-container div:has(> #password) {
+    margin-bottom: 1px !important; /* Increase this number to increase the gap */
 }
 
 
@@ -807,39 +842,62 @@ input.input-field:-webkit-autofill:active {
   width: 100%;
 }
 
-/* ====== LOGIN / LEADERBOARD BUTTON ROW (Row 3) ===== */
-#start-screen .row:nth-child(3) {
-  gap: 20px;          /* This creates the 20px gap horizontally between buttons */
-  align-items: stretch;
+
+/* ====== SHARED SIDE-BY-SIDE BUTTON ROWS ====== */
+
+/* Target both the top row (Normal/Lite) and the bottom row (Auth/Leaderboard) */
+#start-screen .button-row,
+#start-screen .row:has(#authBtn) {
+    display: flex !important;
+    gap: 20px !important; /* Uniform gap for both rows */
+    width: 100%;
+    margin: 0 !important;
+    align-items: stretch;
 }
 
-/* ====== LOGIN / LEADERBOARD BUTTON ROW (Row 3) ===== */
-#start-screen .row:nth-child(3) #authBtn,
-#start-screen .row:nth-child(3) a.btn-small {
-  flex: 1;
-  /* CHANGE THIS: height: 60px !important; -> to auto */
-  height: auto !important; 
-  
-  /* ADD THIS: Match the padding of your big .btn class */
-  padding: 14px 0 !important; 
-  
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  border: 2px solid #d4af37;
-  font-size: 1rem;
-  text-decoration: none;
-  min-width: 0;
-  margin: 0 !important;
+/* Force all buttons in these specific rows to match exactly */
+#start-screen .button-row .btn,
+#start-screen #authBtn,
+#start-screen a.btn-small[href="leaderboard.html"] {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    
+    /* Identical Sizing */
+    height: auto !important;
+    min-height: 10px; 
+    padding: 10px 16px !important; /* Balanced padding for mobile/desktop */
+    
+    /* Identical Typography */
+    font-size: 1.1rem !important; 
+    font-family: Arial, sans-serif;
+    text-decoration: none;
+    white-space: nowrap;
+    
+    /* Identical Borders/Background */
+    border: 2px solid #d4af37 !important;
+    border-radius: 8px !important;
+    background: rgba(0, 0, 0, 0.6) !important;
+    color: #d4af37 !important;
+    box-sizing: border-box;
 }
 
-/* Specific hover for the Row 3 buttons to make them glow */
-#start-screen .row:nth-child(3) #authBtn:hover,
-#start-screen .row:nth-child(3) a.btn-small:hover {
-  background: rgba(0, 0, 0, 0.85) !important;
-  border-color: #ffea8a !important;
-  color: #ffea8a !important;
+/* Ensure the Login label stays centered and sized */
+#authBtn .btn-label {
+    font-size: 1.1rem !important;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+/* Uniform Hover Effect for all buttons in these rows */
+#start-screen .button-row .btn:hover,
+#start-screen #authBtn:hover,
+#start-screen a.btn-small[href="leaderboard.html"]:hover {
+    background: rgba(0, 0, 0, 0.85) !important;
+    border-color: #ffea8a !important;
+    color: #ffea8a !important;
 }
 
 
@@ -1558,22 +1616,6 @@ input.input-field:-webkit-autofill:active {
 /* Achievement Modal Base */
 
 
-/* Container for the side-by-side buttons */
-.button-row {
-  display: flex !important;
-  gap: 12px; /* Space between Normal and Lite */
-  width: 100%;
-}
-
-/* Force buttons in a .button-row to behave like full-size buttons but share width */
-.button-row .btn {
-  flex: 1; /* Makes them equal width */
-  padding: 14px 10px !important; /* Slightly less horizontal padding so text doesn't wrap */
-  font-size: 1rem; /* Slightly smaller than the massive 1.1rem to ensure it fits mobile */
-  white-space: nowrap;
-}
-
-
 /* ====== HIDE TITLE IN LOBBY ====== */
 @media (max-width: 480px) {
   /* Hides the big gold title when either game or lobby is active */
@@ -1726,9 +1768,6 @@ input.input-field:-webkit-autofill:active {
   opacity: 0.5 !important;
   filter: grayscale(1);
 }
-
-
-
 
 
 
