@@ -201,7 +201,17 @@ a {
   transition: all 0.2s ease; /* This ensures color, border, and bg all flash together */
   cursor: pointer;
   user-select: none;
-  -webkit-touch-callout: none; /* Prevents long-press menu on mobile */
+  appearance: none; /* Removes default browser link styling */
+  user-select: none;
+  /* 1. Stops the "dragging" ghost image from following your finger */
+  -webkit-user-drag: none; 
+  /* 2. Stops the browser from trying to select the text */
+  user-select: none;
+  -webkit-user-select: none;
+  /* 3. Prevents the long-press "Save Link" menu (iOS/Android) */
+  -webkit-touch-callout: none;
+  /* 4. Fixes the "Sticky" hover delay */
+  touch-action: manipulation;
 }
 
 
@@ -1783,6 +1793,7 @@ input.input-field:-webkit-autofill:active {
   opacity: 0.5 !important;
   filter: grayscale(1);
 }
+
 
 
 
