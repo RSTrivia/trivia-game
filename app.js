@@ -2672,30 +2672,31 @@ function setupLobbyRealtime(lobby) {
     });
 
     lobbyChannel.on('presence', { event: 'sync' }, () => {
-        updateRefereeStatus(lobbyChannel);
-        const state = lobbyChannel.presenceState();
-        const players = Object.values(state).flat();
-        const count = players.length;
-        
-        updateLobbyUI(count, lobby.starts_at);
+    updateRefereeStatus(lobbyChannel);
+    const state = lobbyChannel.presenceState();
+    const players = Object.values(state).flat();
+    const count = players.length;
+    
+    // Check how many players have successfully fetched questions
+    const readyCount = players.filter(p => p.status === 'ready_to_start').length;
+    console.log(`Sync Update: ${readyCount}/${count} players ready.`);
 
-        // --- NEW READY CHECK LOGIC ---
-       const readyCount = players.filter(p => p.status === 'ready_to_start').length;
-        console.log(`Sync: ${readyCount}/${count} players ready.`);
+    updateLobbyUI(count, lobby.starts_at);
 
-        if (count >= 2 && isHost()) {
-            // If NO ONE is ready yet, send the "Prepare" command
-            if (readyCount === 0 && !isStarting) {
-                isStarting = true;
-                console.log("Host: Sending Prepare Command...");
-                triggerGamePrepare(lobby.id); 
-            } 
-            // If EVERYONE is ready, send the final "Start" command
-            else if (readyCount === count && count >= 2) {
-                console.log("Host: Everyone ready! Sending Start Signal...");
-                sendFinalStartSignal(count);
-            }
-        }
+    if (count >= 2 && isHost()) {
+          // If no one is ready and we haven't sent the signal yet
+          if (readyCount === 0 && !window.prepareSignalSent) {
+              window.prepareSignalSent = true; 
+              console.log("Host: 2+ players found. Triggering preparation...");
+              triggerGamePrepare(lobby.id);
+          } 
+          // If everyone is ready, launch!
+          else if (readyCount === count && !window.finalStartSent) {
+              window.finalStartSent = true;
+              console.log("Host: Everyone ready! Launching game...");
+              sendFinalStartSignal(count);
+          }
+      }
     })
     .on('broadcast', { event: 'chat' }, ({ payload }) => {
         appendMessage(payload.username, payload.message);
@@ -2769,14 +2770,23 @@ function setupLobbyRealtime(lobby) {
             if (lobbyTimerInterval) clearInterval(lobbyTimerInterval);
         }, 1000);
     })
-    .subscribe(async (status) => {
-        if (status === 'SUBSCRIBED') {
-            await lobbyChannel.track({ online_at: new Date().toISOString() });
-            if (chatInput) {
-                chatInput.disabled = false;
-                chatInput.placeholder = "Type a message...";
-            }
+.subscribe(async (status) => {
+    if (status === 'SUBSCRIBED') {
+        console.log("Lobby Subscribed. Tracking presence...");
+        
+        // Use a small delay for the Host to ensure the channel is "warm"
+        if (isHost()) await new Promise(res => setTimeout(res, 500));
+
+        await lobbyChannel.track({ 
+            online_at: new Date().toISOString(),
+            status: 'waiting' // Initial status
+        });
+        
+        if (chatInput) {
+            chatInput.disabled = false;
+            chatInput.placeholder = "Type a message...";
         }
+    }
 
         if ((status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') && !isStarting) {
             console.log("Connection lost. Retrying...");
@@ -3879,6 +3889,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
