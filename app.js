@@ -2740,6 +2740,7 @@ function setupLobbyRealtime(lobby) {
     console.log("Preparation complete. Sending 'ready_to_start' status...");
     // 5. Tell Host you are ready
     await lobbyChannel.track({
+        user_id: userId,
         online_at: new Date().toISOString(),
         status: 'ready_to_start' 
     });
@@ -3588,7 +3589,15 @@ async function triggerGamePrepare(lobbyId) {
     isStarting = true; // Prevent double-clicks
 
     console.log("Host: Ensuring lobby data is saved before preparation...");
-
+    // 2. Broadcast the signal
+    // We don't need to send a 'seed' anymore because everyone will 
+    // fetch the array directly from the 'live_lobbies' table.
+    lobbyChannel.send({
+        type: 'broadcast',
+        event: 'prepare-game',
+        payload: { lobbyId: lobbyId } 
+    });
+  
     // 1. Double-check that we actually have the lobby data locally
     // If currentLobby.question_ids is missing, we shouldn't start yet.
     if (!currentLobby || !currentLobby.question_ids) {
@@ -3598,15 +3607,6 @@ async function triggerGamePrepare(lobbyId) {
     }
 
     console.log("Host: Notifying all players to sync from DB...");
-
-    // 2. Broadcast the signal
-    // We don't need to send a 'seed' anymore because everyone will 
-    // fetch the array directly from the 'live_lobbies' table.
-    lobbyChannel.send({
-        type: 'broadcast',
-        event: 'prepare-game',
-        payload: { lobbyId: lobbyId } 
-    });
 }
 
 // Phase 2: Host sends the final "GO"
@@ -3898,6 +3898,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
