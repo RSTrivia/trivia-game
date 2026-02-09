@@ -39,6 +39,8 @@ let roundOpen = false;
 let accumulatedTime = 0; // Global scope
 // referee-only
 let roundResults = {};
+// New Global State
+window.isReferee = false;
 
 const RELEASE_DATE = '2025-12-22';
 const WEEKLY_LIMIT = 50; // Change to 50 when ready to go live
@@ -2669,8 +2671,8 @@ function setupLobbyRealtime(lobby) {
         }
     });
 
-    lobbyChannel
-    .on('presence', { event: 'sync' }, () => {
+    lobbyChannel.on('presence', { event: 'sync' }, () => {
+        updateRefereeStatus(lobbyChannel);
         const state = lobbyChannel.presenceState();
         const players = Object.values(state).flat();
         const count = players.length;
@@ -2678,12 +2680,13 @@ function setupLobbyRealtime(lobby) {
         updateLobbyUI(count, lobby.starts_at);
 
         // --- NEW READY CHECK LOGIC ---
-        const readyCount = players.filter(p => p.status === 'ready_to_start').length;
+     
         console.log(`Sync: ${readyCount}/${count} players ready.`);
 
-        if (count >= 2 && isHost(lobbyChannel)) {
+        if (count >= 2 && isHost()) {
+            const readyCount = players.filter(p => p.status === 'ready_to_start').length;
             // If NO ONE is ready yet, send the "Prepare" command
-            if (readyCount === 0 && !isStarting) {
+            if (readyCount < count && !isStarting) {
                 console.log("Host: Sending Prepare Command...");
                 triggerGamePrepare(lobby.id); 
             } 
@@ -2901,12 +2904,8 @@ gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
       // DEBUG: Log every incoming answer to see why it might be rejected
       console.log(`Referee received result from ${payload.userId}. Round in msg: ${payload.roundId}, Host Round: ${roundId}`);    
           
-          // CHANGE: If the player is AHEAD of the host, the host should catch up
-          // instead of ignoring the message.
-          if (payload.roundId > roundId) {
-              console.warn(`Referee catching up: Player is at ${payload.roundId}, Host was at ${roundId}`);
-              roundId = payload.roundId; 
-          }
+
+        if (payload.roundId !== roundId) return; // Ignore stale or future answers
       
         // Accept the result
         roundResults[payload.userId] = payload.result;
@@ -2926,6 +2925,7 @@ gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
         }
     });
     gameChannel.on('presence', { event: 'sync' }, () => {
+          updateRefereeStatus(gameChannel);
           const state = gameChannel.presenceState();
           const joinedCount = Object.keys(state).length;
          // GUARD: If we are already showing a victory or transitioning, do nothing
@@ -2979,6 +2979,38 @@ gameChannel.on('broadcast', { event: 'round-ended' }, ({ payload }) => {
             });
         }
     });
+  // --- 2. THE LEAVE LISTENER (ADD THIS HERE) ---
+gameChannel.on('presence', { event: 'leave', key: userId }, ({ leftPresences }) => {
+    console.log("Someone left the game, checking for host succession...");
+    
+    // Immediately check if we need to promote a new referee
+    updateRefereeStatus(gameChannel);
+
+    // If you want to update the UI count immediately when someone leaves
+    const state = gameChannel.presenceState();
+    const joinedCount = Object.keys(state).length;
+    
+    if (isLiveMode && window.matchStarted && !roundOpen) {
+        survivors = joinedCount;
+        updateSurvivorCountUI(survivors);
+        
+        // Handle the "Last Man Standing" if the others quit
+        if (joinedCount === 1 && !roundOpen) {
+            window.pendingVictory = true;
+            transitionToSoloMode(true, true);
+        }
+    }
+});
+  // Everyone listens for this request
+gameChannel.on('broadcast', { event: 'request-sync' }, () => {
+    if (!roundOpen && lastResultSent) { // Track if you sent an answer recently
+        gameChannel.send({
+            type: 'broadcast',
+            event: 'round-result',
+            payload: { userId, result: lastResultValue, roundId: roundId }
+        });
+    }
+});
 }
 
 async function resetLiveModeState(keepVictoryVisible = false) {
@@ -3015,6 +3047,12 @@ async function resetLiveModeState(keepVictoryVisible = false) {
     accumulatedTime = 0;
     // 1. CRITICAL: Reset logical gates
     gameEnding = false;        // Required so the NEXT game can save data
+    // Add this inside resetLiveModeState
+    if (window.hostWatchdog) {
+        clearTimeout(window.hostWatchdog);
+        window.hostWatchdog = null;
+    }
+    window.isReferee = false; // Reset the host flag for the new session
   
     // 5. Reset Timer Visuals
     timeLeft = 15;
@@ -3082,6 +3120,9 @@ function startLiveRound() {
     console.log(`--- STARTING ROUND ${roundId} ---`);
     roundOpen = true;
     roundResults = {}; 
+    
+    // SAFETY: Clear any potential "Stuck Host" watchdogs from previous rounds
+    if (window.hostWatchdog) clearTimeout(window.hostWatchdog);
   
     if (roundId === 1) {
         gameStartTime = Date.now();
@@ -3095,73 +3136,74 @@ function startLiveRound() {
         refereeTimeout = null;
     }
 
-    // 2. REFEREE SAFETY VALVE: Start the countdown now
-    if (isLiveMode && isHost(gameChannel)) {
-        // 15s (game) + 2s (buffer) = 17s. 
-        // If no one has answered by then, the Referee FORCES the end.
+    // 2. UPDATED REFEREE SAFETY VALVE: Uses the new dynamic host check
+    if (isLiveMode && isHost()) {
+        console.log("Referee: Setting safety valve for 17s.");
         refereeTimeout = setTimeout(() => {
-            console.log("Referee Safety Valve: No responses received. Forcing endRound.");
-            endRoundAsReferee(); 
+            if (roundOpen) {
+                console.log("Referee Safety Valve: No responses received. Forcing endRound.");
+                endRoundAsReferee(); 
+            }
         }, 17000); 
+    }
+
+    // 3. NON-HOST WATCHDOG: If you aren't host, wait to see if the host ends the round.
+    // If they don't respond 5s after the timer hits 0, check for host succession.
+    if (isLiveMode && !isHost()) {
+        window.hostWatchdog = setTimeout(() => {
+            if (roundOpen) {
+                console.warn("Host seems unresponsive. Re-evaluating leadership...");
+                updateRefereeStatus(gameChannel);
+            }
+        }, 22000); // 15s game + 7s patience
     }
 
     timeLeft = 15;
     if (timer) clearInterval(timer);
 
-    // Inside startLiveRound() ...
     timer = setInterval(async () => {
-    timeLeft--;
-    updateTimerUI(timeLeft);
+        timeLeft--;
+        updateTimerUI(timeLeft);
 
-    if (timeLeft <= 0) {
-        clearInterval(timer);
-        roundOpen = false;
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            roundOpen = false;
 
-        if (isLiveMode) {
-            // 1. Mark yourself as locally dead so you don't start new rounds
-            // but keep isLiveMode true just enough to receive the broadcast
-            hasDiedLocally = true;
-            // --- CRITICAL ADDITION HERE ---
-            // 1. Only send if we haven't already answered this round
-            if (!roundResults[userId]) {
-                roundResults[userId] = 'wrong';
-                
-                console.log("Time up: Sending 'wrong' result to Referee.");
-                gameChannel.send({
-                    type: 'broadcast',
-                    event: 'round-result',
-                    payload: { 
-                        userId, 
-                        result: 'wrong', 
-                        roundId: roundId // Ensure this matches current round
-                    }
-                });
-            }
-
-            // 2. UI Update for the wait
-            if (questionText) questionText.innerHTML = "Time's up! Waiting for survivors...";
-            if (answersBox) answersBox.innerHTML = '<div class="loading-spinner"></div>';
-            // Image cleanup
-            if (questionImage) questionImage.style.display = 'none';
-            // ------------------------------
-            // 3. IMPORTANT: If the referee hasn't responded in 5 seconds, force endGame
-            // This handles cases where the host disconnected
-            setTimeout(() => {
-                if (!window.pendingVictory && hasDiedLocally) {
-                    console.log("No response from Referee. Closing game.");
-                    showLiveResults(false); // This calls endGame(true) inside it
+            if (isLiveMode) {
+                // If I haven't answered, send 'wrong' to the Referee
+                if (!roundResults[userId]) {
+                    roundResults[userId] = 'wrong';
+                    console.log("Time up: Sending 'wrong' result to Referee.");
+                    gameChannel.send({
+                        type: 'broadcast',
+                        event: 'round-result',
+                        payload: { userId, result: 'wrong', roundId: roundId }
+                    });
                 }
-            }, 5000);
-        } else {
-            // Solo/Daily modes
-            endGame();
-        }
-    }
-}, 1000);
-    loadQuestion();
-}
 
+                if (questionText) questionText.innerHTML = "Time's up! Waiting for survivors...";
+                if (answersBox) answersBox.innerHTML = '<div class="loading-spinner"></div>';
+                if (questionImage) questionImage.style.display = 'none';
+            } else {
+                endGame();
+            }
+        }
+    }, 1000);
+
+    // 4. PREVENT CRASH: Only load if questions exist
+    if (remainingQuestions.length > 0 || preloadQueue.length > 0) {
+        loadQuestion();
+    } else {
+        console.error("No questions left in deck!");
+        if (isHost()) endRoundAsReferee(); // This will trigger the 'Out of Questions' tie logic
+    }
+}
 function endRoundAsReferee() {
+    // 1. FINAL AUTHORITY CHECK
+    if (!isHost()) {
+        console.warn("Lost host status during round end calculation. Aborting broadcast.");
+        return;
+    }
     console.log("Referee: Executing endRound. Current results:", JSON.stringify(roundResults));
     
     // 1. Get ALL current players from Presence
@@ -3476,25 +3518,52 @@ function appendMessage(user, msg) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-function isHost(channel) {
-    const activeChannel = channel || gameChannel || lobbyChannel;
-    
-    if (!activeChannel || typeof activeChannel.presenceState !== 'function') {
-        return false;
-    }
-    
-    const state = activeChannel.presenceState();
-    const players = Object.keys(state).sort(); 
-    
-    // DEBUG LOGS - Check these in F12 console
-    console.log("Presence Keys:", players);
-    console.log("My userId:", userId);
-    console.log("Am I Host?", players[0] === userId);
-    
-    return players[0] === userId; 
+// 2. The Updated isHost (Very fast, no calculations)
+function isHost() {
+    return window.isReferee === true;
 }
 
+function updateRefereeStatus(channel) {
+    if (!channel) return;
+    const state = channel.presenceState();
+    const players = Object.values(state).flat();
+    
+    if (players.length === 0) {
+        window.isReferee = false;
+        return;
+    }
 
+    // Sort by join time - Oldest first
+    const sorted = players.sort((a, b) => {
+        const timeA = new Date(a.online_at || Date.now()).getTime();
+        const timeB = new Date(b.online_at || Date.now()).getTime();
+        return timeA - timeB;
+    });
+
+    const elder = sorted[0];
+    const wasReferee = window.isReferee;
+    
+    window.isReferee = (elder && elder.user_id === userId);
+
+    if (!wasReferee && window.isReferee) {
+        console.log("👑 PROMOTED: You are now the Referee.");
+        
+        // --- RECOVERY LOGIC ---
+        // If a round was in progress (roundOpen), the new host needs to 
+        // start listening for the remaining results immediately.
+        if (roundOpen) {
+            console.log("Referee: Inherited an active round. Setting safety valve.");
+            if (refereeTimeout) clearTimeout(refereeTimeout);
+            refereeTimeout = setTimeout(() => endRoundAsReferee(), 17000);
+        }
+
+        // If the game was stuck in the "gap" between rounds:
+        if (isLiveMode && !roundOpen && window.matchStarted && !window.pendingVictory) {
+            console.log("Referee Succession: Kickstarting next round...");
+            startLiveRound();
+        }
+    }
+}
 async function triggerGamePrepare(lobbyId) {
     if (isStarting) return;
     isStarting = true; // Prevent double-clicks
@@ -3528,13 +3597,13 @@ async function sendFinalStartSignal(count) {
 
     // --- NEW: LOCK THE LOBBY IN THE DATABASE ---
     // This prevents joinMatchmaking() from finding this lobby while it's active
-    if (currentLobby?.id) {
-        await supabase
-            .from('live_lobbies')
-            .update({ status: 'playing' }) 
-            .eq('id', currentLobby.id);
-        console.log("Lobby status updated to 'playing'.");
-    }
+    //if (currentLobby?.id) {
+       // await supabase
+          //  .from('live_lobbies')
+         //   .update({ status: 'playing' }) 
+         //   .eq('id', currentLobby.id);
+        //console.log("Lobby status updated to 'playing'.");
+    //}
 
     lobbyChannel.send({
         type: 'broadcast',
@@ -3810,6 +3879,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
