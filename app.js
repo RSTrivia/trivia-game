@@ -1044,7 +1044,7 @@ async function checkAnswer(choiceId, btn) {
             // 🛑 STOP RIGHT HERE if we hit the limit
             if (weeklyQuestionCount >= WEEKLY_LIMIT) {
                 console.log("🏁 Limit reached in checkAnswer. Going to endGame.");
-                setTimeout(endGame, 1000);
+                await endGame();
                 return; // Do NOT call loadQuestion
             }
         }
@@ -2368,6 +2368,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
