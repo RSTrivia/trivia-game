@@ -926,26 +926,23 @@ async function handleTimeout() {
 }
 
 async function checkAnswer(choiceId, btn) {
-    if (timer) clearInterval(timer);
     stopTickSound(); // CUT THE SOUND IMMEDIATELY
-    const capturedTimeLeft = timeLeft;
+    if (timeLeft <= 0) return;
+    clearInterval(timer);
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
     // If timeLeft is 0, we treat it as a 'wrong' answer automatically
-    let isCorrect = false; 
+    if (isWeeklyMode) weeklyQuestionCount++;
     
-    if (capturedTimeLeft > 0) {
-        // Check answer
-        const { data: correct, error } = await supabase.rpc('check_my_answer', {
-            input_id: currentQuestion.id,
-            choice: choiceId
-        });
+    const { data: isCorrect, error } = await supabase.rpc('check_my_answer', {
+        input_id: currentQuestion.id,
+        choice: choiceId
+    });
 
-        if (error) return console.error("RPC Error:", error);
-        isCorrect = correct;
+    if (error) return console.error("RPC Error:", error);
 
-        if (isCorrect) {
-          btn.classList.add('correct');
+    if (isCorrect) {
           playSound(correctBuffer);
+          btn.classList.add('correct');
           // Update Local State & UI
           score++;
           updateScore();
@@ -1014,35 +1011,23 @@ async function checkAnswer(choiceId, btn) {
       
         // This is where the pet roll happens
         rollForPet();
-        
+        setTimeout(loadQuestion, 1000);
       } else {
       // wrong answer
         playSound(wrongBuffer);
         streak = 0; // Reset streak on wrong answer in both Normal and Weekly modes
         if (btn) btn.classList.add('wrong');
         await highlightCorrectAnswer();
-      
-      }
-    // --- CONTINUATION ---
-    if (isCorrect || isDailyMode || isWeeklyMode) {
-    // Challenges keep going until the limit is reached
-      if (isWeeklyMode) {
-            weeklyQuestionCount++;
-            // 🛑 STOP RIGHT HERE if we hit the limit
-            if (weeklyQuestionCount >= WEEKLY_LIMIT) {
-                console.log("🏁 Limit reached in checkAnswer. Going to endGame.");
-                await endGame();
-                return; // Do NOT call loadQuestion
-            }
-        }
-        setTimeout(loadQuestion, 1500);
-    } else {
-    // Only Normal and Lite modes end on a wrong answer
-        setTimeout(endGame, 1000);
-    }
-  }
-}
 
+     if (isDailyMode || isWeeklyMode) {
+            // Challenges keep going until the limit is reached
+            setTimeout(loadQuestion, 1500);
+        } else {
+            // Only Normal Mode ends on a wrong answer
+            setTimeout(endGame, 1000);
+        }
+   }
+}
 function updateLevelUI() {
     const lvlNum = document.getElementById('levelNumber');
     const xpBracket = document.getElementById('xpBracket');
@@ -2358,6 +2343,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
