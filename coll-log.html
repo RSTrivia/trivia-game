@@ -589,7 +589,12 @@ function applyUnlocks(unlockedList) {
         const isUnlocked = unlockedList.includes(pet.id);
         const isEquipped = currentEquippedPet === pet.id;
         const nameSpan = slot.querySelector('.pet-name');
-        
+        const img = slot.querySelector('.pet-img'); // Get the image element
+
+        // Force the correct image file based on the PET_DATA array
+        if (img) {
+            img.src = `pets/${pet.file}`;
+        }
         // Update Classes
         slot.className = `pet-slot ${isUnlocked ? 'unlocked' : ''} ${isEquipped ? 'equipped' : ''}`;
         nameSpan.textContent = isUnlocked ? pet.name : "???";
