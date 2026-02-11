@@ -828,15 +828,23 @@ async function loadQuestion(broadcastedId = null, startTime = null) {
         await preloadNextQuestions();
     }  
 
-    if (preloadQueue.length === 0) {
-            console.log(`✅ Game Complete. Questions answered: ${weeklyQuestionCount}`);
-            await endGame();
-            return;
-        }
-
     // E. PULL QUESTION & F. BACKGROUND PRELOAD
     currentQuestion = preloadQueue.shift();
-
+      // 2. ONLY NOW check if we actually got something
+    if (!currentQuestion) {
+        // If we have no question, try one last emergency fetch from remaining pool
+        if (remainingQuestions.length > 0) {
+            await preloadNextQuestions(1);
+            currentQuestion = preloadQueue.shift();
+        }
+    }
+      
+    // 3. FINAL SAFETY CHECK: If still no question, then (and only then) end the game
+    if (!currentQuestion) {
+        console.log(`✅ Game Complete. Questions answered: ${weeklyQuestionCount}`);
+        await endGame();
+        return;
+    }
     // G. SET QUESTION TEXT
     questionText.textContent = currentQuestion.question;
 
@@ -2360,6 +2368,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
