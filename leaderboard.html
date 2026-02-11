@@ -99,7 +99,29 @@
 <script src="background.js"></script>
 <script type="module">
 import { supabase } from './supabase.js';
-console.debug = () => {};
+
+// --- THE CONSOLE MUZZLE ---
+// This intercepts and silences the "WebSocket is closed before established" error
+(function() {
+    const originalError = console.error;
+    const originalWarn = console.warn;
+    
+    const muzzle = (...args) => {
+        const message = args.join(' ');
+        if (message.includes('WebSocket') || message.includes('realtime')) {
+            return; // Ignore these specific errors
+        }
+        originalError.apply(console, args);
+    };
+
+    console.error = muzzle;
+    console.warn = (...args) => {
+        if (args.join(' ').includes('WebSocket')) return;
+        originalWarn.apply(console, args);
+    };
+})();
+
+
 const leaderboardRows = document.querySelectorAll('#leaderboard li');
 const scoreTab = document.getElementById('scoreTab');
 const weeklyTab = document.getElementById('weeklyTab');
@@ -307,6 +329,7 @@ if(liteTab) liteTab.onclick = () => handleTabClick('lite', liteTab);
 </script>
 </body>
 </html>
+
 
 
 
