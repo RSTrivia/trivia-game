@@ -946,6 +946,7 @@ async function checkAnswer(choiceId, btn) {
         isCorrect = correct;
 
         if (isCorrect) {
+          btn.classList.add('correct');
           playSound(correctBuffer);
           // Update Local State & UI
           score++;
@@ -2180,8 +2181,9 @@ async function startWeeklyChallenge() {
     isWeeklyMode = true;
     preloadQueue = [];
     // Randomize the order for THIS specific play-through
-    remainingQuestions = weeklyIds.sort(() => Math.random() - 0.5); // Set the 50 Weekly IDs
-
+    remainingQuestions = [...weeklyIds].sort(() => Math.random() - 0.5); // Set the 50 Weekly IDs
+    // Verify in console (for debugging)
+    console.log("Weekly Order for this session:", remainingQuestions);
     // FETCH ONLY THE FIRST QUESTION (Stay on menu while this happens)
     await preloadNextQuestions(1); // Modified to accept a 'count'
   
@@ -2326,6 +2328,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
