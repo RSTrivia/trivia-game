@@ -20,8 +20,8 @@ let userId = null;
 let syncChannel;
 
 const RELEASE_DATE = '2025-12-22';
-const WEEKLY_LIMIT = 50; // Change to 50 when ready to go live
-const LITE_LIMIT = 100; // Change to 100 when ready to go live
+const WEEKLY_LIMIT = 5; // Change to 50 when ready to go live
+const LITE_LIMIT = 5; // Change to 100 when ready to go live
 const number_of_questions = 610;
 
 const shareBtn = document.getElementById('shareBtn');
@@ -2364,6 +2364,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
