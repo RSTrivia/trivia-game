@@ -226,10 +226,16 @@ async function fetchLeaderboard() {
 
   // --- NEW: REALTIME SUBSCRIPTION LOGIC ---
 async function subscribeToLeaderboard() {
-    // 1. Clean up existing subscription if it exists
+    // 1. Clean up existing subscription safely
     if (realtimeSubscription) {
-       // Use await to ensure it's fully closed before we move on
-        await supabase.removeChannel(realtimeSubscription);
+        // Only try to remove if it's NOT already closed
+        if (realtimeSubscription.state !== 'closed') {
+            try {
+                await supabase.removeChannel(realtimeSubscription);
+            } catch (e) {
+                // Silently catch errors if the socket was in a weird state
+            }
+        }
         realtimeSubscription = null;
     }
 
@@ -302,6 +308,7 @@ if(liteTab) liteTab.onclick = () => handleTabClick('lite', liteTab);
 </script>
 </body>
 </html>
+
 
 
 
