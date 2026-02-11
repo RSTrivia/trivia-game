@@ -83,7 +83,8 @@ signupBtn.addEventListener('click', async () => {
     
         // 🛡️ CRITICAL FIX: Clear old daily play data from previous users on this device
         localStorage.removeItem('dailyPlayedDate'); 
-    
+        // 🛡️ ADD THIS LINE TO CLEAR WEBSOCKETS BEFORE REDIRECT
+        await supabase.removeAllChannels();
         window.location.href = 'index.html';
     }
 });
@@ -122,12 +123,14 @@ loginBtn.addEventListener('click', async () => {
             localStorage.removeItem('dailyPlayedDate');
         }
     } catch (err) {
+        setBusy(false);
         console.warn("Post-login data fetch failed, proceeding with defaults:", err);
         localStorage.setItem('cachedUsername', usernameInputVal);
     }
     
     // Save state and go home
     localStorage.setItem('cachedLoggedIn', 'true');
+    await supabase.removeAllChannels();
     window.location.href = 'index.html';
 });
 app.classList.remove('app-hidden');
