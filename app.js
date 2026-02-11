@@ -381,10 +381,7 @@ async function init() {
 if (playAgainBtn) {
     playAgainBtn.onclick = async () => {
     // 1. Reset numerical state
-    score = 0;
-    streak = 0;
-    weeklyQuestionCount = 0;
-    dailyQuestionCount = 0; // Don't forget this!
+    resetGame(); 
       
     // 3. Start the correct game engine 
     if (isWeeklyMode) {
@@ -409,12 +406,8 @@ if (playAgainBtn) {
   if (mainMenuBtn) {  
         mainMenuBtn.onclick = async () => {
         preloadQueue = []; // Clear the buffer only when going back to menu
-        // Manual UI Reset instead:
         resetGame();
-        streak = 0;
-        weeklyQuestionCount = 0;
-        dailyQuestionCount = 0; // Don't forget this!
-        preloadQueue = [];  
+        // Manual UI Reset instead:
         document.getElementById('end-screen').classList.add('hidden');
         document.getElementById('start-screen').classList.remove('hidden');
         document.body.classList.remove('game-active');
@@ -672,7 +665,9 @@ function resetGame() {
     // 3. Reset numerical state
     score = 0;
     currentQuestion = null;
-
+    streak = 0;
+    weeklyQuestionCount = 0;
+    dailyQuestionCount = 0; // Don't forget this!
     // 4. WIPE UI IMMEDIATELY
     questionText.textContent = '';
     answersBox.innerHTML = '';
@@ -2363,6 +2358,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
