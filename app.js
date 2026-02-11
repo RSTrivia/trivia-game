@@ -367,6 +367,7 @@ async function init() {
         if (audioCtx.state === 'suspended') await audioCtx.resume();
         loadSounds();
         try {
+            await prepareWeeklyChallenge();
             await startWeeklyChallenge();
         } catch (err) {
             console.error("Failed to start weekly mode:", err);
@@ -389,12 +390,11 @@ if (playAgainBtn) {
       
     // 3. Start the correct game engine 
     if (isWeeklyMode) {
-           preloadQueue = [];
-           // Re-run the weekly setup to get the same 50 IDs
+          preloadQueue = [];
+          await prepareWeeklyChallenge();
+          // Re-run the weekly setup to get the same 50 IDs
           await startWeeklyChallenge(); 
-          document.getElementById('end-screen').classList.add('hidden');
-          document.getElementById('game').classList.remove('hidden');
-          document.body.classList.add('game-active');
+
     } else if (isDailyMode) {
            preloadQueue = [];
            // Usually Daily is locked after 1 play, but for safety:
@@ -2142,8 +2142,8 @@ function updateScore() {
     }
 }
 
-async function startWeeklyChallenge() {
-    // 1. Parallelize the slow stuff
+async function prepareWeeklyChallenge() {
+      // 1. Parallelize the slow stuff
     const [sessionRes, questionsRes] = await Promise.all([
         supabase.auth.getSession(),
         supabase.from('questions').select('id').order('id', { ascending: true })
@@ -2180,13 +2180,18 @@ async function startWeeklyChallenge() {
     preloadQueue = [];
     // Randomize the order for THIS specific play-through
     remainingQuestions = [...weeklyIds].sort(() => Math.random() - 0.5); // Set the 50 Weekly IDs
-    // Verify in console (for debugging)
-    console.log("Weekly Order for this session:", remainingQuestions);
+}
+
+async function startWeeklyChallenge() {
+    isDailyMode = false;
+    isWeeklyMode = true;
+
     // FETCH ONLY THE FIRST QUESTION (Stay on menu while this happens)
     await preloadNextQuestions(1); // Modified to accept a 'count'
   
     // THE UI SWAP (Triggered only when we HAVE the data)
     resetGame();
+  
     document.body.classList.add('game-active'); 
     document.getElementById('start-screen').classList.add('hidden');
     game.classList.remove('hidden');
@@ -2326,6 +2331,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
