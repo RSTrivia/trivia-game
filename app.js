@@ -382,11 +382,10 @@ if (playAgainBtn) {
     playAgainBtn.onclick = async () => {
     // 1. Reset numerical state
     score = 0;
-    weeklyQuestionCount = 0;
     streak = 0;
+    weeklyQuestionCount = 0;
     dailyQuestionCount = 0; // Don't forget this!
-    // 2. wipe old text/images, but DO NOT show the game screen yet
-    resetGame(); 
+
       
     // 3. Start the correct game engine 
     if (isWeeklyMode) {
@@ -772,21 +771,16 @@ if (preloadQueue.length === 0) {
   dailyQuestionCount = 0;
   currentQuestion = null;
   updateScore();
-      
-  // 4. UI PREP
-  // Use resetGame() or manual wipe here
-  questionText.textContent = '';
-  answersBox.innerHTML = '';
-  questionImage.style.display = 'none';
-  questionImage.src = '';
-       
-  gameStartTime = Date.now();
+  
+  resetGame();
       
   // 5. THE BIG SWAP (User finally sees the game)
   document.body.classList.add('game-active');
   game.classList.remove('hidden');
   document.getElementById('start-screen').classList.add('hidden');
   endScreen.classList.add('hidden');
+  
+  gameStartTime = Date.now();
  
   loadQuestion(); // Start immediately for Solo
   // 6. FILL THE REST IN THE BACKGROUND
@@ -2255,6 +2249,7 @@ async function startDailyChallenge(session) {
     
     // 6. UI TRANSITION (Only happens once data is ready)
     resetGame();
+  
     document.body.classList.add('game-active'); 
     document.getElementById('start-screen').classList.add('hidden');
     game.classList.remove('hidden');
@@ -2331,6 +2326,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
