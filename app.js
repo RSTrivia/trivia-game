@@ -731,16 +731,9 @@ async function preloadNextQuestions(targetCount = 3) {
         attempts < 10
     ) {
         attempts++;
-        let index;
-        if (isLiveMode) {
-              // In , always take the NEXT one in the pre-shuffled list
-              index = 0; 
-          } else {
-              // Solo modes can stay random
-              index = Math.floor(Math.random() * remainingQuestions.length);
-          }
+        // Solo modes can stay random
+        Math.floor(Math.random() * remainingQuestions.length);
         const qId = remainingQuestions[index];
-
         remainingQuestions.splice(index, 1);
 
         if (
@@ -813,39 +806,34 @@ async function startGame() {
           }
       }
 
-        // 3. INTERNAL STATE RESET
-        clearInterval(timer);
-        score = 0;
-        streak = 0;
-        dailyQuestionCount = 0;
-        currentQuestion = null;
-        gameEnding = false;
+  // 3. INTERNAL STATE RESET
+  clearInterval(timer);
+  score = 0;
+  streak = 0;
+  dailyQuestionCount = 0;
+  currentQuestion = null;
+  gameEnding = false;
       
-        // 4. UI PREP
-        // Use resetGame() or manual wipe here
-        questionText.textContent = '';
-        answersBox.innerHTML = '';
-        questionImage.style.display = 'none';
-        questionImage.src = '';
-        updateScore();
+  // 4. UI PREP
+  // Use resetGame() or manual wipe here
+  questionText.textContent = '';
+  answersBox.innerHTML = '';
+  questionImage.style.display = 'none';
+  questionImage.src = '';
+  updateScore();
        
-        // This ensures the "Live" game and the "Clock" start at the exact same millisecond
-        gameStartTime = Date.now();
+  gameStartTime = Date.now();
       
-        // 5. THE BIG SWAP (User finally sees the game)
-        document.body.classList.add('game-active');
-        game.classList.remove('hidden');
-        document.getElementById('start-screen').classList.add('hidden');
-        endScreen.classList.add('hidden');
-        updateSurvivorCountUI();
-        loadQuestion(); // Start immediately for Solo
-        // 6. FILL THE REST IN THE BACKGROUND
-        // We don't 'await' this; it runs while the user is looking at question 1
-        preloadNextQuestions(3);
-        }
-    } catch (err) {
-        console.error("startGame error:", err);
-    }
+  // 5. THE BIG SWAP (User finally sees the game)
+  document.body.classList.add('game-active');
+  game.classList.remove('hidden');
+  document.getElementById('start-screen').classList.add('hidden');
+  endScreen.classList.add('hidden');
+  updateSurvivorCountUI();
+  loadQuestion(); // Start immediately for Solo
+  // 6. FILL THE REST IN THE BACKGROUND
+  // We don't 'await' this; it runs while the user is looking at question 1
+  preloadNextQuestions(3);
 }
 
 async function loadQuestion(broadcastedId = null, startTime = null) {
@@ -883,12 +871,11 @@ async function loadQuestion(broadcastedId = null, startTime = null) {
         console.error("No questions available.");
         // Only trigger  if we aren't in a Live Match, 
         // or if the Live Match is truly over.
-        if (!isLiveMode) await endGame();
+        await endGame();
         return;
     }
   
     currentQuestion = preloadQueue.shift();
-  
   
     // --- MINIMAL CHANGE START: Define the display logic ---
     // G. SET QUESTION TEXT
@@ -2390,6 +2377,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
