@@ -385,7 +385,6 @@ if (playAgainBtn) {
     streak = 0;
     weeklyQuestionCount = 0;
     dailyQuestionCount = 0; // Don't forget this!
-    resetGame();
       
     // 3. Start the correct game engine 
     if (isWeeklyMode) {
@@ -2364,6 +2363,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
