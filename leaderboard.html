@@ -79,7 +79,6 @@
     <button id="liteTab" class="tab-btn">Lite</button>   
     <button id="weeklyTab" class="tab-btn">Weekly</button>   
     <button id="xpTab" class="tab-btn">XP</button>
-    <button id="LiveTab" class="tab-btn">Live</button>
       </div>
       <ul id="leaderboard">
           <li class="first"><span class="name-part"><span class="rank-slot">🥇</span><span class="user-txt"></span></span><span class="score-part"></span></li>
@@ -106,7 +105,6 @@ const scoreTab = document.getElementById('scoreTab');
 const weeklyTab = document.getElementById('weeklyTab');
 const xpTab = document.getElementById('xpTab');
 const liteTab = document.getElementById('liteTab');
-const LiveTab = document.getElementById('liveTab');
 
 let currentMode = 'score'; 
 let realtimeSubscription = null; // Track the active listener
@@ -301,6 +299,7 @@ if(liteTab) liteTab.onclick = () => handleTabClick('lite', liteTab);
 </script>
 </body>
 </html>
+
 
 
 
