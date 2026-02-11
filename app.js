@@ -727,8 +727,9 @@ async function preloadNextQuestions(targetCount = 3) {
         attempts < 10
     ) {
         attempts++;
+        let index;
         // Solo modes can stay random
-        Math.floor(Math.random() * remainingQuestions.length);
+        index = Math.floor(Math.random() * remainingQuestions.length);
         const qId = remainingQuestions[index];
         remainingQuestions.splice(index, 1);
 
@@ -2368,6 +2369,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
