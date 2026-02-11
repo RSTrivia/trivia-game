@@ -1072,6 +1072,7 @@ async function checkAnswer(choiceId, btn) {
     // Only Normal and Lite modes end on a wrong answer
         setTimeout(endGame, 1000);
     }
+  }
 }
 
 function updateLevelUI() {
@@ -1388,8 +1389,6 @@ async function endGame() {
     }
     // 4. THE BIG SWAP (Final step)
     // Use a tiny timeout or requestAnimationFrame to ensure DOM updates are ready
-
-
     requestAnimationFrame(() => {
     document.body.classList.remove('game-active'); 
     game.classList.add('hidden');
@@ -1405,7 +1404,6 @@ async function endGame() {
     updateShareButtonState();
   });
 }
-
 
 
 function displayFinalTime(ms) {
@@ -2374,6 +2372,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
