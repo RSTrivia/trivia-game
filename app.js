@@ -385,11 +385,10 @@ if (playAgainBtn) {
     streak = 0;
     weeklyQuestionCount = 0;
     dailyQuestionCount = 0; // Don't forget this!
-
+    preloadQueue = [];
       
     // 3. Start the correct game engine 
     if (isWeeklyMode) {
-          preloadQueue = [];
           // Re-run the weekly setup to get the same 50 IDs
           await startWeeklyChallenge(); 
     } else if (isDailyMode) {
@@ -1018,6 +1017,9 @@ async function checkAnswer(choiceId, btn) {
     // --- CONTINUATION ---
     if (isCorrect || isDailyMode || isWeeklyMode) {
     // Challenges keep going until the limit is reached
+      if (isWeeklyMode) {
+            weeklyQuestionCount++;
+        }
         setTimeout(loadQuestion, 1000);
     } else {
     // Only Normal and Lite modes end on a wrong answer
@@ -2138,7 +2140,11 @@ async function startWeeklyChallenge() {
     isWeeklyMode = true;
     isDailyMode = false;
     isLiteMode = false;
-  
+    // RESET THESE HERE
+    weeklyQuestionCount = 0; 
+    score = 0;
+    streak = 0; 
+    preloadQueue = [];
     if (weeklySessionPool.length === 0) {
           // 1. Parallelize the slow stuff
         const [sessionRes, questionsRes] = await Promise.all([
@@ -2326,6 +2332,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
