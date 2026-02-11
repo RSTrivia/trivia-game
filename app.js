@@ -211,7 +211,6 @@ async function syncDailyButton() {
     if (!session) {
         lockDailyButton();
         lockWeeklyButton();
-        lockLobbyButton();
       // Add visual guest feedback
         dailyBtn.style.opacity = '0.5';
         dailyBtn.style.pointerEvents = 'none';
@@ -785,26 +784,26 @@ async function preloadNextQuestions(targetCount = 3) {
 
 async function startGame() {
   
-          if (masterQuestionPool.length === 0) {
-              const { data: idList, error } = await supabase.from('questions').select('id');
-              if (error) throw error;
-              masterQuestionPool = idList.map(q => q.id);
-          }
+if (masterQuestionPool.length === 0) {
+ const { data: idList, error } = await supabase.from('questions').select('id');
+  if (error) throw error;
+  masterQuestionPool = idList.map(q => q.id);
+}
   
-          remainingQuestions = [...masterQuestionPool].sort(() => Math.random() - 0.5);
-          if (isLiteMode) {
-              // Take only the first 100 questions from the shuffled pool
-              remainingQuestions = remainingQuestions.slice(0, LITE_LIMIT);
-          }
+remainingQuestions = [...masterQuestionPool].sort(() => Math.random() - 0.5);
+if (isLiteMode) {
+// Take only the first 100 questions from the shuffled pool
+  remainingQuestions = remainingQuestions.slice(0, LITE_LIMIT);
+}
         
-          const bufferedIds = preloadQueue.map(q => q.id);
-          remainingQuestions = remainingQuestions.filter(id => !bufferedIds.includes(id));
-          // 5. FETCH ONLY THE FIRST QUESTION IMMEDIATELY
-          // If queue is empty, get one right now so we can start
-          if (preloadQueue.length === 0) {
-              await preloadNextQuestions(1); // Modified to accept a 'count'
-          }
+const bufferedIds = preloadQueue.map(q => q.id);
+remainingQuestions = remainingQuestions.filter(id => !bufferedIds.includes(id));
+// 5. FETCH ONLY THE FIRST QUESTION IMMEDIATELY
+// If queue is empty, get one right now so we can start
+    if (preloadQueue.length === 0) {
+        await preloadNextQuestions(1); // Modified to accept a 'count'
       }
+ }
 
   // 3. INTERNAL STATE RESET
   clearInterval(timer);
@@ -829,7 +828,7 @@ async function startGame() {
   game.classList.remove('hidden');
   document.getElementById('start-screen').classList.add('hidden');
   endScreen.classList.add('hidden');
-  updateSurvivorCountUI();
+ 
   loadQuestion(); // Start immediately for Solo
   // 6. FILL THE REST IN THE BACKGROUND
   // We don't 'await' this; it runs while the user is looking at question 1
@@ -2377,6 +2376,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
