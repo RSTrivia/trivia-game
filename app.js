@@ -369,10 +369,6 @@ async function init() {
         loadSounds();
         try {
             await startWeeklyChallenge();
-            document.body.classList.add('game-active');
-            game.classList.remove('hidden');
-            document.getElementById('start-screen').classList.add('hidden');
-            endScreen.classList.add('hidden');
         } catch (err) {
             console.error("Failed to start weekly mode:", err);
             // Fallback UI
@@ -2332,6 +2328,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
