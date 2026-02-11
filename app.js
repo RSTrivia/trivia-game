@@ -385,7 +385,7 @@ if (playAgainBtn) {
     streak = 0;
     weeklyQuestionCount = 0;
     dailyQuestionCount = 0; // Don't forget this!
-    preloadQueue = [];
+    resetGame();
       
     // 3. Start the correct game engine 
     if (isWeeklyMode) {
@@ -823,6 +823,8 @@ async function loadQuestion() {
         preloadNextQuestions(5); 
     }
 
+    currentQuestion = preloadQueue.shift();
+  
     // STALL: Wait if literally empty
     if (preloadQueue.length === 0 && remainingQuestions.length > 0) {
         console.log("Stall Guard triggered: Waiting for questions...");
@@ -838,9 +840,6 @@ async function loadQuestion() {
         return;
     }
   
-    currentQuestion = preloadQueue.shift();
-  
-
     // G. SET QUESTION TEXT
     questionText.textContent = currentQuestion.question;
 
@@ -2169,7 +2168,6 @@ async function startWeeklyChallenge() {
     weeklyQuestionCount = 0; 
     score = 0;
     streak = 0; 
-    preloadQueue = [];
   
     if (weeklySessionPool.length === 0) {
           // 1. Parallelize the slow stuff
@@ -2364,6 +2362,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
