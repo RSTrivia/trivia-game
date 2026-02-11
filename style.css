@@ -1606,7 +1606,7 @@ input.input-field:-webkit-autofill:active {
     pointer-events: auto !important;
 }
 
-/* Mobile rop of the screen*/
+/* Mobile top of the screen*/
 @media screen and (max-width: 480px) {
     #achievement-modal {
         /* Anchor to top, override the 50% you had before */
@@ -1641,138 +1641,6 @@ input.input-field:-webkit-autofill:active {
 /* Achievement Modal Base */
 
 
-/* ====== HIDE TITLE IN LOBBY ====== */
-@media (max-width: 480px) {
-  /* Hides the big gold title when either game or lobby is active */
-  body.lobby-active h1 {
-    display: none !important;
-  }
-  
-  /* Create the space for user-controls and helpBtn at the top */
-  body.lobby-active .container {
-    padding-top: 60px !important; 
-  }
-
-  /* Ensure the UI doesn't jump too high */
-  body.lobby-active #app {
-    padding-top: 25px !important;
-  }
-}
-
-
-
-/* Live Mode Victory/Elimination Screen */
-/* ====== LIVE MODE VICTORY/ELIMINATION SCREEN ====== */
-#victory-screen {
-    position: fixed; /* Ensures it stays locked to the viewport */
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.75); 
-    display: flex;
-    justify-content: center;
-    /* This is the secret: it matches your #app's alignment and padding */
-    align-items: flex-start; 
-    padding-top: 20px;       
-    z-index: 9999;
-    backdrop-filter: blur(6px);
-}
-
-.victory-content {
-    /* 1:1 MATCH WITH YOUR .CONTAINER CLASS */
-    width: 440px;                 
-    max-width: 95%;               
-    min-height: 500px;            
-    padding: 25px;                
-    background: rgba(0, 0, 0, 0.85); 
-    border-radius: 10px;          
-    box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
-    
-    /* THE GOLD FRAME */
-    border: 2px solid #d4af37;    
-    display: flex;
-    flex-direction: column;
-    box-sizing: border-box; /* Crucial: border stays INSIDE the 440px */
-    text-align: center;
-    position: relative;
-    overflow: visible; /* Prevents emoji clipping */
-}
-
-.victory-title {
-    color: #d4af37;
-    font-family: 'Cinzel', serif;
-    font-size: 1.8rem;
-    margin-top: 10px;
-    margin-bottom: 20px;
-    text-shadow: 2px 2px 0px #000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 15px;
-    width: 100%;
-    flex-wrap: nowrap;
-    line-height: 1.2; 
-}
-
-/* Fix for Emojis - No more cutting off! */
-.emoji {
-    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
-    font-size: 1.6rem;
-    display: inline-block;
-    flex-shrink: 0;
-    line-height: 1;
-    /* Added tiny padding to ensure the crown/trophy top isn't shaved off */
-    padding-top: 2px;
-}
-
-#victory-stats {
-    color: #fff;
-    font-size: 1.2rem;
-    margin-bottom: 10px;
-    padding: 0 10px;
-}
-
-.match-info {
-    color: #d4af37;
-    font-size: 0.95rem;
-    margin-bottom: 30px;
-    opacity: 0.9;
-}
-
-.victory-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: auto; /* Keeps buttons at the bottom */
-    width: 100%;
-}
-
-/* Button Styling - Matches your .btn logic */
-#victory-screen .btn {
-    width: 100%;
-    padding: 14px 22px;
-    background: rgba(0, 0, 0, 0.6);
-    border: 2px solid #d4af37;
-    color: #d4af37;
-    border-radius: 8px;
-    font-family: 'Cinzel', serif;
-    font-size: 1.1rem;
-    cursor: pointer;
-    transition: 0.2s;
-    margin: 0 !important; /* Overrides any global margins */
-}
-
-#victory-screen .btn:hover {
-    background: rgba(0, 0, 0, 0.85);
-    border-color: #ffea8a;
-    color: #ffea8a;
-}
-
-/* Outcome Colors */
-.win-theme { color: #d4af37 !important; }
-.lose-theme { color: #a63232 !important; }
-
-
 /* PC HOVER FIX */
 @media (hover: hover) {
   /* Targets Normal/Lite buttons OR Active Weekly/Daily/Lobby buttons */
@@ -1793,6 +1661,7 @@ input.input-field:-webkit-autofill:active {
   opacity: 0.5 !important;
   filter: grayscale(1);
 }
+
 
 
 
