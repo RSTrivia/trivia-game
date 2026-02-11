@@ -838,6 +838,7 @@ async function loadQuestion(broadcastedId = null, startTime = null) {
         
         // If it's STILL empty after that, then the game is truly over.
         if (preloadQueue.length === 0) {
+          console.log(`✅ Game Complete. Questions answered: ${weeklyQuestionCount}`);
             await endGame();
             return;
         }
@@ -1037,7 +1038,7 @@ async function checkAnswer(choiceId, btn) {
       if (isWeeklyMode) {
             weeklyQuestionCount++;
         }
-        setTimeout(loadQuestion, 1000);
+        setTimeout(loadQuestion, 1500);
     } else {
     // Only Normal and Lite modes end on a wrong answer
         setTimeout(endGame, 1000);
@@ -2356,6 +2357,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
