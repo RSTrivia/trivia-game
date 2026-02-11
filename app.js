@@ -2183,8 +2183,11 @@ async function startWeeklyChallenge() {
     // Randomize the order for THIS specific play-through
     remainingQuestions = [...weeklySessionPool].sort(() => Math.random() - 0.5); // Set the 50 Weekly IDs
   
-    // FETCH ONLY THE FIRST QUESTION (Stay on menu while this happens)
-    await preloadNextQuestions(1); // Modified to accept a 'count'
+    // 3. THE BARRIER (Add this exactly like Normal Mode)
+    // This stops the function here until Question 1 is 100% ready
+    if (preloadQueue.length === 0) {
+        await preloadNextQuestions(1); 
+    }
   
     // THE UI SWAP (Triggered only when we HAVE the data)
     resetGame();
@@ -2328,6 +2331,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
