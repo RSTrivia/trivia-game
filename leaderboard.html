@@ -276,7 +276,7 @@ if(liteTab) liteTab.onclick = () => handleTabClick('lite', liteTab);
     updateLeaderboard(JSON.parse(cachedString));
   }
   await fetchLeaderboard();
-  subscribeToLeaderboard(); // Start the first listener
+  await subscribeToLeaderboard(); // Start the first listener
 })();
 </script>
   <script>
@@ -301,6 +301,7 @@ if(liteTab) liteTab.onclick = () => handleTabClick('lite', liteTab);
 </script>
 </body>
 </html>
+
 
 
 
