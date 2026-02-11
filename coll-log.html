@@ -213,11 +213,11 @@
             border-color: #ffea8a !important;
         }
         /* Row 5 (Mythic/Extra: 13-15) */
-        #logGrid .pet-slot:nth-child(n+13).unlocked {
+        #logGrid .pet-slot:nth-child(n+13):nth-child(-n+15).unlocked {
             background: rgba(212, 175, 55, 0.3) !important;
             border-color: #ffea8a !important; 
         }
-        #logGrid .pet-slot:nth-child(n+13).unlocked:hover {
+        #logGrid .pet-slot:nth-child(n+13):nth-child(-n+15).unlocked:hover {
             border-color: #ffea8a !important;
         }  
         
@@ -423,12 +423,23 @@
 const PET_DATA = [
     { id: 'pet_mole', name: 'Baby Mole', rarity: 'common', file: 'mole.png' },
     { id: 'pet_kraken', name: 'Pet Kraken', rarity: 'common', file: 'kraken.png' },
+    { id: 'pet_chompy', name: 'Chompy Chick', rarity: 'common', file: 'chompy.png' },
+    
+    { id: 'pet_zilyana', name: 'Pet Zilyana', rarity: 'uncommon', file: 'zilyana.png' },
     { id: 'pet_vorki', name: 'Vorki', rarity: 'uncommon', file: 'vorki.png' },
     { id: 'pet_snakeling', name: 'Pet Snakeling', rarity: 'uncommon', file: 'snakeling.png' },
+    
     { id: 'pet_yami', name: 'Yami', rarity: 'rare', file: 'yami.png' },
-    { id: 'pet_zilyana', name: 'Pet Zilyana', rarity: 'rare', file: 'zilyana.png' },
+    { id: 'pet_bloodhound', name: 'Bloodhound', rarity: 'rare', file: 'bloodhound.png' },
+    { id: 'pet_rocky', name: 'Rocky', rarity: 'rare', file: 'rocky.png' },
+
+    { id: 'pet_jad', name: 'TzRek-Jad', rarity: 'legendary', file: 'jad.png' },
     { id: 'pet_olmlet', name: 'Olmlet', rarity: 'legendary', file: 'olmlet.png' },
-    { id: 'pet_jad', name: 'TzRek-Jad', rarity: 'legendary', file: 'jad.png' }
+    { id: 'pet_corporeal_beast', name: 'Corporeal Beast', rarity: 'legendary', file: 'corporeal_beast.png' },
+    
+    { id: 'pet_zuk', name: 'TzRek-Zuk', rarity: 'mythic', file: 'zuk.png' },
+    { id: 'pet_lil_zik', name: 'Lil\' Zik', rarity: 'mythic', file: 'lil_zik.png' },
+    { id: 'pet_tumekens_guardian', name: 'Tumeken\'s guardian', rarity: 'mythic', file: 'tumekens_guardian.png' }
 ];
 
 function resetCollectionUI() {
@@ -482,7 +493,7 @@ const ACHIEVEMENT_SCHEMA = [
     ]},
     { cat: 'Pets', tasks: [
         { id: 'p1', text: 'Unlock 1 Pet', check: (d) => d.petsUnlocked >= 1 },
-        { id: 'pall', text: 'Unlock all Pets', check: (d) => d.petsUnlocked >= 8 }
+        { id: 'pall', text: 'Unlock all Pets', check: (d) => d.petsUnlocked >= 15 }
     ]},
     { cat: 'Game', tasks: [
         { id: 'fast', text: 'Lucky Guess', check: (d) => d.fastestGuess === true },
