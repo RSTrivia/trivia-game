@@ -242,15 +242,14 @@ async function subscribeToLeaderboard() {
     // 2. Determine which table to watch
     const tableToWatch = (currentMode === 'xp') ? 'profiles' : 'scores';
 
-    // 3. Create the listener
+    // 3. Create the listener with a unique name to avoid ID collisions
     realtimeSubscription = supabase
-        .channel('live-leaderboard')
+        .channel(`live-${currentMode}-${Date.now()}`) // Added timestamp for uniqueness
         .on(
             'postgres_changes', 
             { event: '*', schema: 'public', table: tableToWatch }, 
             (payload) => {
-                //console.log('Change detected!', payload);
-                fetchLeaderboard(); // Refresh the data when a change happens
+                fetchLeaderboard(); 
             }
         )
         .subscribe();
@@ -308,6 +307,7 @@ if(liteTab) liteTab.onclick = () => handleTabClick('lite', liteTab);
 </script>
 </body>
 </html>
+
 
 
 
