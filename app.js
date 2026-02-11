@@ -308,7 +308,7 @@ async function init() {
             isLiteMode = false;
             if (audioCtx.state === 'suspended') await audioCtx.resume();
             loadSounds();
-            startGame(false);
+            startGame();
         };
     }
   
@@ -320,57 +320,45 @@ async function init() {
         
         if (audioCtx.state === 'suspended') await audioCtx.resume();
         loadSounds();
-        startGame(false);
+        startGame();
     };
 }
 
     if (dailyBtn) {
     dailyBtn.onclick = async () => {
-        // 1. Get session
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error || !session) {
-            console.error("Auth error:", error);
-            alert("Your session has expired. Please log in again.");
-            localStorage.removeItem('supabase.auth.token'); 
-            window.location.href = '/login.html';
-            return;
-        }
+    // 1. Instant Audio & Session Check (Parallel)
+    const [sessionRes, audioRes] = await Promise.all([
+        supabase.auth.getSession(),
+        audioCtx.state === 'suspended' ? audioCtx.resume() : Promise.resolve()
+    ]);
 
-        // 2. Double-check "Played" status
-        const played = await hasUserCompletedDaily(session);
-        if (played) return; 
-              
-        // 3. Sync with other tabs
-        if (syncChannel) {
-            syncChannel.send({
-                type: 'broadcast',
-                event: 'lock-daily',
-                payload: { userId: session.user.id }
-            }).then(resp => {
-              if (resp !== 'ok') console.error("Broadcast failed:", resp);
-          });
-        }
+    const { data: { session }, error } = sessionRes;
 
-        // 4. Lock button locally 
-        lockDailyButton();     
-          
-        // 5. Setup Audio & Mode
-        if (audioCtx.state === 'suspended') await audioCtx.resume();
-        loadSounds();
-        
-        isDailyMode = true;
-        isWeeklyMode = false; 
-        preloadQueue = []; // Clear old stuff
+    if (error || !session) {
+        alert("Session expired. Please log in.");
+        window.location.href = '/login.html';
+        return;
+    }
 
-        try {
-            // We await the setup of IDs and the first batch of preloads
-            await startDailyChallenge(); 
-        } catch (err) {
-            console.error("Daily start failed:", err);
-            dailyBtn.classList.remove('loading');
-        }
-    }; 
+    // 2. Play Status Check
+    const played = await hasUserCompletedDaily(session);
+    if (played) return; 
+
+    // 3. Broadcast and Lock UI
+    if (syncChannel) {
+        syncChannel.send({
+            type: 'broadcast',
+            event: 'lock-daily',
+            payload: { userId: session.user.id }
+        });
+    }
+    lockDailyButton();
+    loadSounds();
+    preloadQueue = [];
+      
+    // 4. Start Challenge immediately
+    await startDailyChallenge(session); 
+ };
 }
 
   if (weeklyBtn) {
@@ -408,13 +396,13 @@ if (playAgainBtn) {
            await startDailyChallenge();
     } else if (isLiteMode) {
            isLiteMode = true;
-           await startGame(false);
+           await startGame();
     } else {
           // Normal Mode - Reset flags just in case
           isWeeklyMode = false;
           isDailyMode = false;
           isLiteMode = false;
-          await startGame(false);
+          await startGame();
     }
    // 3. show game screen
     document.getElementById('end-screen').classList.add('hidden'); // Hide End
@@ -781,7 +769,7 @@ async function preloadNextQuestions(targetCount = 3) {
 
 
 async function startGame() {
-  
+gameEnding = false;
 if (masterQuestionPool.length === 0) {
  const { data: idList, error } = await supabase.from('questions').select('id');
   if (error) throw error;
@@ -793,7 +781,9 @@ if (isLiteMode) {
 // Take only the first 100 questions from the shuffled pool
   remainingQuestions = remainingQuestions.slice(0, LITE_LIMIT);
 }
-        
+// If we have leftovers in the preloadQueue from a previous game,
+// remove those specific IDs from our new remainingQuestions list 
+// so they don't appear twice in the same game.        
 const bufferedIds = preloadQueue.map(q => q.id);
 remainingQuestions = remainingQuestions.filter(id => !bufferedIds.includes(id));
 // 5. FETCH ONLY THE FIRST QUESTION IMMEDIATELY
@@ -808,7 +798,7 @@ remainingQuestions = remainingQuestions.filter(id => !bufferedIds.includes(id));
   streak = 0;
   dailyQuestionCount = 0;
   currentQuestion = null;
-  gameEnding = false;
+  updateScore();
       
   // 4. UI PREP
   // Use resetGame() or manual wipe here
@@ -816,7 +806,6 @@ remainingQuestions = remainingQuestions.filter(id => !bufferedIds.includes(id));
   answersBox.innerHTML = '';
   questionImage.style.display = 'none';
   questionImage.src = '';
-  updateScore();
        
   gameStartTime = Date.now();
       
@@ -870,10 +859,9 @@ async function loadQuestion(broadcastedId = null, startTime = null) {
         await endGame();
         return;
     }
-  
+    // E. PULL QUESTION & F. BACKGROUND PRELOAD
     currentQuestion = preloadQueue.shift();
   
-    // --- MINIMAL CHANGE START: Define the display logic ---
     // G. SET QUESTION TEXT
     questionText.textContent = currentQuestion.question;
 
@@ -2243,20 +2231,20 @@ function getDailyEditionNumber() {
 }
 
 async function startDailyChallenge() {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return alert("Log in to play Daily Mode!");
+    // 1. & 2. BURN ATTEMPT + LOAD IDS (Happening at the same time)
+    // This uses your exact table and column names.
+    const [burnRes, questionsRes] = await Promise.all([
+        supabase.from('daily_attempts').insert({ 
+            user_id: session.user.id, 
+            attempt_date: todayStr 
+        }),
+        supabase.from('questions').select('id').order('id', { ascending: true })
+    ]);
 
-    // 1. Burn the attempt
-    const { error: burnError } = await supabase
-        .from('daily_attempts')
-        .insert({ user_id: session.user.id, attempt_date: todayStr });
+    // Your exact error check
+    if (burnRes.error) return alert("You've already played today!");
 
-    if (burnError) return alert("You've already played today!");
-    
-    lockDailyButton(); 
-
-    // 2. Load Questions
-    const { data: allQuestions } = await supabase.from('questions').select('id').order('id', { ascending: true });
+    const allQuestions = questionsRes.data;
     if (!allQuestions || allQuestions.length < 10) return alert("Error loading questions.");
 
     // 3. Deterministic Selection
@@ -2282,10 +2270,8 @@ async function startDailyChallenge() {
     //await preloadNextQuestions();
     // FETCH ONLY THE FIRST QUESTION IMMEDIATELY
     // If queue is empty, get one right now so we can start
-    if (preloadQueue.length === 0) {
-        await preloadNextQuestions(1); // Modified to accept a 'count'
-    }
-  
+    await preloadNextQuestions(1); // Modified to accept a 'count'
+    
     // 6. UI TRANSITION (Only happens once data is ready)
     resetGame();
     document.body.classList.add('game-active'); 
@@ -2296,7 +2282,7 @@ async function startDailyChallenge() {
   
     // FILL THE REST IN THE BACKGROUND
     // We don't 'await' this; it runs while the user is looking at question 1
-    preloadNextQuestions(3);
+    preloadNextQuestions(5);
 }
 
 function shuffleWithSeed(array, seed) {
@@ -2364,6 +2350,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
