@@ -32,6 +32,20 @@ signupBtn.addEventListener('click', async () => {
     }
 
     setBusy(true);
+    
+    // 🛡️ STEP 0: PRE-CHECK USERNAME
+    const { data: existingUser, error: checkError } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('username', username)
+        .maybeSingle();
+
+    if (existingUser) {
+        alert("Username taken!");
+        setBusy(false);
+        return; // STOP HERE - This prevents the 422 POST error in the console
+    }
+    
     const email = username.toLowerCase() + '@example.com';
     
     // 1. Sign Up
