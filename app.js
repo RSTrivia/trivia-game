@@ -389,9 +389,11 @@ if (playAgainBtn) {
    
     // 3. Start the correct game engine 
     if (isWeeklyMode) {
+           preloadQueue = [];
            // Re-run the weekly setup to get the same 50 IDs
           await startWeeklyChallenge(); 
     } else if (isDailyMode) {
+           preloadQueue = [];
            // Usually Daily is locked after 1 play, but for safety:
            await startDailyChallenge();
     } else if (isLiteMode) {
@@ -2324,6 +2326,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
