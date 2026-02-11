@@ -398,11 +398,7 @@ if (playAgainBtn) {
            await startDailyChallenge();
     } else if (isLiteMode) {
            isLiteMode = true;
-           await startGame();
-           // 3. show game screen
-           document.getElementById('end-screen').classList.add('hidden'); // Hide End
-           document.getElementById('game').classList.remove('hidden');    // Show Game
-           document.body.classList.add('game-active');                   // Add background class   
+           await startGame();  
     } else {
           // Normal Mode - Reset flags just in case
           isWeeklyMode = false;
@@ -764,9 +760,9 @@ const bufferedIds = preloadQueue.map(q => q.id);
 remainingQuestions = remainingQuestions.filter(id => !bufferedIds.includes(id));
 // 5. FETCH ONLY THE FIRST QUESTION IMMEDIATELY
 // Wait for ONLY one question so we can transition without a flicker
-    if (preloadQueue.length === 0) {
-        await preloadNextQuestions(1); 
-    } // Modified to accept a 'count'
+if (preloadQueue.length === 0) {
+    await preloadNextQuestions(1); 
+} // Modified to accept a 'count'
 
   // 3. INTERNAL STATE RESET
   clearInterval(timer);
@@ -2327,6 +2323,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
