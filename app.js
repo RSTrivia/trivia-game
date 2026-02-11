@@ -822,8 +822,6 @@ async function loadQuestion() {
     if (preloadQueue.length <= 2 && remainingQuestions.length > 0) {
         preloadNextQuestions(5); 
     }
-
-    currentQuestion = preloadQueue.shift();
   
     // STALL: Wait if literally empty
     if (preloadQueue.length === 0 && remainingQuestions.length > 0) {
@@ -839,7 +837,8 @@ async function loadQuestion() {
         await endGame();
         return;
     }
-  
+
+     currentQuestion = preloadQueue.shift();
     // G. SET QUESTION TEXT
     questionText.textContent = currentQuestion.question;
 
@@ -2159,6 +2158,7 @@ function updateScore() {
 }
 
 async function startWeeklyChallenge() {
+    preloadQueue = [];
     gameEnding = false;
     isWeeklyMode = true;
     isDailyMode = false;
@@ -2227,11 +2227,14 @@ async function startWeeklyChallenge() {
     endScreen.classList.add('hidden');
     weeklyStartTime = Date.now(); // total weekly run time
   
-    loadQuestion();
+    // 2. Load the first question and STOP. 
+    // Do NOT call the background preloader here yet.
+    await loadQuestion();
   
-    // FILL THE REST IN THE BACKGROUND (Silent)
-    // We don't 'await' this; it runs while the user is looking at question 1
-    preloadNextQuestions(3);
+    // 3. NOW fill the rest while the user is reading
+    if (remainingQuestions.length > 0) {
+        preloadNextQuestions(3);
+    }
 }
 
 function getDailyEditionNumber() {
@@ -2361,6 +2364,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
