@@ -16,6 +16,7 @@ let isShowingNotification = false;
 let notificationQueue = [];
 let masterQuestionPool = [];
 let firstQuestionSent = false; // Reset this when a match starts
+let userId = null; 
 
 const RELEASE_DATE = '2025-12-22';
 const WEEKLY_LIMIT = 50; // Change to 50 when ready to go live
@@ -509,8 +510,7 @@ async function handleAuthChange(event, session) {
         lockDailyButton();
         return; // Stop here for guests
     }
-  
-   // 3. Handle LOGGED IN State
+    // 3. Handle LOGGED IN State
     userId = session.user.id;
     // 1. Immediately sync with local cache so we don't overwrite the HTML script's work
     username = localStorage.getItem('cachedUsername') || 'Player';
@@ -2373,6 +2373,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
