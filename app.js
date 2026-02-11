@@ -1027,7 +1027,7 @@ async function checkAnswer(choiceId, btn) {
     // --- CONTINUATION ---
     if (isCorrect || isDailyMode || isWeeklyMode) {
     // Challenges keep going until the limit is reached
-        setTimeout(loadQuestion, 1500);
+        setTimeout(loadQuestion, 1000);
     } else {
     // Only Normal and Lite modes end on a wrong answer
         setTimeout(endGame, 1000);
@@ -2327,6 +2327,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
