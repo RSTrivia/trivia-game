@@ -155,8 +155,9 @@ function updateLeaderboard(data) {
     let finalHTML = "";
     
     if (currentMode === 'xp') {
+      const xpValue = entry.val || 0;
       const level = getLevel(entry.val);
-      finalHTML = `${entry.val.toLocaleString()} <span style="font-size: 0.85em; opacity: 0.6;">(Lvl ${level})</span>`;
+      finalHTML = `${xpValue.toLocaleString()} <span style="font-size: 0.85em; opacity: 0.6;">(Lvl ${level})</span>`;
       
     } else if (currentMode === 'weekly' || currentMode === 'lite') {
       const dataKey = currentMode === 'weekly' ? 'weekly_data' : 'lite_data';
@@ -301,6 +302,7 @@ if(liteTab) liteTab.onclick = () => handleTabClick('lite', liteTab);
 </script>
 </body>
 </html>
+
 
 
 
