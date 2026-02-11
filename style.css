@@ -1374,7 +1374,7 @@ input.input-field:-webkit-autofill:active {
   width: 100%;
   gap: 0; /* Removed gap for a tighter look */
   margin-bottom: 10px; /* Less space between tabs and list */
-  margin-top: 30px; /* <--- Adjust this value to move the table down */
+  margin-top: 20px; /* <--- Adjust this value to move the table down */
 }
 
 .tab-btn {
@@ -1661,6 +1661,7 @@ input.input-field:-webkit-autofill:active {
   opacity: 0.5 !important;
   filter: grayscale(1);
 }
+
 
 
 
