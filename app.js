@@ -793,6 +793,7 @@ if (preloadQueue.length === 0) {
 }
 
 async function loadQuestion(broadcastedId = null, startTime = null) {
+  if (gameEnding) return;
   // Debug the current state every time a question loads delete after
     if (isWeeklyMode) {
         console.log(`📝 Loading Weekly Question: ${weeklyQuestionCount + 1} / 50`);
@@ -2360,6 +2361,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
