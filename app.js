@@ -2230,7 +2230,7 @@ function getDailyEditionNumber() {
     return Math.floor(diffTime / (1000 * 60 * 60 * 24));
 }
 
-async function startDailyChallenge() {
+async function startDailyChallenge(session) {
     // 1. & 2. BURN ATTEMPT + LOAD IDS (Happening at the same time)
     // This uses your exact table and column names.
     const [burnRes, questionsRes] = await Promise.all([
@@ -2350,6 +2350,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
