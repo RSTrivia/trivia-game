@@ -266,7 +266,7 @@ async function subscribeToLeaderboard() {
 
     // 3. Create the listener with a unique name to avoid ID collisions
     realtimeSubscription = supabase
-        .channel(`live-${currentMode}-${Date.now()}`) // Added timestamp for uniqueness
+        .channel('live-leaderboard') // Added timestamp for uniqueness
         .on(
             'postgres_changes', 
             { event: '*', schema: 'public', table: tableToWatch }, 
@@ -329,6 +329,7 @@ if(liteTab) liteTab.onclick = () => handleTabClick('lite', liteTab);
 </script>
 </body>
 </html>
+
 
 
 
