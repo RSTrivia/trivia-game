@@ -52,9 +52,13 @@
             gap: 10px;
             width: 100%;
             /* Reduced bottom margin because margin-top: auto will do the heavy lifting */
-            margin-bottom: 0px; 
+            margin-bottom: 15px; 
             opacity: 0;
             transition: opacity 0.2s ease-in;
+        }
+        #achievementsView {
+            width: 100%;
+            margin-bottom: 15px; /* <--- Add this to match the grid gap */
         }
         /* Show the grid once the JS has applied the classes */
         #logGrid.ready {
