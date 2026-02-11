@@ -816,36 +816,28 @@ async function loadQuestion(broadcastedId = null, startTime = null) {
     questionText.textContent = '';
     answersBox.innerHTML = '';
   
-    // B. THE STALL GUARD
-    // Fill buffer if low
-    if (preloadQueue.length <= 2 && remainingQuestions.length > 0) {
-        preloadNextQuestions(5); 
-    }
 
     // STALL: Wait if literally empty
     if (preloadQueue.length === 0 && remainingQuestions.length > 0) {
         console.log("Stall Guard triggered: Waiting for questions...");
         await preloadNextQuestions();
-    }
+    }  
 
-    // C. FINAL SAFETY CHECK
-    if (preloadQueue.length === 0) {
-        // If the buffer is empty but we still have questions in the pool, 
-        // try one last emergency fetch.
-        if (remainingQuestions.length > 0) {
-            await preloadNextQuestions(1);
-        }
-        
-        // If it's STILL empty after that, then the game is truly over.
-        if (preloadQueue.length === 0) {
-          console.log(`✅ Game Complete. Questions answered: ${weeklyQuestionCount}`);
+    // E. PULL QUESTION & F. BACKGROUND PRELOAD
+    currentQuestion = preloadQueue.shift();
+      
+    if (!currentQuestion) {
+            console.log(`✅ Game Complete. Questions answered: ${weeklyQuestionCount}`);
             await endGame();
             return;
         }
+
+      // B. THE STALL GUARD
+    // Fill buffer if low
+    if (preloadQueue.length <= 2 && remainingQuestions.length > 0) {
+        preloadNextQuestions(5); 
     }
-    // E. PULL QUESTION & F. BACKGROUND PRELOAD
-    currentQuestion = preloadQueue.shift();
-  
+
     // G. SET QUESTION TEXT
     questionText.textContent = currentQuestion.question;
 
@@ -2357,6 +2349,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
