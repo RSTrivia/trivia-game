@@ -803,7 +803,6 @@ remainingQuestions = remainingQuestions.filter(id => !bufferedIds.includes(id));
     if (preloadQueue.length === 0) {
         await preloadNextQuestions(1); // Modified to accept a 'count'
       }
- }
 
   // 3. INTERNAL STATE RESET
   clearInterval(timer);
@@ -2376,6 +2375,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
