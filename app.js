@@ -2208,8 +2208,6 @@ async function startWeeklyChallenge() {
         (weekInCycle * WEEKLY_LIMIT) + WEEKLY_LIMIT
     ).map(q => q.id);
 
-    // Setup Mode & Data
-    roundOpen = true
     isDailyMode = false;
     isWeeklyMode = true;
     preloadQueue = [];
@@ -2228,7 +2226,6 @@ async function startWeeklyChallenge() {
     document.body.classList.add('game-active'); 
     document.getElementById('start-screen').classList.add('hidden');
     game.classList.remove('hidden');
-    updateSurvivorCountUI();
   
     weeklyStartTime = Date.now(); // total weekly run time
   
@@ -2278,7 +2275,6 @@ async function startDailyChallenge() {
     // 4. PREPARE THE DATA (Background)
     isDailyMode = true;
     isWeeklyMode = false;
-     roundOpen = true
     preloadQueue = []; 
     remainingQuestions = dailyIds;   
   
@@ -2295,7 +2291,6 @@ async function startDailyChallenge() {
     document.body.classList.add('game-active'); 
     document.getElementById('start-screen').classList.add('hidden');
     game.classList.remove('hidden');
-    updateSurvivorCountUI();
   
     loadQuestion();
   
@@ -2369,6 +2364,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
