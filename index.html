@@ -210,37 +210,8 @@
         </div>
       </div>
       
-      <!-- Lobby Screen -->
-      <div id="lobby-screen" class="hidden">
-      <h2 id="lobby-title" style="font-family: 'Cinzel', serif; color: #d4af37; text-align: center;">Live Lobby</h2>
-      
-      <div class="lobby-status-box" style="background: rgba(0,0,0,0.5); padding: 20px; border-radius: 8px; border: 1px solid #d4af37; margin: 20px 0;">
-        <div id="player-count" style="font-size: 1.2rem; color: #f5f5f5;">Searching for players...</div>
-        <div id="lobby-timer" style="font-size: 1.4rem; color: #d4af37; margin: 10px 0;">--:--</div>
-        <div class="loading-spinner"></div>
-        <div id="lobby-chat-container" style="background: rgba(0, 0, 0, 0.7); border: 2px solid #382418; border-radius: 4px; margin-top: 15px; height: 200px; display: flex; flex-direction: column;">
-        <div id="chat-messages" style="flex-grow: 1; overflow-y: auto; padding: 10px; text-align: left; font-size: 0.9rem; font-family: sans-serif;">
-          <div style="color: #65b1ff;">[System]: Welcome to the live lobby!</div>
-        </div>
-          <div style="display: flex; border-top: 1px solid #382418;">
-              <input type="text" id="chatInput" placeholder="Press Enter to chat..." maxlength="100" 
-                     style="flex-grow: 1; background: transparent; border: none; color: white; padding: 8px; outline: none;">
-          </div>
-      </div>
-      </div>
-    
-      <p style="opacity: 0.7; font-size: 0.8rem; color: #d4af37;">The match begins at 25 players or when the countdown ends.</p>
-      
-      <div class="row">
-        <button id="leaveLobbyBtn" class="btn">Main Menu</button>
-      </div>
-    </div>
-      
       <!-- Game Screen -->
       <div id="game" class="hidden">
-      <div id="live-stats" style="color: #d4af37; font-family: 'Cinzel', serif; text-align: center;">
-          <span id="survivor-count">Survivors: 0</span>
-      </div>
         <div id="game-notifications"></div> 
         <div id="score">Score: 0</div>
         <div id="question">
@@ -251,42 +222,17 @@
         <div id="timer">
           Time: <span id="time-wrap"><span id="time">15</span>s</span>
         </div>
-    </div>
-       <!-- Live Mode Victory/Loss Screen -->
-    <div id="victory-screen" class="hidden">
-        <div class="victory-content">
-            <div class="victory-title" id="vic-title-text">
-                <span class="emoji">🏆</span> 
-                <span id="victory-status-text">VICTORY</span>
-                <span class="emoji">🏆</span>
-            </div>
-    
-            <p id="victory-stats">You are the last Survivor!</p>
-    
-            <div class="match-info">
-                <span id="player-count-stat">Players: 2</span> | 
-                <span id="odds-stat">Win Odds: 50%</span>
-            </div>
-    
-            <div class="victory-actions">
-                <button id="soloBtn" class="btn">Continue Solo</button>
-                <button id="rejoinLobbyBtn" class="btn">Re-join Lobby</button>
-                <button id="victoryMainMenuBtn" class="btn">Main Menu</button>
-            </div>
-        </div>
-    </div>
-   
+    </div> 
 
       <!-- Start Screen -->
       <div id="start-screen">
         <!-- First row: Start button -->
-       <div class="row button-row">
+       <div class="row">
         <button id="startBtn" class="btn">Normal Mode</button>
-        <button id="liteBtn" class="btn">Lite Mode</button>
       </div>
       <!-- Second row: Lite mode -->
         <div class="row">
-         <button id="lobbyBtn" class="btn is-disabled">Enter Lobby</button>
+         <button id="liteBtn" class="btn">Lite Mode</button>
       </div>
         <!-- Third row: Daily mode -->
        <div class="row">
@@ -439,6 +385,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
 
 
