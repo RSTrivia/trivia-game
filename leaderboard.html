@@ -227,7 +227,9 @@ async function fetchLeaderboard() {
 function subscribeToLeaderboard() {
     // 1. Clean up existing subscription if it exists
     if (realtimeSubscription) {
-        supabase.removeChannel(realtimeSubscription);
+       // Use await to ensure it's fully closed before we move on
+        await supabase.removeChannel(realtimeSubscription);
+        realtimeSubscription = null;
     }
 
     // 2. Determine which table to watch
@@ -240,7 +242,7 @@ function subscribeToLeaderboard() {
             'postgres_changes', 
             { event: '*', schema: 'public', table: tableToWatch }, 
             (payload) => {
-                console.log('Change detected!', payload);
+                //console.log('Change detected!', payload);
                 fetchLeaderboard(); // Refresh the data when a change happens
             }
         )
@@ -299,6 +301,7 @@ if(liteTab) liteTab.onclick = () => handleTabClick('lite', liteTab);
 </script>
 </body>
 </html>
+
 
 
 
