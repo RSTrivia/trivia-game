@@ -708,61 +708,35 @@ function resetGame() {
 
 async function preloadNextQuestions(targetCount = 3) {
     let attempts = 0;
-
-    while (
-        preloadQueue.length < targetCount &&
-        remainingQuestions.length > 0 &&
-        attempts < 10
-    ) {
+    while (preloadQueue.length < targetCount && remainingQuestions.length > 0 && attempts < 10) {
         attempts++;
-        let index;
-        // Solo modes can stay random
-        index = Math.floor(Math.random() * remainingQuestions.length);
-        const qId = remainingQuestions[index];
-        remainingQuestions.splice(index, 1);
 
-        if (
-            (currentQuestion && qId === currentQuestion.id) ||
-            preloadQueue.some(q => q.id === qId)
-        ) {
+        // 🛡️ UNIVERSAL FIX: Always take the top ID. 
+        // In Normal/Lite, it's random because you shuffled the pool.
+        // In Daily/Weekly, it's random because you shuffled the selection.
+        const qId = remainingQuestions.shift();
+
+        // Avoid duplicates
+        if ((currentQuestion && qId === currentQuestion.id) || preloadQueue.some(q => q.id === qId)) {
             continue;
         }
 
-        const { data, error } = await supabase.rpc(
-            'get_question_by_id',
-            { input_id: qId }
-        );
-
-        if (error || !data || !data[0]) {
-            console.warn("Failed to preload question:", qId, error);
-            continue;
-        }
+        const { data, error } = await supabase.rpc('get_question_by_id', { input_id: qId });
+        if (error || !data?.[0]) continue;
 
         const question = data[0];
 
-        // --- ENHANCED IMAGE WARMING ---
+        // --- ANTI-FLICKER: Image Warming ---
         if (question.question_image) {
             try {
                 const img = new Image();
                 img.src = question.question_image;
-                
-                // We AWAIT the decode here in the background.
-                // This forces the CPU to decompress the image now, 
-                // so it's ready to paint the millisecond we set the src later.
-                if (preloadQueue.length > 0) {
-                  await img.decode();
-                } 
-                
-                // Optional: Store the pre-decoded object to keep it in memory
-                //question._cachedImg = img; 
-                } catch (e) {
-                    console.warn("Image warming failed for:", question.id, e);
-                    // If the image fails to load, we still allow the question 
-                    // but it might have a tiny flicker later.
-                }
+                // Only 'await' decode for background questions (prevents blocking first load)
+                await img.decode();
+            } catch (e) {
+                console.warn("Image warming failed:", e);
+            }
         }
-
-        // Only push to the queue AFTER the image is decoded
         preloadQueue.push(question);
     }
 }
@@ -776,6 +750,7 @@ if (masterQuestionPool.length === 0) {
   masterQuestionPool = idList.map(q => q.id);
 }
   
+// 🎲 SHUFFLE HAPPENS HERE:
 remainingQuestions = [...masterQuestionPool].sort(() => Math.random() - 0.5);
 if (isLiteMode) {
 // Take only the first 100 questions from the shuffled pool
@@ -787,10 +762,10 @@ if (isLiteMode) {
 const bufferedIds = preloadQueue.map(q => q.id);
 remainingQuestions = remainingQuestions.filter(id => !bufferedIds.includes(id));
 // 5. FETCH ONLY THE FIRST QUESTION IMMEDIATELY
-// If queue is empty, get one right now so we can start
+// Wait for ONLY one question so we can transition without a flicker
     if (preloadQueue.length === 0) {
-        await preloadNextQuestions(1); // Modified to accept a 'count'
-      }
+        await preloadNextQuestions(1); 
+    } // Modified to accept a 'count'
 
   // 3. INTERNAL STATE RESET
   clearInterval(timer);
@@ -970,8 +945,6 @@ async function checkAnswer(choiceId, btn) {
 
         if (isCorrect) {
           playSound(correctBuffer);
-          if (btn) btn.dataset.answeredCorrectly = "true"; // Mark this for the Hub
-          if (btn) btn.classList.add('correct');
           // Update Local State & UI
           score++;
           updateScore();
@@ -2169,11 +2142,16 @@ function updateScore() {
 }
 
 async function startWeeklyChallenge() {
-    const { data: { session } } = await supabase.auth.getSession();
+    // 1. Parallelize the slow stuff
+    const [sessionRes, questionsRes] = await Promise.all([
+        supabase.auth.getSession(),
+        supabase.from('questions').select('id').order('id', { ascending: true })
+    ]);
+
+    const session = sessionRes.data.session;
     if (!session) return alert("Log in to play Weekly Mode!");
 
-    // Load Questions (Same as Daily)
-    const { data: allQuestions } = await supabase.from('questions').select('id').order('id', { ascending: true });
+    const allQuestions = questionsRes.data;
     if (!allQuestions || allQuestions.length < 50) return alert("Error loading questions.");
 
     // Deterministic Weekly Selection
@@ -2199,17 +2177,13 @@ async function startWeeklyChallenge() {
     isDailyMode = false;
     isWeeklyMode = true;
     preloadQueue = [];
-    remainingQuestions = weeklyIds; // Set the 50 Weekly IDs
+    // Randomize the order for THIS specific play-through
+    remainingQuestions = weeklyIds.sort(() => Math.random() - 0.5); // Set the 50 Weekly IDs
 
-    // PRELOAD FIRST (While still on the menu/loading)
-    //await preloadNextQuestions();
-    // 5. FETCH ONLY THE FIRST QUESTION IMMEDIATELY
-    // If queue is empty, get one right now so we can start
-    if (preloadQueue.length === 0) {
-        await preloadNextQuestions(1); // Modified to accept a 'count'
-    }
-
-    // THE UI SWAP
+    // FETCH ONLY THE FIRST QUESTION (Stay on menu while this happens)
+    await preloadNextQuestions(1); // Modified to accept a 'count'
+  
+    // THE UI SWAP (Triggered only when we HAVE the data)
     resetGame();
     document.body.classList.add('game-active'); 
     document.getElementById('start-screen').classList.add('hidden');
@@ -2219,7 +2193,7 @@ async function startWeeklyChallenge() {
   
     loadQuestion();
   
-    // FILL THE REST IN THE BACKGROUND
+    // FILL THE REST IN THE BACKGROUND (Silent)
     // We don't 'await' this; it runs while the user is looking at question 1
     preloadNextQuestions(3);
 }
@@ -2264,7 +2238,7 @@ async function startDailyChallenge(session) {
     isDailyMode = true;
     isWeeklyMode = false;
     preloadQueue = []; 
-    remainingQuestions = dailyIds;   
+    remainingQuestions = dailyIds.sort(() => Math.random() - 0.5);   
   
     // 5. Start the engine
     //await preloadNextQuestions();
@@ -2350,6 +2324,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
