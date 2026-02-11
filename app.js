@@ -399,16 +399,16 @@ if (playAgainBtn) {
     } else if (isLiteMode) {
            isLiteMode = true;
            await startGame();
+           // 3. show game screen
+           document.getElementById('end-screen').classList.add('hidden'); // Hide End
+           document.getElementById('game').classList.remove('hidden');    // Show Game
+           document.body.classList.add('game-active');                   // Add background class   
     } else {
           // Normal Mode - Reset flags just in case
           isWeeklyMode = false;
           isDailyMode = false;
           isLiteMode = false;
           await startGame();
-          // 3. show game screen
-          document.getElementById('end-screen').classList.add('hidden'); // Hide End
-          document.getElementById('game').classList.remove('hidden');    // Show Game
-          document.body.classList.add('game-active');                   // Add background class   
     }      
   };
 }
@@ -2327,6 +2327,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
