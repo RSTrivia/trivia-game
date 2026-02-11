@@ -386,7 +386,7 @@ if (playAgainBtn) {
     dailyQuestionCount = 0; // Don't forget this!
     // 2. wipe old text/images, but DO NOT show the game screen yet
     resetGame(); 
-   
+      
     // 3. Start the correct game engine 
     if (isWeeklyMode) {
            preloadQueue = [];
@@ -405,12 +405,11 @@ if (playAgainBtn) {
           isDailyMode = false;
           isLiteMode = false;
           await startGame();
-    }
-   // 3. show game screen
-    document.getElementById('end-screen').classList.add('hidden'); // Hide End
-    document.getElementById('game').classList.remove('hidden');    // Show Game
-    document.body.classList.add('game-active');                   // Add background class   
-      
+          // 3. show game screen
+          document.getElementById('end-screen').classList.add('hidden'); // Hide End
+          document.getElementById('game').classList.remove('hidden');    // Show Game
+          document.body.classList.add('game-active');                   // Add background class   
+    }      
   };
 }
   if (mainMenuBtn) {  
@@ -2328,6 +2327,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
