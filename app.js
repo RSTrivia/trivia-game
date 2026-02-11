@@ -397,10 +397,6 @@ if (playAgainBtn) {
           preloadQueue = [];
           // Re-run the weekly setup to get the same 50 IDs
           await startWeeklyChallenge(); 
-          document.body.classList.add('game-active');
-          game.classList.remove('hidden');
-          document.getElementById('start-screen').classList.add('hidden');
-          endScreen.classList.add('hidden');
     } else if (isDailyMode) {
            preloadQueue = [];
            // Usually Daily is locked after 1 play, but for safety:
@@ -2196,8 +2192,13 @@ async function startWeeklyChallenge() {
   
     // THE UI SWAP (Triggered only when we HAVE the data)
     resetGame();
-
+  
+    document.body.classList.add('game-active');
+    game.classList.remove('hidden');
+    document.getElementById('start-screen').classList.add('hidden');
+    endScreen.classList.add('hidden');
     weeklyStartTime = Date.now(); // total weekly run time
+  
     loadQuestion();
   
     // FILL THE REST IN THE BACKGROUND (Silent)
@@ -2331,6 +2332,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
