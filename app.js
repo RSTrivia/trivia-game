@@ -1906,21 +1906,30 @@ async function rollForPet() {
 
     // 2. Define the Pools
     const allPets = {
+        mythic: [
+            { id: 'pet_zuk', name: 'TzRek-Zuk' },
+            { id: 'pet_lil_zik', name: 'Lil\' Zik' },
+            { id: 'pet_tumekens_guardian', name: 'Tumeken\'s guardian' }
+        ],
         legendary: [
+            { id: 'pet_jad', name: 'TzRek-Jad' },
             { id: 'pet_olmlet', name: 'Olmlet' },
-            { id: 'pet_jad', name: 'TzRek-Jad' }
+            { id: 'pet_corporeal_beast', name: 'Corporeal Beast' }
         ],
         rare: [
             { id: 'pet_yami', name: 'Yami' },
-            { id: 'pet_zilyana', name: 'Pet Zilyana' }
+            { id: 'pet_bloodhound', name: 'Bloodhound' },
+            { id: 'pet_rocky', name: 'Rocky' }
         ],
         uncommon: [
+            { id: 'pet_zilyana', name: 'Pet Zilyana' },
             { id: 'pet_vorki', name: 'Vorki' },
             { id: 'pet_snakeling', name: 'Pet Snakeling' }
         ],
         common: [
             { id: 'pet_mole', name: 'Baby Mole' },
-            { id: 'pet_kraken', name: 'Pet Kraken' }
+            { id: 'pet_kraken', name: 'Pet Kraken' },
+            { id: 'pet_chompy', name: 'Chompy Chick' }
         ]
     };
 
@@ -1943,7 +1952,12 @@ async function rollForPet() {
   // 1/200  = 0.005
   // 1/50   = 0.02
 
-    if (roll <= 0.001 && missingLegendary.length > 0) {
+
+    if (roll <= 0.0005 && missingMythic.length > 0) {
+        // Exact 1/2000 chance
+        reward = missingMythic[Math.floor(Math.random() * missingMythic.length)];
+    }
+    else if (roll <= 0.001 && missingLegendary.length > 0) {
         // Exact 1/1000 chance
         reward = missingLegendary[Math.floor(Math.random() * missingLegendary.length)];
     } 
@@ -2337,6 +2351,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
