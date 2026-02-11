@@ -369,6 +369,10 @@ async function init() {
         loadSounds();
         try {
             await startWeeklyChallenge();
+            document.body.classList.add('game-active');
+            game.classList.remove('hidden');
+            document.getElementById('start-screen').classList.add('hidden');
+            endScreen.classList.add('hidden');
         } catch (err) {
             console.error("Failed to start weekly mode:", err);
             // Fallback UI
@@ -2192,10 +2196,6 @@ async function startWeeklyChallenge() {
   
     // THE UI SWAP (Triggered only when we HAVE the data)
     resetGame();
-  
-    document.body.classList.add('game-active'); 
-    document.getElementById('start-screen').classList.add('hidden');
-    game.classList.remove('hidden');
 
     weeklyStartTime = Date.now(); // total weekly run time
     loadQuestion();
@@ -2331,6 +2331,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
