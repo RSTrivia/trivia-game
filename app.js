@@ -910,13 +910,7 @@ async function handleTimeout() {
     playSound(wrongBuffer);
     await highlightCorrectAnswer();
   
-    if (isWeeklyMode) {
-            weeklyQuestionCount++;
-            if (weeklyQuestionCount >= WEEKLY_LIMIT) {
-                setTimeout(endGame, 1500);
-                return;
-            }
-        }
+   if (isWeeklyMode) weeklyQuestionCount++; 
       
     if (isDailyMode || isWeeklyMode) {
         setTimeout(loadQuestion, 1500);
@@ -2343,6 +2337,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
