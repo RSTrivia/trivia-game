@@ -393,6 +393,10 @@ if (playAgainBtn) {
           preloadQueue = [];
           // Re-run the weekly setup to get the same 50 IDs
           await startWeeklyChallenge(); 
+          document.body.classList.add('game-active'); 
+          document.getElementById('start-screen').classList.add('hidden');
+          document.getElementById('end-screen').classList.add('hidden'); // Fix for Play Again
+          game.classList.remove('hidden');
     } else if (isDailyMode) {
            preloadQueue = [];
            // Usually Daily is locked after 1 play, but for safety:
@@ -2327,6 +2331,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
