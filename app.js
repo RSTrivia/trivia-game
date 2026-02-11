@@ -411,6 +411,11 @@ if (playAgainBtn) {
         mainMenuBtn.onclick = async () => {
         preloadQueue = []; // Clear the buffer only when going back to menu
         // Manual UI Reset instead:
+        resetGame();
+        streak = 0;
+        weeklyQuestionCount = 0;
+        dailyQuestionCount = 0; // Don't forget this!
+        preloadQueue = [];  
         document.getElementById('end-screen').classList.add('hidden');
         document.getElementById('start-screen').classList.remove('hidden');
         document.body.classList.remove('game-active');
@@ -819,11 +824,17 @@ async function loadQuestion(broadcastedId = null, startTime = null) {
 
     // C. FINAL SAFETY CHECK
     if (preloadQueue.length === 0) {
-        //console.error("No questions available.");
-        // Only trigger  if we aren't in a Live Match, 
-        // or if the Live Match is truly over.
-        await endGame();
-        return;
+        // If the buffer is empty but we still have questions in the pool, 
+        // try one last emergency fetch.
+        if (remainingQuestions.length > 0) {
+            await preloadNextQuestions(1);
+        }
+        
+        // If it's STILL empty after that, then the game is truly over.
+        if (preloadQueue.length === 0) {
+            await endGame();
+            return;
+        }
     }
     // E. PULL QUESTION & F. BACKGROUND PRELOAD
     currentQuestion = preloadQueue.shift();
@@ -2145,6 +2156,7 @@ async function startWeeklyChallenge() {
     score = 0;
     streak = 0; 
     preloadQueue = [];
+  
     if (weeklySessionPool.length === 0) {
           // 1. Parallelize the slow stuff
         const [sessionRes, questionsRes] = await Promise.all([
@@ -2332,6 +2344,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
