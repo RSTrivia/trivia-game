@@ -1274,7 +1274,7 @@ async function endGame() {
             streakCount.textContent = currentDailyStreak;
         }
       const shareBtn = document.getElementById('shareBtn');
-      if (shareBtn && isDailyMode) {
+      if (shareBtn) {
           shareBtn.classList.remove('is-disabled');
           shareBtn.style.filter = "sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85)";
           shareBtn.style.opacity = "1";
@@ -2331,6 +2331,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
