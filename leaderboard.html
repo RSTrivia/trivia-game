@@ -224,7 +224,7 @@ async function fetchLeaderboard() {
 }
 
   // --- NEW: REALTIME SUBSCRIPTION LOGIC ---
-function subscribeToLeaderboard() {
+async function subscribeToLeaderboard() {
     // 1. Clean up existing subscription if it exists
     if (realtimeSubscription) {
        // Use await to ensure it's fully closed before we move on
@@ -261,7 +261,7 @@ function handleTabClick(mode, btn) {
     if (cached) updateLeaderboard(JSON.parse(cached));
 
     fetchLeaderboard();
-    subscribeToLeaderboard(); // Re-subscribe to the correct table
+    await subscribeToLeaderboard(); // Re-subscribe to the correct table
 }
 
 scoreTab.onclick = () => handleTabClick('score', scoreTab);
@@ -301,6 +301,7 @@ if(liteTab) liteTab.onclick = () => handleTabClick('lite', liteTab);
 </script>
 </body>
 </html>
+
 
 
 
