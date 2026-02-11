@@ -688,7 +688,7 @@ function resetGame() {
     // 8. Title cleanup
     const gameOverTitle = document.getElementById('game-over-title');
     const gzTitle = document.getElementById('gz-title');
-    if (gameOverTitle) {
+    if (gameOverTitle && !isWeeklyMode) {
         gameOverTitle.classList.add('hidden');
         gameOverTitle.textContent = ""; // Clear text too
     }
@@ -696,8 +696,8 @@ function resetGame() {
         gzTitle.classList.add('hidden');
         gzTitle.textContent = "";
     }
-
-    if (weeklyTimeContainer) weeklyTimeContainer.style.display = 'none';
+    
+    if (weeklyTimeContainer && !isWeeklyMode) weeklyTimeContainer.style.display = 'none';
 }
 
 
@@ -2337,6 +2337,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
