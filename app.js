@@ -827,7 +827,7 @@ async function loadQuestion(broadcastedId = null, startTime = null) {
     // E. PULL QUESTION & F. BACKGROUND PRELOAD
     currentQuestion = preloadQueue.shift();
       
-    if (!currentQuestion) {
+    if (preloadQueue.length === 0) {
             console.log(`✅ Game Complete. Questions answered: ${weeklyQuestionCount}`);
             await endGame();
             return;
@@ -2159,6 +2159,7 @@ function updateScore() {
 }
 
 async function startWeeklyChallenge() {
+    gameEnding = false;
     isWeeklyMode = true;
     isDailyMode = false;
     isLiteMode = false;
@@ -2361,6 +2362,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
