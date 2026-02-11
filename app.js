@@ -17,6 +17,7 @@ let notificationQueue = [];
 let masterQuestionPool = [];
 let firstQuestionSent = false; // Reset this when a match starts
 let userId = null; 
+let syncChannel;
 
 const RELEASE_DATE = '2025-12-22';
 const WEEKLY_LIMIT = 50; // Change to 50 when ready to go live
@@ -2373,6 +2374,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
