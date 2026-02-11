@@ -792,7 +792,7 @@ if (preloadQueue.length === 0) {
   preloadNextQuestions(3);
 }
 
-async function loadQuestion(broadcastedId = null, startTime = null) {
+async function loadQuestion() {
   if (gameEnding) return;
   // Debug the current state every time a question loads delete after
     if (isWeeklyMode) {
@@ -817,34 +817,30 @@ async function loadQuestion(broadcastedId = null, startTime = null) {
     questionText.textContent = '';
     answersBox.innerHTML = '';
   
-    // B. THE STALL GUARD
+     // B. THE STALL GUARD
     // Fill buffer if low
     if (preloadQueue.length <= 2 && remainingQuestions.length > 0) {
         preloadNextQuestions(5); 
     }
+
     // STALL: Wait if literally empty
     if (preloadQueue.length === 0 && remainingQuestions.length > 0) {
         console.log("Stall Guard triggered: Waiting for questions...");
         await preloadNextQuestions();
-    }  
-
-    // E. PULL QUESTION & F. BACKGROUND PRELOAD
-    currentQuestion = preloadQueue.shift();
-      // 2. ONLY NOW check if we actually got something
-    if (!currentQuestion) {
-        // If we have no question, try one last emergency fetch from remaining pool
-        if (remainingQuestions.length > 0) {
-            await preloadNextQuestions(1);
-            currentQuestion = preloadQueue.shift();
-        }
     }
-      
-    // 3. FINAL SAFETY CHECK: If still no question, then (and only then) end the game
-    if (!currentQuestion) {
-        console.log(`✅ Game Complete. Questions answered: ${weeklyQuestionCount}`);
+
+    // C. FINAL SAFETY CHECK
+    if (preloadQueue.length === 0) {
+        console.error("No questions available.");
+        // Only trigger endGame if we aren't in a Live Match, 
+        // or if the Live Match is truly over.
         await endGame();
         return;
     }
+  
+    currentQuestion = preloadQueue.shift();
+  
+
     // G. SET QUESTION TEXT
     questionText.textContent = currentQuestion.question;
 
@@ -2368,6 +2364,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
