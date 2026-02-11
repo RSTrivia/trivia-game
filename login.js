@@ -41,7 +41,7 @@ signupBtn.addEventListener('click', async () => {
         .maybeSingle();
 
     if (existingUser) {
-        alert("Username taken!");
+        alert("Username already taken!");
         setBusy(false);
         return; // STOP HERE - This prevents the 422 POST error in the console
     }
