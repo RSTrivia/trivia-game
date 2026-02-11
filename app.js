@@ -915,13 +915,18 @@ async function handleTimeout() {
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
     playSound(wrongBuffer);
     await highlightCorrectAnswer();
-    if (isWeeklyMode) weeklyQuestionCount++; // Count the "skip/fail" towards the 50
   
+    if (isWeeklyMode) {
+            weeklyQuestionCount++;
+            if (weeklyQuestionCount >= WEEKLY_LIMIT) {
+                setTimeout(endGame, 1500);
+                return;
+            }
+        }
+      
     if (isDailyMode || isWeeklyMode) {
-        // Continue the game
         setTimeout(loadQuestion, 1500);
     } else {
-        // End the game
         setTimeout(endGame, 1000);
     }
 }
@@ -1029,6 +1034,12 @@ async function checkAnswer(choiceId, btn) {
     // Challenges keep going until the limit is reached
       if (isWeeklyMode) {
             weeklyQuestionCount++;
+            // 🛑 STOP RIGHT HERE if we hit the limit
+            if (weeklyQuestionCount >= WEEKLY_LIMIT) {
+                console.log("🏁 Limit reached in checkAnswer. Going to endGame.");
+                setTimeout(endGame, 1000);
+                return; // Do NOT call loadQuestion
+            }
         }
         setTimeout(loadQuestion, 1500);
     } else {
@@ -2349,6 +2360,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
