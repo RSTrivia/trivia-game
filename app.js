@@ -894,7 +894,6 @@ function startTimer() {
     // --- ROUND END LOGIC ---
     if (timeLeft <= 0) {
       clearInterval(timer);
-      stopTickSound();
       // SOLO / DAILY / WEEKLY
       handleTimeout();
     }
@@ -913,7 +912,7 @@ function stopTickSound() {
 }
 
 async function handleTimeout() {
-    stopTickSound(); // <--- ADD THIS FIRST
+    stopTickSound();
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
     playSound(wrongBuffer);
     await highlightCorrectAnswer();
@@ -2362,6 +2361,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
