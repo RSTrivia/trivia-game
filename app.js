@@ -15,6 +15,7 @@ let gameEnding = false;
 let isShowingNotification = false;
 let notificationQueue = [];
 let masterQuestionPool = [];
+let weeklySessionPool = [];
 let firstQuestionSent = false; // Reset this when a match starts
 let userId = null; 
 let syncChannel;
@@ -367,7 +368,6 @@ async function init() {
         if (audioCtx.state === 'suspended') await audioCtx.resume();
         loadSounds();
         try {
-            await prepareWeeklyChallenge();
             await startWeeklyChallenge();
         } catch (err) {
             console.error("Failed to start weekly mode:", err);
@@ -391,10 +391,8 @@ if (playAgainBtn) {
     // 3. Start the correct game engine 
     if (isWeeklyMode) {
           preloadQueue = [];
-          await prepareWeeklyChallenge();
           // Re-run the weekly setup to get the same 50 IDs
           await startWeeklyChallenge(); 
-
     } else if (isDailyMode) {
            preloadQueue = [];
            // Usually Daily is locked after 1 play, but for safety:
@@ -2142,50 +2140,49 @@ function updateScore() {
     }
 }
 
-async function prepareWeeklyChallenge() {
-      // 1. Parallelize the slow stuff
-    const [sessionRes, questionsRes] = await Promise.all([
-        supabase.auth.getSession(),
-        supabase.from('questions').select('id').order('id', { ascending: true })
-    ]);
-
-    const session = sessionRes.data.session;
-    if (!session) return alert("Log in to play Weekly Mode!");
-
-    const allQuestions = questionsRes.data;
-    if (!allQuestions || allQuestions.length < 50) return alert("Error loading questions.");
-
-    // Deterministic Weekly Selection
-    const now = new Date();
-    const startDate = new Date(RELEASE_DATE); // Keep this same as Daily for consistency
-    const diffTime = Math.abs(now - startDate);
-    const dayCounter = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    
-    // Convert current day into a Week Index
-    const weekCounter = Math.floor(dayCounter / 7); 
-    
-    const weeksPerCycle = Math.floor(allQuestions.length / WEEKLY_LIMIT);
-    const cycleNumber = Math.floor(weekCounter / weeksPerCycle);
-    const weekInCycle = weekCounter % weeksPerCycle;
-
-    // Use the same shuffle logic
-    const shuffledList = shuffleWithSeed(allQuestions, cycleNumber);
-    const weeklyIds = shuffledList.slice(
-        weekInCycle * WEEKLY_LIMIT, 
-        (weekInCycle * WEEKLY_LIMIT) + WEEKLY_LIMIT
-    ).map(q => q.id);
-
-    isDailyMode = false;
+async function startWeeklyChallenge() {
     isWeeklyMode = true;
+    isDailyMode = false;
+    isLiteMode = false;
+  
+    if (weeklySessionPool.length === 0) {
+          // 1. Parallelize the slow stuff
+        const [sessionRes, questionsRes] = await Promise.all([
+            supabase.auth.getSession(),
+            supabase.from('questions').select('id').order('id', { ascending: true })
+        ]);
+    
+        const session = sessionRes.data.session;
+        if (!session) return alert("Log in to play Weekly Mode!");
+    
+        const allQuestions = questionsRes.data;
+        if (!allQuestions || allQuestions.length < 50) return alert("Error loading questions.");
+    
+        // Deterministic Weekly Selection
+        const now = new Date();
+        const startDate = new Date(RELEASE_DATE); // Keep this same as Daily for consistency
+        const diffTime = Math.abs(now - startDate);
+        const dayCounter = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        
+        // Convert current day into a Week Index
+        const weekCounter = Math.floor(dayCounter / 7); 
+        
+        const weeksPerCycle = Math.floor(allQuestions.length / WEEKLY_LIMIT);
+        const cycleNumber = Math.floor(weekCounter / weeksPerCycle);
+        const weekInCycle = weekCounter % weeksPerCycle;
+    
+        // Use the same shuffle logic
+        const shuffledList = shuffleWithSeed(allQuestions, cycleNumber);
+        weeklySessionPool = shuffledList.slice(
+            weekInCycle * WEEKLY_LIMIT, 
+            (weekInCycle * WEEKLY_LIMIT) + WEEKLY_LIMIT
+        ).map(q => q.id);
+    }
+    // Prepare the session-specific random order
     preloadQueue = [];
     // Randomize the order for THIS specific play-through
-    remainingQuestions = [...weeklyIds].sort(() => Math.random() - 0.5); // Set the 50 Weekly IDs
-}
-
-async function startWeeklyChallenge() {
-    isDailyMode = false;
-    isWeeklyMode = true;
-
+    remainingQuestions = [...weeklySessionPool].sort(() => Math.random() - 0.5); // Set the 50 Weekly IDs
+  
     // FETCH ONLY THE FIRST QUESTION (Stay on menu while this happens)
     await preloadNextQuestions(1); // Modified to accept a 'count'
   
@@ -2195,9 +2192,8 @@ async function startWeeklyChallenge() {
     document.body.classList.add('game-active'); 
     document.getElementById('start-screen').classList.add('hidden');
     game.classList.remove('hidden');
-  
+
     weeklyStartTime = Date.now(); // total weekly run time
-  
     loadQuestion();
   
     // FILL THE REST IN THE BACKGROUND (Silent)
@@ -2331,6 +2327,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
