@@ -793,6 +793,12 @@ if (preloadQueue.length === 0) {
 }
 
 async function loadQuestion(broadcastedId = null, startTime = null) {
+  // Debug the current state every time a question loads delete after
+    if (isWeeklyMode) {
+        console.log(`📝 Loading Weekly Question: ${weeklyQuestionCount + 1} / 50`);
+        console.log(`📦 Remaining in Pool: ${remainingQuestions.length}`);
+        console.log(`⏳ Currently in Buffer (PreloadQueue): ${preloadQueue.length}`);
+    }
    // 1. End Game Checks
     if (isWeeklyMode && weeklyQuestionCount >= WEEKLY_LIMIT) { await endGame(); return; }
     if (isLiteMode && score >= LITE_LIMIT) { await endGame(); return; }
@@ -2189,12 +2195,18 @@ async function startWeeklyChallenge() {
             weekInCycle * WEEKLY_LIMIT, 
             (weekInCycle * WEEKLY_LIMIT) + WEEKLY_LIMIT
         ).map(q => q.id);
+      // --- DEBUG LOGS ---
+        console.log("✅ Weekly Pool Generated:", weeklySessionPool);
+        console.log("📊 Total IDs in Pool:", weeklySessionPool.length);
+        // ------------------
     }
     // Prepare the session-specific random order
     preloadQueue = [];
     // Randomize the order for THIS specific play-through
     remainingQuestions = [...weeklySessionPool].sort(() => Math.random() - 0.5); // Set the 50 Weekly IDs
-  
+    // --- DEBUG LOGS ---
+    console.log("🎲 Questions Shuffled for this run:", remainingQuestions);
+    // ------------------
     // 3. THE BARRIER (Add this exactly like Normal Mode)
     // This stops the function here until Question 1 is 100% ready
     if (preloadQueue.length === 0) {
@@ -2344,6 +2356,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
