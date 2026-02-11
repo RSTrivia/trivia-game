@@ -2025,12 +2025,19 @@ function showCollectionLogNotification(petName) {
     const fileNameMap = {
         'Baby Mole': 'mole.png',
         'Pet Kraken': 'kraken.png',
+        'Chompy Chick': 'chompy.png',
+        'Pet Zilyana': 'zilyana.png',
         'Vorki': 'vorki.png',
         'Pet Snakeling': 'snakeling.png',
         'Yami': 'yami.png',
+        'pet_bloodhound': 'bloodhound.png', 
+        'Rocky': 'rocky.png',
         'Pet Zilyana': 'zilyana.png',
         'Olmlet': 'olmlet.png',
-        'TzRek-Jad': 'jad.png'
+        'TzRek-Jad': 'jad.png',
+        'Tumeken\'s guardian': 'tumekens_guardian.png',
+        'Lil\' Zik': 'lil_zik.png',
+        'TzRek-Zuk': 'zuk.png'
     };
 
     const fileName = fileNameMap[petName] || 'mole.png';
@@ -2351,6 +2358,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
