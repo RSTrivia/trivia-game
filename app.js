@@ -864,7 +864,7 @@ async function loadQuestion(broadcastedId = null, startTime = null) {
 
     // C. FINAL SAFETY CHECK
     if (preloadQueue.length === 0) {
-        console.error("No questions available.");
+        //console.error("No questions available.");
         // Only trigger  if we aren't in a Live Match, 
         // or if the Live Match is truly over.
         await endGame();
@@ -2364,6 +2364,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
