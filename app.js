@@ -1240,7 +1240,7 @@ async function endGame() {
     
         // --- ACHIEVEMENTS CHECK ---
         if (session && score >= 50) {
-            await saveAchievement('weekly_50', true);
+            saveAchievement('weekly_50', true);
             if (totalSeconds <= 120) await saveAchievement('weekly_sub_2', true);
             if (totalSeconds <= 180) await saveAchievement('weekly_sub_3', true);
         }
@@ -2331,6 +2331,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
