@@ -1063,7 +1063,6 @@ async function checkAnswer(choiceId, btn) {
         await highlightCorrectAnswer();
       
       }
-    }
     // --- CONTINUATION ---
     if (isCorrect || isDailyMode || isWeeklyMode) {
     // Challenges keep going until the limit is reached
@@ -1071,8 +1070,8 @@ async function checkAnswer(choiceId, btn) {
     } else {
     // Only Normal and Lite modes end on a wrong answer
         setTimeout(endGame, 1000);
-        }
     }
+}
 
 function updateLevelUI() {
     const lvlNum = document.getElementById('levelNumber');
@@ -2374,6 +2373,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
