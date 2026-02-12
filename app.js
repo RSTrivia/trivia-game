@@ -915,108 +915,112 @@ async function handleTimeout() {
 }
 
 async function checkAnswer(choiceId, btn) {
-    stopTickSound(); // CUT THE SOUND IMMEDIATELY
+    stopTickSound(); 
     if (timeLeft <= 0) return;
     clearInterval(timer);
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
-    // If timeLeft is 0, we treat it as a 'wrong' answer automatically
+
     if (isWeeklyMode) weeklyQuestionCount++;
     if (isDailyMode) dailyQuestionCount++;
     
-    const { data: isCorrect, error } = await supabase.rpc('check_my_answer', {
+    const { data: isCorrect, error: rpcErr } = await supabase.rpc('check_my_answer', {
         input_id: currentQuestion.id,
         choice: choiceId
     });
 
-    if (error) return console.error("RPC Error:", error);
+    if (rpcErr) return console.error("RPC Error:", rpcErr);
 
     if (isCorrect) {
-          playSound(correctBuffer);
-          btn.classList.add('correct');
-          // Update Local State & UI
-          score++;
-          updateScore();
-          const currentUsername = localStorage.getItem('cachedUsername') || 'Player';
+        playSound(correctBuffer);
+        btn.classList.add('correct');
+        score++;
+        updateScore();
+        const currentUsername = localStorage.getItem('cachedUsername') || 'Player';
          
-          // 1. Get the session
-          const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await supabase.auth.getSession();
         
         if (session) { 
+            // 1. Calculate XP to add
             let gained = isDailyMode ? 50 : 5;
-            let isBonusEarned = false; // Track for sound
+            let isBonusEarned = false; 
+
             if (isDailyMode) {
-                    if (dailyQuestionCount === DAILY_LIMIT) {
-                      gained += 100;
-                      isBonusEarned = true; // Daily bonus!
+                if (dailyQuestionCount === DAILY_LIMIT) {
+                    gained += 100;
+                    isBonusEarned = true; 
+                }
+            } else {
+                streak++; 
+                if (streak === 10) {
+                    gained += 30;
+                    streak = 0; 
+                    isBonusEarned = true; 
+                }
+            }
+
+            // 2. CALL THE DATABASE "FINAL BOSS"
+            const { data: res, error: xpErr } = await supabase.rpc('add_user_xp', {
+                target_user_id: session.user.id,
+                xp_to_add: gained
+            });
+
+            if (!xpErr && res) {
+                // Update local state with the truth from the DB
+                currentProfileXp = res.new_xp;
+                localStorage.setItem('cached_xp', currentProfileXp);
+                
+                // UI Feedback
+                updateLevelUI(); 
+                triggerXpDrop(gained);
+
+                if (isBonusEarned) {
+                    showNotification("BONUS XP!", bonusBuffer, "#a335ee");
+                }
+
+                // 3. LEVEL UP & MILESTONE LOGIC
+                if (res.leveled_up) {
+                    triggerFireworks();
+                    showNotification("LEVEL UP!", levelUpBuffer, "#ffde00");
+
+                    // Trigger milestones only when crossing the threshold
+                    if (res.new_level >= 10 && res.old_level < 10) {
+                        showAchievementNotification("Reach Level 10");
+                    } 
+                    if (res.new_level >= 50 && res.old_level < 50) {
+                        showAchievementNotification("Reach Level 50");
+                    } 
+                    if (res.new_level >= 99 && res.old_level < 99) {
+                        showAchievementNotification("Reach Max Level");
                     }
-                } else {
-                    // NORMAL & WEEKLY both use the 10-streak logic
-                    streak++; // Only track streak in normal mode
-                    if (streak === 10) { // change this back to 10
-                        gained += 30;
-                        streak = 0; 
-                        isBonusEarned = true; // Normal bonus!
-                    }
-            }
-            // 4. TRIGGER BONUS SECOND (This goes behind Level Up in the queue)
-            if (isBonusEarned) {
-                showNotification("BONUS XP!", bonusBuffer, "#a335ee"); //purple
-            }
-          
-            // A. Check for Level Up / Milestones BEFORE updating the global XP
-            checkLevelUp(gained);
-
-            // 2. Lucky Guess Check (< 1 second)
-            if (timeLeft >= 14) {
-                saveAchievement('fastest_guess', true); // This triggers the "Lucky Guess"
-            }
-            if (timeLeft <= 1 && timeLeft > 0) {
-                saveAchievement('just_in_time', true); // 2. Just in Time
+                }
             }
 
-            // halfway 50/100 lite mode score
-            if (isLiteMode && score === 50) {
-                saveAchievement('lite_50', true); // Sync to Supabase
-            }
-          
-            // halfway 25/50 weekly mode score
-            if (isWeeklyMode && score === 25) {
-                saveAchievement('weekly_25', true); // Sync to Supabase
-            }
+            // 4. OTHER ACHIEVEMENTS (Time/Score based)
+            if (timeLeft >= 14) saveAchievement('fastest_guess', true);
+            if (timeLeft <= 1 && timeLeft > 0) saveAchievement('just_in_time', true);
+            if (isLiteMode && score === 50) saveAchievement('lite_50', true);
+            if (isWeeklyMode && score === 25) saveAchievement('weekly_25', true);
 
-            // normal mode scores - achievements
             checkNormalScoreAchievements(currentUsername, score);
-          
-            // 5. UPDATE DATA
-            currentProfileXp += gained; // Add the XP to local state
-            localStorage.setItem('cached_xp', currentProfileXp);
-            updateLevelUI(); // Refresh the Player/Level row
-            triggerXpDrop(gained);
-            
-            await supabase.from('profiles')
-            .update({ xp: currentProfileXp })
-            .eq('id', session.user.id);
         }
       
-        // This is where the pet roll happens
         rollForPet();
         setTimeout(loadQuestion, 1000);
-      } else {
-      // wrong answer
+    } else {
+        // Wrong answer logic
         playSound(wrongBuffer);
-        streak = 0; // Reset streak on wrong answer in both Normal and Weekly modes
+        streak = 0; 
         if (btn) btn.classList.add('wrong');
         await highlightCorrectAnswer();
 
-     if (isDailyMode || isWeeklyMode) {
-            // Challenges keep going until the limit is reached
+        if (isDailyMode || isWeeklyMode) {
             setTimeout(loadQuestion, 1500);
         } else {
-            // Only Normal Mode ends on a wrong answer
             setTimeout(endGame, 1000);
         }
-   }
+    }
 }
+
 function updateLevelUI() {
     const lvlNum = document.getElementById('levelNumber');
     const xpBracket = document.getElementById('xpBracket');
@@ -1042,31 +1046,6 @@ function getLevel(xp) {
         if (xp < threshold) return L - 1;
     }
     return 99;
-}
-
-
-// 1. Updated checkLevelUp function
-function checkLevelUp(gainedXp) {
-    const oldLevel = getLevel(currentProfileXp);
-    const newLevel = getLevel(currentProfileXp + gainedXp);
-
-    if (newLevel > oldLevel) {
-        triggerFireworks(); 
-        // Trigger the generic Level Up notification
-        showNotification("LEVEL UP!", levelUpBuffer, "#ffde00"); 
-
-        // --- MILESTONE CHECKS ---
-        if (newLevel === 10) {
-            //saveAchievement('reach_level_10', true); // Save to Supabase
-            showAchievementNotification("Reach Level 10");
-        } else if (newLevel === 50) {
-            //saveAchievement('reach_level_50', true);
-            showAchievementNotification("Reach Level 50");
-        } else if (newLevel === 99) {
-            //saveAchievement('reach_max_level', true);
-            showAchievementNotification("Reach Max Level");
-        }
-    }
 }
 
 
@@ -1671,57 +1650,14 @@ if (shareBtn) {
     };
 }
 
-async function calculateStreakFromHistory(userId) {
-    const { data, error } = await supabase
-        .from('daily_attempts')
-        .select('attempt_date') // Use the column you manually save to
-        .eq('user_id', userId)
-        .order('attempt_date', { ascending: false });
-
-    if (error || !data || data.length === 0) return 0;
-
-    // 1. Get unique strings (they are already YYYY-MM-DD from your saveDailyScore)
-    const uniqueDates = [...new Set(data.map(d => d.attempt_date))];
-
-    // todayStr is UTC (from the top of your script)
-    const yesterdayDate = new Date();
-    yesterdayDate.setUTCDate(yesterdayDate.getUTCDate() - 1);
-    const yesterdayStr = yesterdayDate.toISOString().split('T')[0];
-
-    // 2. Initial check: Is the latest game from Today or Yesterday?
-    const latestGame = uniqueDates[0];
-    if (latestGame !== todayStr && latestGame !== yesterdayStr) {
-        return 0;
-    }
-
-    // 3. Count backward through the strings
-    let streak = 1;
-    for (let i = 0; i < uniqueDates.length - 1; i++) {
-        // Force UTC by adding T00:00:00Z
-        const current = new Date(uniqueDates[i] + 'T00:00:00Z');
-        const next = new Date(uniqueDates[i + 1] + 'T00:00:00Z');
-        
-        const diffTime = Math.abs(current - next);
-        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-
-        if (diffDays === 1) {
-            streak++;
-        } else if (diffDays > 1) {
-            break; // Found a gap larger than 1 day
-        }
-    }
-
-    return streak;
-}
-
-
 async function updateDailyStreak(currentScore) {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
     const userId = session.user.id;
-
-    // 1. Get the current Streak from History
-    const actualStreak = await calculateStreakFromHistory(userId);
+    // 1. Get the current Streak from the DATABASE instead of local JS
+    const { data: actualStreak, error } = await supabase.rpc('get_daily_streak', { 
+        target_user_id: userId 
+    });
 
     // 2. Get existing achievements from Profile
     const { data: profile } = await supabase.from('profiles')
@@ -2353,6 +2289,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
