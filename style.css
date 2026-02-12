@@ -498,8 +498,8 @@ h1 {
 /* Position the Help Button in the top right corner of the .container */
 #helpBtn {
   position: absolute !important;
-  top: 10px !important;    /* Same for Menu and Game */
-  right: 10px !important;  /* Same for Menu and Game */
+  top: 5px;    /* Distance from top edge */
+  right: 3px;  /* Distance from right edge */
   width: 26px; /* Reduced size (was 32px) */
   height: 26px;/* Reduced size (was 32px) */
   z-index: 100;
@@ -1073,38 +1073,33 @@ input.input-field:-webkit-autofill:active {
   font-size: 1.2rem;
 }
 
-/* ====== MATCH GAME CONTAINER WITH MAIN MENU (MOBILE) ====== */
+/* ====== HIDE ONLY THE MAIN TITLE DURING GAME (MOBILE ONLY) ====== */
 @media (max-width: 480px) {
-  /* 1. Ensure the app wrapper keeps the same top spacing as the menu */
-  body.game-active #app {
-    padding-top: 20px !important; /* Standardized to match menu default */
-  }
-
-  /* 2. Hide the title but KEEP its space or adjust container to match */
+  /* Hides the big gold title, but leaves #user-controls visible */
   body.game-active h1 {
     display: none !important;
   }
-
-  /* 3. FIX THE JUMP: Remove the extra 60px padding that pushes content down */
+  
+  /* This controls the gap between the very top of the phone screen and your UI check here*/
+  body.game-active #app {
+    padding-top: 20px !important;
+  }
+  
+  /* 2. ADD THE GAP: Internal padding at the top of the box */
   body.game-active .container {
-    /* Match this exactly to your Main Menu container padding */
-    padding-top: 20px !important; 
-    /* If the menu container has a specific height, ensure it's defined here too */
-    min-height: 640px !important; 
+    padding-top: 20px !important; /* This creates the empty room you want */
   }
-
-  /* 4. Position the Help Button so it doesn't overlap the username */
+  
+  /* 3. Keep the Help Button at the very top edge of that room */
   body.game-active #helpBtn {
-    top: 15px !important; 
-    right: 15px !important;
-    position: absolute !important;
+    top: 10px !important; 
+    right: 8px !important;
   }
-
-  /* 5. User Controls layout */
+  
+  /* 4. Ensures the name and mic row stays visible and tidy */
   body.game-active #user-controls {
-    margin-top: 10px !important; /* Gives a little room since H1 is gone */
-    margin-bottom: 20px !important;
-    padding-top: 0 !important;
+    margin-bottom: 15px !important;
+    padding-top: 5px !important;
   }
   
   /* ====== FIX POSITIONING FOR MOBILE ====== */
@@ -1666,8 +1661,6 @@ input.input-field:-webkit-autofill:active {
   opacity: 0.5 !important;
   filter: grayscale(1);
 }
-
-
 
 
 
