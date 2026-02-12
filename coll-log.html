@@ -478,8 +478,8 @@ const ACHIEVEMENT_SCHEMA = [
     { cat: 'Lite Mode', tasks: [
         { id: 'l50', text: 'Halfway 50/100', check: (d) => d.lite50 === true },
         { id: 'l100', text: 'Perfect 100/100', check: (d) => d.lite100 === true },
-        { id: 'ls6', text: 'Speedrunner 100/100 sub 6m', check: (d) => d.liteSub6 === true },
-        { id: 'ls4', text: 'GM Speedrunner 100/100 sub 4m', check: (d) => d.liteSub4 === true }
+        { id: 'ls8', text: 'Speedrunner 100/100 sub 8m', check: (d) => d.liteSub8 === true },
+        { id: 'ls6', text: 'GM Speedrunner 100/100 sub 6m', check: (d) => d.liteSub6 === true }
     ]},
     { cat: 'Daily Mode', tasks: [
         { id: 'd1', text: 'First Daily Mode', check: (d) => d.dailyTotal >= 1 },
@@ -559,8 +559,8 @@ async function renderAchievements(calculatedLevel) {
         // --- FIXED: Lite Booleans from LocalStorage ---
         lite50: localStorage.getItem('ach_stat_lite_50') === 'true',
         lite100: localStorage.getItem('ach_stat_lite_100') === 'true',
-        liteSub6: localStorage.getItem('ach_stat_lite_sub_8') === 'true',
-        liteSub4: localStorage.getItem('ach_stat_lite_sub_6') === 'true'
+        liteSub8: localStorage.getItem('ach_stat_lite_sub_8') === 'true',
+        liteSub6: localStorage.getItem('ach_stat_lite_sub_6') === 'true'
     };
 
     ACHIEVEMENT_SCHEMA.forEach(category => {
