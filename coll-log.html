@@ -559,8 +559,8 @@ async function renderAchievements(calculatedLevel) {
         // --- FIXED: Lite Booleans from LocalStorage ---
         lite50: localStorage.getItem('ach_stat_lite_50') === 'true',
         lite100: localStorage.getItem('ach_stat_lite_100') === 'true',
-        liteSub6: localStorage.getItem('ach_stat_lite_sub_6') === 'true',
-        liteSub4: localStorage.getItem('ach_stat_lite_sub_4') === 'true'
+        liteSub6: localStorage.getItem('ach_stat_lite_sub_8') === 'true',
+        liteSub4: localStorage.getItem('ach_stat_lite_sub_6') === 'true'
     };
 
     ACHIEVEMENT_SCHEMA.forEach(category => {
@@ -675,8 +675,8 @@ async function loadCollection() {
         // Save Lite stats to LocalStorage so renderAchievements can see them
         localStorage.setItem('ach_stat_lite_50', (a.lite_50 || false).toString());
         localStorage.setItem('ach_stat_lite_100', (a.lite_100 || false).toString());
+        localStorage.setItem('ach_stat_lite_sub_8', (a.lite_sub_8 || false).toString());
         localStorage.setItem('ach_stat_lite_sub_6', (a.lite_sub_6 || false).toString());
-        localStorage.setItem('ach_stat_lite_sub_4', (a.lite_sub_4 || false).toString());
         
         // --- SOURCE OF TRUTH OVERRIDES ---
         localStorage.setItem('cached_daily_total', realTotalGames);
