@@ -669,9 +669,10 @@ function resetGame() {
     weeklyQuestionCount = 0;
     dailyQuestionCount = 0; // Don't forget this!
     // 4. WIPE UI IMMEDIATELY
+    if (!isDailyMode) {
     questionText.textContent = '';
     answersBox.innerHTML = '';
-    
+     }
     // 5. Reset Timer Visuals
     timeLeft = 15;
     if (timeDisplay) timeDisplay.textContent = timeLeft;
@@ -679,12 +680,12 @@ function resetGame() {
     
     // 6. Reset Score Visual
     if (scoreDisplay) scoreDisplay.textContent = `Score: 0`;
-      
+    if (!isDailyMode) {
     // 7. Image cleanup
     questionImage.style.display = 'none';
     questionImage.style.opacity = '0';
     questionImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
-  
+    }
     // 8. Title cleanup
     const gameOverTitle = document.getElementById('game-over-title');
     const gzTitle = document.getElementById('gz-title');
@@ -2358,6 +2359,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
