@@ -1092,8 +1092,8 @@ input.input-field:-webkit-autofill:active {
   
   /* 3. Keep the Help Button at the very top edge of that room */
   body.game-active #helpBtn {
-    top: 10px !important; 
-    right: 8px !important;
+    top: 12px !important; 
+    right: 10px !important;
   }
   
   /* 4. Ensures the name and mic row stays visible and tidy */
@@ -1661,6 +1661,7 @@ input.input-field:-webkit-autofill:active {
   opacity: 0.5 !important;
   filter: grayscale(1);
 }
+
 
 
 
