@@ -208,15 +208,16 @@
         /* Row 4 (Legendary) */
         #logGrid .pet-slot:nth-child(n+10):nth-child(-n+12).unlocked {
             background: rgba(212, 175, 55, 0.25) !important;
-            border-color: #d4af37 !important; 
+            border-color: rgba(212, 175, 55, 1.0) !important; 
         }
         #logGrid .pet-slot:nth-child(n+10):nth-child(-n+12).unlocked:hover {
             border-color: #ffea8a !important;
         }
         /* Row 5 (Mythic/Extra: 13-15) */
         #logGrid .pet-slot:nth-child(n+13):nth-child(-n+15).unlocked {
-            background: rgba(212, 175, 55, 0.3) !important;
-            border-color: #ffea8a !important; 
+            background: rgba(212, 175, 55, 0.3) !important;    /* change here */
+            border-color: #ffea8a !important;                 /* Lighter, shining gold border */
+            box-shadow: inset 0 0 10px rgba(255, 234, 138, 0.2), 0 0 5px rgba(212, 175, 55, 0.5) !important;
         }
         #logGrid .pet-slot:nth-child(n+13):nth-child(-n+15).unlocked:hover {
             border-color: #ffea8a !important;
