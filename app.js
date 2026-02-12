@@ -669,10 +669,8 @@ function resetGame() {
     weeklyQuestionCount = 0;
     dailyQuestionCount = 0; // Don't forget this!
     // 4. WIPE UI IMMEDIATELY
-    if (!isDailyMode) {
-      questionText.textContent = '';
-      answersBox.innerHTML = '';
-    }
+    questionText.textContent = '';
+    answersBox.innerHTML = '';
     
     // 5. Reset Timer Visuals
     timeLeft = 15;
@@ -1345,10 +1343,10 @@ async function endGame() {
 
     // 2. WIPE GAME UI IMMEDIATELY 
     // This prevents seeing old questions/answers behind the transition
-    questionText.textContent = ''; 
-    answersBox.innerHTML = '';
-    questionImage.style.display = 'none';
-    questionImage.src = ''; 
+    //questionText.textContent = ''; 
+    //answersBox.innerHTML = '';
+    //questionImage.style.display = 'none';
+    //questionImage.src = ''; 
     gameEnding = false;
     updateShareButtonState();
   });
@@ -2360,6 +2358,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
