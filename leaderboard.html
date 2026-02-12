@@ -179,16 +179,21 @@ function updateLeaderboard(data) {
       return;
     }
 
-    // --- PET ICON LOGIC ---
-    // If we're in 'scores' mode, it's inside entry.profiles. In 'xp' mode, it's entry.equipped_pet
-    const activePet = entry.profiles ? entry.profiles.equipped_pet : entry.equipped_pet;
+   // --- FIXED PET ICON LOGIC ---
+    // 1. Check if we have an equipped_pet (XP mode)
+    // 2. Check if we have a profiles array with data (Scores mode)
+    let activePet = entry.equipped_pet; 
+    
+    if (!activePet && entry.profiles) {
+        // Supabase joins return an array. We take the first item.
+        const profile = Array.isArray(entry.profiles) ? entry.profiles[0] : entry.profiles;
+        activePet = profile?.equipped_pet;
+    }
     let petImgHtml = "";
-
     if (activePet) {
         const petFileName = activePet.replace('pet_', '') + '.png';
-        petImgHtml = `<img src="pets/${petFileName}" style="width:20px; height:20px; vertical-align:middle; margin-right:6px; image-rendering:pixelated;">`;
+        petImgHtml = `<img src="pets/${petFileName}" class="mini-pet-icon" draggable="false">`;
     }
-
     // Put the pet image and username together
     const fullNameHtml = `${petImgHtml}${entry.username}`;
     if (userTxt.innerHTML !== fullNameHtml) {
@@ -354,6 +359,7 @@ if(liteTab) liteTab.onclick = () => handleTabClick('lite', liteTab);
 </script>
 </body>
 </html>
+
 
 
 
