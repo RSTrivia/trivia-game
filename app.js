@@ -669,10 +669,9 @@ function resetGame() {
     weeklyQuestionCount = 0;
     dailyQuestionCount = 0; // Don't forget this!
     // 4. WIPE UI IMMEDIATELY
-    if (!isDailyMode) {
     questionText.textContent = '';
     answersBox.innerHTML = '';
-     }
+
     // 5. Reset Timer Visuals
     timeLeft = 15;
     if (timeDisplay) timeDisplay.textContent = timeLeft;
@@ -680,12 +679,11 @@ function resetGame() {
     
     // 6. Reset Score Visual
     if (scoreDisplay) scoreDisplay.textContent = `Score: 0`;
-    if (!isDailyMode) {
     // 7. Image cleanup
     questionImage.style.display = 'none';
     questionImage.style.opacity = '0';
     questionImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
-    }
+
     // 8. Title cleanup
     const gameOverTitle = document.getElementById('game-over-title');
     const gzTitle = document.getElementById('gz-title');
@@ -789,16 +787,10 @@ if (preloadQueue.length === 0) {
 
 async function loadQuestion() {
   if (gameEnding) return;
-  // Debug the current state every time a question loads delete after
-    if (isWeeklyMode) {
-        console.log(`📝 Loading Weekly Question: ${weeklyQuestionCount + 1} / 50`);
-        console.log(`📦 Remaining in Pool: ${remainingQuestions.length}`);
-        console.log(`⏳ Currently in Buffer (PreloadQueue): ${preloadQueue.length}`);
-    }
    // 1. End Game Checks
     if (isWeeklyMode && weeklyQuestionCount >= WEEKLY_LIMIT) { await endGame(); return; }
     if (isLiteMode && score >= LITE_LIMIT) { await endGame(); return; }
-        
+    if (isDailyMode && dailyQuestionCount >= 10) { await endGame(); return; }    
     // A. IMMEDIATE CLEANUP
   const allBtns = document.querySelectorAll('.answer-btn');
     allBtns.forEach(btn => {
@@ -826,9 +818,7 @@ async function loadQuestion() {
 
     // C. FINAL SAFETY CHECK
     if (preloadQueue.length === 0) {
-        console.error("No questions available.");
-        // Only trigger endGame if we aren't in a Live Match, 
-        // or if the Live Match is truly over.
+        //console.error("No questions available.");
         await endGame();
         return;
     }
@@ -912,10 +902,13 @@ async function handleTimeout() {
     await highlightCorrectAnswer();
   
    if (isWeeklyMode) weeklyQuestionCount++; 
+   if (isDailyMode) dailyQuestionCount++;
       
-    if (isDailyMode || isWeeklyMode) {
+   // 2. Corrected Logic & Syntax (Fixed the missing closing parenthesis)
+    if ((isDailyMode && dailyQuestionCount < 10) || (isWeeklyMode && weeklyQuestionCount < 50)) {
         setTimeout(loadQuestion, 1500);
     } else {
+        // If it's Normal mode OR we reached the limit for Daily/Weekly
         setTimeout(endGame, 1000);
     }
 }
@@ -927,6 +920,7 @@ async function checkAnswer(choiceId, btn) {
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
     // If timeLeft is 0, we treat it as a 'wrong' answer automatically
     if (isWeeklyMode) weeklyQuestionCount++;
+    if (isDailyMode) dailyQuestionCount++;
     
     const { data: isCorrect, error } = await supabase.rpc('check_my_answer', {
         input_id: currentQuestion.id,
@@ -950,7 +944,6 @@ async function checkAnswer(choiceId, btn) {
             let gained = isDailyMode ? 50 : 5;
             let isBonusEarned = false; // Track for sound
             if (isDailyMode) {
-                    dailyQuestionCount++; // Only track daily count in daily mode
                     if (dailyQuestionCount === 10) {
                       gained += 100;
                       isBonusEarned = true; // Daily bonus!
@@ -2359,6 +2352,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
