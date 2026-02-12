@@ -51,7 +51,16 @@
   .rank-slot { display: inline-block; width: 38px; text-align: left; }
   .number-nudge { position: relative; left: 6px; }
   .name-part { display: flex; align-items: center; }
-
+  
+  .mini-pet-icon {
+      width: 20px;
+      height: 20px;
+      vertical-align: middle;
+      margin-right: 8px;
+      image-rendering: pixelated; /* Keeps it sharp like your collection page */
+      object-fit: contain;
+  }
+  
   @media (max-width: 480px) {
     #app .container {
       width: 440px !important; max-width: 95% !important; height: 640px !important; 
@@ -165,15 +174,27 @@ function updateLeaderboard(data) {
     const scoreSpan = row.querySelector('.score-part');
 
     if (!entry.username) {
-      userTxt.textContent = '';
-      scoreSpan.textContent = '';
+      userTxt.innerHTML = ''; // Changed to innerHTML to clear images
+      scoreSpan.innerHTML = '';
       return;
     }
 
-    if (userTxt.textContent !== entry.username) {
-        userTxt.textContent = entry.username;
+    // --- PET ICON LOGIC ---
+    // If we're in 'scores' mode, it's inside entry.profiles. In 'xp' mode, it's entry.equipped_pet
+    const activePet = entry.profiles ? entry.profiles.equipped_pet : entry.equipped_pet;
+    let petImgHtml = "";
+
+    if (activePet) {
+        const petFileName = activePet.replace('pet_', '') + '.png';
+        petImgHtml = `<img src="pets/${petFileName}" style="width:20px; height:20px; vertical-align:middle; margin-right:6px; image-rendering:pixelated;">`;
     }
 
+    // Put the pet image and username together
+    const fullNameHtml = `${petImgHtml}${entry.username}`;
+    if (userTxt.innerHTML !== fullNameHtml) {
+        userTxt.innerHTML = fullNameHtml;
+    }
+    
     let finalHTML = "";
     
     if (currentMode === 'xp') {
@@ -207,23 +228,26 @@ async function fetchLeaderboard() {
   if (currentMode === 'score') {
     query = supabase
       .from('scores')
-      .select('username, val:score, time_ms') // 1. Added time_ms to the selection
+      // Added profiles(equipped_pet) here
+      .select('username, val:score, time_ms, profiles(equipped_pet)') 
       .gt('score', 0)
-      .order('score', { ascending: false })    // 2. Primary sort: Highest Score
-      .order('time_ms', { ascending: true }); // 3. Tie-breaker: Fastest Time (lowest ms)
+      .order('score', { ascending: false })
+      .order('time_ms', { ascending: true });
       
   } else if (currentMode === 'lite') {
     query = supabase
       .from('scores')
-      .select('username, lite_data') // Pull the JSONB object
+      // Added profiles(equipped_pet) here
+      .select('username, lite_data, profiles(equipped_pet)') 
       .not('lite_data', 'is', null)
-      .gt('lite_data->score', 0)     // Only rows with a score
-      .order('lite_data->score', { ascending: false }) // Sort by nested score
-      .order('lite_data->time', { ascending: true });  // Sort by nested time
+      .gt('lite_data->score', 0)
+      .order('lite_data->score', { ascending: false })
+      .order('lite_data->time', { ascending: true });
   } else if (currentMode === 'weekly') {
     query = supabase
       .from('scores')
-      .select('username, weekly_data')
+      // Added profiles(equipped_pet) here
+      .select('username, weekly_data, profiles(equipped_pet)')
       .not('weekly_data', 'is', null)
       .gt('weekly_data->score', 0)
       .order('weekly_data->score', { ascending: false })
@@ -232,7 +256,8 @@ async function fetchLeaderboard() {
   } else {
     query = supabase
       .from('profiles')
-      .select('username, val:xp')
+      // Added equipped_pet here
+      .select('username, val:xp, equipped_pet')
       .gt('xp', 0)
       .order('xp', { ascending: false });
   }
@@ -329,6 +354,7 @@ if(liteTab) liteTab.onclick = () => handleTabClick('lite', liteTab);
 </script>
 </body>
 </html>
+
 
 
 
