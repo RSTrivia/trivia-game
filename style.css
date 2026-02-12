@@ -1087,7 +1087,7 @@ input.input-field:-webkit-autofill:active {
   
   /* 2. ADD THE GAP: Internal padding at the top of the box */
   body.game-active .container {
-    padding-top: 20px !important; /* This creates the empty room you want */
+    padding-top: 60px !important; /* This creates the empty room you want */
   }
   
   /* 3. Keep the Help Button at the very top edge of that room */
@@ -1661,6 +1661,7 @@ input.input-field:-webkit-autofill:active {
   opacity: 0.5 !important;
   filter: grayscale(1);
 }
+
 
 
 
