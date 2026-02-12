@@ -1817,115 +1817,46 @@ async function saveAchievement(key, value) {
 }
 
 async function rollForPet() {
-  // 1. Check if the user is logged in
+    // 1. Check if the user is logged in
     const { data: { session } } = await supabase.auth.getSession();
     
-    // If no session exists (Guest), exit the function immediately
-    if (!session) {
-        //console.log("Guest player: Skipping pet roll.");
-        return; 
+    // If no session exists (Guest), exit immediately
+    if (!session) return; 
+
+    // 2. Call the SQL Function (RPC)
+    // This tells Supabase: "Run the roll_for_pet function for this user ID"
+    const { data, error } = await supabase.rpc('roll_for_pet', {
+        target_user_id: session.user.id
+    });
+
+    if (error) {
+        console.error("Error rolling for pet:", error);
+        return;
     }
 
-    // 1. Fetch user's current collection
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('collection_log')
-        .eq('id', session.user.id)
-        .single();
-
-    let currentLog = profile?.collection_log || [];
-
-    // 2. Define the Pools
-    const allPets = {
-        mythic: [
-            { id: 'pet_zuk', name: 'TzRek-Zuk' },
-            { id: 'pet_lil_zik', name: 'Lil\' Zik' },
-            { id: 'pet_tumekens_guardian', name: 'Tumeken\'s guardian' }
-        ],
-        legendary: [
-            { id: 'pet_jad', name: 'TzRek-Jad' },
-            { id: 'pet_olmlet', name: 'Olmlet' },
-            { id: 'pet_corporeal_beast', name: 'Corporeal Beast' }
-        ],
-        rare: [
-            { id: 'pet_yami', name: 'Yami' },
-            { id: 'pet_bloodhound', name: 'Bloodhound' },
-            { id: 'pet_rocky', name: 'Rocky' }
-        ],
-        uncommon: [
-            { id: 'pet_zilyana', name: 'Pet Zilyana' },
-            { id: 'pet_vorki', name: 'Vorki' },
-            { id: 'pet_snakeling', name: 'Pet Snakeling' }
-        ],
-        common: [
-            { id: 'pet_mole', name: 'Baby Mole' },
-            { id: 'pet_kraken', name: 'Pet Kraken' },
-            { id: 'pet_chompy', name: 'Chompy Chick' }
-        ]
-    };
-
-    // --- NEW: Calculate Total Possible Pets ---
-    const flatAllPets = Object.values(allPets).flat();
-    const totalPetCount = flatAllPets.length;
-  
-    // 3. Filter pools to ONLY include missing pets
-    const missingLegendary = allPets.legendary.filter(p => !currentLog.includes(p.id));
-    const missingRare = allPets.rare.filter(p => !currentLog.includes(p.id));
-    const missingUncommon = allPets.uncommon.filter(p => !currentLog.includes(p.id));
-    const missingCommon = allPets.common.filter(p => !currentLog.includes(p.id));
-
-    const roll = Math.random();
-    let reward = null;
-
-    // 4. Roll the dice (Only if missing pets exist in that tier)
-   // 1/1000 = 0.001
-  // 1/500  = 0.002
-  // 1/200  = 0.005
-  // 1/50   = 0.02
-
-
-    if (roll <= 0.0005 && missingMythic.length > 0) {
-        // Exact 1/2000 chance
-        reward = missingMythic[Math.floor(Math.random() * missingMythic.length)];
-    }
-    else if (roll <= 0.001 && missingLegendary.length > 0) {
-        // Exact 1/1000 chance
-        reward = missingLegendary[Math.floor(Math.random() * missingLegendary.length)];
-    } 
-    else if (roll <= (0.001 + 0.002) && missingRare.length > 0) {
-        // Exact 1/500 chance (0.003 threshold)
-        reward = missingRare[Math.floor(Math.random() * missingRare.length)];
-    } 
-    else if (roll <= (0.001 + 0.002 + 0.005) && missingUncommon.length > 0) {
-        // Exact 1/200 chance (0.008 threshold)
-        reward = missingUncommon[Math.floor(Math.random() * missingUncommon.length)];
-    } 
-    else if (roll <= (0.001 + 0.002 + 0.005 + 0.02) && missingCommon.length > 0) {
-        // Exact 1/50 chance (0.028 threshold)
-        reward = missingCommon[Math.floor(Math.random() * missingCommon.length)];
-    }
-  
-    // 5. If they won a pet they didn't have
-    if (reward) {
-      // 1. First Pet Notification
-        if (currentLog.length === 0) {
+    // 3. If the database says we unlocked a pet
+    if (data && data.unlocked) {
+        
+        // Handle "Unlock 1 Pet" achievement (only happens when total is 1)
+        if (data.total_unlocked === 1) {
             showAchievementNotification("Unlock 1 Pet");
         }
-        currentLog.push(reward.id);
-        // 2. All Pets Notification (Check if new length matches total)
-        if (currentLog.length === totalPetCount) {
+
+        // Handle "Unlock all Pets" achievement
+        if (data.is_all_pets) {
             showAchievementNotification("Unlock all Pets");
         }
 
-        await supabase
-            .from('profiles')
-            .update({ collection_log: currentLog })
-            .eq('id', session.user.id);
-      
-      // Update LocalStorage so the Collection Log page updates instantly
-      localStorage.setItem('cached_pets', JSON.stringify(currentLog));
-      
-      showCollectionLogNotification(reward.name);
+        // 4. Update LocalStorage so the UI reflects the change immediately
+        // We fetch the current log from storage, add the new pet ID, and save it back
+        let currentCached = JSON.parse(localStorage.getItem('cached_pets') || "[]");
+        if (!currentCached.includes(data.pet_id)) {
+            currentCached.push(data.pet_id);
+            localStorage.setItem('cached_pets', JSON.stringify(currentCached));
+        }
+
+        // 5. Show the fun notification
+        showCollectionLogNotification(data.pet_name);
     }
 }
 
@@ -2289,6 +2220,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
