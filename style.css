@@ -498,8 +498,8 @@ h1 {
 /* Position the Help Button in the top right corner of the .container */
 #helpBtn {
   position: absolute !important;
-  top: 5px;    /* Distance from top edge */
-  right: 3px;  /* Distance from right edge */
+  top: 10px !important;    /* Same for Menu and Game */
+  right: 10px !important;  /* Same for Menu and Game */
   width: 26px; /* Reduced size (was 32px) */
   height: 26px;/* Reduced size (was 32px) */
   z-index: 100;
@@ -1666,6 +1666,7 @@ input.input-field:-webkit-autofill:active {
   opacity: 0.5 !important;
   filter: grayscale(1);
 }
+
 
 
 
