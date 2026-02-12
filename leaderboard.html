@@ -304,17 +304,34 @@ async function subscribeToLeaderboard() {
     // 2. Determine which table to watch
     const tableToWatch = (currentMode === 'xp') ? 'profiles' : 'scores';
 
-    // 3. Create the listener with a unique name to avoid ID collisions
-    realtimeSubscription = supabase
-        .channel('live-leaderboard') // Added timestamp for uniqueness
-        .on(
-            'postgres_changes', 
-            { event: '*', schema: 'public', table: tableToWatch }, 
+    // 3. Create the channel
+    realtimeSubscription = supabase.channel('live-leaderboard');
+
+    // LISTENER 1: Your original logic (Score or XP updates)
+    realtimeSubscription.on(
+        'postgres_changes', 
+        { event: '*', schema: 'public', table: tableToWatch }, 
+        (payload) => {
+            fetchLeaderboard(); 
+        }
+    );
+
+    // LISTENER 2: The Addition (Watch for pet changes specifically)
+    // If tableToWatch is already 'profiles' (XP mode), we don't need a second one
+    if (tableToWatch !== 'profiles') {
+        realtimeSubscription.on(
+            'postgres_changes',
+            { event: 'UPDATE', schema: 'public', table: 'profiles' },
             (payload) => {
-                fetchLeaderboard(); 
+                // If the update involved the equipped_pet, refresh the list
+                if (payload.new && payload.new.equipped_pet !== undefined) {
+                    fetchLeaderboard();
+                }
             }
-        )
-        .subscribe();
+        );
+    }
+
+    realtimeSubscription.subscribe();
 }
   
 // Unified Tab Click Logic
@@ -369,6 +386,7 @@ if(liteTab) liteTab.onclick = () => handleTabClick('lite', liteTab);
 </script>
 </body>
 </html>
+
 
 
 
