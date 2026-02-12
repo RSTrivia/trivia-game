@@ -1278,8 +1278,8 @@ async function endGame() {
           // --- ACHIEVEMENTS CHECK ---
             if (session && score >= 100) { //change to 100 score
                 await saveAchievement('lite_100', true);
-                if (totalSeconds <= 360) await saveAchievement('lite_sub_4', true);
-                if (totalSeconds <= 480) await saveAchievement('lite_sub_6', true);
+                if (totalSeconds <= 360) await saveAchievement('lite_sub_6', true);
+                if (totalSeconds <= 480) await saveAchievement('lite_sub_8', true);
             }
           
             let isLitePB = session ? await saveLiteScore(session.user.id, username, score, totalMs) : false;
@@ -1841,11 +1841,11 @@ async function saveAchievement(key, value) {
         isNewAchievement = true;
         notificationText = "Perfect 100/100";
     }
-    else if (key === 'lite_sub_4' && !achievements[key]) {
+    else if (key === 'lite_sub_6' && !achievements[key]) {
         isNewAchievement = true;
         notificationText = "Speedrunner 100/100 sub 6m";
     }
-    else if (key === 'lite_sub_6' && !achievements[key]) {
+    else if (key === 'lite_sub_8' && !achievements[key]) {
         isNewAchievement = true;
         notificationText = "GM speedrunner 100/100 sub 8m";
     }
@@ -2353,6 +2353,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
