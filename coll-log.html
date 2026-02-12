@@ -83,12 +83,10 @@
         }
         
         .pet-img {
-            width: 38px;  /* Reduced from 50px */
-            height: 38px; /* Reduced from 50px */
-            object-fit: scale-down;
+            object-fit: contain;
             filter: brightness(0) contrast(0.5); 
             margin-bottom: 2px;
-            image-rendering: pixelated;
+            image-rendering: auto;
             display: block;
             user-select: none;
             pointer-events: none;
