@@ -179,22 +179,13 @@ function updateLeaderboard(data) {
       return;
     }
 
-   // --- FIXED PET ICON LOGIC ---
-    // 1. Check if we have an equipped_pet (XP mode)
-    // 2. Check if we have a profiles array with data (Scores mode)
-    let activePet = entry.equipped_pet; 
-    
-    if (!activePet && entry.profiles) {
-        // Supabase joins return an array. We take the first item.
-        const profile = Array.isArray(entry.profiles) ? entry.profiles[0] : entry.profiles;
-        activePet = profile?.equipped_pet;
-    }
+    // Since we manually attached it in fetchLeaderboard, it's always entry.equipped_pet
     let petImgHtml = "";
-    if (activePet) {
-        const petFileName = activePet.replace('pet_', '') + '.png';
+    if (entry.equipped_pet) {
+        const petFileName = entry.equipped_pet.replace('pet_', '') + '.png';
         petImgHtml = `<img src="pets/${petFileName}" class="mini-pet-icon" draggable="false">`;
     }
-    // Put the pet image and username together
+
     const fullNameHtml = `${petImgHtml}${entry.username}`;
     if (userTxt.innerHTML !== fullNameHtml) {
         userTxt.innerHTML = fullNameHtml;
@@ -234,7 +225,7 @@ async function fetchLeaderboard() {
     query = supabase
       .from('scores')
       // Added profiles(equipped_pet) here
-      .select('username, val:score, time_ms, profiles!inner(equipped_pet)') 
+      .select('username, val:score, time_ms') 
       .gt('score', 0)
       .order('score', { ascending: false })
       .order('time_ms', { ascending: true });
@@ -243,7 +234,7 @@ async function fetchLeaderboard() {
     query = supabase
       .from('scores')
       // Added profiles(equipped_pet) here
-      .select('username, lite_data, profiles!inner(equipped_pet)') 
+      .select('username, lite_data') 
       .not('lite_data', 'is', null)
       .gt('lite_data->score', 0)
       .order('lite_data->score', { ascending: false })
@@ -252,7 +243,7 @@ async function fetchLeaderboard() {
     query = supabase
       .from('scores')
       // Added profiles(equipped_pet) here
-      .select('username, weekly_data, profiles!inner(equipped_pet)')
+      .select('username, weekly_data')
       .not('weekly_data', 'is', null)
       .gt('weekly_data->score', 0)
       .order('weekly_data->score', { ascending: false })
@@ -270,6 +261,24 @@ async function fetchLeaderboard() {
   const { data, error } = await query.limit(10);
   if (error) return console.error(error);
 
+  // --- MANUAL PET FETCH ---
+    // If we found scores and we aren't in XP mode (where we already have the pet),
+    // go get the pets for these specific usernames.
+    if (data && data.length > 0 && currentMode !== 'xp') {
+      const names = data.map(d => d.username);
+      const { data: petProfiles } = await supabase
+        .from('profiles')
+        .select('username, equipped_pet')
+        .in('username', names);
+  
+      if (petProfiles) {
+        data.forEach(entry => {
+          const found = petProfiles.find(p => p.username === entry.username);
+          entry.equipped_pet = found ? found.equipped_pet : null;
+        });
+      }
+    }
+  
   if (data) {
     console.log(`Leaderboard Data (${currentMode}):`, data); // <--- ADD THIS
     localStorage.setItem(`leaderboard_${currentMode}`, JSON.stringify(data));
@@ -360,6 +369,7 @@ if(liteTab) liteTab.onclick = () => handleTabClick('lite', liteTab);
 </script>
 </body>
 </html>
+
 
 
 
