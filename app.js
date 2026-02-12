@@ -1897,6 +1897,7 @@ function showCollectionLogNotification(petName) {
         'Pet Zilyana': 'zilyana.png',
         'Olmlet': 'olmlet.png',
         'TzRek-Jad': 'jad.png',
+        'Corporeal Beast': 'corporeal_beast.png',
         'Tumeken\'s guardian': 'tumekens_guardian.png',
         'Lil\' Zik': 'lil_zik.png',
         'TzRek-Zuk': 'zuk.png'
@@ -2220,6 +2221,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
