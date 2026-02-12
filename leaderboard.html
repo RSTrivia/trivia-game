@@ -280,7 +280,6 @@ async function fetchLeaderboard() {
     }
   
   if (data) {
-    console.log(`Leaderboard Data (${currentMode}):`, data); // <--- ADD THIS
     localStorage.setItem(`leaderboard_${currentMode}`, JSON.stringify(data));
     updateLeaderboard(data);
   }
@@ -386,6 +385,7 @@ if(liteTab) liteTab.onclick = () => handleTabClick('lite', liteTab);
 </script>
 </body>
 </html>
+
 
 
 
