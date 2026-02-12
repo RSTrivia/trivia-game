@@ -2247,14 +2247,14 @@ async function startDailyChallenge(session) {
     if (burnRes.error) return alert("You've already played today!");
 
     const allQuestions = questionsRes.data;
-    if (!allQuestions || allQuestions.length < 10) return alert("Error loading questions.");
+    if (!allQuestions || allQuestions.length < DAILY_LIMIT) return alert("Error loading questions.");
 
     // 3. Deterministic Selection
     const startDate = new Date(RELEASE_DATE); 
     const diffTime = Math.abs(new Date() - startDate);
     const dayCounter = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     
-    const questionsPerDay = 10;
+    const questionsPerDay = DAILY_LIMIT;
     const daysPerCycle = Math.floor(allQuestions.length / questionsPerDay); 
     const cycleNumber = Math.floor(dayCounter / daysPerCycle); 
     const dayInCycle = dayCounter % daysPerCycle;
@@ -2353,6 +2353,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
