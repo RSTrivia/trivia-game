@@ -21,6 +21,7 @@ let userId = null;
 let syncChannel;
 
 const RELEASE_DATE = '2025-12-22';
+const DAILY_LIMIT = 10;
 const WEEKLY_LIMIT = 50; // Change to 50 when ready to go live
 const LITE_LIMIT = 100; // Change to 100 when ready to go live
 const number_of_questions = 610;
@@ -790,7 +791,7 @@ async function loadQuestion() {
    // 1. End Game Checks
     if (isWeeklyMode && weeklyQuestionCount >= WEEKLY_LIMIT) { await endGame(); return; }
     if (isLiteMode && score >= LITE_LIMIT) { await endGame(); return; }
-    if (isDailyMode && dailyQuestionCount >= 10) { await endGame(); return; }    
+    if (isDailyMode && dailyQuestionCount >= DAILY_LIMIT) { await endGame(); return; }    
     // A. IMMEDIATE CLEANUP
   const allBtns = document.querySelectorAll('.answer-btn');
     allBtns.forEach(btn => {
@@ -905,7 +906,7 @@ async function handleTimeout() {
    if (isDailyMode) dailyQuestionCount++;
       
    // 2. Corrected Logic & Syntax (Fixed the missing closing parenthesis)
-    if ((isDailyMode && dailyQuestionCount < 10) || (isWeeklyMode && weeklyQuestionCount < 50)) {
+    if ((isDailyMode && dailyQuestionCount < DAILY_LIMIT) || (isWeeklyMode && weeklyQuestionCount < WEEKLY_LIMIT)) {
         setTimeout(loadQuestion, 1500);
     } else {
         // If it's Normal mode OR we reached the limit for Daily/Weekly
@@ -944,7 +945,7 @@ async function checkAnswer(choiceId, btn) {
             let gained = isDailyMode ? 50 : 5;
             let isBonusEarned = false; // Track for sound
             if (isDailyMode) {
-                    if (dailyQuestionCount === 10) {
+                    if (dailyQuestionCount === DAILY_LIMIT) {
                       gained += 100;
                       isBonusEarned = true; // Daily bonus!
                     }
@@ -2352,6 +2353,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
