@@ -669,8 +669,10 @@ function resetGame() {
     weeklyQuestionCount = 0;
     dailyQuestionCount = 0; // Don't forget this!
     // 4. WIPE UI IMMEDIATELY
-    questionText.textContent = '';
-    answersBox.innerHTML = '';
+    if (!isDailyMode) {
+      questionText.textContent = '';
+      answersBox.innerHTML = '';
+    }
     
     // 5. Reset Timer Visuals
     timeLeft = 15;
@@ -2358,6 +2360,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
