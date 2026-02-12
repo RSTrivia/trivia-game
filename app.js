@@ -2025,7 +2025,7 @@ function showCollectionLogNotification(petName) {
         'Vorki': 'vorki.png',
         'Pet Snakeling': 'snakeling.png',
         'Yami': 'yami.png',
-        'pet_bloodhound': 'bloodhound.png', 
+        'Bloodhound': 'bloodhound.png', 
         'Rocky': 'rocky.png',
         'Pet Zilyana': 'zilyana.png',
         'Olmlet': 'olmlet.png',
@@ -2353,6 +2353,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
