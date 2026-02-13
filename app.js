@@ -676,15 +676,6 @@ function resetGame() {
     // Don't set a Base64 src here, just hide it and clear the src.
    
     // 7. Image cleanup
-    // Start the fade out IMMEDIATELY
-    questionImage.style.opacity = '0'; 
-    setTimeout(() => {
-        // Only hide it from layout after it has faded
-        if (questionImage.style.opacity === '0') {
-            questionImage.style.display = 'none';
-            questionImage.src = ''; 
-        }
-    }, 300);
   
     // 8. Title cleanup
     //const gameOverTitle = document.getElementById('game-over-title');
@@ -889,22 +880,17 @@ async function loadQuestion(isFirst = false) {
     answersBox.innerHTML = ''; 
     answersBox.appendChild(fragment);
 
-  // F. IMAGE HANDLING
-    // We keep the old logic but ensure we don't 'display: none' the image 
-    // container unless it's strictly necessary, to avoid layout shifts.
+        // F. IMAGE HANDLING
     if (currentQuestion.question_image) {
         const imgToUse = currentQuestion._preloadedImg || new Image();
         if (!imgToUse.src) imgToUse.src = currentQuestion.question_image;
-
+    
         imgToUse.decode().then(() => {
+            // Double check we are still on the same question
             if (currentQuestion.question_image === imgToUse.src) {
                 questionImage.src = imgToUse.src;
                 questionImage.style.display = 'block';
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        questionImage.style.opacity = '1';
-                    });
-                });
+                questionImage.style.opacity = '1'; 
             }
         }).catch(() => {
             questionImage.src = currentQuestion.question_image;
@@ -912,17 +898,13 @@ async function loadQuestion(isFirst = false) {
             questionImage.style.opacity = '1';
         });
     } else {
+        // If NO image, hide it IMMEDIATELY. 
+        // Since this runs during the 'await' in startGame, 
+        // the layout shifts while the endScreen is still covering it.
+        questionImage.style.display = 'none';
         questionImage.style.opacity = '0';
-        // Delay the display:none so it doesn't cause a snap-up 
-        // until the next question is ready
-        setTimeout(() => {
-            if (!currentQuestion?.question_image) {
-                questionImage.style.display = 'none';
-                questionImage.src = '';
-            }
-        }, 300);
+        questionImage.src = ''; 
     }
-
     // G. TIMER
     if (!isFirst) startTimer();   
 }
@@ -2299,6 +2281,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
