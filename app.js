@@ -774,16 +774,17 @@ await preloadNextQuestions(1);
   
   // 3. LOAD THE DATA INTO THE DOM WHILE HIDDEN
   // We call shift() and populate the <img> and text now
-  await loadQuestion(true);    
   // --- THE FIX: WAIT FOR IMAGE PAINT ---
-    // If there is an image, we wait for it to be fully ready before showing the screen
-    if (questionImage.src && !questionImage.src.startsWith('data:')) {
-        try {
-            await questionImage.decode();
-        } catch (e) {
-            console.warn("Initial image decode failed", e);
-        }
-    }
+  // Check the actual question data instead of the <img> tag's src
+  if (currentQuestion && currentQuestion.question_image) {
+      try {
+          // We set the src in loadQuestion, so we can decode it here safely
+          await questionImage.decode();
+      } catch (e) {
+          // This catches the "source image cannot be decoded" if the URL is glitchy
+          console.warn("Initial image decode failed:", e);
+      }
+  }
   requestAnimationFrame(() => {
     // 4. THE BIG SWAP (User finally sees the game)
     document.body.classList.add('game-active');
@@ -868,7 +869,7 @@ async function loadQuestion(isFirst = false) {
     answersBox.innerHTML = ''; 
     answersBox.appendChild(fragment);
  // F. IMAGE HANDLING
-if (currentQuestion.question_image) {
+if (currentQuestion.question_image && currentQuestion.question_image.trim() !== "") {
     const tempImg = new Image();
     tempImg.src = currentQuestion.question_image;
 
@@ -2268,6 +2269,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
