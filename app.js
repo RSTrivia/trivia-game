@@ -869,7 +869,7 @@ async function loadQuestion(isFirst = false) {
     answersBox.innerHTML = ''; 
     answersBox.appendChild(fragment);
  // F. IMAGE HANDLING
-if (currentQuestion.question_image && currentQuestion.question_image.trim() !== "") {
+if (currentQuestion.question_image) {
     const tempImg = new Image();
     tempImg.src = currentQuestion.question_image;
 
@@ -2269,6 +2269,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
