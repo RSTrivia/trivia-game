@@ -662,8 +662,8 @@ function resetGame() {
     weeklyQuestionCount = 0;
     dailyQuestionCount = 0; // Don't forget this!
     // 4. WIPE UI IMMEDIATELY
-    questionText.textContent = '';
-    answersBox.innerHTML = '';
+    //questionText.textContent = '';
+    //answersBox.innerHTML = '';
 
     // 5. Reset Timer Visuals
     timeLeft = 15;
@@ -674,28 +674,31 @@ function resetGame() {
     if (scoreDisplay) scoreDisplay.textContent = `Score: 0`;
     // 7. Image cleanup
     // Don't set a Base64 src here, just hide it and clear the src.
+   
+    // 7. Image cleanup
+    // Start the fade out IMMEDIATELY
     questionImage.style.opacity = '0'; 
-    // Use a timeout to clear the src AFTER the fade-out finishes
     setTimeout(() => {
+        // Only hide it from layout after it has faded
         if (questionImage.style.opacity === '0') {
             questionImage.style.display = 'none';
             questionImage.src = ''; 
         }
     }, 300);
-
+  
     // 8. Title cleanup
-    const gameOverTitle = document.getElementById('game-over-title');
-    const gzTitle = document.getElementById('gz-title');
-    if (gameOverTitle && !isWeeklyMode) {
-        gameOverTitle.classList.add('hidden');
-        gameOverTitle.textContent = ""; // Clear text too
-    }
-    if (gzTitle) {
-        gzTitle.classList.add('hidden');
-        gzTitle.textContent = "";
-    }
+    //const gameOverTitle = document.getElementById('game-over-title');
+    //const gzTitle = document.getElementById('gz-title');
+    //if (gameOverTitle && !isWeeklyMode) {
+        //gameOverTitle.classList.add('hidden');
+        //gameOverTitle.textContent = ""; // Clear text too
+    //}
+    //if (gzTitle) {
+        //gzTitle.classList.add('hidden');
+       // gzTitle.textContent = "";
+    //}
     
-    if (weeklyTimeContainer && !isWeeklyMode) weeklyTimeContainer.style.display = 'none';
+    //if (weeklyTimeContainer && !isWeeklyMode) weeklyTimeContainer.style.display = 'none';
 }
 
 
@@ -773,13 +776,6 @@ isDailyMode = false;
 isWeeklyMode = false;
 // 1. CLEAR & PREFETCH #1 (Wait for this!)
 remainingQuestions = [];
-  
-// 1. CONDITIONAL CLEAR
-    // Only clear if we have nothing. If we have items, the game starts INSTANTLY.
-    if (preloadQueue.length === 0) {
-        await preloadNextQuestions(1); 
-    }
-  
 // 2. INTERNAL STATE RESET
   clearInterval(timer);
   score = 0;
@@ -788,24 +784,32 @@ remainingQuestions = [];
   currentQuestion = null;
   updateScore();
   resetGame();
-
+// 1. CONDITIONAL CLEAR
+    // Only clear if we have nothing. If we have items, the game starts INSTANTLY.
+    if (preloadQueue.length === 0) {
+        await preloadNextQuestions(1); 
+    }
   
 await loadQuestion(true);
-  // 3. LOAD THE DATA INTO THE DOM WHILE HIDDEN
-  // We call shift() and populate the <img> and text now
-  // --- THE FIX: WAIT FOR IMAGE PAINT ---
-  // 4. WAIT FOR IMAGE (Optional but smoother)
+ 
+  // 4. WAIT FOR IMAGE TO BE READY FOR DISPLAY
     if (currentQuestion && currentQuestion.question_image) {
         try {
-            // Re-use the preloaded image object for the fastest decode
-            const img = currentQuestion._preloadedImg || questionImage;
+            const img = currentQuestion._preloadedImg || new Image();
+            if (!img.src) img.src = currentQuestion.question_image;
             await img.decode();
-        } catch (e) {
-            console.warn("Initial image decode failed:", e);
-        }
+        } catch (e) { console.warn(e); }
     }
   requestAnimationFrame(() => {
-    // 4. THE BIG SWAP (User finally sees the game)
+    const gameOverTitle = document.getElementById('game-over-title');
+    const gzTitle = document.getElementById('gz-title');
+    if (gameOverTitle) { gameOverTitle.classList.add('hidden'); gameOverTitle.textContent = ""; }
+    if (gzTitle) { gzTitle.classList.add('hidden'); gzTitle.textContent = ""; }
+    // 3. NOW update the visuals that shouldn't look "stale"
+    if (timeDisplay) timeDisplay.textContent = 15; 
+    if (scoreDisplay) scoreDisplay.textContent = `Score: 0`;
+
+  // 4. THE BIG SWAP (User finally sees the game)
     document.body.classList.add('game-active');
     game.classList.remove('hidden');
     document.getElementById('start-screen').classList.add('hidden');
@@ -857,11 +861,11 @@ async function loadQuestion(isFirst = false) {
     
     // Safety check just in case DB returned null
     if (!currentQuestion) {
-        console.error("Failed to retrieve question from queue.");
+        //console.error("Failed to retrieve question from queue.");
         return; 
     }
 
-    answersBox.innerHTML = '';
+    //answersBox.innerHTML = '';
     questionText.textContent = currentQuestion.question;
 
     // E. RENDER ANSWERS
@@ -885,39 +889,39 @@ async function loadQuestion(isFirst = false) {
     answersBox.innerHTML = ''; 
     answersBox.appendChild(fragment);
 
-   // F. IMAGE HANDLING
-if (currentQuestion.question_image) {
-    // 1. Get our worker image or create a new one
-    const imgToUse = currentQuestion._preloadedImg || new Image();
-    if (!imgToUse.src) imgToUse.src = currentQuestion.question_image;
+  // F. IMAGE HANDLING
+    // We keep the old logic but ensure we don't 'display: none' the image 
+    // container unless it's strictly necessary, to avoid layout shifts.
+    if (currentQuestion.question_image) {
+        const imgToUse = currentQuestion._preloadedImg || new Image();
+        if (!imgToUse.src) imgToUse.src = currentQuestion.question_image;
 
-    // 2. We wait for THIS SPECIFIC image object to be ready
-    imgToUse.decode().then(() => {
-        // SAFETY: Only update if the user hasn't already moved to another question
-        if (currentQuestion.question_image === imgToUse.src) {
-            
-            // THE TRICK: Set the src and immediately trigger opacity
-            questionImage.src = imgToUse.src;
-            questionImage.style.display = 'block';
-
-            // Use requestAnimationFrame to ensure the 'block' is processed 
-            // before we try to fade it in
-            requestAnimationFrame(() => {
+        imgToUse.decode().then(() => {
+            if (currentQuestion.question_image === imgToUse.src) {
+                questionImage.src = imgToUse.src;
+                questionImage.style.display = 'block';
                 requestAnimationFrame(() => {
-                    questionImage.style.opacity = '1';
+                    requestAnimationFrame(() => {
+                        questionImage.style.opacity = '1';
+                    });
                 });
-            });
-        }
-    }).catch(e => {
-        questionImage.src = currentQuestion.question_image;
-        questionImage.style.display = 'block';
-        questionImage.style.opacity = '1';
-    });
-} else {
-    questionImage.style.display = 'none';
-    questionImage.style.opacity = '0';
-    questionImage.src = ''; 
-}
+            }
+        }).catch(() => {
+            questionImage.src = currentQuestion.question_image;
+            questionImage.style.display = 'block';
+            questionImage.style.opacity = '1';
+        });
+    } else {
+        questionImage.style.opacity = '0';
+        // Delay the display:none so it doesn't cause a snap-up 
+        // until the next question is ready
+        setTimeout(() => {
+            if (!currentQuestion?.question_image) {
+                questionImage.style.display = 'none';
+                questionImage.src = '';
+            }
+        }, 300);
+    }
 
     // G. TIMER
     if (!isFirst) startTimer();   
@@ -2141,6 +2145,11 @@ async function startWeeklyChallenge() {
     await loadQuestion(true);
 
     requestAnimationFrame(() => {
+    const gameOverTitle = document.getElementById('game-over-title');
+    const gzTitle = document.getElementById('gz-title');
+    if (gameOverTitle) { gameOverTitle.classList.add('hidden'); gameOverTitle.textContent = ""; }
+    if (gzTitle) { gzTitle.classList.add('hidden'); gzTitle.textContent = ""; }
+      
     document.body.classList.add('game-active');
     game.classList.remove('hidden');
     document.getElementById('start-screen').classList.add('hidden');
@@ -2209,13 +2218,20 @@ async function startDailyChallenge(session) {
   
     await loadQuestion(true);
   
-    document.body.classList.add('game-active'); 
-    document.getElementById('start-screen').classList.add('hidden');
-    game.classList.remove('hidden');
-  
-    // FILL THE REST IN THE BACKGROUND
-    // We don't 'await' this; it runs while the user is looking at question 1
-    preloadNextQuestions(5);
+    requestAnimationFrame(() => {
+        const gameOverTitle = document.getElementById('game-over-title');
+        const gzTitle = document.getElementById('gz-title');
+        if (gameOverTitle) { gameOverTitle.classList.add('hidden'); gameOverTitle.textContent = ""; }
+        if (gzTitle) { gzTitle.classList.add('hidden'); gzTitle.textContent = ""; }
+      
+        document.body.classList.add('game-active'); 
+        document.getElementById('start-screen').classList.add('hidden');
+        game.classList.remove('hidden');
+      
+        // FILL THE REST IN THE BACKGROUND
+        // We don't 'await' this; it runs while the user is looking at question 1
+        preloadNextQuestions(5);
+    });
 }
 
 function shuffleWithSeed(array, seed) {
@@ -2283,6 +2299,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
