@@ -693,7 +693,7 @@ function resetGame() {
 }
 
 
-async function preloadNextQuestions(targetCount = 3) {
+async function preloadNextQuestions(targetCount = 6) {
     // 1. Calculate how many we actually need
     const needed = targetCount - preloadQueue.length;
     if (needed <= 0) return;
@@ -704,35 +704,45 @@ async function preloadNextQuestions(targetCount = 3) {
     // 2. Prepare an array of "fetch tasks"
     const tasks = [];
 
+    // 2. Fire individual fetch tasks
+    // We don't 'await' the loop itself, allowing them to run in parallel
     for (let i = 0; i < needed; i++) {
+        // This helper handles the fetch, the image warming, and the queue push
+        fetchAndBufferQuestion();
+    }
+}
+async function fetchAndBufferQuestion() {
+    let questionData = null;
+
+    try {
         if (isDailyMode || isWeeklyMode) {
             if (remainingQuestions.length > 0) {
                 const qId = remainingQuestions.shift();
-                tasks.push(fetchDeterministicQuestion(qId));
+                questionData = await fetchDeterministicQuestion(qId);
             }
         } else {
-            tasks.push(fetchRandomQuestion());
+            questionData = await fetchRandomQuestion();
         }
-    }
 
-    // 3. Fire all requests at once!
-    const results = await Promise.all(tasks);
-
-    // 4. Process results and warm up images
-    for (const questionData of results) {
         if (questionData) {
-            // We don't 'await' the image decode here because it would 
-            // stall the start of the game. We let it happen in the background.
+            // 1. Warm up the image cache immediately
             if (questionData.question_image) {
                 const img = new Image();
                 img.src = questionData.question_image;
-                img.decode().catch(e => console.warn("Image warming failed:", e));
+                // decode() is great, but we don't await it here so the 
+                // question data becomes available for the text part immediately.
+                img.decode().catch(() => {/* Silent catch */});
+                // Attach the image object to the data so loadQuestion can reuse it
+                questionData._preloadedImg = img;
             }
+
+            // 2. Push to queue as soon as this SPECIFIC request is done
             preloadQueue.push(questionData);
         }
+    } catch (err) {
+        console.error("Fetch worker failed:", err);
     }
 }
-
 // Helper: Fetch a specific ID (Deterministic)
 async function fetchDeterministicQuestion(qId) {
     const { data, error } = await supabase.rpc('get_question_by_id', { input_id: qId });
@@ -829,8 +839,8 @@ async function loadQuestion(isFirst = false) {
 
     if (!isFirst) {
             // DO NOT 'await' these. Let them trigger in the background.
-            if (preloadQueue.length <= 1 && needsRefill) {
-                preloadNextQuestions(5); 
+            if (preloadQueue.length <= 5 && needsRefill) {
+                preloadNextQuestions(8); 
             }
         }
     
@@ -2270,6 +2280,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
