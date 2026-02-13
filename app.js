@@ -757,21 +757,20 @@ isWeeklyMode = false;
 // 1. CLEAR & PREFETCH #1 (Wait for this!)
 preloadQueue = [];
 remainingQuestions = [];
-  
-// Show a loading state on the button if you want, or just await  
-await preloadNextQuestions(1); 
 
-  // 3. INTERNAL STATE RESET
+// 2. INTERNAL STATE RESET
   clearInterval(timer);
   score = 0;
   streak = 0;
-  isDailyMode = false;
-  isWeeklyMode = false;
   dailyQuestionCount = 0;
   currentQuestion = null;
   updateScore();
   resetGame();
+
   
+// Show a loading state on the button if you want, or just await  
+await preloadNextQuestions(1); 
+await loadQuestion(true);
   // 3. LOAD THE DATA INTO THE DOM WHILE HIDDEN
   // We call shift() and populate the <img> and text now
   // --- THE FIX: WAIT FOR IMAGE PAINT ---
@@ -2269,6 +2268,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
