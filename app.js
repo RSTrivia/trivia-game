@@ -775,7 +775,15 @@ await preloadNextQuestions(1);
   // 3. LOAD THE DATA INTO THE DOM WHILE HIDDEN
   // We call shift() and populate the <img> and text now
   await loadQuestion(true);    
-  
+  // --- THE FIX: WAIT FOR IMAGE PAINT ---
+    // If there is an image, we wait for it to be fully ready before showing the screen
+    if (questionImage.src && !questionImage.src.startsWith('data:')) {
+        try {
+            await questionImage.decode();
+        } catch (e) {
+            console.warn("Initial image decode failed", e);
+        }
+    }
   requestAnimationFrame(() => {
     // 4. THE BIG SWAP (User finally sees the game)
     document.body.classList.add('game-active');
@@ -836,22 +844,29 @@ async function loadQuestion(isFirst = false) {
     answersBox.innerHTML = '';
     questionText.textContent = currentQuestion.question;
 
-   // E. RENDER ANSWERS
+   // E. RENDER ANSWERS (Optimized to prevent flicker)
     const answers = [
-            { text: currentQuestion.answer_a, id: 1 },
-            { text: currentQuestion.answer_b, id: 2 },
-            { text: currentQuestion.answer_c, id: 3 },
-            { text: currentQuestion.answer_d, id: 4 }
-      ].filter(a => a.text).sort(() => Math.random() - 0.5);
+        { text: currentQuestion.answer_a, id: 1 },
+        { text: currentQuestion.answer_b, id: 2 },
+        { text: currentQuestion.answer_c, id: 3 },
+        { text: currentQuestion.answer_d, id: 4 }
+    ].filter(a => a.text).sort(() => Math.random() - 0.5);
+
+    // Create a fragment to hold the new buttons in memory
+    const fragment = document.createDocumentFragment();
 
     answers.forEach(ans => {
-            const btn = document.createElement('button');
-            btn.textContent = ans.text;
-            btn.classList.add('answer-btn');
-            btn.dataset.answerId = ans.id;
-            btn.onclick = () => checkAnswer(ans.id, btn);
-            answersBox.appendChild(btn);
-        });
+        const btn = document.createElement('button');
+        btn.textContent = ans.text;
+        btn.classList.add('answer-btn');
+        btn.dataset.answerId = ans.id;
+        btn.onclick = () => checkAnswer(ans.id, btn);
+        fragment.appendChild(btn);
+    });
+
+    // WIPE and REPLACE in a single DOM operation
+    answersBox.innerHTML = ''; 
+    answersBox.appendChild(fragment);
  // F. IMAGE HANDLING
 if (currentQuestion.question_image) {
     const tempImg = new Image();
@@ -863,12 +878,18 @@ if (currentQuestion.question_image) {
         // Only update the live DOM once the background image is ready
         questionImage.src = tempImg.src;
         questionImage.style.display = 'block';
-        requestAnimationFrame(() => { 
-            questionImage.style.opacity = '1'; 
-        });
+          // FIX: If it's the first question, force opacity to 1 immediately.
+            // This ensures it's part of the initial paint when the game screen unhides.
+            if (isFirst) {
+                questionImage.style.opacity = '1';
+            } else {
+                requestAnimationFrame(() => { 
+                    questionImage.style.opacity = '1'; 
+                });
+            }
     }).catch(e => {
         // Fallback if decode fails
-        console.warn("Image decode failed, showing anyway", e);
+        //console.warn("Image decode failed, showing anyway", e);
         questionImage.src = currentQuestion.question_image;
         questionImage.style.display = 'block';
         questionImage.style.opacity = '1';
@@ -2247,6 +2268,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
