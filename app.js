@@ -741,6 +741,7 @@ async function fetchDeterministicQuestion(qId) {
 
 // Helper: Fetch a random ID (Normal/Lite)
 async function fetchRandomQuestion() {
+    // Exclude IDs already in the queue AND the one currently being answered
     const excludeIds = preloadQueue.map(q => q.id);
     if (currentQuestion) excludeIds.push(currentQuestion.id);
 
@@ -755,9 +756,14 @@ gameEnding = false;
 isDailyMode = false;
 isWeeklyMode = false;
 // 1. CLEAR & PREFETCH #1 (Wait for this!)
-preloadQueue = [];
 remainingQuestions = [];
-
+  
+// 1. CONDITIONAL CLEAR
+    // Only clear if we have nothing. If we have items, the game starts INSTANTLY.
+    if (preloadQueue.length === 0) {
+        await preloadNextQuestions(1); 
+    }
+  
 // 2. INTERNAL STATE RESET
   clearInterval(timer);
   score = 0;
@@ -768,8 +774,6 @@ remainingQuestions = [];
   resetGame();
 
   
-// Show a loading state on the button if you want, or just await  
-await preloadNextQuestions(1); 
 await loadQuestion(true);
   // 3. LOAD THE DATA INTO THE DOM WHILE HIDDEN
   // We call shift() and populate the <img> and text now
@@ -2106,10 +2110,6 @@ async function startWeeklyChallenge() {
             weekInCycle * WEEKLY_LIMIT, 
             (weekInCycle * WEEKLY_LIMIT) + WEEKLY_LIMIT
         ).map(q => q.id);
-      // --- DEBUG LOGS ---
-        console.log("✅ Weekly Pool Generated:", weeklySessionPool);
-        console.log("📊 Total IDs in Pool:", weeklySessionPool.length);
-        // ------------------
     }
     // Prepare the session-specific random order
     preloadQueue = [];
@@ -2126,7 +2126,8 @@ async function startWeeklyChallenge() {
     // THE UI SWAP (Triggered only when we HAVE the data)
     resetGame();
     await loadQuestion(true);
-  
+
+    requestAnimationFrame(() => {
     document.body.classList.add('game-active');
     game.classList.remove('hidden');
     document.getElementById('start-screen').classList.add('hidden');
@@ -2139,6 +2140,7 @@ async function startWeeklyChallenge() {
     if (remainingQuestions.length > 0) {
         preloadNextQuestions(3);
     }
+  });
 }
 
 function getDailyEditionNumber() {
@@ -2268,6 +2270,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
