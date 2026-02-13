@@ -694,62 +694,60 @@ function resetGame() {
 
 
 async function preloadNextQuestions(targetCount = 3) {
-    let attempts = 0;
-    
-    // We loop until the queue is full or we run out of questions in deterministic modes
-    while (preloadQueue.length < targetCount && attempts < 10) {
-        // Safety check for Lite Mode:
-        // Don't preload if (current score + items already in queue) >= 100
-        if (isLiteMode && (score + preloadQueue.length >= LITE_LIMIT)) {
-            break; 
-        }
-        attempts++;
-        let questionData = null;
+    // 1. Calculate how many we actually need
+    const needed = targetCount - preloadQueue.length;
+    if (needed <= 0) return;
 
+    // Safety for Lite Mode
+    if (isLiteMode && (score + preloadQueue.length >= LITE_LIMIT)) return;
+
+    // 2. Prepare an array of "fetch tasks"
+    const tasks = [];
+
+    for (let i = 0; i < needed; i++) {
         if (isDailyMode || isWeeklyMode) {
-            // === DETERMINISTIC MODES ===
-            // Take the next ID from the pool you generated in startChallenge
-            if (remainingQuestions.length === 0) break;
-            
-            const qId = remainingQuestions.shift();
-            
-            // Fetch the full question object for this specific ID
-            const { data, error } = await supabase.rpc('get_question_by_id', { input_id: qId });
-            
-            if (!error && data?.[0]) {
-                questionData = data[0];
+            if (remainingQuestions.length > 0) {
+                const qId = remainingQuestions.shift();
+                tasks.push(fetchDeterministicQuestion(qId));
             }
         } else {
-            // === RANDOM MODES (Normal/Lite) ===
-            // Use the RPC to get a random question not seen in the current queue
-            const excludeIds = preloadQueue.map(q => q.id);
-            if (currentQuestion) excludeIds.push(currentQuestion.id);
-
-            const { data, error } = await supabase.rpc('get_random_question', {
-                excluded_ids: excludeIds
-            });
-
-            if (!error && data?.[0]) {
-                questionData = data[0];
-            }
+            tasks.push(fetchRandomQuestion());
         }
+    }
 
+    // 3. Fire all requests at once!
+    const results = await Promise.all(tasks);
+
+    // 4. Process results and warm up images
+    for (const questionData of results) {
         if (questionData) {
-            // ANTI-FLICKER: Warming up the image
+            // We don't 'await' the image decode here because it would 
+            // stall the start of the game. We let it happen in the background.
             if (questionData.question_image) {
-                try {
-                    const img = new Image();
-                    img.src = questionData.question_image;
-                    await img.decode();
-                    // We don't necessarily need to 'await' decode here 
-                    // unless it's the very first question of the game
-                } catch (e) {
-                    console.warn("Image warming failed:", e);
-                }
+                const img = new Image();
+                img.src = questionData.question_image;
+                img.decode().catch(e => console.warn("Image warming failed:", e));
             }
             preloadQueue.push(questionData);
         }
     }
+}
+
+// Helper: Fetch a specific ID (Deterministic)
+async function fetchDeterministicQuestion(qId) {
+    const { data, error } = await supabase.rpc('get_question_by_id', { input_id: qId });
+    return (!error && data?.[0]) ? data[0] : null;
+}
+
+// Helper: Fetch a random ID (Normal/Lite)
+async function fetchRandomQuestion() {
+    const excludeIds = preloadQueue.map(q => q.id);
+    if (currentQuestion) excludeIds.push(currentQuestion.id);
+
+    const { data, error } = await supabase.rpc('get_random_question', {
+        excluded_ids: excludeIds
+    });
+    return (!error && data?.[0]) ? data[0] : null;
 }
 
 async function startGame() {
@@ -835,6 +833,7 @@ async function loadQuestion(isFirst = false) {
         }
     // D. POPULATE DATA
     currentQuestion = preloadQueue.shift();
+    answersBox.innerHTML = '';
     questionText.textContent = currentQuestion.question;
 
    // E. RENDER ANSWERS
@@ -857,7 +856,7 @@ async function loadQuestion(isFirst = false) {
    if (currentQuestion.question_image) {
       questionImage.src = currentQuestion.question_image;
       questionImage.style.display = 'block';
-      setTimeout(() => { questionImage.style.opacity = '1'; }, 50);
+      requestAnimationFrame(() => { questionImage.style.opacity = '1'; });
     } else {
         questionImage.style.display = 'none';
        questionImage.style.opacity = '0';
@@ -2232,6 +2231,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
