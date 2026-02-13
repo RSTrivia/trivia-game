@@ -815,50 +815,50 @@ await loadQuestion(true);
 }
 
 async function loadQuestion(isFirst = false) {
-  if (gameEnding) return;
-   // 1. End Game Checks
+    if (gameEnding) return;
+
+    // 1. End Game Checks
     if (isWeeklyMode && weeklyQuestionCount >= WEEKLY_LIMIT) { await endGame(); return; }
     if (isLiteMode && score >= LITE_LIMIT) { await endGame(); return; }
     if (isDailyMode && dailyQuestionCount >= DAILY_LIMIT) { await endGame(); return; }   
- 
-    // Only wipe if it's NOT the first question, 
-    // otherwise we wipe the data we just preloaded!
-   // A. CONDITIONAL CLEANUP
-    if (!isFirst) {
-        // Disable old buttons immediately so user can't double-click during transition
-        document.querySelectorAll('.answer-btn').forEach(btn => btn.disabled = true);
-        
-        questionImage.style.opacity = '0';
-        // We don't wipe textContent here to prevent the "white flash" 
-        // We will overwrite it below once the data is ready.
-    }
-  
-    // B. THE STALL GUARD (Updated for RPC)
-    // For Normal/Lite, we always want to refill. For Daily/Weekly, only if IDs are left.
-    const needsRefill = (isDailyMode || isWeeklyMode) ? remainingQuestions.length > 0 : true;
 
+    // A. CONDITIONAL CLEANUP
     if (!isFirst) {
-            // DO NOT 'await' these. Let them trigger in the background.
-            if (preloadQueue.length <= 5 && needsRefill) {
-                preloadNextQuestions(8); 
-            }
+        document.querySelectorAll('.answer-btn').forEach(btn => btn.disabled = true);
+        questionImage.style.opacity = '0';
+    }
+
+    // B. REFILL THE BUFFER
+    const needsRefill = (isDailyMode || isWeeklyMode) ? remainingQuestions.length > 0 : true;
+    if (!isFirst && preloadQueue.length <= 4 && needsRefill) {
+        preloadNextQuestions(8); 
+    }
+
+    // C. THE "NO-UNDEFINED" GATE
+    // If the queue is empty, we wait for a single fetch to finish completely.
+    if (preloadQueue.length === 0) {
+        if (needsRefill) {
+            // We await the WORKER directly here to ensure the queue actually gets a value
+            await fetchAndBufferQuestion(); 
+        } else {
+            await endGame();
+            return;
         }
-    
-        // C. CRITICAL STALL CHECK (Only await if we are literally out of questions)
-        if (preloadQueue.length === 0) {
-            if (needsRefill) {
-                await preloadNextQuestions(1); // Only get ONE so we can show it ASAP
-            } else {
-                await endGame();
-                return;
-            }
-        }
-    // D. POPULATE DATA
+    }
+
+    // D. POPULATE DATA (Now guaranteed to have data)
     currentQuestion = preloadQueue.shift();
+    
+    // Safety check just in case DB returned null
+    if (!currentQuestion) {
+        console.error("Failed to retrieve question from queue.");
+        return; 
+    }
+
     answersBox.innerHTML = '';
     questionText.textContent = currentQuestion.question;
 
-   // E. RENDER ANSWERS (Optimized to prevent flicker)
+    // E. RENDER ANSWERS
     const answers = [
         { text: currentQuestion.answer_a, id: 1 },
         { text: currentQuestion.answer_b, id: 2 },
@@ -866,9 +866,7 @@ async function loadQuestion(isFirst = false) {
         { text: currentQuestion.answer_d, id: 4 }
     ].filter(a => a.text).sort(() => Math.random() - 0.5);
 
-    // Create a fragment to hold the new buttons in memory
     const fragment = document.createDocumentFragment();
-
     answers.forEach(ans => {
         const btn = document.createElement('button');
         btn.textContent = ans.text;
@@ -878,22 +876,19 @@ async function loadQuestion(isFirst = false) {
         fragment.appendChild(btn);
     });
 
-    // WIPE and REPLACE in a single DOM operation
     answersBox.innerHTML = ''; 
     answersBox.appendChild(fragment);
- // F. IMAGE HANDLING
-if (currentQuestion.question_image) {
-    const tempImg = new Image();
-    tempImg.src = currentQuestion.question_image;
 
-    // This is the magic: .decode() ensures the image is 
-    // actually ready to be painted without a flicker.
-    tempImg.decode().then(() => {
-        // Only update the live DOM once the background image is ready
-        questionImage.src = tempImg.src;
-        questionImage.style.display = 'block';
-          // FIX: If it's the first question, force opacity to 1 immediately.
-            // This ensures it's part of the initial paint when the game screen unhides.
+    // F. IMAGE HANDLING (Utilizing the Preloaded Image Worker)
+    if (currentQuestion.question_image) {
+        // Reuse the Image object created during preloading if it exists
+        const imgToUse = currentQuestion._preloadedImg || new Image();
+        if (!imgToUse.src) imgToUse.src = currentQuestion.question_image;
+
+        imgToUse.decode().then(() => {
+            questionImage.src = imgToUse.src;
+            questionImage.style.display = 'block';
+            
             if (isFirst) {
                 questionImage.style.opacity = '1';
             } else {
@@ -901,24 +896,21 @@ if (currentQuestion.question_image) {
                     questionImage.style.opacity = '1'; 
                 });
             }
-    }).catch(e => {
-        // Fallback if decode fails
-        //console.warn("Image decode failed, showing anyway", e);
-        questionImage.src = currentQuestion.question_image;
-        questionImage.style.display = 'block';
-        questionImage.style.opacity = '1';
-    });
-} else {
-    questionImage.style.display = 'none';
-    questionImage.style.opacity = '0';
-    questionImage.src = '';
+        }).catch(() => {
+            // Fallback: If decode fails, just show it
+            questionImage.src = currentQuestion.question_image;
+            questionImage.style.display = 'block';
+            questionImage.style.opacity = '1';
+        });
+    } else {
+        questionImage.style.display = 'none';
+        questionImage.style.opacity = '0';
+        questionImage.src = '';
+    }
+
+    // G. TIMER
+    if (!isFirst) startTimer();   
 }
-  // G. TIMER
-  // Only start timer if the game is already active. 
-  // For the first question, startGame() will call startTimer().
-  if (!isFirst) startTimer();   
-};
-   
 
 
 function startTimer() {
@@ -2280,6 +2272,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
