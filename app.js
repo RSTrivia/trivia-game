@@ -673,9 +673,15 @@ function resetGame() {
     // 6. Reset Score Visual
     if (scoreDisplay) scoreDisplay.textContent = `Score: 0`;
     // 7. Image cleanup
-    questionImage.style.display = 'none';
-    questionImage.style.opacity = '0';
-    questionImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+    // Don't set a Base64 src here, just hide it and clear the src.
+    questionImage.style.opacity = '0'; 
+    // Use a timeout to clear the src AFTER the fade-out finishes
+    setTimeout(() => {
+        if (questionImage.style.opacity === '0') {
+            questionImage.style.display = 'none';
+            questionImage.src = ''; 
+        }
+    }, 300);
 
     // 8. Title cleanup
     const gameOverTitle = document.getElementById('game-over-title');
@@ -879,34 +885,39 @@ async function loadQuestion(isFirst = false) {
     answersBox.innerHTML = ''; 
     answersBox.appendChild(fragment);
 
-    // F. IMAGE HANDLING (Utilizing the Preloaded Image Worker)
-    if (currentQuestion.question_image) {
-        // Reuse the Image object created during preloading if it exists
-        const imgToUse = currentQuestion._preloadedImg || new Image();
-        if (!imgToUse.src) imgToUse.src = currentQuestion.question_image;
+   // F. IMAGE HANDLING
+if (currentQuestion.question_image) {
+    // 1. Get our worker image or create a new one
+    const imgToUse = currentQuestion._preloadedImg || new Image();
+    if (!imgToUse.src) imgToUse.src = currentQuestion.question_image;
 
-        imgToUse.decode().then(() => {
+    // 2. We wait for THIS SPECIFIC image object to be ready
+    imgToUse.decode().then(() => {
+        // SAFETY: Only update if the user hasn't already moved to another question
+        if (currentQuestion.question_image === imgToUse.src) {
+            
+            // THE TRICK: Set the src and immediately trigger opacity
             questionImage.src = imgToUse.src;
             questionImage.style.display = 'block';
-            
-            if (isFirst) {
-                questionImage.style.opacity = '1';
-            } else {
-                requestAnimationFrame(() => { 
-                    questionImage.style.opacity = '1'; 
+
+            // Use requestAnimationFrame to ensure the 'block' is processed 
+            // before we try to fade it in
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    questionImage.style.opacity = '1';
                 });
-            }
-        }).catch(() => {
-            // Fallback: If decode fails, just show it
-            questionImage.src = currentQuestion.question_image;
-            questionImage.style.display = 'block';
-            questionImage.style.opacity = '1';
-        });
-    } else {
-        questionImage.style.display = 'none';
-        questionImage.style.opacity = '0';
-        questionImage.src = '';
-    }
+            });
+        }
+    }).catch(e => {
+        questionImage.src = currentQuestion.question_image;
+        questionImage.style.display = 'block';
+        questionImage.style.opacity = '1';
+    });
+} else {
+    questionImage.style.display = 'none';
+    questionImage.style.opacity = '0';
+    questionImage.src = ''; 
+}
 
     // G. TIMER
     if (!isFirst) startTimer();   
@@ -2272,6 +2283,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
