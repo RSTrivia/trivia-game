@@ -853,15 +853,31 @@ async function loadQuestion(isFirst = false) {
             answersBox.appendChild(btn);
         });
  // F. IMAGE HANDLING
-   if (currentQuestion.question_image) {
-      questionImage.src = currentQuestion.question_image;
-      questionImage.style.display = 'block';
-      requestAnimationFrame(() => { questionImage.style.opacity = '1'; });
-    } else {
-        questionImage.style.display = 'none';
-       questionImage.style.opacity = '0';
-        questionImage.src = '';
-    }
+if (currentQuestion.question_image) {
+    const tempImg = new Image();
+    tempImg.src = currentQuestion.question_image;
+
+    // This is the magic: .decode() ensures the image is 
+    // actually ready to be painted without a flicker.
+    tempImg.decode().then(() => {
+        // Only update the live DOM once the background image is ready
+        questionImage.src = tempImg.src;
+        questionImage.style.display = 'block';
+        requestAnimationFrame(() => { 
+            questionImage.style.opacity = '1'; 
+        });
+    }).catch(e => {
+        // Fallback if decode fails
+        console.warn("Image decode failed, showing anyway", e);
+        questionImage.src = currentQuestion.question_image;
+        questionImage.style.display = 'block';
+        questionImage.style.opacity = '1';
+    });
+} else {
+    questionImage.style.display = 'none';
+    questionImage.style.opacity = '0';
+    questionImage.src = '';
+}
   // G. TIMER
   // Only start timer if the game is already active. 
   // For the first question, startGame() will call startTimer().
@@ -2231,6 +2247,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
