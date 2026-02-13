@@ -745,7 +745,7 @@ async function preloadNextQuestions(targetCount = 3) {
             if (questionData.question_image) {
                 try {
                     const img = new Image();
-                    img.src = questionData.question_image;
+                    await img.src = questionData.question_image;
                     // We don't necessarily need to 'await' decode here 
                     // unless it's the very first question of the game
                 } catch (e) {
@@ -761,76 +761,90 @@ async function startGame() {
 gameEnding = false;
 isDailyMode = false;
 isWeeklyMode = false;
-// 1. CLEANUP
+// 1. CLEAR & PREFETCH #1 (Wait for this!)
 preloadQueue = [];
 remainingQuestions = [];
   
+// Show a loading state on the button if you want, or just await  
 await preloadNextQuestions(1); 
 
   // 3. INTERNAL STATE RESET
   clearInterval(timer);
   score = 0;
   streak = 0;
+  isDailyMode = false;
+  isWeeklyMode = false;
   dailyQuestionCount = 0;
   currentQuestion = null;
   updateScore();
   resetGame();
-      
-  // 5. THE BIG SWAP (User finally sees the game)
-  document.body.classList.add('game-active');
-  game.classList.remove('hidden');
-  document.getElementById('start-screen').classList.add('hidden');
-  endScreen.classList.add('hidden');
   
-  gameStartTime = Date.now();
-  loadQuestion(); // Start immediately for Solo
-  // 6. FILL THE REST IN THE BACKGROUND
-  // We don't 'await' this; it runs while the user is looking at question 1
-  preloadNextQuestions(3);
+  // 3. LOAD THE DATA INTO THE DOM WHILE HIDDEN
+  // We call shift() and populate the <img> and text now
+  await loadQuestion(true);    
+  
+  requestAnimationFrame(() => {
+    // 4. THE BIG SWAP (User finally sees the game)
+    document.body.classList.add('game-active');
+    game.classList.remove('hidden');
+    document.getElementById('start-screen').classList.add('hidden');
+    endScreen.classList.add('hidden');
+    
+    gameStartTime = Date.now();
+    startTimer(); // Fire the clock
+    // Start immediately for Solo
+    // 6. FILL THE REST IN THE BACKGROUND
+    // We don't 'await' this; it runs while the user is looking at question 1
+    preloadNextQuestions(3);
+    });
 }
 
-async function loadQuestion() {
+async function loadQuestion(isFirst = false) {
   if (gameEnding) return;
    // 1. End Game Checks
     if (isWeeklyMode && weeklyQuestionCount >= WEEKLY_LIMIT) { await endGame(); return; }
     if (isLiteMode && score >= LITE_LIMIT) { await endGame(); return; }
-    if (isDailyMode && dailyQuestionCount >= DAILY_LIMIT) { await endGame(); return; }    
-    // A. IMMEDIATE CLEANUP
-  const allBtns = document.querySelectorAll('.answer-btn');
-    allBtns.forEach(btn => {
-        btn.removeAttribute('data-answered-correctly');
-        btn.classList.remove('correct', 'wrong');
-        btn.disabled = false;
-    });
-    questionImage.style.display = 'none';
-    questionImage.style.opacity = '0';
-    questionImage.src = '';
-    questionText.textContent = '';
-    answersBox.innerHTML = '';
+    if (isDailyMode && dailyQuestionCount >= DAILY_LIMIT) { await endGame(); return; }   
+    // A. CONDITIONAL CLEANUP
+    // Only wipe if it's NOT the first question, 
+    // otherwise we wipe the data we just preloaded!
+    if (!isFirst) {
+        // Use a tiny delay to let the opacity hit 0 before swapping src
+        // to prevent the "src-swap" flicker
+      const allBtns = document.querySelectorAll('.answer-btn');
+      allBtns.forEach(btn => {
+          btn.removeAttribute('data-answered-correctly');
+          btn.classList.remove('correct', 'wrong');
+          btn.disabled = false;
+      });
+      questionImage.style.display = 'none';
+      questionImage.style.opacity = '0';
+      questionImage.src = '';
+      questionText.textContent = '';
+      answersBox.innerHTML = '';
+    }
   
     // B. THE STALL GUARD (Updated for RPC)
     // For Normal/Lite, we always want to refill. For Daily/Weekly, only if IDs are left.
     const needsRefill = (isDailyMode || isWeeklyMode) ? remainingQuestions.length > 0 : true;
 
-    if (preloadQueue.length <= 2 && needsRefill) {
-        preloadNextQuestions(5); 
+   // If we are starting the game (isFirst), the queue was already filled 
+    // by startGame/startChallenge, so we can skip the await here.
+    if (!isFirst) {
+        if (preloadQueue.length <= 2 && needsRefill) preloadNextQuestions(5);
+        if (preloadQueue.length === 0 && needsRefill) await preloadNextQuestions(3);
     }
 
-    if (preloadQueue.length === 0 && needsRefill) {
-        await preloadNextQuestions(3);
-    }
-
-    // C. FINAL SAFETY CHECK
+   // C. FINAL SAFETY CHECK
     if (preloadQueue.length === 0) {
         await endGame();
         return;
     }
-
-     currentQuestion = preloadQueue.shift();
-    // G. SET QUESTION TEXT
+    // D. POPULATE DATA
+    currentQuestion = preloadQueue.shift();
     questionText.textContent = currentQuestion.question;
 
-    // I. RENDER ANSWERS
+   // E. RENDER ANSWERS
     const answers = [
             { text: currentQuestion.answer_a, id: 1 },
             { text: currentQuestion.answer_b, id: 2 },
@@ -846,17 +860,20 @@ async function loadQuestion() {
             btn.onclick = () => checkAnswer(ans.id, btn);
             answersBox.appendChild(btn);
         });
- // H. IMAGE (Now controls WHEN the UI shows)
+ // F. IMAGE HANDLING
    if (currentQuestion.question_image) {
       questionImage.src = currentQuestion.question_image;
       questionImage.style.display = 'block';
       questionImage.style.opacity = '1';
+      setTimeout(() => { questionImage.style.opacity = '1'; }, 10);
     } else {
         questionImage.style.display = 'none';
         questionImage.src = '';
     }
-  
-  startTimer();   
+  // G. TIMER
+  // Only start timer if the game is already active. 
+  // For the first question, startGame() will call startTimer().
+  if (!isFirst) startTimer();   
 };
    
 
@@ -2069,8 +2086,7 @@ async function startWeeklyChallenge() {
     preloadQueue = [];
     // Randomize the order for THIS specific play-through
     remainingQuestions = [...weeklySessionPool].sort(() => Math.random() - 0.5); // Set the 50 Weekly IDs
-    // --- DEBUG LOGS ---
-    console.log("🎲 Questions Shuffled for this run:", remainingQuestions);
+  
     // ------------------
     // 3. THE BARRIER (Add this exactly like Normal Mode)
     // This stops the function here until Question 1 is 100% ready
@@ -2080,16 +2096,15 @@ async function startWeeklyChallenge() {
   
     // THE UI SWAP (Triggered only when we HAVE the data)
     resetGame();
+    await loadQuestion(true);
   
     document.body.classList.add('game-active');
     game.classList.remove('hidden');
     document.getElementById('start-screen').classList.add('hidden');
     endScreen.classList.add('hidden');
-    weeklyStartTime = Date.now(); // total weekly run time
   
-    // 2. Load the first question and STOP. 
-    // Do NOT call the background preloader here yet.
-    await loadQuestion();
+    weeklyStartTime = Date.now(); // total weekly run time
+    startTimer();
   
     // 3. NOW fill the rest while the user is reading
     if (remainingQuestions.length > 0) {
@@ -2148,11 +2163,11 @@ async function startDailyChallenge(session) {
     // 6. UI TRANSITION (Only happens once data is ready)
     resetGame();
   
+    await loadQuestion(true);
+  
     document.body.classList.add('game-active'); 
     document.getElementById('start-screen').classList.add('hidden');
     game.classList.remove('hidden');
-  
-    loadQuestion();
   
     // FILL THE REST IN THE BACKGROUND
     // We don't 'await' this; it runs while the user is looking at question 1
@@ -2224,6 +2239,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
