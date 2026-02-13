@@ -788,16 +788,16 @@ await loadQuestion(true);
   // 3. LOAD THE DATA INTO THE DOM WHILE HIDDEN
   // We call shift() and populate the <img> and text now
   // --- THE FIX: WAIT FOR IMAGE PAINT ---
-  // Check the actual question data instead of the <img> tag's src
-  if (currentQuestion && currentQuestion.question_image) {
-      try {
-          // We set the src in loadQuestion, so we can decode it here safely
-          await questionImage.decode();
-      } catch (e) {
-          // This catches the "source image cannot be decoded" if the URL is glitchy
-          console.warn("Initial image decode failed:", e);
-      }
-  }
+  // 4. WAIT FOR IMAGE (Optional but smoother)
+    if (currentQuestion && currentQuestion.question_image) {
+        try {
+            // Re-use the preloaded image object for the fastest decode
+            const img = currentQuestion._preloadedImg || questionImage;
+            await img.decode();
+        } catch (e) {
+            console.warn("Initial image decode failed:", e);
+        }
+    }
   requestAnimationFrame(() => {
     // 4. THE BIG SWAP (User finally sees the game)
     document.body.classList.add('game-active');
@@ -810,7 +810,7 @@ await loadQuestion(true);
     // Start immediately for Solo
     // 6. FILL THE REST IN THE BACKGROUND
     // We don't 'await' this; it runs while the user is looking at question 1
-    preloadNextQuestions(3);
+    preloadNextQuestions(8);
     });
 }
 
@@ -2272,6 +2272,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
