@@ -745,7 +745,8 @@ async function preloadNextQuestions(targetCount = 3) {
             if (questionData.question_image) {
                 try {
                     const img = new Image();
-                    await img.src = questionData.question_image;
+                    img.src = questionData.question_image;
+                    await img.decode();
                     // We don't necessarily need to 'await' decode here 
                     // unless it's the very first question of the game
                 } catch (e) {
@@ -2239,6 +2240,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
