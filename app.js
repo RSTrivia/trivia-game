@@ -14,7 +14,6 @@ let username = 'Guest';
 let gameEnding = false;
 let isShowingNotification = false;
 let notificationQueue = [];
-let masterQuestionPool = [];
 let weeklySessionPool = [];
 let firstQuestionSent = false; // Reset this when a match starts
 let userId = null; 
@@ -189,7 +188,6 @@ let muted = cachedMuted;
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 const todayStr = new Date().toISOString().split('T')[0];
 let score = 0;
-//let masterQuestionPool = []; // This holds ALL 510 IDs from Supabase
 let remainingQuestions = []; // This holds what's left for the CURRENT SESSION
 let currentQuestion = null;
 let currentQuestionIndex = 0;
@@ -703,64 +701,71 @@ function resetGame() {
 
 async function preloadNextQuestions(targetCount = 3) {
     let attempts = 0;
-    while (preloadQueue.length < targetCount && remainingQuestions.length > 0 && attempts < 10) {
-        attempts++;
-
-        // 🛡️ UNIVERSAL FIX: Always take the top ID. 
-        // In Normal/Lite, it's random because you shuffled the pool.
-        // In Daily/Weekly, it's random because you shuffled the selection.
-        const qId = remainingQuestions.shift();
-
-        // Avoid duplicates
-        if ((currentQuestion && qId === currentQuestion.id) || preloadQueue.some(q => q.id === qId)) {
-            continue;
+    
+    // We loop until the queue is full or we run out of questions in deterministic modes
+    while (preloadQueue.length < targetCount && attempts < 10) {
+        // Safety check for Lite Mode:
+        // Don't preload if (current score + items already in queue) >= 100
+        if (isLiteMode && (score + preloadQueue.length >= LITE_LIMIT)) {
+            break; 
         }
+        attempts++;
+        let questionData = null;
 
-        const { data, error } = await supabase.rpc('get_question_by_id', { input_id: qId });
-        if (error || !data?.[0]) continue;
+        if (isDailyMode || isWeeklyMode) {
+            // === DETERMINISTIC MODES ===
+            // Take the next ID from the pool you generated in startChallenge
+            if (remainingQuestions.length === 0) break;
+            
+            const qId = remainingQuestions.shift();
+            
+            // Fetch the full question object for this specific ID
+            const { data, error } = await supabase.rpc('get_question_by_id', { input_id: qId });
+            
+            if (!error && data?.[0]) {
+                questionData = data[0];
+            }
+        } else {
+            // === RANDOM MODES (Normal/Lite) ===
+            // Use the RPC to get a random question not seen in the current queue
+            const excludeIds = preloadQueue.map(q => q.id);
+            if (currentQuestion) excludeIds.push(currentQuestion.id);
 
-        const question = data[0];
+            const { data, error } = await supabase.rpc('get_random_question', {
+                excluded_ids: excludeIds
+            });
 
-        // --- ANTI-FLICKER: Image Warming ---
-        if (question.question_image) {
-            try {
-                const img = new Image();
-                img.src = question.question_image;
-                // Only 'await' decode for background questions (prevents blocking first load)
-                await img.decode();
-            } catch (e) {
-                console.warn("Image warming failed:", e);
+            if (!error && data?.[0]) {
+                questionData = data[0];
             }
         }
-        preloadQueue.push(question);
+
+        if (questionData) {
+            // ANTI-FLICKER: Warming up the image
+            if (questionData.question_image) {
+                try {
+                    const img = new Image();
+                    img.src = questionData.question_image;
+                    // We don't necessarily need to 'await' decode here 
+                    // unless it's the very first question of the game
+                } catch (e) {
+                    console.warn("Image warming failed:", e);
+                }
+            }
+            preloadQueue.push(questionData);
+        }
     }
 }
 
-
 async function startGame() {
 gameEnding = false;
-if (masterQuestionPool.length === 0) {
- const { data: idList, error } = await supabase.from('questions').select('id');
-  if (error) throw error;
-  masterQuestionPool = idList.map(q => q.id);
-}
+isDailyMode = false;
+isWeeklyMode = false;
+// 1. CLEANUP
+preloadQueue = [];
+remainingQuestions = [];
   
-// 🎲 SHUFFLE HAPPENS HERE:
-remainingQuestions = [...masterQuestionPool].sort(() => Math.random() - 0.5);
-if (isLiteMode) {
-// Take only the first 100 questions from the shuffled pool
-  remainingQuestions = remainingQuestions.slice(0, LITE_LIMIT);
-}
-// If we have leftovers in the preloadQueue from a previous game,
-// remove those specific IDs from our new remainingQuestions list 
-// so they don't appear twice in the same game.        
-const bufferedIds = preloadQueue.map(q => q.id);
-remainingQuestions = remainingQuestions.filter(id => !bufferedIds.includes(id));
-// 5. FETCH ONLY THE FIRST QUESTION IMMEDIATELY
-// Wait for ONLY one question so we can transition without a flicker
-if (preloadQueue.length === 0) {
-    await preloadNextQuestions(1); 
-} // Modified to accept a 'count'
+await preloadNextQuestions(1); 
 
   // 3. INTERNAL STATE RESET
   clearInterval(timer);
@@ -769,7 +774,6 @@ if (preloadQueue.length === 0) {
   dailyQuestionCount = 0;
   currentQuestion = null;
   updateScore();
-  
   resetGame();
       
   // 5. THE BIG SWAP (User finally sees the game)
@@ -779,7 +783,6 @@ if (preloadQueue.length === 0) {
   endScreen.classList.add('hidden');
   
   gameStartTime = Date.now();
- 
   loadQuestion(); // Start immediately for Solo
   // 6. FILL THE REST IN THE BACKGROUND
   // We don't 'await' this; it runs while the user is looking at question 1
@@ -805,21 +808,20 @@ async function loadQuestion() {
     questionText.textContent = '';
     answersBox.innerHTML = '';
   
-     // B. THE STALL GUARD
-    // Fill buffer if low
-    if (preloadQueue.length <= 2 && remainingQuestions.length > 0) {
+    // B. THE STALL GUARD (Updated for RPC)
+    // For Normal/Lite, we always want to refill. For Daily/Weekly, only if IDs are left.
+    const needsRefill = (isDailyMode || isWeeklyMode) ? remainingQuestions.length > 0 : true;
+
+    if (preloadQueue.length <= 2 && needsRefill) {
         preloadNextQuestions(5); 
     }
-  
-    // STALL: Wait if literally empty
-    if (preloadQueue.length === 0 && remainingQuestions.length > 0) {
-        console.log("Stall Guard triggered: Waiting for questions...");
-        await preloadNextQuestions();
+
+    if (preloadQueue.length === 0 && needsRefill) {
+        await preloadNextQuestions(3);
     }
 
     // C. FINAL SAFETY CHECK
     if (preloadQueue.length === 0) {
-        //console.error("No questions available.");
         await endGame();
         return;
     }
@@ -1286,9 +1288,10 @@ async function endGame() {
             // We pass the current username, and the score achieved
             isNewPB = await saveNormalScore(username, score, totalMs);
         }
-
+      // We check if the preloader actually FAILED to find content.
+      const isPoolExhausted = preloadQueue.length === 0;
       // 2. Check for Gz! (Completion) first
-        if (score > 0 && remainingQuestions.length === 0 && preloadQueue.length === 0) {
+        if (score > 0 && isPoolExhausted && !isLiteMode) {
             if (gzTitle) {
               const gzMessages = ['Gz!', 'Go touch grass', 'See you in Lumbridge'];
               const randomMessage = gzMessages[Math.floor(Math.random() * gzMessages.length)];
@@ -2221,6 +2224,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
