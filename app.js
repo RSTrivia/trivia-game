@@ -378,10 +378,7 @@ async function init() {
 }
 
 if (playAgainBtn) {
-    playAgainBtn.onclick = async () => {
-    // 1. Reset numerical state
-    resetGame(); 
-      
+    playAgainBtn.onclick = async () => {    
     // 3. Start the correct game engine 
     if (isWeeklyMode) {
           // Re-run the weekly setup to get the same 50 IDs
@@ -395,9 +392,6 @@ if (playAgainBtn) {
            await startGame();  
     } else {
           // Normal Mode - Reset flags just in case
-          isWeeklyMode = false;
-          isDailyMode = false;
-          isLiteMode = false;
           await startGame();
     }      
   };
@@ -806,41 +800,39 @@ async function loadQuestion(isFirst = false) {
     if (isWeeklyMode && weeklyQuestionCount >= WEEKLY_LIMIT) { await endGame(); return; }
     if (isLiteMode && score >= LITE_LIMIT) { await endGame(); return; }
     if (isDailyMode && dailyQuestionCount >= DAILY_LIMIT) { await endGame(); return; }   
-    // A. CONDITIONAL CLEANUP
+ 
     // Only wipe if it's NOT the first question, 
     // otherwise we wipe the data we just preloaded!
+   // A. CONDITIONAL CLEANUP
     if (!isFirst) {
-        // Use a tiny delay to let the opacity hit 0 before swapping src
-        // to prevent the "src-swap" flicker
-      const allBtns = document.querySelectorAll('.answer-btn');
-      allBtns.forEach(btn => {
-          btn.removeAttribute('data-answered-correctly');
-          btn.classList.remove('correct', 'wrong');
-          btn.disabled = false;
-      });
-      questionImage.style.display = 'none';
-      questionImage.style.opacity = '0';
-      questionImage.src = '';
-      questionText.textContent = '';
-      answersBox.innerHTML = '';
+        // Disable old buttons immediately so user can't double-click during transition
+        document.querySelectorAll('.answer-btn').forEach(btn => btn.disabled = true);
+        
+        questionImage.style.opacity = '0';
+        // We don't wipe textContent here to prevent the "white flash" 
+        // We will overwrite it below once the data is ready.
     }
   
     // B. THE STALL GUARD (Updated for RPC)
     // For Normal/Lite, we always want to refill. For Daily/Weekly, only if IDs are left.
     const needsRefill = (isDailyMode || isWeeklyMode) ? remainingQuestions.length > 0 : true;
 
-   // If we are starting the game (isFirst), the queue was already filled 
-    // by startGame/startChallenge, so we can skip the await here.
     if (!isFirst) {
-        if (preloadQueue.length <= 2 && needsRefill) preloadNextQuestions(5);
-        if (preloadQueue.length === 0 && needsRefill) await preloadNextQuestions(3);
-    }
-
-   // C. FINAL SAFETY CHECK
-    if (preloadQueue.length === 0) {
-        await endGame();
-        return;
-    }
+            // DO NOT 'await' these. Let them trigger in the background.
+            if (preloadQueue.length <= 1 && needsRefill) {
+                preloadNextQuestions(5); 
+            }
+        }
+    
+        // C. CRITICAL STALL CHECK (Only await if we are literally out of questions)
+        if (preloadQueue.length === 0) {
+            if (needsRefill) {
+                await preloadNextQuestions(1); // Only get ONE so we can show it ASAP
+            } else {
+                await endGame();
+                return;
+            }
+        }
     // D. POPULATE DATA
     currentQuestion = preloadQueue.shift();
     questionText.textContent = currentQuestion.question;
@@ -865,10 +857,10 @@ async function loadQuestion(isFirst = false) {
    if (currentQuestion.question_image) {
       questionImage.src = currentQuestion.question_image;
       questionImage.style.display = 'block';
-      questionImage.style.opacity = '1';
-      setTimeout(() => { questionImage.style.opacity = '1'; }, 10);
+      setTimeout(() => { questionImage.style.opacity = '1'; }, 50);
     } else {
         questionImage.style.display = 'none';
+       questionImage.style.opacity = '0';
         questionImage.src = '';
     }
   // G. TIMER
@@ -2240,6 +2232,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
