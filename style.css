@@ -779,7 +779,7 @@ input.input-field:-webkit-autofill:active {
 #userDisplay {
   font-size: 1.2rem;
   color: #d4af37;
-  min-height: 24px;
+  min-height: 48px; /*trying here */
   display: flex;            /* make it inline-flex to center text vertically */
   align-items: flex-start; /*center;*/
   /*justify-content: center;  center the text horizontally */
@@ -1679,6 +1679,7 @@ input.input-field:-webkit-autofill:active {
     user-select: none;
     display:none;
 }
+
 
 
 
