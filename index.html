@@ -89,10 +89,11 @@
     if (petId && petId !== "null" && petImg) {
         const fileName = petId.replace('pet_', '') + '.png'; 
         petImg.src = `pets/${fileName}`;
-        petImg.style.display = 'inline-block';
-        petImg.style.marginLeft = '5px'; // Add a little space from the name
-        petImg.style.verticalAlign = 'middle'; // Center it with the text
+        // Change visibility, not display. 
+        // This keeps the 30px 'hole' reserved so nothing moves.
+        petImg.style.visibility = 'visible'; 
     } else if (petImg) {
+        // If they truly have NO pet, then remove the space.
         petImg.style.display = 'none';
     }
     // ------------------------------
@@ -384,6 +385,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
 
 
