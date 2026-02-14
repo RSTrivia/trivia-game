@@ -1217,23 +1217,27 @@ async function endGame() {
       }
     } else if (isDailyMode) {
         if (playAgainBtn) playAgainBtn.classList.add('hidden');
-        displayFinalTime(totalMs);
-        if (gameOverTitle) {
-            gameOverTitle.textContent = randomMsg;
-            gameOverTitle.classList.remove('hidden');
-        }
-  
         // Saves the score for the leaderboard
         let isDailyPB = await saveScore(session, 'daily', score, totalMs, username, randomMsg);
+        displayFinalTime(totalMs);
+      
+        if (gameOverTitle) {
+          if (isDailyPB) {
+            gameOverTitle.textContent = `${randomMsg}\nNew PB achieved!`;
+          } else {
+            gameOverTitle.textContent = randomMsg;
+          }
+          gameOverTitle.classList.remove('hidden');
+        }
+  
         // This one function now handles: Streak, Total Count, and Perfect 10/10
         // Pass the actual 'score' variable here
         localStorage.setItem('lastDailyScoreDate', new Date().toISOString().split('T')[0]);
+      
         localStorage.setItem('lastDailyScore', score); 
         localStorage.setItem('dailyPlayedDate', todayStr); 
         localStorage.setItem('lastDailyMessage', randomMsg);
-        if (isDailyPB) {
-          showNotification(`New Daily PB!`, null, "#ffde00");
-        }
+
         // Show the streak container
         if (streakContainer && streakCount) {
             streakContainer.style.display = 'block';
@@ -1282,11 +1286,11 @@ async function endGame() {
         } else {
         // end of Lite Mode
         // --- ACTUAL NORMAL MODE ---
-        let isNewPB = false;
+        let isNormalPB = false;
         // Trigger the high-score save
         if (session && score > 0) {
             // We pass the current username, and the score achieved
-            isNewPB = await saveScore(session, 'normal', score, totalMs, username);
+            isNormalPB = await saveScore(session, 'normal', score, totalMs, username);
         }
       // We check if the preloader actually FAILED to find content.
       const isPoolExhausted = preloadQueue.length === 0;
@@ -1306,7 +1310,7 @@ async function endGame() {
             // 3. Otherwise, show standard Game Over, or PB achieved if its PB.
         } else if (gameOverTitle) {
             //if (gzTitle) gzTitle.classList.add('hidden'); // Hide Gz if it was there from before
-            gameOverTitle.textContent = isNewPB ? "New PB achieved!" : "Game Over!";
+            gameOverTitle.textContent = isNormalPB ? "New PB achieved!" : "Game Over!";
             gameOverTitle.classList.remove('hidden');
         }
       }
@@ -2018,6 +2022,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
