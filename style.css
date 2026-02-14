@@ -942,6 +942,8 @@ input.input-field:-webkit-autofill:active {
   font-size: 1.4rem;                 /* bigger than final score */
   text-align: center;
   font-family: Arial, sans-serif;       /* match final score */
+  white-space: pre-line;
+  line-height: 1.4;
 }
 
 
@@ -1676,6 +1678,7 @@ input.input-field:-webkit-autofill:active {
     -webkit-user-drag: none;
     user-select: none;
 }
+
 
 
 
