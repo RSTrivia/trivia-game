@@ -370,6 +370,7 @@ h1 {
   margin-bottom: 30px;
   padding: 0 10px; /* Keeps icons from touching the very edge */
   box-sizing: border-box;
+  height: 40px;
 }
 
 /* 1. The Left Side (Icons) */
@@ -1665,19 +1666,26 @@ input.input-field:-webkit-autofill:active {
 }
 
 
+/* Update this block */
 #equipped-pet-display {
-    width: 25px;
-    height: 25px;
-    object-fit: contain;      /* Maintains aspect ratio so pets aren't squished */
-    image-rendering: auto;    /* Use 'auto' for high-detail pets like Zik */
-    /* If you want that crisp OSRS pixel look, use 'pixelated' instead of auto, 
-       but 'auto' is safer for very small displays like 25px */
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+    image-rendering: auto;
     vertical-align: middle;
     margin-left: 8px;
-    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5)); /* Makes them stand out */
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5));
     -webkit-user-drag: none;
     user-select: none;
-    display:none;
+    
+    /* CHANGE: Instead of display:none, use visibility:hidden or reserve space */
+    display: inline-block; 
+    visibility: hidden; /* It takes up 30px of space even before it loads */
+    flex-shrink: 0;     /* Prevents the image from being crushed */
 }
 
+/* Add this: When the script finds a pet, just make it visible */
+#equipped-pet-display[src] {
+    visibility: visible;
+}
 
