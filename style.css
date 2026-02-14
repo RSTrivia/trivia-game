@@ -1219,7 +1219,7 @@ input.input-field:-webkit-autofill:active {
     }
     100% {
         opacity: 0;
-        transform: translateY(-60px); /* Floats straight up */
+        transform: translateY(-50px); /* Floats straight up */
     }
 }
 /*                                                                                     */
@@ -1687,5 +1687,6 @@ input.input-field:-webkit-autofill:active {
 #equipped-pet-display[src] {
     visibility: visible;
 }
+
 
 
