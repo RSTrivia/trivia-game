@@ -9,11 +9,160 @@
         document.documentElement.style.setProperty("--bg-image", `url('${bg}')`);
       }
     })();
-
+  
   </script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>OSRS Trivia</title>
+  <script>
+    
+// Define these globally for this script
+  const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
+  const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
+  const cachedMuted = localStorage.getItem('muted') === 'true';
+  const todayStr = new Date().toISOString().split('T')[0];
+ 
+  async function handleAuthAction() {
+    const isLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
+    if (isLoggedIn) {
+      supabase.auth.signOut(); // 🔑 THIS WAS MISSING
+    } else {
+      window.location.href = 'login.html';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const span = document.getElementById('usernameSpan');
+    const authBtn = document.getElementById('authBtn');
+    const authLabel = authBtn?.querySelector('.btn-label');
+    const muteIcon = document.getElementById('muteIcon');
+    const muteBtn = document.getElementById('muteBtn');
+    const dailyBtn = document.getElementById('dailyBtn');
+    const weeklyBtn = document.getElementById('weeklyBtn');
+    const shareBtn = document.getElementById('shareBtn');
+    const logBtn = document.getElementById('logBtn');
+    const lobbyBtn = document.getElementById('lobbyBtn');
+    const helpBtn = document.getElementById('helpBtn');
+    const helpModal = document.getElementById('help-modal');
+    const closeHelpBtn = document.getElementById('closeHelpBtn');
+    const levelNum = document.getElementById('levelNumber');
+    const xpBracket = document.getElementById('xpBracket');
+    
+    const hasPlayedToday = localStorage.getItem('dailyPlayedDate') === todayStr;
+    const hasScore = localStorage.getItem('lastDailyScore') !== null;
+
+    // 1. Level & XP Calculation (Moved from bottom to here)
+    if (cachedLoggedIn) {
+      const cXp = parseInt(localStorage.getItem('cached_xp')) || 0;
+      let dLvl = 1;
+      if (cXp >= 100000) { dLvl = 99; }
+      else if (cXp > 0) {
+        for (let L = 1; L <= 99; L++) {
+          let threshold = Math.floor(Math.pow((L - 1) / 98, 3.1) * 100000);
+          if (cXp < threshold) {
+            dLvl = Math.max(1, L - 1);
+            break;
+          }
+        }
+      }
+      if (levelNum) levelNum.textContent = dLvl;
+      if (xpBracket) xpBracket.textContent = ` (${cXp.toLocaleString()} XP)`;
+    } else {
+      if (levelNum) levelNum.textContent = '1';
+      if (xpBracket) xpBracket.textContent = ' (0 XP)';
+    }
+
+    // 1. Reset everything to locked first (Safety)
+  [dailyBtn, weeklyBtn, lobbyBtn].forEach(btn => {
+    if (btn) {
+        btn.classList.remove('is-active');
+        btn.classList.add('is-disabled');
+    }
+   }); 
+    // 1. Instant Text/Emoji Sync
+    if (span) span.textContent = ' ' + cachedUsername;
+
+    // --- ADD THE PET LOGIC HERE ---
+    const petId = localStorage.getItem('equipped_pet_id'); // We will ensure this is saved in Step 2
+    const petImg = document.getElementById('equipped-pet-display');
+    
+    if (petId && petId !== "null" && petImg) {
+        const fileName = petId.replace('pet_', '') + '.png'; 
+        petImg.src = `pets/${fileName}`;
+        petImg.style.display = 'inline-block';
+        petImg.style.marginLeft = '5px'; // Add a little space from the name
+        petImg.style.verticalAlign = 'middle'; // Center it with the text
+    } else if (petImg) {
+        petImg.style.display = 'none';
+    }
+    // ------------------------------
+    
+    if (authLabel) authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
+
+    if (muteIcon && muteBtn) {
+      muteIcon.textContent = cachedMuted ? '🔇' : '🔊';
+      if (cachedMuted) muteBtn.classList.add('is-muted');
+    }
+
+    // 2. Instant Button State Sync (Anti-Flicker)
+    if (cachedLoggedIn) {
+      // Weekly Mode: Always GOLD if logged in (even if they played)
+      [weeklyBtn, lobbyBtn].forEach(btn => {
+          if (btn) {
+              btn.classList.add('is-active');
+              btn.classList.remove('is-disabled');
+              btn.style.opacity = '1';            // ADD THIS
+              btn.style.pointerEvents = 'auto';    // ADD THIS
+          }
+      });
+      // 2. ONLY unlock if they are logged in AND haven't played
+      if (!hasPlayedToday && dailyBtn) {
+          dailyBtn.classList.add('is-active');
+          dailyBtn.classList.remove('is-disabled');
+          dailyBtn.style.opacity = '1';
+          dailyBtn.style.pointerEvents = 'auto';
+      }
+      [shareBtn, logBtn].forEach(btn => {
+        if (btn && (btn === logBtn || hasScore)) {
+          btn.classList.remove('is-disabled');
+          btn.style.opacity = '1';
+          btn.style.pointerEvents = 'auto';
+        }
+      });
+    } else {
+      // If not logged in, ensure these stay locked 
+      [dailyBtn, shareBtn, logBtn, weeklyBtn, lobbyBtn].forEach(btn => {
+        if (btn) {
+          btn.classList.remove('is-active'); // Remove Gold state
+          btn.classList.add('is-disabled');  // Add Grey state
+          btn.style.opacity = '0.5';         // Force Grey look
+          btn.style.pointerEvents = 'none';  // Lock it
+        }
+      });
+    }
+
+    if (authBtn) authBtn.onclick = handleAuthAction;
+
+  // Open Modal
+  helpBtn.onclick = () => {
+    helpModal.classList.remove('hidden');
+  };
+
+  // Close Modal (via button)
+  closeHelpBtn.onclick = () => {
+    helpModal.classList.add('hidden');
+  };
+
+  // Close Modal (clicking outside the box)
+  window.onclick = (event) => {
+    if (event.target == helpModal) {
+      helpModal.classList.add('hidden');
+    }
+  };
+    
+  });
+    
+</script>
   <meta name="darkreader-lock">  
   <!-- OSRS Title Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -235,6 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
 
 
