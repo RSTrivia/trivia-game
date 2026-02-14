@@ -785,7 +785,6 @@ input.input-field:-webkit-autofill:active {
   /*justify-content: center;  center the text horizontally */
   flex-direction: column;
   /*margin-left: -70px;*/
-  min-height: 48px; /* Reserve space for TWO lines of text (Name + Level) */
 }
 
 /* ====== ROW LAYOUT FIX ===== */
@@ -862,7 +861,6 @@ input.input-field:-webkit-autofill:active {
 
 /* Ensure rows don't have their own margins stealing space */
 #start-screen .row {
-  height: 50px;
   display: flex;
   margin: 0 !important; 
   padding: 0;
@@ -1108,7 +1106,7 @@ input.input-field:-webkit-autofill:active {
   
   /* ====== FIX POSITIONING FOR MOBILE ====== */
  #user-controls {
-   display: flex;
+    display: flex;
     align-items: center;
     justify-content: center; /* Center the whole group first */
     padding-left: 0 !important;
@@ -1120,7 +1118,6 @@ input.input-field:-webkit-autofill:active {
   
   /* 3. INCREASE gap between Text and Mic */
   #userDisplay {
-    min-height: 48px; /* Reserve space for TWO lines of text (Name + Level) */
     /* This creates the wide gap you want without pushing buttons off-screen */
     margin-left: 1px !important;
     display: flex;
@@ -1682,6 +1679,7 @@ input.input-field:-webkit-autofill:active {
     user-select: none;
     display:none;
 }
+
 
 
 
