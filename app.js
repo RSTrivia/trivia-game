@@ -1936,6 +1936,9 @@ async function startDailyChallenge(session) {
     isDailyMode = true;
     isWeeklyMode = false;
     preloadQueue = []; 
+   // Tell the DB: "This is a new game, start my streak at 0"
+    supabase.rpc('reset_my_streak');
+    streak = 0;
     remainingQuestions = dailyIds.sort(() => Math.random() - 0.5);   
   
     // 5. Start the engine
@@ -1959,7 +1962,7 @@ async function startDailyChallenge(session) {
         document.getElementById('start-screen').classList.add('hidden');
         game.classList.remove('hidden');
 
-        gameStartTime = Date.now(); 
+        gameStartTime = Date.now();
         startTimer();
         // FILL THE REST IN THE BACKGROUND
         // We don't 'await' this; it runs while the user is looking at question 1
@@ -2015,6 +2018,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
