@@ -772,6 +772,8 @@ remainingQuestions = [];
   clearInterval(timer);
   score = 0;
   streak = 0;
+  // Tell the DB: "This is a new game, start my streak at 0"
+  supabase.rpc('reset_my_streak');
   dailyQuestionCount = 0;
   currentQuestion = null;
   updateScore();
@@ -977,9 +979,9 @@ async function checkAnswer(choiceId, btn) {
 
     // THE ONE CALL TO RULE THEM ALL
     const { data: res, error: rpcErr } = await supabase.rpc('process_answer', {
-        input_id: currentQuestion.id,
-        choice: choiceId,
-        is_daily: isDailyMode,
+        input_id: Number(currentQuestion.id), // Ensure it's an integer
+        choice: Number(choiceId),             // Ensure it's an integer
+        is_daily: Boolean(isDailyMode),       // Ensure it's a boolean
         current_count: isDailyMode ? dailyQuestionCount : 0,
         daily_limit: DAILY_LIMIT
     });
@@ -2031,6 +2033,8 @@ async function startWeeklyChallenge() {
     weeklyQuestionCount = 0; 
     score = 0;
     streak = 0; 
+    // Tell the DB: "This is a new game, start my streak at 0"
+    supabase.rpc('reset_my_streak');
   
     if (weeklySessionPool.length === 0) {
           // 1. Parallelize the slow stuff
@@ -2236,6 +2240,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
