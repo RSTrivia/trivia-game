@@ -779,7 +779,7 @@ input.input-field:-webkit-autofill:active {
 #userDisplay {
   font-size: 1.2rem;
   color: #d4af37;
-  min-height: 48px; /*trying here */
+  min-height: 24px;
   display: flex;            /* make it inline-flex to center text vertically */
   align-items: flex-start; /*center;*/
   /*justify-content: center;  center the text horizontally */
@@ -928,7 +928,7 @@ input.input-field:-webkit-autofill:active {
 
 @media (max-width: 480px) {
   .container {
-    min-height: 440px;
+    min-height: 350px;
     padding: 15px;
   }
 }
@@ -1106,7 +1106,7 @@ input.input-field:-webkit-autofill:active {
   
   /* ====== FIX POSITIONING FOR MOBILE ====== */
  #user-controls {
-    display: flex;
+   display: flex;
     align-items: center;
     justify-content: center; /* Center the whole group first */
     padding-left: 0 !important;
@@ -1679,129 +1679,4 @@ input.input-field:-webkit-autofill:active {
     user-select: none;
     display:none;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
