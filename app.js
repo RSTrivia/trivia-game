@@ -903,7 +903,7 @@ async function handleTimeout() {
       
    // 2. Corrected Logic & Syntax (Fixed the missing closing parenthesis)
     if ((isDailyMode && dailyQuestionCount < DAILY_LIMIT) || (isWeeklyMode && weeklyQuestionCount < WEEKLY_LIMIT)) {
-        setTimeout(loadQuestion, 1500);
+        setTimeout(loadQuestion, 1300);
     } else {
         // If it's Normal mode OR we reached the limit for Daily/Weekly
         setTimeout(endGame, 1000);
@@ -1012,7 +1012,7 @@ async function checkAnswer(choiceId, btn) {
         await highlightCorrectAnswer();
 
         if (isDailyMode || isWeeklyMode) {
-            setTimeout(loadQuestion, 1500);
+            setTimeout(loadQuestion, 1300);
         } else {
             setTimeout(endGame, 1000);
         }
@@ -1368,7 +1368,7 @@ function triggerXpDrop(amount) {
     // Fallback cleanup
     setTimeout(() => {
         if (xpDrop.parentNode) xpDrop.remove();
-    }, 1200);
+    }, 1300);
 }
 
 function getWeeklySliceIndex(totalQuestions, WEEKLY_LIMIT) {
@@ -2022,6 +2022,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
