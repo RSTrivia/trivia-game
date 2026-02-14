@@ -1196,7 +1196,7 @@ input.input-field:-webkit-autofill:active {
     gap: 2px;
     
     /* Animation */
-    animation: xp-float-ne 1.2s ease-out forwards;
+    animation: xp-float-ne 1.3s ease-out forwards;
 }
 
 /* The White Plus Sign */
@@ -1687,6 +1687,7 @@ input.input-field:-webkit-autofill:active {
 #equipped-pet-display[src] {
     visibility: visible;
 }
+
 
 
 
