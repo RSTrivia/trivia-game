@@ -195,7 +195,6 @@ let preloadQueue = [];
 let timer;
 let timeLeft = 15;
 let isDailyMode = false;
-let weeklyStartTime = 0;
 let isWeeklyMode = false;
 let weeklyQuestionCount = 0;
 let isLiteMode = false;
@@ -1047,11 +1046,11 @@ function triggerFireworks() {
 }
 
 // Call this function for Level Ups, Bonuses, or Achievements
-function showNotification(message, soundToPlay, color = "#ffde00") {
+function showNotification(message, soundToPlay = null, color = "#ffde00") {
     notificationQueue.push({ 
         text: message, 
-        sound: soundToPlay,
-        color: color // Default is Gold if no color is provided
+        sound: soundToPlay, // Will be null if not provided
+        color: color 
     });
     processQueue();
 }
@@ -1065,8 +1064,13 @@ function processQueue() {
     const container = document.getElementById('game-notifications');
     const item = notificationQueue.shift();
 
-    if (item.sound) {
-        playSound(item.sound); 
+    // Only play if sound exists AND it's a valid audio buffer
+    if (item.sound && typeof item.sound === 'object') {
+        try {
+            playSound(item.sound); 
+        } catch (e) {
+            console.warn("Notification sound failed to play:", e);
+        }
     }
 
     const notif = document.createElement('div');
@@ -1139,15 +1143,8 @@ async function endGame() {
     // 1. Calculate time for the CURRENT segment (Solo)
     const endTime = Date.now();
      
-    // Determine which start time to use
-    let calctotal;
-    if (isWeeklyMode) {
-        calctotal = endTime - weeklyStartTime;
-    } else {
-        // This covers Normal, Lite, and now Live Mode
-         calctotal = endTime - gameStartTime
-    }
-    const totalMs = calctotal;
+    // This covers all modes
+    const totalMs = endTime - gameStartTime;
     const totalSeconds = totalMs / 1000;
   
     // 1. PREPARE DATA FIRST (Quietly in background)
@@ -1198,26 +1195,31 @@ async function endGame() {
       displayFinalTime(totalMs);
       
     // Save Score and Check for PB
-      let isNewPB = session ? await saveWeeklyScore(session.user.id, username, score, totalMs) : false;
+      let isWeeklyPB = session ? await saveScore(session, 'weekly', score, totalMs, username) : false;
       // Update Titles
       if (gameOverTitle) {
-          gameOverTitle.textContent = isNewPB ? "New PB achieved!" : "Weekly Mode Completed!";
+          gameOverTitle.textContent = isWeeklyPB ? "New PB achieved!" : "Weekly Mode Completed!";
           gameOverTitle.classList.remove('hidden');
       }
     } else if (isDailyMode) {
         if (playAgainBtn) playAgainBtn.classList.add('hidden');
+        displayFinalTime(totalMs);
         if (gameOverTitle) {
             gameOverTitle.textContent = randomMsg;
             gameOverTitle.classList.remove('hidden');
         }
   
         // Saves the score for the leaderboard
-        await saveDailyScore(session, randomMsg); 
+        let isDailyPB = await saveScore(session, 'daily', score, totalMs, username, randomMsg);
         // This one function now handles: Streak, Total Count, and Perfect 10/10
         // Pass the actual 'score' variable here
-        localStorage.setItem('lastDailyScore',  score);
         localStorage.setItem('lastDailyScoreDate', new Date().toISOString().split('T')[0]);
-        await updateDailyStreak(score);
+        localStorage.setItem('lastDailyScore', score); 
+        localStorage.setItem('dailyPlayedDate', todayStr); 
+        localStorage.setItem('lastDailyMessage', randomMsg);
+        if (isDailyPB) {
+          showNotification(`New Daily PB!`, null, "#ffde00");
+        }
         // Show the streak container
         if (streakContainer && streakCount) {
             streakContainer.style.display = 'block';
@@ -1247,7 +1249,7 @@ async function endGame() {
                 if (totalSeconds <= 480) await saveAchievement('lite_sub_8', true);
             }
           
-            let isLitePB = session ? await saveLiteScore(session.user.id, username, score, totalMs) : false;
+            let isLitePB = session ? await saveScore(session, 'lite', score, totalMs, username) : false;
         
            // 2. Update UI IMMEDIATELY 
             if (gameOverTitle) {
@@ -1270,7 +1272,7 @@ async function endGame() {
         // Trigger the high-score save
         if (session && score > 0) {
             // We pass the current username, and the score achieved
-            isNewPB = await saveNormalScore(username, score, totalMs);
+            isNewPB = await saveScore(session, 'normal', score, totalMs, username);
         }
       // We check if the preloader actually FAILED to find content.
       const isPoolExhausted = preloadQueue.length === 0;
@@ -1302,17 +1304,10 @@ async function endGame() {
     game.classList.add('hidden');
     endScreen.classList.remove('hidden');
 
-    // 2. WIPE GAME UI IMMEDIATELY 
-    // This prevents seeing old questions/answers behind the transition
-    //questionText.textContent = ''; 
-    //answersBox.innerHTML = '';
-    //questionImage.style.display = 'none';
-    //questionImage.src = ''; 
     gameEnding = false;
     syncDailySystem();
   });
 }
-
 
 function displayFinalTime(ms) {
     const totalSeconds = ms / 1000;
@@ -1334,91 +1329,6 @@ function displayFinalTime(ms) {
 
 }
 
-async function saveLiteScore(userId, username, currentScore, timeInMs) {
-    // 1. Fetch the existing Lite data
-    const { data, error: fetchError } = await supabase
-        .from('scores')
-        .select('lite_data')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-    if (fetchError) {
-        console.error("Fetch Lite error:", fetchError);
-        return false; 
-    }
-
-    // 2. Set defaults if no record exists
-    const bestLite = data?.lite_data || { score: -1, time: 9999999 };
-    
-    // 3. Comparison Logic: Higher score is better. 
-    // If scores are tied, a faster time (lower ms) is better.
-    const isHigherScore = currentScore > bestLite.score;
-    const isFasterTime = (currentScore === bestLite.score && timeInMs < bestLite.time);
-
-    if (isHigherScore || isFasterTime) {
-        const { error: upsertError } = await supabase
-            .from('scores')
-            .upsert({ 
-                user_id: userId,
-                username: username,
-                lite_data: { 
-                    score: currentScore, 
-                    time: timeInMs 
-                } 
-            }, { onConflict: 'user_id' }); 
-
-        if (upsertError) {
-            console.error("Upsert Lite error:", upsertError);
-            return false;
-        }
-        
-        return true; // Is a new PB
-    } 
-
-    return false; // Not a new record
-}
- 
-async function saveWeeklyScore(userId, username, currentScore, timeInMs) {
-    const { data, error: fetchError } = await supabase
-        .from('scores')
-        .select('weekly_data')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-    if (fetchError) {
-        console.error("Fetch error:", fetchError);
-        return false; // Return false so UI doesn't show "PB" on error
-    }
-
-    // Default values if no record exists
-    const bestWeekly = data?.weekly_data || { score: -1, time: 999999999 };
-    
-    const isHigherScore = currentScore > bestWeekly.score;
-    const isFasterTime = (currentScore === bestWeekly.score && timeInMs < bestWeekly.time);
-
-    if (isHigherScore || isFasterTime) {
-        const { error: upsertError } = await supabase
-            .from('scores')
-            .upsert({ 
-                user_id: userId,
-                username: username,
-                weekly_data: { 
-                    score: currentScore, 
-                    time: timeInMs 
-                } 
-            }, { onConflict: 'user_id' });
-
-        if (upsertError) {
-            console.error("Upsert error:", upsertError);
-            return false;
-        }
-        
-        return true; // SUCCESS: This tells endGame to show "New PB achieved!"
-    } 
-
-    return false; // Not a new record
-}
-  
 // new for xp drops 
 function triggerXpDrop(amount) {
     const gameContainer = document.getElementById('game'); 
@@ -1441,60 +1351,6 @@ function triggerXpDrop(amount) {
     setTimeout(() => {
         if (xpDrop.parentNode) xpDrop.remove();
     }, 1500);
-}
-async function saveNormalScore(currentUsername, finalScore, finalTime) {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return false;
-    const userId = session.user.id;
-
-    // 1. Fetch both the Leaderboard record AND the Profile data
-    // This fixes the "profile is not defined" error
-    const [recordResponse, profileResponse] = await Promise.all([
-        supabase.from('scores').select('score, time_ms').eq('user_id', userId).maybeSingle(),
-        supabase.from('profiles').select('achievements').eq('id', userId).maybeSingle()
-    ]);
-
-    const record = recordResponse.data;
-    const profile = profileResponse.data;
-
-    const oldBest = record?.score || 0;
-    const oldTime = record?.time_ms || 9999999;
-    
-    // Safely grab existing achievements or start fresh
-    let achievements = profile?.achievements || {};
-
-    // --- 3. PB LOGIC ---
-    const isHigherScore = finalScore > oldBest;
-    const isFasterTime = (finalScore === oldBest && finalTime < oldTime);
-
-    if (isHigherScore || isFasterTime) {
-        const { error: scoreError } = await supabase
-            .from('scores')
-            .upsert({ 
-                user_id: userId, 
-                username: currentUsername, 
-                score: finalScore,
-                time_ms: finalTime 
-            }, { onConflict: 'user_id' });
-
-        if (!scoreError) {
-            // Update the local object
-            achievements.best_score = finalScore;
-            achievements.best_time = finalTime;
-          
-            // Save updated achievements back to profile
-            await supabase
-                .from('profiles')
-                .update({ achievements })
-                .eq('id', userId);
-
-            return true; // PB achieved!
-        } else {
-            console.error("Leaderboard Save Error:", scoreError.message);
-        }
-    }
-    
-    return false; // Not a PB
 }
 
 
@@ -1541,23 +1397,39 @@ function getWeeklySliceIndex(totalQuestions, WEEKLY_LIMIT) {
     return (weekNumber % maxChunks); 
 }
 
-window.getWeeklySliceIndex = getWeeklySliceIndex; // delete after testing
-
-// Helper to keep endGame clean
-async function saveDailyScore(session, msg) {
-    localStorage.setItem('lastDailyScore', score); 
-    localStorage.setItem('dailyPlayedDate', todayStr); 
-    localStorage.setItem('lastDailyMessage', msg);
-
-    if (session) {
-        await supabase.from('daily_attempts').update({
-            score: score,
-            message: msg
-        }).eq('user_id', session.user.id).eq('attempt_date', todayStr);
+async function saveScore(session, mode, currentScore, timeMs, username = "", msg = "") {
+    // 1. Safety check: ensure session exists
+    if (!session || !session.user) {
+        console.warn(`No session provided for ${mode} score save.`);
+        return false;
     }
-    syncDailySystem();
+
+    try {
+        const { data, error } = await supabase.rpc('submit_game_score', {
+            p_mode: mode,
+            p_score: currentScore,
+            p_time_ms: Math.floor(timeMs),
+            p_username: username,
+            p_message: msg
+        });
+
+        if (error) throw error;
+
+        // 2. Specific post-save logic for Daily Mode
+        if (mode === 'daily') {
+            // We pass the session here too if updateDailyStreak needs it
+            await updateDailyStreak(currentScore);
+            syncDailySystem();
+        }
+
+        return data.is_pb; // Returns true/false
+    } catch (err) {
+        console.error(`Error saving ${mode} score:`, err);
+        return false;
+    }
 }
-gameEnding = false;
+
+
 
 if (shareBtn) {
     shareBtn.onclick = async () => {
@@ -2030,7 +1902,7 @@ async function startWeeklyChallenge() {
     document.getElementById('start-screen').classList.add('hidden');
     endScreen.classList.add('hidden');
   
-    weeklyStartTime = Date.now(); // total weekly run time
+    gameStartTime = Date.now(); // total weekly run time
     startTimer();
   
     // 3. NOW fill the rest while the user is reading
@@ -2102,7 +1974,9 @@ async function startDailyChallenge(session) {
         document.body.classList.add('game-active'); 
         document.getElementById('start-screen').classList.add('hidden');
         game.classList.remove('hidden');
-      
+
+        gameStartTime = Date.now(); 
+        startTimer();
         // FILL THE REST IN THE BACKGROUND
         // We don't 'await' this; it runs while the user is looking at question 1
         preloadNextQuestions(5);
@@ -2122,23 +1996,6 @@ function shuffleWithSeed(array, seed) {
 function seededRandom(seed) {
     let x = Math.sin(seed) * 10000;
     return x - Math.floor(x);
-}
-
-function subscribeToDailyChanges(userId) {
-    const channel = supabase
-        .channel('daily-updates')
-        .on('postgres_changes', {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'daily_attempts',
-            filter: `user_id=eq.${userId}`
-        }, () => {
-            //console.log('Daily challenge sync: locking button.');
-            lockDailyButton();
-        })
-        .subscribe();
-
-    return channel;
 }
 
 
@@ -2174,6 +2031,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
