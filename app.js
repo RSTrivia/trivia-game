@@ -208,6 +208,7 @@ async function syncDailySystem() {
     const { data: { session } } = await supabase.auth.getSession();
     
     if (!session) {
+        lockWeeklyButton();
         lockDailyButton();
         if (shareBtn) {
             shareBtn.classList.add('is-disabled');
@@ -2173,6 +2174,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
