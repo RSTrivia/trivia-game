@@ -200,12 +200,18 @@ function updateLeaderboard(data) {
       const level = getLevel(entry.val);
       finalHTML = `${xpValue.toLocaleString()} <span style="font-size: 0.85em; opacity: 0.6;">(Lvl ${level})</span>`;
       
-    } else if (currentMode === 'weekly' || currentMode === 'lite') {
-      const dataKey = currentMode === 'weekly' ? 'weekly_data' : 'lite_data';
-      const s = entry[dataKey]?.score || 0;
-      const t = entry[dataKey]?.time || 0;
-      // Pass true for isWeekly to check against the 9999 default
-      finalHTML = `${s.toLocaleString()}${formatLeaderboardTime(t)}`;
+    } else if (currentMode === 'weekly' || currentMode === 'lite' || currentMode === 'daily') {
+        // Map the mode to the correct database column name
+        const keyMap = {
+          'weekly': 'weekly_data',
+          'lite': 'lite_data',
+          'daily': 'daily_data'
+        };
+        const dataKey = keyMap[currentMode];
+        
+        const s = entry[dataKey]?.score || 0;
+        const t = entry[dataKey]?.time || 0;
+        finalHTML = `${s.toLocaleString()}${formatLeaderboardTime(t)}`;
       
     } else {
       // NORMAL MODE (using val and time_ms)
@@ -253,7 +259,6 @@ async function fetchLeaderboard() {
   } else if (currentMode === 'daily') {
     query = supabase
       .from('scores')
-      // Added profiles(equipped_pet) here
       .select('username, daily_data')
       .not('daily_data', 'is', null)
       .gt('daily_data->score', 0)
@@ -396,6 +401,7 @@ if(dailyTab) dailyTab.onclick = () => handleTabClick('daily', dailyTab);
 </script>
 </body>
 </html>
+
 
 
 
