@@ -1368,7 +1368,7 @@ function triggerXpDrop(amount) {
     // Fallback cleanup
     setTimeout(() => {
         if (xpDrop.parentNode) xpDrop.remove();
-    }, 1500);
+    }, 1300);
 }
 
 function getWeeklySliceIndex(totalQuestions, WEEKLY_LIMIT) {
@@ -2022,6 +2022,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
