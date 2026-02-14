@@ -955,7 +955,12 @@ async function checkAnswer(choiceId, btn) {
                 if (xpData.new_level >= 99 && xpData.old_level < 99) showAchievementNotification("Reach Max Level");
             }
         }
-
+        // 2. NEW: Score Milestone Logic
+        // This only fires for Normal Mode
+        if (res.milestone) {
+            showAchievementNotification(res.milestone);
+        }
+      
         // --- 2. INTEGRATED PET LOGIC ---
         const petData = res.pet_info;
         if (petData && petData.unlocked) {
@@ -987,8 +992,7 @@ async function checkAnswer(choiceId, btn) {
         if (isLiteMode && score === 50) saveAchievement('lite_50', true);
         if (isWeeklyMode && score === 25) saveAchievement('weekly_25', true);
 
-        const currentUsername = localStorage.getItem('cachedUsername') || 'Player';
-        checkNormalScoreAchievements(currentUsername, score);
+        
       
         setTimeout(loadQuestion, 1000);
     } else {
@@ -1352,36 +1356,6 @@ function triggerXpDrop(amount) {
         if (xpDrop.parentNode) xpDrop.remove();
     }, 1500);
 }
-
-
-// 1. Updated checkNormalScoreAchievements function
-async function checkNormalScoreAchievements(currentUsername, finalScore) {
-  const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return false;
-      const userId = session.user.id;
-  
-      // 1. Fetch only the normal mode score
-      const { data: record, error } = await supabase
-          .from('scores')
-          .select('score')
-          .eq('user_id', userId)
-          .maybeSingle();
-      
-      if (error) {
-          console.error("Error fetching score:", error.message);
-          return false;
-      }
-      
-      // 2. Now you can use record.score 
-      const oldBest = record?.score || 0;
-  
-      // --- 2. ACHIEVEMENT MILESTONES ---
-      if (finalScore == 10 && oldBest < 10) showAchievementNotification("Reach 10 Score");
-      if (finalScore == 50 && oldBest < 50) showAchievementNotification("Reach 50 Score");
-      if (finalScore == 100 && oldBest < 100) showAchievementNotification("Reach 100 Score");
-      if (finalScore == number_of_questions && oldBest < number_of_questions) showAchievementNotification("Reach Max Score");
-}
-
 
 function getWeeklySliceIndex(totalQuestions, WEEKLY_LIMIT) {
     const now = new Date();
@@ -2031,6 +2005,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
