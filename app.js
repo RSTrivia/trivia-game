@@ -974,94 +974,92 @@ async function checkAnswer(choiceId, btn) {
 
     if (isWeeklyMode) weeklyQuestionCount++;
     if (isDailyMode) dailyQuestionCount++;
-    
-    const { data: isCorrect, error: rpcErr } = await supabase.rpc('check_my_answer', {
+
+    // THE ONE CALL TO RULE THEM ALL
+    const { data: res, error: rpcErr } = await supabase.rpc('process_answer', {
         input_id: currentQuestion.id,
-        choice: choiceId
+        choice: choiceId,
+        is_daily: isDailyMode,
+        current_count: isDailyMode ? dailyQuestionCount : 0,
+        daily_limit: DAILY_LIMIT
     });
 
     if (rpcErr) return console.error("RPC Error:", rpcErr);
 
-    if (isCorrect) {
+    if (res.correct) {
         playSound(correctBuffer);
         btn.classList.add('correct');
         score++;
         updateScore();
-        const currentUsername = localStorage.getItem('cachedUsername') || 'Player';
-         
-        const { data: { session } } = await supabase.auth.getSession();
         
-        if (session) { 
-            // 1. Calculate XP to add
-            let gained = isDailyMode ? 50 : 5;
-            let isBonusEarned = false; 
+        // Sync local streak with DB Truth
+        streak = res.new_streak;
 
-            if (isDailyMode) {
-                if (dailyQuestionCount === DAILY_LIMIT) {
-                    gained += 100;
-                    isBonusEarned = true; 
-                }
-            } else {
-                streak++; 
-                if (streak === 10) {
-                    gained += 30;
-                    streak = 0; 
-                    isBonusEarned = true; 
-                }
+        const xpData = res.xp_info;
+        if (xpData) {
+            // Update local state with truth from DB
+            currentProfileXp = xpData.new_xp;
+            localStorage.setItem('cached_xp', currentProfileXp);
+            
+            updateLevelUI(); 
+            triggerXpDrop(res.xp_gained);
+
+            if (res.bonus_earned) {
+                showNotification("BONUS XP!", bonusBuffer, "#a335ee");
             }
 
-            // 2. CALL THE DATABASE "FINAL BOSS"
-            const { data: res, error: xpErr } = await supabase.rpc('add_user_xp', {
-                target_user_id: session.user.id,
-                xp_to_add: gained
-            });
+            // Level Up logic
+            if (xpData.leveled_up) {
+                triggerFireworks();
+                showNotification(`LEVEL UP! (${xpData.new_level})`, levelUpBuffer, "#ffde00");
 
-            if (!xpErr && res) {
-                // Update local state with the truth from the DB
-                currentProfileXp = res.new_xp;
-                localStorage.setItem('cached_xp', currentProfileXp);
-                
-                // UI Feedback
-                updateLevelUI(); 
-                triggerXpDrop(gained);
-
-                if (isBonusEarned) {
-                    showNotification("BONUS XP!", bonusBuffer, "#a335ee");
-                }
-
-                // 3. LEVEL UP & MILESTONE LOGIC
-                if (res.leveled_up) {
-                    triggerFireworks();
-                    showNotification("LEVEL UP!", levelUpBuffer, "#ffde00");
-
-                    // Trigger milestones only when crossing the threshold
-                    if (res.new_level >= 10 && res.old_level < 10) {
-                        showAchievementNotification("Reach Level 10");
-                    } 
-                    if (res.new_level >= 50 && res.old_level < 50) {
-                        showAchievementNotification("Reach Level 50");
-                    } 
-                    if (res.new_level >= 99 && res.old_level < 99) {
-                        showAchievementNotification("Reach Max Level");
-                    }
-                }
+                // Milestone notifications
+                if (xpData.new_level >= 10 && xpData.old_level < 10) showAchievementNotification("Reach Level 10");
+                if (xpData.new_level >= 50 && xpData.old_level < 50) showAchievementNotification("Reach Level 50");
+                if (xpData.new_level >= 99 && xpData.old_level < 99) showAchievementNotification("Reach Max Level");
             }
-
-            // 4. OTHER ACHIEVEMENTS (Time/Score based)
-            if (timeLeft >= 14) saveAchievement('fastest_guess', true);
-            if (timeLeft <= 1 && timeLeft > 0) saveAchievement('just_in_time', true);
-            if (isLiteMode && score === 50) saveAchievement('lite_50', true);
-            if (isWeeklyMode && score === 25) saveAchievement('weekly_25', true);
-
-            checkNormalScoreAchievements(currentUsername, score);
         }
+
+        // --- 2. INTEGRATED PET LOGIC ---
+        const petData = res.pet_info;
+        if (petData && petData.unlocked) {
+            
+            // Achievement: Unlock 1 Pet
+            if (petData.total_unlocked === 1) {
+                showAchievementNotification("Unlock 1 Pet");
+            }
+
+            // Achievement: Unlock all Pets
+            if (petData.is_all_pets) {
+                showAchievementNotification("Unlock all Pets");
+            }
+
+            // Update LocalStorage Cache
+            let currentCached = JSON.parse(localStorage.getItem('cached_pets') || "[]");
+            if (!currentCached.includes(petData.pet_id)) {
+                currentCached.push(petData.pet_id);
+                localStorage.setItem('cached_pets', JSON.stringify(currentCached));
+            }
+
+            // UI Feedback
+            triggerFireworks();
+            showCollectionLogNotification(petData.pet_name);
+        }
+
+        // 4. Other UI-based Achievements (Keep these local as they are harmless)
+        if (timeLeft >= 14) saveAchievement('fastest_guess', true);
+        if (timeLeft <= 1 && timeLeft > 0) saveAchievement('just_in_time', true);
+        if (isLiteMode && score === 50) saveAchievement('lite_50', true);
+        if (isWeeklyMode && score === 25) saveAchievement('weekly_25', true);
+
+        const currentUsername = localStorage.getItem('cachedUsername') || 'Player';
+        checkNormalScoreAchievements(currentUsername, score);
       
-        rollForPet();
         setTimeout(loadQuestion, 1000);
     } else {
         // Wrong answer logic
         playSound(wrongBuffer);
-        streak = 0; 
+        streak = 0; // Visual reset
         if (btn) btn.classList.add('wrong');
         await highlightCorrectAnswer();
 
@@ -1869,50 +1867,6 @@ async function saveAchievement(key, value) {
     }
 }
 
-async function rollForPet() {
-    // 1. Check if the user is logged in
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    // If no session exists (Guest), exit immediately
-    if (!session) return; 
-
-    // 2. Call the SQL Function (RPC)
-    // This tells Supabase: "Run the roll_for_pet function for this user ID"
-    const { data, error } = await supabase.rpc('roll_for_pet', {
-        target_user_id: session.user.id
-    });
-
-    if (error) {
-        console.error("Error rolling for pet:", error);
-        return;
-    }
-
-    // 3. If the database says we unlocked a pet
-    if (data && data.unlocked) {
-        
-        // Handle "Unlock 1 Pet" achievement (only happens when total is 1)
-        if (data.total_unlocked === 1) {
-            showAchievementNotification("Unlock 1 Pet");
-        }
-
-        // Handle "Unlock all Pets" achievement
-        if (data.is_all_pets) {
-            showAchievementNotification("Unlock all Pets");
-        }
-
-        // 4. Update LocalStorage so the UI reflects the change immediately
-        // We fetch the current log from storage, add the new pet ID, and save it back
-        let currentCached = JSON.parse(localStorage.getItem('cached_pets') || "[]");
-        if (!currentCached.includes(data.pet_id)) {
-            currentCached.push(data.pet_id);
-            localStorage.setItem('cached_pets', JSON.stringify(currentCached));
-        }
-
-        // 5. Show the fun notification
-        showCollectionLogNotification(data.pet_name);
-    }
-}
-
 // 1. Create a variable outside the function to track the timer
 let petNotificationTimeout = null;
 
@@ -2282,6 +2236,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
