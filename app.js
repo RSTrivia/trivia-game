@@ -359,13 +359,20 @@ async function init() {
         return;
     }
 
-    // 2. Play Status Check via RPC
-    // We don't need to pass session.user.id because the RPC uses auth.uid()
-        const { data: played, error: rpcError } = await supabase.rpc('has_completed_daily');
+      // 2. Play Status Check via get_daily_summary
+        // Using the existing get_daily_summary RPC
+        const { data: summary, error: rpcError } = await supabase.rpc('get_daily_summary');
 
         if (rpcError) {
             console.error("RPC Check failed:", rpcError);
             return; 
+        }
+
+        // 3. Stop them if they already played today
+        if (summary.has_played) {
+            alert(`You've already completed today's challenge! Your score: ${summary.score}`);
+            lockDailyButton(); // Ensure the UI reflects they are done
+            return;
         }
 
     // 3. Broadcast and Lock UI
@@ -376,9 +383,10 @@ async function init() {
             payload: { userId: session.user.id }
         });
     }
-    lockDailyButton();
+   
     loadSounds();
     preloadQueue = [];
+    lockDailyButton();
       
     // 4. Start Challenge immediately
     await startDailyChallenge(session); 
@@ -2007,6 +2015,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
