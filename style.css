@@ -1673,13 +1673,12 @@ input.input-field:-webkit-autofill:active {
     object-fit: contain;
     image-rendering: auto;
     vertical-align: middle;
-    margin-left: 8px;
-    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5));
+  
     -webkit-user-drag: none;
     user-select: none;
-    
+    margin-left: 5px;
     /* CHANGE: Instead of display:none, use visibility:hidden or reserve space */
-    display: inline-block; 
+    display: inline-block; /* Always takes up space */
     visibility: hidden; /* It takes up 30px of space even before it loads */
     flex-shrink: 0;     /* Prevents the image from being crushed */
 }
@@ -1688,4 +1687,5 @@ input.input-field:-webkit-autofill:active {
 #equipped-pet-display[src] {
     visibility: visible;
 }
+
 
