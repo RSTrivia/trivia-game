@@ -933,7 +933,7 @@ async function checkAnswer(choiceId, btn) {
 
         const xpData = res.xp_info;
         // Check if xpData exists AND it's not null (Guest check)
-        if (xpData && typeof xpData === 'object') {
+        if (xpData && xpData.new_xp !== undefined) { 
             // Update local state with truth from DB
             currentProfileXp = xpData.new_xp;
             localStorage.setItem('cached_xp', currentProfileXp);
@@ -1019,7 +1019,7 @@ function updateLevelUI() {
         const safeXp = currentProfileXp || 0;
         const currentLvl = getLevel(safeXp);
         lvlNum.textContent = currentLvl;
-        xpBracket.textContent = `(${currentProfileXp.toLocaleString()} XP)`;
+        xpBracket.textContent = `(${safeXp.toLocaleString()} XP)`;
     }
 }
 
@@ -2007,6 +2007,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
