@@ -1666,8 +1666,8 @@ input.input-field:-webkit-autofill:active {
 
 
 #equipped-pet-display {
-    width: 30px;
-    height: 30px;
+    width: 25px;
+    height: 25px;
     object-fit: contain;      /* Maintains aspect ratio so pets aren't squished */
     image-rendering: auto;    /* Use 'auto' for high-detail pets like Zik */
     /* If you want that crisp OSRS pixel look, use 'pixelated' instead of auto, 
@@ -1679,4 +1679,5 @@ input.input-field:-webkit-autofill:active {
     user-select: none;
     display:none;
 }
+
 
