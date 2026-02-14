@@ -219,9 +219,15 @@ async function syncDailyButton() {
         return;
     }
 
-    const played = await hasUserCompletedDaily(session);
+    // Call the RPC instead of a manual table query
+    const { data: alreadyPlayed, error } = await supabase.rpc('has_completed_daily');
 
-    if (!played) {
+    if (error) {
+        console.error("Error checking daily status:", error);
+        return;
+    }
+
+    if (!alreadyPlayed) {
         dailyBtn.classList.add('is-active');
         dailyBtn.classList.remove('is-disabled');
         dailyBtn.style.pointerEvents = 'auto'; // UNLOCK physically
@@ -340,9 +346,14 @@ async function init() {
         return;
     }
 
-    // 2. Play Status Check
-    const played = await hasUserCompletedDaily(session);
-    if (played) return; 
+    // 2. Play Status Check via RPC
+    // We don't need to pass session.user.id because the RPC uses auth.uid()
+        const { data: played, error: rpcError } = await supabase.rpc('has_completed_daily');
+
+        if (rpcError) {
+            console.error("RPC Check failed:", rpcError);
+            return; 
+        }
 
     // 3. Broadcast and Lock UI
     if (syncChannel) {
@@ -543,20 +554,6 @@ async function handleAuthChange(event, session) {
     await syncDailyButton();
 }
 
-async function hasUserCompletedDaily(session) {
-    if (!session) return false;
-
-    const { data } = await supabase
-        .from('daily_attempts')
-        .select('id')
-        .eq('user_id', session.user.id)
-        .eq('attempt_date', todayStr)
-        .maybeSingle();
-
-    return !!data;
-}
-
-
 async function updateShareButtonState() {
    if (!shareBtn) return;
 
@@ -576,8 +573,12 @@ async function updateShareButtonState() {
     const localScore = localStorage.getItem('lastDailyScore');
     
     // Check DB for the source of truth
-    const hasPlayedToday = await hasUserCompletedDaily(session);
-    
+    // Call the RPC instead of a manual table query
+    const { data: hasPlayedToday, error } = await supabase.rpc('has_completed_daily');
+    if (error) {
+        console.error("Error checking daily status:", error);
+        return;
+    }
     // The button should be active ONLY if the DB says they played 
     // AND we actually have a score to share from today.
     const isScoreValid = (localScore !== null && savedDate === todayStr);
@@ -2281,6 +2282,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
