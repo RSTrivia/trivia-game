@@ -928,7 +928,7 @@ input.input-field:-webkit-autofill:active {
 
 @media (max-width: 480px) {
   .container {
-    min-height: 350px;
+    min-height: 480px;
     padding: 15px;
   }
 }
@@ -1679,6 +1679,7 @@ input.input-field:-webkit-autofill:active {
     user-select: none;
     display:none;
 }
+
 
 
 
