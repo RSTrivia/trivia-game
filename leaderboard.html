@@ -86,6 +86,7 @@
       <div class="leaderboard-tabs">
     <button id="scoreTab" class="tab-btn active">Normal</button>
     <button id="liteTab" class="tab-btn">Lite</button>   
+    <button id="dailyTab" class="tab-btn">Daily</button> 
     <button id="weeklyTab" class="tab-btn">Weekly</button>   
     <button id="xpTab" class="tab-btn">XP</button>
       </div>
@@ -133,10 +134,11 @@ import { supabase } from './supabase.js';
 
 const leaderboardRows = document.querySelectorAll('#leaderboard li');
 const scoreTab = document.getElementById('scoreTab');
+const dailyTab = document.getElementById('dailyTab');
 const weeklyTab = document.getElementById('weeklyTab');
 const xpTab = document.getElementById('xpTab');
 const liteTab = document.getElementById('liteTab');
-
+  
 let currentMode = 'score'; 
 let realtimeSubscription = null; // Track the active listener
   
@@ -248,7 +250,15 @@ async function fetchLeaderboard() {
       .gt('weekly_data->score', 0)
       .order('weekly_data->score', { ascending: false })
       .order('weekly_data->time', { ascending: true });
-      
+  } else if (currentMode === 'daily') {
+    query = supabase
+      .from('scores')
+      // Added profiles(equipped_pet) here
+      .select('username, daily_data')
+      .not('daily_data', 'is', null)
+      .gt('daily_data->score', 0)
+      .order('daily_data->score', { ascending: false })
+      .order('daily_data->time', { ascending: true });
   } else {
     query = supabase
       .from('profiles')
@@ -352,6 +362,7 @@ scoreTab.onclick = () => handleTabClick('score', scoreTab);
 xpTab.onclick = () => handleTabClick('xp', xpTab);
 if(weeklyTab) weeklyTab.onclick = () => handleTabClick('weekly', weeklyTab);
 if(liteTab) liteTab.onclick = () => handleTabClick('lite', liteTab);
+if(dailyTab) dailyTab.onclick = () => handleTabClick('daily', dailyTab);
 
 // Initial Run (Immediately pull from Score cache)
 (async () => {
@@ -385,6 +396,7 @@ if(liteTab) liteTab.onclick = () => handleTabClick('lite', liteTab);
 </script>
 </body>
 </html>
+
 
 
 
