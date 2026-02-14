@@ -204,39 +204,52 @@ let gameStartTime = 0;
 
 // ====== INITIAL UI SYNC ======
 // Replace your existing refreshAuthUI with this:
-
-async function syncDailyButton() {
+async function syncDailySystem() {
     const { data: { session } } = await supabase.auth.getSession();
-    if (!dailyBtn) return;
-  
-    // Explicitly lock if no one is logged in
+    
     if (!session) {
         lockDailyButton();
-        lockWeeklyButton();
-      // Add visual guest feedback
-        dailyBtn.style.opacity = '0.5';
-        dailyBtn.style.pointerEvents = 'none';
+        if (shareBtn) {
+            shareBtn.classList.add('is-disabled');
+            shareBtn.style.pointerEvents = 'none';
+            shareBtn.style.opacity = '0.5';
+        }
         return;
     }
 
-    // Call the RPC instead of a manual table query
-    const { data: alreadyPlayed, error } = await supabase.rpc('has_completed_daily');
+    const { data: summary, error } = await supabase.rpc('get_daily_summary');
 
     if (error) {
-        console.error("Error checking daily status:", error);
+        console.error("Error fetching daily summary:", error);
         return;
     }
 
-    if (!alreadyPlayed) {
+    // 1. UI SYNC: Daily Play Button
+    if (summary.has_played) {
+        lockDailyButton();
+    } else {
         dailyBtn.classList.add('is-active');
         dailyBtn.classList.remove('is-disabled');
-        dailyBtn.style.pointerEvents = 'auto'; // UNLOCK physically
-        dailyBtn.style.opacity = '1';          // Ensure it looks clickable
+        dailyBtn.style.pointerEvents = 'auto';
+        dailyBtn.style.opacity = '1';
+    }
+
+    // 2. UI SYNC: Share Button
+    if (summary.can_share) {
+        shareBtn.classList.remove('is-disabled');
+        shareBtn.classList.add('is-active');
+        shareBtn.style.pointerEvents = "auto";
+        shareBtn.style.opacity = "1";
+        
+        // Save only score and date for the share logic
+        localStorage.setItem('lastDailyScore', summary.score);
+        localStorage.setItem('dailyPlayedDate', todayStr);
     } else {
-      lockDailyButton();
+        shareBtn.classList.add('is-disabled');
+        shareBtn.style.pointerEvents = "none";
+        shareBtn.style.opacity = "0.5";
     }
 }
-
 
 let isRefreshing = false;
 
@@ -440,11 +453,9 @@ if (playAgainBtn) {
         }
     };
 }
-  
-  // This will check if a user is logged in and lock the button if they aren't
-  await syncDailyButton();
+
   // This will check if a user has played daily mode already and will unlock it if they did
-  await updateShareButtonState();
+  await syncDailySystem();
 }
 
 // Replace your existing handleAuthChange with this:
@@ -548,96 +559,19 @@ async function handleAuthChange(event, session) {
         logBtn.removeAttribute('tabindex');
     }
   
-    // Sync their daily status
-    await fetchDailyStatus(session.user.id);
     updateLevelUI();
-    await syncDailyButton();
+    await syncDailySystem();
 }
-
-async function updateShareButtonState() {
-   if (!shareBtn) return;
-
-    const { data: { session } } = await supabase.auth.getSession();
-  
-    // 1. Guest = Always disabled
-    if (!session) {
-        shareBtn.classList.add('is-disabled');
-        shareBtn.classList.remove('is-active');
-        shareBtn.style.opacity = "0.5";
-        shareBtn.style.pointerEvents = "none";
-        return;
-    }
-
-    // 2. Check both Local Storage and Database
-    const savedDate = localStorage.getItem('dailyPlayedDate');
-    const localScore = localStorage.getItem('lastDailyScore');
-    
-    // Check DB for the source of truth
-    // Call the RPC instead of a manual table query
-    const { data: hasPlayedToday, error } = await supabase.rpc('has_completed_daily');
-    if (error) {
-        console.error("Error checking daily status:", error);
-        return;
-    }
-    // The button should be active ONLY if the DB says they played 
-    // AND we actually have a score to share from today.
-    const isScoreValid = (localScore !== null && savedDate === todayStr);
-  
-    if (hasPlayedToday && isScoreValid) {
-        shareBtn.classList.remove('is-disabled');
-        shareBtn.classList.add('is-active'); 
-        shareBtn.style.opacity = "1";
-        shareBtn.style.pointerEvents = "auto";
-    } else {
-        shareBtn.classList.add('is-disabled');
-        shareBtn.classList.remove('is-active');
-        shareBtn.style.opacity = "0.5";
-        shareBtn.style.pointerEvents = "none";
-    }
-}
-
-
-// ====== NEW: FETCH SCORE FROM DATABASE ======
-async function fetchDailyStatus(userId) {
-    const { data, error } = await supabase
-        .from('daily_attempts')
-        .select('score, message')
-        .eq('user_id', userId)
-        .eq('attempt_date', todayStr)
-        .maybeSingle();
-
-    if (data) {
-       // ALWAYS save to storage (for the share button)
-        localStorage.setItem('lastDailyMessage', data.message || "Daily Challenge");
-        localStorage.setItem('lastDailyScore', data.score ?? "0");
-        localStorage.setItem('dailyPlayedDate', todayStr);
-        
-        // ONLY update UI if we are NOT in a game AND NOT looking at an end-screen
-        const isEndScreenHidden = endScreen.classList.contains('hidden');
-        const isStartScreenVisible = !document.getElementById('start-screen').classList.contains('hidden');
-        
-        if (isStartScreenVisible && isEndScreenHidden) {
-            if (finalScore) finalScore.textContent = data.score ?? "0";
-            const gameOverTitle = document.getElementById('game-over-title');
-            if (gameOverTitle) {
-                gameOverTitle.textContent = data.message || "Daily Challenge";
-                //gameOverTitle.classList.remove('hidden');
-            }
-        }
-    }
-    // Always sync button states after checking DB
-    //await syncDailyButton();
-    await updateShareButtonState();
-}
-
 
 function lockDailyButton() {
     if (!dailyBtn) return;
+    // Add visual classes
     dailyBtn.classList.add('is-disabled');
     dailyBtn.classList.remove('is-active');
-    //dailyBtn.style.opacity = '0.5';
-    //dailyBtn.style.pointerEvents = 'none'; // Makes it ignore all clicks/touches
-    //dailyBtn.onclick = () => alert("You've already played today!");
+    
+    // Physical locking
+    dailyBtn.style.opacity = '0.5';
+    dailyBtn.style.pointerEvents = 'none'; // Prevents double-clicks or clicking while game loads
 }
 
 function lockWeeklyButton() {
@@ -1013,7 +947,7 @@ async function checkAnswer(choiceId, btn) {
             // Level Up logic
             if (xpData.leveled_up) {
                 triggerFireworks();
-                showNotification(`LEVEL UP! (${xpData.new_level})`, levelUpBuffer, "#ffde00");
+                showNotification(`LEVEL UP!`, levelUpBuffer, "#ffde00"); // (${xpData.new_level})
 
                 // Milestone notifications
                 if (xpData.new_level >= 10 && xpData.old_level < 10) showAchievementNotification("Reach Level 10");
@@ -1044,7 +978,6 @@ async function checkAnswer(choiceId, btn) {
             }
 
             // UI Feedback
-            triggerFireworks();
             showCollectionLogNotification(petData.pet_name);
         }
 
@@ -1375,7 +1308,7 @@ async function endGame() {
     //questionImage.style.display = 'none';
     //questionImage.src = ''; 
     gameEnding = false;
-    updateShareButtonState();
+    syncDailySystem();
   });
 }
 
@@ -1621,7 +1554,7 @@ async function saveDailyScore(session, msg) {
             message: msg
         }).eq('user_id', session.user.id).eq('attempt_date', todayStr);
     }
-    updateShareButtonState();
+    syncDailySystem();
 }
 gameEnding = false;
 
@@ -2240,6 +2173,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
