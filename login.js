@@ -6,19 +6,31 @@ const passwordInput = document.getElementById('password');
 const loginBtn = document.getElementById('loginBtn');
 const signupBtn = document.getElementById('signupBtn');
 
-// Helper to disable/enable UI during loading
 function setBusy(isBusy) {
-    // Blur BEFORE disabling to prevent the sticky focus state
+    // Blur immediately so the browser drops "Focus"
     if (document.activeElement) {
         document.activeElement.blur();
     }
+
     loginBtn.disabled = isBusy;
     signupBtn.disabled = isBusy;
-    
-    // Safety check: ensure the tapped class is gone when process finishes
+
     if (!isBusy) {
+        // FORCE remove the class immediately
         loginBtn.classList.remove('tapped');
         signupBtn.classList.remove('tapped');
+
+        /* TRICK: Briefly disable pointer events. 
+           This forces the mobile browser to "re-evaluate" the element 
+           and realize the finger is gone. 
+        */
+        loginBtn.style.pointerEvents = 'none';
+        signupBtn.style.pointerEvents = 'none';
+        
+        setTimeout(() => {
+            loginBtn.style.pointerEvents = 'auto';
+            signupBtn.style.pointerEvents = 'auto';
+        }, 100); 
     }
 }
 
