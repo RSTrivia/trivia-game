@@ -7,31 +7,8 @@ const loginBtn = document.getElementById('loginBtn');
 const signupBtn = document.getElementById('signupBtn');
 
 function setBusy(isBusy) {
-    // Blur immediately so the browser drops "Focus"
-    if (document.activeElement) {
-        document.activeElement.blur();
-    }
-
     loginBtn.disabled = isBusy;
     signupBtn.disabled = isBusy;
-
-    if (!isBusy) {
-        // FORCE remove the class immediately
-        loginBtn.classList.remove('tapped');
-        signupBtn.classList.remove('tapped');
-
-        /* TRICK: Briefly disable pointer events. 
-           This forces the mobile browser to "re-evaluate" the element 
-           and realize the finger is gone. 
-        */
-        loginBtn.style.pointerEvents = 'none';
-        signupBtn.style.pointerEvents = 'none';
-        
-        setTimeout(() => {
-            loginBtn.style.pointerEvents = 'auto';
-            signupBtn.style.pointerEvents = 'auto';
-        }, 100); 
-    }
 }
 
 function showGoldAlert(message) {
@@ -142,8 +119,6 @@ loginBtn.addEventListener('click', async () => {
     const password = passwordInput.value;
 
     if (!usernameInputVal || !password) {
-        // We need to blur here too because setBusy(true) hasn't run yet!
-        document.activeElement.blur(); 
         return showGoldAlert("Enter credentials.");
     }
 
