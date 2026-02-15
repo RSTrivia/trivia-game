@@ -9,6 +9,14 @@ const signupBtn = document.getElementById('signupBtn');
 function setBusy(isBusy) {
     loginBtn.disabled = isBusy;
     signupBtn.disabled = isBusy;
+    // 🛡️ NEW: If we are no longer busy, force-remove the tapped state
+    if (!isBusy) {
+        loginBtn.classList.remove('tapped');
+        signupBtn.classList.remove('tapped');
+        
+        // Also clean up any other buttons just in case
+        document.querySelectorAll('.tapped').forEach(el => el.classList.remove('tapped'));
+    }
 }
 
 function showGoldAlert(message) {
