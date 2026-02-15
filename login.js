@@ -128,16 +128,16 @@ loginBtn.addEventListener('click', async () => {
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email, password });
     
     // Better Error Handling
-    if (error) {
+    if (authError) {
         setBusy(false);
         // Specifically check for 'Invalid login credentials'
-        if (error.status === 400) {
+        if (authError.status === 400) {
             return showGoldAlert("Invalid username or password.");
         }
-        return showGoldAlert(error.message);
+        return showGoldAlert(authError.message);
     }
 
-    if (!data?.user) {
+    if (!authData?.user) {
         setBusy(false);
         return showGoldAlert("Login failed. Please try again.");
     }
