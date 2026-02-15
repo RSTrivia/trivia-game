@@ -91,7 +91,7 @@ signupBtn.addEventListener('click', async () => {
     }
 
    // 2. AUTO-LOGIN
-    const { error: loginError } = await supabase.auth.signInWithPassword({ email, password });
+   const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({ email, password });
 
     if (loginError|| !loginData?.user) {
         // If auto-login fails for some weird reason, at least they have an account now
