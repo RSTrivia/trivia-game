@@ -127,10 +127,19 @@ loginBtn.addEventListener('click', async () => {
     // 1. Authenticate with Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email, password });
     
-    if (authError || !authData.user) {
-        showGoldAlert("Login failed!\nIncorrect username or password.");
+    // Better Error Handling
+    if (error) {
         setBusy(false);
-        return;
+        // Specifically check for 'Invalid login credentials'
+        if (error.status === 400) {
+            return showGoldAlert("Invalid username or password.");
+        }
+        return showGoldAlert(error.message);
+    }
+
+    if (!data?.user) {
+        setBusy(false);
+        return showGoldAlert("Login failed. Please try again.");
     }
 
     // 🛡️ RESET: Clear any old user data from the device immediately
