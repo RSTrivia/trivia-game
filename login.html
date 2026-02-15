@@ -80,36 +80,30 @@
   <script type="module" src="login.js"></script>
 <script>
   // This looks for EVERY button (big and small)
-// Inside your script or login.js
-const allButtons = document.querySelectorAll('.btn, .btn-small');
+  const allButtons = document.querySelectorAll('.btn, .btn-small');
 
-allButtons.forEach(button => {
-    button.addEventListener('touchstart', (e) => {
-        // If button is busy/disabled, don't even allow the tapped class
-        if (button.disabled || button.classList.contains('is-disabled')) {
-            return; 
-        }
-        button.classList.add('tapped');
+  allButtons.forEach(button => {
+    // When finger touches down
+    button.addEventListener('touchstart', () => {
+      button.classList.add('tapped');
     }, { passive: true });
 
+    // When finger lifts up
     button.addEventListener('touchend', () => {
-        // Use a much shorter delay or remove immediately
+      setTimeout(() => {
         button.classList.remove('tapped');
+      }, 100); // The 100ms delay makes the flash visible to the eye
     });
 
-    button.addEventListener('touchmove', () => {
-        // If they slide their finger away, kill the highlight
-        button.classList.remove('tapped');
+    // Safety: if the user slides their finger off the button
+    button.addEventListener('touchcancel', () => {
+      button.classList.remove('tapped');
     });
-});
-  
+  });
 </script>
 
 </body>
 </html>
-
-
-
 
 
 
