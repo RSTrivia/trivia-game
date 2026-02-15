@@ -10,7 +10,8 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
  auth: {
     persistSession: true, // ✅ this makes Supabase remember the logged-in user
-    autoRefreshToken: true // optional, keeps session active automatically
+    autoRefreshToken: true, // optional, keeps session active automatically
+   detectSessionInUrl: true
   }
 })
 
