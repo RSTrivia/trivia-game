@@ -1013,10 +1013,6 @@ input.input-field:-webkit-autofill:active {
   /* 3. THE RELEASE (Finger Up - The "Slow Glow" Return) */
   .btn, .btn-small, #dailyBtn.is-active, #weeklyBtn, #lobbyBtn {
     /* We use 0.5s here so you can actually see the gold highlight fade away */
-    /* FORCED RESET: This kills the sticky gold highlight */
-    background: rgba(0, 0, 0, 0.6) !important; 
-    color: #d4af37 !important;
-    border-color: #d4af37 !important;
     transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.1s ease !important;
   }
 
@@ -1711,19 +1707,24 @@ input.input-field:-webkit-autofill:active {
 }
 
 .gold-toast {
-    background: rgba(0, 0, 0, 0.9); /* Matches your container/buttons */
+    /* Matching .btn properties */
+    background: rgba(0, 0, 0, 0.85); /* Slightly darker than btn for readability */
     color: #d4af37;
     border: 2px solid #d4af37;
-    padding: 10px 16px; /* Matches .btn-small */
-    margin-top: 10px;
-    border-radius: 8px; /* Matches .btn-small */
-    font-family: Arial, sans-serif; /* Per request */
-    font-size: 1.1rem;
+    border-radius: 8px; /* Matches your .btn */
+    padding: 14px 22px; /* Matches your .btn */
+    font-family: Arial, sans-serif; /* Per your request */
+    font-size: 1.1rem; /* Matches your .btn */
     text-align: center;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-    animation: fadeIn 0.4s ease-out;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+    
+    margin-top: 10px;
     width: 100%;
     box-sizing: border-box;
+    white-space: pre-line; /* Allows the \n in your JS to create new lines */
+    
+    /* Animation */
+    animation: toast-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
 @keyframes toast-pop {
@@ -1743,5 +1744,4 @@ input.input-field:-webkit-autofill:active {
     to { opacity: 0; transform: scale(0.9); }
 }
 /*   -------------------------------------- */
-
 
