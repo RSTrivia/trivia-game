@@ -989,8 +989,8 @@ input.input-field:-webkit-autofill:active {
   }
 
   /* 2. THE PRESS (Finger Down) */
-  .btn:not(.is-disabled).tapped, 
-  .btn-small:not(.is-disabled).tapped,
+  .btn:not(:disabled):not(.is-disabled).tapped, 
+  .btn-small:not(:disabled):not(.is-disabled).tapped {
   #dailyBtn.tapped,
   #weeklyBtn.tapped,
   #lobbyBtn.tapped {
@@ -1009,10 +1009,12 @@ input.input-field:-webkit-autofill:active {
   }
   
   /* 3. THE RELEASE / DEFAULT (Ensure it snaps back) */
-.btn:not(.tapped), 
+.btn:disabled, 
+.btn-small:disabled,
+.btn:not(.tapped),
 .btn-small:not(.tapped) {
-    /* This ensures that as soon as .tapped is removed, it returns to normal */
-    transform: scale(1) !important;
+    /* Kill the transition when resetting so it doesn't "linger" in gold */
+    transition: transform 0.1s ease, background 0.2s ease !important;
 }
   
   /* 3. THE RELEASE (Finger Up - The "Slow Glow" Return) */
@@ -1745,6 +1747,7 @@ input.input-field:-webkit-autofill:active {
     to { opacity: 0; transform: scale(0.9); }
 }
 /*   -------------------------------------- */
+
 
 
 
