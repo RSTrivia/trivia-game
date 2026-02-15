@@ -290,6 +290,7 @@ async function init() {
     authBtn.onclick = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
+          localStorage.setItem('manual_logout', 'true');
           await supabase.auth.signOut();
           
           // --- FIX STARTS HERE ---
@@ -480,10 +481,13 @@ async function handleAuthChange(event, session) {
   
     // 1. Logged Out State
     if (!session) {
+        // ONLY wipe if the user actually clicked Log Out
+        const wasManual = localStorage.getItem('manual_logout');
         userId = null;
         // IMPORTANT: Only wipe if we are CERTAIN this is an intentional logout
         // and not just a slow connection.
-        if (event === 'SIGNED_OUT') {
+        if (event === 'SIGNED_OUT' && wasManual === 'true') {
+            localStorage.removeItem('manual_logout');
             username = 'Guest';
             currentProfileXp = 0;
             if (span) span.textContent = ' Guest';
@@ -2022,6 +2026,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
