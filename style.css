@@ -1050,6 +1050,29 @@ input.input-field:-webkit-autofill:active {
   * {
     -webkit-tap-highlight-color: transparent !important;
   }
+
+
+  /* 1. KILL STICKY HOVER: Force buttons to stay dark even when "hovered" by a touch */
+  .btn:hover, 
+  .btn-small:hover, 
+  #dailyBtn:hover, 
+  #weeklyBtn:hover, 
+  #lobbyBtn:hover {
+    background: rgba(0, 0, 0, 0.6) !important;
+    color: #d4af37 !important;
+    border-color: #d4af37 !important;
+  }
+
+  /* 2. ONLY ALLOW GLOW DURING ACTIVE TAP OR TAPPED CLASS */
+  .btn:active, 
+  .btn-small:active, 
+  .btn.tapped, 
+  .btn-small.tapped {
+    background-color: #000000 !important;
+    border-color: #ffea8a !important;
+    color: #ffea8a !important;
+    transform: scale(0.97) !important;
+  }
 }
 
 
@@ -1743,6 +1766,7 @@ input.input-field:-webkit-autofill:active {
     to { opacity: 0; transform: scale(0.9); }
 }
 /*   -------------------------------------- */
+
 
 
 
