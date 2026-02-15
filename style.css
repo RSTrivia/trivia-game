@@ -994,8 +994,8 @@ input.input-field:-webkit-autofill:active {
   .btn.tapped:not(.is-disabled), 
   .btn-small.tapped:not(.is-disabled),
   #dailyBtn.tapped,
-  #weeklyBtn.tapped,  /* ADDED THIS /
-  #lobbyBtn.tapped {/ ADDED THIS */
+  #weeklyBtn.tapped,  /* ADDED THIS */
+  #lobbyBtn.tapped {/* ADDED THIS */
     background-color: #000000 !important;
     border-color: #ffea8a !important;
     color: #ffea8a !important;
@@ -1010,11 +1010,13 @@ input.input-field:-webkit-autofill:active {
     border-color: #555 !important;
   }
   
-
   /* 3. THE RELEASE (Finger Up - The "Slow Glow" Return) */
   .btn, .btn-small, #dailyBtn.is-active, #weeklyBtn, #lobbyBtn {
     /* We use 0.5s here so you can actually see the gold highlight fade away */
     /* FORCED RESET: This kills the sticky gold highlight */
+    background: rgba(0, 0, 0, 0.6) !important; 
+    color: #d4af37 !important;
+    border-color: #d4af37 !important;
     transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.1s ease !important;
   }
 
@@ -1741,11 +1743,5 @@ input.input-field:-webkit-autofill:active {
     to { opacity: 0; transform: scale(0.9); }
 }
 /*   -------------------------------------- */
-
-
-
-
-
-
 
 
