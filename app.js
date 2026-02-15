@@ -934,14 +934,14 @@ async function checkAnswer(choiceId, btn) {
 
     if (rpcErr) return console.error("RPC Error:", rpcErr);
 
+     // Sync local streak with DB Truth
+        streak = res.new_streak;
+
     if (res.correct) {
         playSound(correctBuffer);
         btn.classList.add('correct');
         score++;
         updateScore();
-        
-        // Sync local streak with DB Truth
-        streak = res.new_streak;
 
         const xpData = res.xp_info;
         // Check if xpData exists AND it's not null (Guest check)
@@ -1011,7 +1011,6 @@ async function checkAnswer(choiceId, btn) {
     } else {
         // Wrong answer logic
         playSound(wrongBuffer);
-        streak = 0; // Visual reset
         if (btn) btn.classList.add('wrong');
         await highlightCorrectAnswer();
 
@@ -1830,7 +1829,7 @@ async function startWeeklyChallenge() {
     // RESET THESE HERE
     weeklyQuestionCount = 0; 
     score = 0;
-    streak = 0; 
+    streak = 0;
     // Tell the DB: "This is a new game, start my streak at 0"
     supabase.rpc('reset_my_streak');
   
@@ -1944,10 +1943,12 @@ async function startDailyChallenge(session) {
     isDailyMode = true;
     isWeeklyMode = false;
     preloadQueue = []; 
-   // Tell the DB: "This is a new game, start my streak at 0"
+    // Tell the DB: "This is a new game, start my streak at 0"
     supabase.rpc('reset_my_streak');
     streak = 0;
+  
     remainingQuestions = dailyIds.sort(() => Math.random() - 0.5);   
+
   
     // 5. Start the engine
     //await preloadNextQuestions();
@@ -2026,6 +2027,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
