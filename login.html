@@ -80,35 +80,34 @@
   <script type="module" src="login.js"></script>
 <script>
   // This looks for EVERY button (big and small)
- const allButtons = document.querySelectorAll('.btn, .btn-small');
+// Inside your script or login.js
+const allButtons = document.querySelectorAll('.btn, .btn-small');
 
 allButtons.forEach(button => {
-    button.addEventListener('touchstart', () => {
-        // Only add tap state if not disabled
-        if (!button.disabled && !button.classList.contains('is-disabled')) {
-            button.classList.add('tapped');
+    button.addEventListener('touchstart', (e) => {
+        // If button is busy/disabled, don't even allow the tapped class
+        if (button.disabled || button.classList.contains('is-disabled')) {
+            return; 
         }
+        button.classList.add('tapped');
     }, { passive: true });
 
     button.addEventListener('touchend', () => {
-        // Short delay for visual feedback, then remove
-        setTimeout(() => button.classList.remove('tapped'), 100);
-    });
-
-    button.addEventListener('touchcancel', () => {
+        // Use a much shorter delay or remove immediately
         button.classList.remove('tapped');
     });
-});
 
-// SAFETY NET: If the user pulls their finger away or a modal pops up
-window.addEventListener('touchend', () => {
-    allButtons.forEach(btn => btn.classList.remove('tapped'));
+    button.addEventListener('touchmove', () => {
+        // If they slide their finger away, kill the highlight
+        button.classList.remove('tapped');
+    });
 });
   
 </script>
 
 </body>
 </html>
+
 
 
 
