@@ -1690,6 +1690,29 @@ input.input-field:-webkit-autofill:active {
 
 
 
+/*-------------- gold alert on login-------------- */
+#toast-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 999999 !important; /* Higher than EVERYTHING else */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: none;
+}
 
-
+.gold-toast {
+    background: #1a1a1a;
+    color: #d4af37;
+    border: 2px solid #d4af37;
+    padding: 15px 25px;
+    margin-top: 10px;
+    border-radius: 5px;
+    font-family: 'Cinzel', serif;
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+    animation: fadeIn 0.4s ease-out;
+}
+/*   -------------------------------------- */
 
