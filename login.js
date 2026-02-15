@@ -10,6 +10,12 @@ const signupBtn = document.getElementById('signupBtn');
 function setBusy(isBusy) {
     loginBtn.disabled = isBusy;
     signupBtn.disabled = isBusy;
+    // If we are finished (isBusy is false), force the button to lose focus
+    if (!isBusy) {
+        if (document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+        }
+    }
 }
 
 function showGoldAlert(message) {
@@ -119,7 +125,11 @@ loginBtn.addEventListener('click', async () => {
     const usernameInputVal = usernameInput.value.trim();
     const password = passwordInput.value;
 
-    if (!usernameInputVal || !password) return showGoldAlert("Enter credentials.");
+    if (!usernameInputVal || !password) {
+        // We need to blur here too because setBusy(true) hasn't run yet!
+        document.activeElement.blur(); 
+        return showGoldAlert("Enter credentials.");
+    }
 
     setBusy(true);
     const email = usernameInputVal.toLowerCase() + '@example.com';
