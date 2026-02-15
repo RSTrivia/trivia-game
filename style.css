@@ -989,11 +989,13 @@ input.input-field:-webkit-autofill:active {
   }
 
   /* 2. THE PRESS (Finger Down) */
-  .btn:not(:disabled):not(.is-disabled).tapped, 
-  .btn-small:not(:disabled):not(.is-disabled).tapped {
+  .btn:not(.is-disabled):active, 
+  .btn-small:not(.is-disabled):active,
+  .btn.tapped:not(.is-disabled), 
+  .btn-small.tapped:not(.is-disabled),
   #dailyBtn.tapped,
-  #weeklyBtn.tapped,
-  #lobbyBtn.tapped {
+  #weeklyBtn.tapped,  /* ADDED THIS /
+  #lobbyBtn.tapped {/ ADDED THIS */
     background-color: #000000 !important;
     border-color: #ffea8a !important;
     color: #ffea8a !important;
@@ -1008,15 +1010,7 @@ input.input-field:-webkit-autofill:active {
     border-color: #555 !important;
   }
   
-  /* 3. THE RELEASE / DEFAULT (Ensure it snaps back) */
-.btn:disabled, 
-.btn-small:disabled,
-.btn:not(.tapped),
-.btn-small:not(.tapped) {
-    /* Kill the transition when resetting so it doesn't "linger" in gold */
-    transition: transform 0.1s ease, background 0.2s ease !important;
-}
-  
+
   /* 3. THE RELEASE (Finger Up - The "Slow Glow" Return) */
   .btn, .btn-small, #dailyBtn.is-active, #weeklyBtn, #lobbyBtn {
     /* We use 0.5s here so you can actually see the gold highlight fade away */
@@ -1747,6 +1741,7 @@ input.input-field:-webkit-autofill:active {
     to { opacity: 0; transform: scale(0.9); }
 }
 /*   -------------------------------------- */
+
 
 
 
