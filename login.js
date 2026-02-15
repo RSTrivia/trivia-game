@@ -8,13 +8,17 @@ const signupBtn = document.getElementById('signupBtn');
 
 // Helper to disable/enable UI during loading
 function setBusy(isBusy) {
+    // Blur BEFORE disabling to prevent the sticky focus state
+    if (document.activeElement) {
+        document.activeElement.blur();
+    }
     loginBtn.disabled = isBusy;
     signupBtn.disabled = isBusy;
-    // If we are finished (isBusy is false), force the button to lose focus
+    
+    // Safety check: ensure the tapped class is gone when process finishes
     if (!isBusy) {
-        if (document.activeElement instanceof HTMLElement) {
-            document.activeElement.blur();
-        }
+        loginBtn.classList.remove('tapped');
+        signupBtn.classList.remove('tapped');
     }
 }
 
