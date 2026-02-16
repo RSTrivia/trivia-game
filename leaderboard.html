@@ -327,27 +327,25 @@ async function subscribeToLeaderboard() {
     // 3. Create the channel
     realtimeSubscription = supabase.channel('live-leaderboard');
 
-    // LISTENER 1: Your original logic (Score or XP updates)
+   // LISTENER 1: Always watch for Pet/XP changes in 'profiles'
     realtimeSubscription.on(
-        'postgres_changes', 
-       { event: 'UPDATE', schema: 'public', table: 'profiles' },
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'profiles' },
         (payload) => {
-          if (payload.new && payload.new.equipped_pet !== undefined) {
-            fetchLeaderboard(); // Refresh when someone changes their pet
+            // Refresh if pet changed OR if we are in XP mode and XP changed
+            if (currentMode === 'xp' || (payload.new && payload.new.equipped_pet !== undefined)) {
+                fetchLeaderboard();
+            }
         }
     );
 
-    // LISTENER 2: The Addition (Watch for pet changes specifically)
-    // If tableToWatch is already 'profiles' (XP mode), we don't need a second one
-    if (tableToWatch !== 'profiles') {
+    // LISTENER 2: Only watch 'scores' if we are NOT in XP mode
+    if (currentMode !== 'xp') {
         realtimeSubscription.on(
             'postgres_changes',
-            { event: 'UPDATE', schema: 'public', table: 'profiles' },
-            (payload) => {
-                // If the update involved the equipped_pet, refresh the list
-                if (payload.new && payload.new.equipped_pet !== undefined) {
-                    fetchLeaderboard();
-                }
+            { event: '*', schema: 'public', table: 'scores' },
+            () => {
+                fetchLeaderboard();
             }
         );
     }
@@ -408,6 +406,7 @@ if(dailyTab) dailyTab.onclick = () => handleTabClick('daily', dailyTab);
 </script>
 </body>
 </html>
+
 
 
 
