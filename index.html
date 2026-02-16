@@ -21,15 +21,6 @@
   const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
   const cachedMuted = localStorage.getItem('muted') === 'true';
   const todayStr = new Date().toISOString().split('T')[0];
- 
-  async function handleAuthAction() {
-    const isLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
-    if (isLoggedIn) {
-      supabase.auth.signOut(); // 🔑 THIS WAS MISSING
-    } else {
-      window.location.href = 'login.html';
-    }
-  }
 
   document.addEventListener('DOMContentLoaded', () => {
     const span = document.getElementById('usernameSpan');
@@ -385,6 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
 
 
