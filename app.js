@@ -500,24 +500,20 @@ async function handleAuthChange(event, session) {
         // and not just a slow connection.
         if (event === 'SIGNED_OUT' && wasManual === 'true') {
             localStorage.removeItem('manual_logout');
-            username = 'Guest';
-            currentProfileXp = 0;
             // Clear all session-specific UI and storage
             localStorage.removeItem('lastDailyScore');
             localStorage.removeItem('dailyPlayedDate');
             localStorage.removeItem('cached_xp');
             localStorage.removeItem('cachedUsername');
             localStorage.removeItem('lastDailyMessage'); 
-        } else {
-            // This handles the "waiting" state - show cache if it exists
-           username = 'Guest'; // Force 'Guest' instead of cached username
-           currentProfileXp = 0; // Force 0 XP for guests
         }
+      
+        username = 'Guest'; // Force 'Guest' instead of cached username
+        currentProfileXp = 0; // Force 0 XP for guests
+       
         if (span) span.textContent = 'Guest';
         if (label) label.textContent = 'Log In';
-        //syncDailyButton();
-        updateLevelUI()
-        lockDailyButton();
+   
         [shareBtn, logBtn].forEach(btn => {
            if (btn) {
               btn.classList.add('is-disabled');
@@ -525,6 +521,9 @@ async function handleAuthChange(event, session) {
               btn.style.pointerEvents = 'none';
             }
         });
+      
+        updateLevelUI()
+        lockDailyButton();
         return; // Stop here for guests
     }
     // 3. Handle LOGGED IN State
@@ -540,31 +539,37 @@ async function handleAuthChange(event, session) {
   
     // 2. Logged In State
     // Fetch profile
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('username, xp, achievements')
-        .eq('id', userId)
-        .single();
-
-    if (profile) {
-        username = profile.username || 'Player';
-        currentProfileXp = profile.xp || 0;
-        // Access the daily_streak inside the achievements JSONB
-        currentDailyStreak = profile.achievements?.daily_streak || 0;
-      
-        // Save to cache
-        localStorage.setItem('cachedUsername', username);
-        localStorage.setItem('cached_xp', currentProfileXp);
-        localStorage.setItem('cached_daily_streak', currentDailyStreak); // Also cache it
-      
-        // UI Update
-        if (span) span.textContent = ' ' + username;
-        
+  try {
+      const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('username, xp, achievements')
+          .eq('id', userId)
+          .single();
+  
+      if (profile && !error) {
+          // Only update and save if the data is different/newer than cache
+            if (profile.xp !== currentProfileXp || profile.username !== username) {
+            username = profile.username || 'Player';
+            currentProfileXp = profile.xp || 0;
+            // Access the daily_streak inside the achievements JSONB
+            currentDailyStreak = profile.achievements?.daily_streak || 0;
+          
+            // Save to cache
+            localStorage.setItem('cachedUsername', username);
+            localStorage.setItem('cached_xp', currentProfileXp);
+            localStorage.setItem('cached_daily_streak', currentDailyStreak); // Also cache it
+          
+            // UI Update
+            if (span) span.textContent = ' ' + username;
+            updateLevelUI();
+          }
+      }
+   } catch (err) {
+        console.error("Profile fetch failed:", err);
     }
-   
   // ENABLE the Log Button for users
     if (logBtn) {
-      logBtn.addEventListener('click', () => {
+      logBtn.onclick = () => {
       // Add the class to trigger the CSS "Shine"
         logBtn.classList.add('tapped');
         
@@ -572,14 +577,13 @@ async function handleAuthChange(event, session) {
         setTimeout(() => {
             logBtn.classList.remove('tapped');
         }, 300); // 300ms matches the visual feel of OSRS interface clicks
-    });
+    };
         logBtn.classList.remove('is-disabled');
         logBtn.style.opacity = '1';
         logBtn.style.pointerEvents = 'auto';
         logBtn.removeAttribute('tabindex');
     }
   
-    updateLevelUI();
     await syncDailySystem();
 }
 
@@ -1080,7 +1084,7 @@ function updateLevelUI() {
     const xpBracket = document.getElementById('xpBracket');
     
     if (lvlNum && xpBracket) {
-        const safeXp = currentProfileXp || 0;
+        const safeXp = Number(currentProfileXp) || 0;
         const currentLvl = getLevel(safeXp);
         lvlNum.textContent = currentLvl;
         xpBracket.textContent = `(${safeXp.toLocaleString()} XP)`;
@@ -1887,6 +1891,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
