@@ -36,11 +36,79 @@
     const helpBtn = document.getElementById('helpBtn');
     const helpModal = document.getElementById('help-modal');
     const closeHelpBtn = document.getElementById('closeHelpBtn');
-    const levelNum = document.getElementById('levelNumber');
-    const xpBracket = document.getElementById('xpBracket');
-    
+
     const hasPlayedToday = localStorage.getItem('dailyPlayedDate') === todayStr;
     const hasScore = localStorage.getItem('lastDailyScore') !== null;
+
+    // 1. Reset everything to locked first (Safety)
+  [dailyBtn, weeklyBtn, lobbyBtn].forEach(btn => {
+    if (btn) {
+        btn.classList.remove('is-active');
+        btn.classList.add('is-disabled');
+    }
+   }); 
+    // 1. Instant Text/Emoji Sync
+    if (span) span.textContent = ' ' + cachedUsername;
+
+    // --- ADD THE PET LOGIC HERE ---
+    const petId = localStorage.getItem('equipped_pet_id'); // We will ensure this is saved in Step 2
+    const petImg = document.getElementById('equipped-pet-display');
+    
+    if (petId && petId !== "null" && petImg) {
+        const fileName = petId.replace('pet_', '') + '.png'; 
+        petImg.src = `pets/${fileName}`;
+        // Change visibility, not display. 
+        // This keeps the 30px 'hole' reserved so nothing moves.
+        petImg.style.visibility = 'visible'; 
+    } else if (petImg) {
+        // If they truly have NO pet, then remove the space.
+        petImg.style.display = 'none';
+    }
+    // ------------------------------
+    
+    if (authLabel) authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
+
+    if (muteIcon && muteBtn) {
+      muteIcon.textContent = cachedMuted ? '🔇' : '🔊';
+      if (cachedMuted) muteBtn.classList.add('is-muted');
+    }
+
+    // 2. Instant Button State Sync (Anti-Flicker)
+    if (cachedLoggedIn) {
+      // Weekly Mode: Always GOLD if logged in (even if they played)
+      [weeklyBtn, lobbyBtn].forEach(btn => {
+          if (btn) {
+              btn.classList.add('is-active');
+              btn.classList.remove('is-disabled');
+              btn.style.opacity = '1';            // ADD THIS
+              btn.style.pointerEvents = 'auto';    // ADD THIS
+          }
+      });
+      // 2. ONLY unlock if they are logged in AND haven't played
+      if (!hasPlayedToday && dailyBtn) {
+          dailyBtn.classList.add('is-active');
+          dailyBtn.classList.remove('is-disabled');
+          dailyBtn.style.opacity = '1';
+          dailyBtn.style.pointerEvents = 'auto';
+      }
+      [shareBtn, logBtn].forEach(btn => {
+        if (btn && (btn === logBtn || hasScore)) {
+          btn.classList.remove('is-disabled');
+          btn.style.opacity = '1';
+          btn.style.pointerEvents = 'auto';
+        }
+      });
+    } else {
+      // If not logged in, ensure these stay locked 
+      [dailyBtn, shareBtn, logBtn, weeklyBtn, lobbyBtn].forEach(btn => {
+        if (btn) {
+          btn.classList.remove('is-active'); // Remove Gold state
+          btn.classList.add('is-disabled');  // Add Grey state
+          btn.style.opacity = '0.5';         // Force Grey look
+          btn.style.pointerEvents = 'none';  // Lock it
+        }
+      });
+    }
 
   // Open Modal
   helpBtn.onclick = () => {
@@ -283,8 +351,6 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-
-
 
 
 
