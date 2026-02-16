@@ -592,6 +592,7 @@ function applyUnlocks(unlockedList) {
     document.querySelector('.container').classList.add('loaded');
 }
 async function equipPet(petId) {
+    // 1. Toggle logic (if clicking the same pet, unequip it)
     const newPetId = (currentEquippedPet === petId) ? null : petId;
     currentEquippedPet = newPetId;
     
@@ -605,13 +606,12 @@ async function equipPet(petId) {
     // UI Refresh
     applyUnlocks(JSON.parse(localStorage.getItem('cached_pets') || '[]'));
 
-    // Database Update
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-        await supabase
-            .from('profiles')
-            .update({ equipped_pet: newPetId }) // Direct update!
-            .eq('id', session.user.id);
+    // 3. Securely save to Supabase using RPC
+    const { error } = await supabase.rpc('equip_pet_secure', { 
+        pet_id_to_equip: newPetId 
+    });
+    if (error) {
+        console.error("Pet update failed:", error.message);
     }
 }
         
@@ -686,7 +686,7 @@ async function loadCollection() {
 
         const achieveTab = document.getElementById('achieveTab');
         if (achieveTab && achieveTab.classList.contains('active')) {
-            renderAchievements(calculatedLevel); 
+            renderAchievements(officialLevel); 
         }
     }
 }
