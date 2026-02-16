@@ -662,7 +662,7 @@ async function fetchAndBufferQuestion() {
     let questionData = null;
 
     try {
-        if (isDailyMode || isWeeklyMode) {
+        if (isDailyMode) {
             if (remainingQuestions.length > 0) {
                 const qId = remainingQuestions.shift();
                 questionData = await fetchDeterministicQuestion(qId);
@@ -704,6 +704,8 @@ async function fetchRandomQuestion() {
 
     const { data, error } = await supabase.rpc('get_random_question', {
         excluded_ids: excludeIds
+        // NEW: If weekly, only pick from the 50 IDs. If not, pick from NULL (all).
+        included_ids: isWeeklyMode ? weeklySessionPool : null
     });
     return (!error && data?.[0]) ? data[0] : null;
 }
@@ -1253,8 +1255,10 @@ async function endGame() {
             finalScore.textContent = `${score}/${LITE_LIMIT}`;
         } else if (isWeeklyMode) {
             finalScore.textContent = `${score}/${WEEKLY_LIMIT}`;
+        } else if (isDailyMode) {
+            finalScore.textContent = `${score}/${DAILY_LIMIT}`;
         } else {
-            // Normal display for other modes
+            // Normal display for normal mode
             finalScore.textContent = score;
         }
     }
@@ -1722,73 +1726,52 @@ async function startWeeklyChallenge() {
     // Tell the DB: "This is a new game, start my streak at 0"
     await supabase.rpc('reset_my_streak');
   
+    // 1. ENSURE THE POOL IS READY (We only fetch the 50 IDs, not the full data)
     if (weeklySessionPool.length === 0) {
-          // 1. Parallelize the slow stuff
-        const [sessionRes, questionsRes] = await Promise.all([
-            supabase.auth.getSession(),
-            supabase.from('questions').select('id').order('id', { ascending: true })
-        ]);
-    
-        const session = sessionRes.data.session;
-        if (!session) return alert("Log in to play Weekly Mode!");
-    
-        const allQuestions = questionsRes.data;
-        if (!allQuestions || allQuestions.length < 50) return alert("Error loading questions.");
-    
-        // Deterministic Weekly Selection
-        const now = new Date();
-        const startDate = new Date(RELEASE_DATE); // Keep this same as Daily for consistency
-        const diffTime = Math.abs(now - startDate);
-        const dayCounter = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-        
-        // Convert current day into a Week Index
-        const weekCounter = Math.floor(dayCounter / 7); 
-        
-        const weeksPerCycle = Math.floor(allQuestions.length / WEEKLY_LIMIT);
-        const cycleNumber = Math.floor(weekCounter / weeksPerCycle);
-        const weekInCycle = weekCounter % weeksPerCycle;
-    
-        // Use the same shuffle logic
-        const shuffledList = shuffleWithSeed(allQuestions, cycleNumber);
-        weeklySessionPool = shuffledList.slice(
-            weekInCycle * WEEKLY_LIMIT, 
-            (weekInCycle * WEEKLY_LIMIT) + WEEKLY_LIMIT
-        ).map(q => q.id);
+        const { data, error } = await supabase.rpc('get_weekly_questions');
+        if (error) return alert("Error loading weekly pool.");
+        weeklySessionPool = data.map(q => q.question_id);
+      // --- VERIFICATION LOG ---
+        console.log("%c Weekly Pool Loaded ", "background: #7289da; color: white; font-weight: bold;");
+        console.log("These 50 IDs should stay the same all week:");
+        console.table(weeklySessionPool); 
+        // -------------------------
+    } else {
+        // Log this if the pool was already cached in the browser
+        console.log("Using cached Weekly Pool IDs:", weeklySessionPool);
     }
-    // Prepare the session-specific random order
+    
+    // 2. CLEAR PRELOADS FOR NEW GAME
     preloadQueue = [];
-    // Randomize the order for THIS specific play-through
-    remainingQuestions = [...weeklySessionPool].sort(() => Math.random() - 0.5); // Set the 50 Weekly IDs
-  
-    // ------------------
-    // 3. THE BARRIER (Add this exactly like Normal Mode)
-    // This stops the function here until Question 1 is 100% ready
+
+    // 3. THE BARRIER (Wait for Question 1)
     if (preloadQueue.length === 0) {
         await preloadNextQuestions(1); 
     }
   
     // THE UI SWAP (Triggered only when we HAVE the data)
     resetGame();
+  
     await loadQuestion(true);
 
     requestAnimationFrame(() => {
-    const gameOverTitle = document.getElementById('game-over-title');
-    const gzTitle = document.getElementById('gz-title');
-    if (gameOverTitle) { gameOverTitle.classList.add('hidden'); gameOverTitle.textContent = ""; }
-    if (gzTitle) { gzTitle.classList.add('hidden'); gzTitle.textContent = ""; }
+        const gameOverTitle = document.getElementById('game-over-title');
+        const gzTitle = document.getElementById('gz-title');
+        if (gameOverTitle) { gameOverTitle.classList.add('hidden'); gameOverTitle.textContent = ""; }
+        if (gzTitle) { gzTitle.classList.add('hidden'); gzTitle.textContent = ""; }
+          
+        document.body.classList.add('game-active');
+        game.classList.remove('hidden');
+        document.getElementById('start-screen').classList.add('hidden');
+        endScreen.classList.add('hidden');
       
-    document.body.classList.add('game-active');
-    game.classList.remove('hidden');
-    document.getElementById('start-screen').classList.add('hidden');
-    endScreen.classList.add('hidden');
-  
-    gameStartTime = Date.now(); // total weekly run time
-    startTimer();
-  
-    // 3. NOW fill the rest while the user is reading
-    if (remainingQuestions.length > 0) {
-        preloadNextQuestions(3);
-    }
+        gameStartTime = Date.now(); // total weekly run time
+        startTimer();
+      
+        // 3. NOW fill the rest while the user is reading
+        if (remainingQuestions.length > 0) {
+            preloadNextQuestions(3);
+        }
   });
 }
 
@@ -1916,6 +1899,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
