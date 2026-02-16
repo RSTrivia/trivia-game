@@ -685,6 +685,7 @@ async function fetchAndBufferQuestion() {
                 // 3. Now fetch that SPECIFIC ID (Deterministic)
                 questionData = await fetchDeterministicQuestion(pick);
             }
+        }
         else if (isDailyMode) {
             if (remainingQuestions.length > 0) {
                 const qId = remainingQuestions.shift();
@@ -1935,6 +1936,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
