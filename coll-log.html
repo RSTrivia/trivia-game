@@ -642,10 +642,10 @@ async function loadCollection() {
     const realTotalGames = attempts.length;
     const hasPerfectGame = attempts.some(attempt => attempt.score === 10);
 
-    if (profileData) {
-        const a = profileData.achievements || {}; // Define 'a' here so it's available below
+    if (profileRes) {
+        const a = profileRes.achievements || {}; // Define 'a' here so it's available below
         
-        localStorage.setItem('cached_xp', profileData.xp || 0);
+        localStorage.setItem('cached_xp', profileRes.xp || 0);
         localStorage.setItem('cached_level', officialLevel);
         localStorage.setItem('cached_max_score', maxScore);
         // Save Weekly stats to LocalStorage so renderAchievements can see them
@@ -671,7 +671,7 @@ async function loadCollection() {
         localStorage.setItem('stat_max_streak', a.max_streak || 0);
         localStorage.setItem('stat_fastest', (a.fastest_guess || false).toString());
         localStorage.setItem('stat_just_in_time', (a.just_in_time || false).toString());
-        currentEquippedPet = profileData.equipped_pet || null;
+        currentEquippedPet = profileRes.equipped_pet || null;
         if (currentEquippedPet) {
             localStorage.setItem('equipped_pet_id', currentEquippedPet);
         } else {
@@ -679,7 +679,7 @@ async function loadCollection() {
         }
         
         // Update Pets and UI
-        const freshPets = profileData.collection_log || [];
+        const freshPets = profileRes.collection_log || [];
         localStorage.setItem('cached_pets', JSON.stringify(freshPets));
         applyUnlocks(freshPets);
 
