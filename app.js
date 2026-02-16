@@ -1086,8 +1086,13 @@ function updateLevelUI() {
     const xpBracket = document.getElementById('xpBracket');
     
     if (lvlNum && xpBracket) {
-        lvlNum.textContent = level || 1;
-        xpBracket.textContent = `(${(xp || 0).toLocaleString()} XP)`;
+      if (lvlNum) {
+        lvlNum.textContent = localStorage.getItem('cached_level') || 1;
+      }
+      let safeXp = currentProfileXp || 0;
+      if (xpBracket) {
+        xpBracket.textContent = `(${safeXp.toLocaleString()} XP)`;
+        }
     }
 }
 
@@ -1862,6 +1867,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
