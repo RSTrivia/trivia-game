@@ -999,16 +999,13 @@ async function checkAnswer(choiceId, btn) {
             showCollectionLogNotification(petData.pet_name);
         }
 
-        let instantID = null;
-        if (timeLeft >= 14) instantID = 777; // Lucky Guess
-        else if (timeLeft <= 1 && timeLeft > 0) instantID = 999; // Just in Time
-        
         if (instantID) {
             supabase.rpc('check_game_achievements', {
                 p_mode: 'instant',
-                p_score: instantID,
-                p_time_ms: 0
-            }).then(({ data: results }) => {
+                p_score: parseInt(instantID, 10), // Explicitly force integer
+                p_time_ms: 0                      // Explicitly 0
+            }).then(({ data: results, error }) => {
+                if (error) console.error("Achievement RPC Error:", error.message);
                 if (results) {
                     results.forEach(r => {
                         if (r.is_new) showAchievementNotification(r.display_name);
@@ -1016,7 +1013,7 @@ async function checkAnswer(choiceId, btn) {
                 }
             });
         }
-                  
+                          
         // --- MID-GAME ACHIEVEMENT CHECK ---
         // Only trigger RPC if they hit a specific milestone number
         let shouldCheck = false;
@@ -1915,6 +1912,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
