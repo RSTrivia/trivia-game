@@ -208,6 +208,7 @@ let weeklyQuestionCount = 0;
 let isLiteMode = false;
 let liteQuestions = []; // To store the shuffled subset
 let gameStartTime = 0;
+let dailyEdition = null;
 
 // ====== INITIAL UI SYNC ======
 // Replace your existing refreshAuthUI with this:
@@ -1521,7 +1522,7 @@ if (shareBtn) {
         const totalQs = 10;
         const grid = "🟩".repeat(currentScore) + "🟥".repeat(totalQs - currentScore);
 
-        const shareText = `OSRS Trivia ${window.currentDailyEdition}  ${currentScore}/${totalQs} ⚔️\n` +
+        const shareText = `OSRS Trivia ${dailyEdition}  ${currentScore}/${totalQs} ⚔️\n` +
                           `${grid}\n` +
                           `Streak: ${currentStreak} 🔥\n`;
                           //`https://osrstrivia.pages.dev/`;
@@ -1749,9 +1750,8 @@ async function startDailyChallenge(session) {
     }
     // 2. SET THE POOL & SAVE THE EDITION
     // Grab the edition number from the first row (they are all the same)
-    const dailyEdition = questionsRes.data[0].edition_number;
-    // Store it globally or in a variable for your Share Screen/UI
-    window.currentDailyEdition = dailyEdition;
+    dailyEdition = questionsRes.data[0].edition_number;
+   
     dailySessionPool = questionsRes.data.map(q => q.question_id).sort(() => Math.random() - 0.5);
   
     // Tell the DB: "This is a new game, start my streak at 0"
@@ -1873,6 +1873,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
