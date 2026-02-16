@@ -626,18 +626,17 @@ async function loadCollection() {
 
     // --- UPDATED: Now fetching the highest score from daily_attempts as well ---
     const [profileRes, scoreRes, attemptsRes] = await Promise.all([
-        supabase.from('profiles').select('collection_log, achievements, xp, equipped_pet,calculated_level:get_level_from_xp(xp)').eq('id', session.user.id).single(),
+        supabase.from('profiles').select('collection_log, achievements, xp, equipped_pet, level').eq('id', session.user.id).single(),
         supabase.from('scores').select('score').eq('user_id', session.user.id).maybeSingle(),
         // Get the count AND check if a score of 10 exists
         supabase.from('daily_attempts').select('score').eq('user_id', session.user.id)
     ]);
 
     if (profileRes.error) return;
-
-    const profileData = profileRes.data;
+    
     const maxScore = scoreRes.data?.score || 0;
-    // This is now the official level from your SQL function
-    const officialLevel = profileData.calculated_level;
+    const officialLevel = profileData.level || 1;
+    
     // Calculate total games and check for a perfect 10/10 from the attempts list
     const attempts = attemptsRes.data || [];
     const realTotalGames = attempts.length;
