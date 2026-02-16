@@ -145,18 +145,16 @@ let realtimeSubscription = null; // Track the active listener
 function getLevel(xp) {
     if (!xp || xp <= 0) return 1;
     if (xp >= 100000) return 99;
-
+  
     const HALFWAY_XP = 50000;
 
     for (let L = 1; L <= 99; L++) {
         let threshold;
 
         if (L <= 92) {
-            // Pure Linear Gap Growth
-            // (n * (n-1) / 2) * growth
-            let n = L - 1;
-            let growth = 12.11; 
-            threshold = Math.floor((growth * n * (n - 1)) / 2);
+            // New Power-Law Curve: 1 XP at L=1, 50,000 XP at L=92
+            // Formula: 1 + (49999 * ((L-1)/91)^2.5)
+            threshold = Math.floor(5.922 * Math.pow(L, 1.9925));
         } else {
             // Your Segment 2 Logic
             let n = L - 92; 
@@ -419,6 +417,7 @@ if(dailyTab) dailyTab.onclick = () => handleTabClick('daily', dailyTab);
 </script>
 </body>
 </html>
+
 
 
 
