@@ -703,7 +703,7 @@ async function fetchRandomQuestion() {
     if (currentQuestion) excludeIds.push(currentQuestion.id);
 
     const { data, error } = await supabase.rpc('get_random_question', {
-        excluded_ids: excludeIds
+        excluded_ids: excludeIds,
         // NEW: If weekly, only pick from the 50 IDs. If not, pick from NULL (all).
         included_ids: isWeeklyMode ? weeklySessionPool : null
     });
@@ -1899,6 +1899,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
