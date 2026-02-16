@@ -660,8 +660,6 @@ async function preloadNextQuestions(targetCount = 6) {
         fetchAndBufferQuestion();
     }
 }
-// Add this at the top of your script with your other global variables
-let pendingIds = []; 
 
 async function fetchAndBufferQuestion() {
     let questionData = null;
@@ -1938,6 +1936,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
