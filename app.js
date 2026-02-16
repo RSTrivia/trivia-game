@@ -1090,18 +1090,14 @@ function updateLevelUI() {
 function getLevel(xp) {
     if (!xp || xp <= 0) return 1;
     if (xp >= 100000) return 99;
-
+  
     const HALFWAY_XP = 50000;
 
     for (let L = 1; L <= 99; L++) {
         let threshold;
 
         if (L <= 92) {
-            // Pure Linear Gap Growth
-            // (n * (n-1) / 2) * growth
-            let n = L - 1;
-            let growth = 12.11; 
-            threshold = Math.floor((growth * n * (n - 1)) / 2);
+            threshold = Math.floor(5.922 * Math.pow(L, 1.9925));
         } else {
             // Your Segment 2 Logic
             let n = L - 92; 
@@ -1890,6 +1886,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
