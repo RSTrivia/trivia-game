@@ -15,6 +15,7 @@ let gameEnding = false;
 let isShowingNotification = false;
 let notificationQueue = [];
 let weeklySessionPool = [];
+let dailySessionPool = [];
 let firstQuestionSent = false; // Reset this when a match starts
 let userId = null; 
 let syncChannel;
@@ -664,37 +665,42 @@ async function preloadNextQuestions(targetCount = 6) {
 }
 
 async function fetchAndBufferQuestion() {
-    console.log(`Worker fetching. Mode: ${isWeeklyMode ? 'Weekly' : 'Normal'}. Excludes:`, pendingIds);
     let questionData = null;
-  
+    
     try {
-        if (isWeeklyMode) {
-            // 1. Find IDs in the pool that haven't been used or queued yet
+        // 1. Determine which pool to use
+        const activePool = isWeeklyMode ? weeklySessionPool : (isDailyMode ? dailySessionPool : null);
+
+        if (activePool && activePool.length > 0) {
+            // 2. Filter out what is already in the queue or already answered
             const queuedIds = preloadQueue.map(q => q.id);
-            const availableIds = weeklySessionPool.filter(id => 
+            const availableIds = activePool.filter(id => 
                 !queuedIds.includes(id) && 
                 !usedInThisSession.includes(id) &&
                 (currentQuestion ? currentQuestion.id !== id : true)
             );
 
             if (availableIds.length > 0) {
-                // 2. Pick one IMMEDIATELY and mark it as used
-                const pick = availableIds[Math.floor(Math.random() * availableIds.length)];
+                // 3. Pick the next one. 
+                // Note: For Daily/Weekly, we usually want to follow the pool order or pick randomly from it.
+                // Using availableIds[0] follows your 'remainingQuestions.shift()' logic.
+                const pick = availableIds[0]; 
+                
+                // Mark as used so the next parallel worker doesn't grab the same ID
                 usedInThisSession.push(pick); 
                 
-                // 3. Now fetch that SPECIFIC ID (Deterministic)
+                // 4. Fetch the specific data
                 questionData = await fetchDeterministicQuestion(pick);
+            } else if (!isDailyMode && !isWeeklyMode) {
+                // If the pool is exhausted but we aren't in a fixed-limit mode, fallback
+                questionData = await fetchRandomQuestion();
             }
-        }
-        else if (isDailyMode) {
-            if (remainingQuestions.length > 0) {
-                const qId = remainingQuestions.shift();
-                questionData = await fetchDeterministicQuestion(qId);
-            } else {
-              questionData = await fetchRandomQuestion();
-            }
+        } else {
+            // 5. Standard Random Mode (Lite or Normal)
+            questionData = await fetchRandomQuestion();
         }
 
+        // 6. Image Warming & Queue Push
         if (questionData) {
             if (questionData.question_image) {
                 const img = new Image();
@@ -705,14 +711,14 @@ async function fetchAndBufferQuestion() {
 
             preloadQueue.push(questionData);
             
-            // REMOVE FROM PENDING: Now that it's in the queue, 
-            // the 'excludeIds' map will catch it, so we don't need it in pending.
+            // Clean up pending list
             pendingIds = pendingIds.filter(id => id !== questionData.id.toString());
         }
     } catch (err) {
         console.error("Fetch worker failed:", err);
     }
 }
+
 // Helper: Fetch a specific ID (Deterministic)
 async function fetchDeterministicQuestion(qId) {
     const { data, error } = await supabase.rpc('get_question_by_id', { input_id: qId });
@@ -1768,21 +1774,10 @@ async function startWeeklyChallenge() {
     await supabase.rpc('reset_my_streak');
   
     // 1. ENSURE THE POOL IS READY (We only fetch the 50 IDs, not the full data)
-    if (weeklySessionPool.length === 0) {
-        const { data, error } = await supabase.rpc('get_weekly_questions', {});
-        if (error) return alert("Error loading weekly pool.");
-        weeklySessionPool = data.map(q => q.question_id);
-      // --- VERIFICATION LOG ---
-        console.log("%c Weekly Pool Loaded ", "background: #7289da; color: white; font-weight: bold;");
-        console.log("These 50 IDs should stay the same all week:");
-        console.table(weeklySessionPool); 
-        // -------------------------
-    } else {
-        // Log this if the pool was already cached in the browser
-        console.log("Using cached Weekly Pool IDs:", weeklySessionPool);
-    }
-
-
+    const { data, error } = await supabase.rpc('get_weekly_questions', {});
+    if (error) return alert("Error loading weekly pool.");
+    weeklySessionPool = data.map(q => q.question_id);
+ 
     // 3. THE BARRIER (Wait for Question 1)
     if (preloadQueue.length === 0) {
         await preloadNextQuestions(1); 
@@ -1819,46 +1814,37 @@ function getDailyEditionNumber() {
 }
 
 async function startDailyChallenge(session) {
-    // 1. & 2. BURN ATTEMPT + LOAD IDS (Happening at the same time)
-    // This uses your exact table and column names.
+    gameEnding = false;
+    isDailyMode = true;
+    isWeeklyMode = false;
+    isLiteMode = false;
+    pendingIds = [];
+    preloadQueue = [];
+    usedInThisSession = [];
+    score = 0;
+    streak = 0;
+    // 1. BURN ATTEMPT & FETCH DAILY IDs FROM RPC
     const [burnRes, questionsRes] = await Promise.all([
         supabase.from('daily_attempts').insert({ 
             user_id: session.user.id, 
             attempt_date: todayStr 
         }),
-        supabase.from('questions').select('id').order('id', { ascending: true })
+        supabase.rpc('get_daily_questions') // The new logic happens here!
     ]);
-
     // Your exact error check
     if (burnRes.error) return alert("You've already played today!");
-
-    const allQuestions = questionsRes.data;
-    if (!allQuestions || allQuestions.length < DAILY_LIMIT) return alert("Error loading questions.");
-
-    // 3. Deterministic Selection
-    const startDate = new Date(RELEASE_DATE); 
-    const diffTime = Math.abs(new Date() - startDate);
-    const dayCounter = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    
-    const questionsPerDay = DAILY_LIMIT;
-    const daysPerCycle = Math.floor(allQuestions.length / questionsPerDay); 
-    const cycleNumber = Math.floor(dayCounter / daysPerCycle); 
-    const dayInCycle = dayCounter % daysPerCycle;
-
-    const shuffledList = shuffleWithSeed(allQuestions, cycleNumber);
-    const dailyIds = shuffledList.slice(dayInCycle * questionsPerDay, (dayInCycle * questionsPerDay) + questionsPerDay).map(q => q.id);
-
-    // 4. PREPARE THE DATA (Background)
-    isDailyMode = true;
-    isWeeklyMode = false;
-    preloadQueue = []; 
+    // Check if questions loaded
+    if (questionsRes.error || !questionsRes.data) {
+        console.error(questionsRes.error);
+        return alert("Error loading daily questions.");
+    }
+    // 2. SET THE POOL (Extracting just the IDs)
+    // We shuffle them so the order is random for this specific user
+    dailySessionPool = questionsRes.data.map(q => q.question_id).sort(() => Math.random() - 0.5);
+  
     // Tell the DB: "This is a new game, start my streak at 0"
     await supabase.rpc('reset_my_streak');
-    streak = 0;
-  
-    remainingQuestions = dailyIds.sort(() => Math.random() - 0.5);   
 
-  
     // 5. Start the engine
     //await preloadNextQuestions();
     // FETCH ONLY THE FIRST QUESTION IMMEDIATELY
@@ -1936,6 +1922,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
