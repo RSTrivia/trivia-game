@@ -1463,8 +1463,6 @@ async function saveScore(session, mode, currentScore, timeMs, username = "", msg
 
         // 2. Specific post-save logic for Daily Mode
         if (mode === 'daily') {
-            // We pass the session here too if updateDailyStreak needs it
-            await updateDailyStreak(currentScore);
             syncDailySystem();
         }
 
@@ -1917,6 +1915,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
