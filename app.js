@@ -780,17 +780,25 @@ async function loadQuestion(isFirst = false) {
         questionImage.style.opacity = '0';
     }
 
-    // B. REFILL THE BUFFER
-    const needsRefill = (isDailyMode || isWeeklyMode) ? remainingQuestions.length > 0 : true;
+   // B. REFILL THE BUFFER 
+    // CHANGE: In Weekly mode, we check our count vs the limit, 
+    // NOT the remainingQuestions array.
+    let needsRefill;
+    if (isDailyMode) {
+        needsRefill = dailyQuestionCount < DAILY_LIMIT;
+    } else if (isWeeklyMode) {
+        needsRefill = weeklyQuestionCount < WEEKLY_LIMIT;
+    } else {
+        needsRefill = true; // Normal/Lite mode
+    }
+
     if (!isFirst && preloadQueue.length <= 4 && needsRefill) {
         preloadNextQuestions(8); 
     }
 
     // C. THE "NO-UNDEFINED" GATE
-    // If the queue is empty, we wait for a single fetch to finish completely.
     if (preloadQueue.length === 0) {
         if (needsRefill) {
-            // We await the WORKER directly here to ensure the queue actually gets a value
             await fetchAndBufferQuestion(); 
         } else {
             await endGame();
@@ -1899,6 +1907,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
