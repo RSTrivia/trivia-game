@@ -999,14 +999,46 @@ async function checkAnswer(choiceId, btn) {
             showCollectionLogNotification(petData.pet_name);
         }
 
-        // 4. Other UI-based Achievements (Keep these local as they are harmless)
-        if (timeLeft >= 14) saveAchievement('fastest_guess', true);
-        if (timeLeft <= 1 && timeLeft > 0) saveAchievement('just_in_time', true);
-        if (isLiteMode && score === 50) saveAchievement('lite_50', true);
-        if (isWeeklyMode && score === 25) saveAchievement('weekly_25', true);
-
+        let instantID = null;
+        if (timeLeft >= 14) instantID = 777; // Lucky Guess
+        else if (timeLeft <= 1 && timeLeft > 0) instantID = 999; // Just in Time
         
-      
+        if (instantID) {
+            supabase.rpc('check_game_achievements', {
+                p_mode: 'instant',
+                p_score: instantID,
+                p_time_ms: 0
+            }).then(({ data: results }) => {
+                if (results) {
+                    results.forEach(r => {
+                        if (r.is_new) showAchievementNotification(r.display_name);
+                    });
+                }
+            });
+        }
+                  
+        // --- MID-GAME ACHIEVEMENT CHECK ---
+        // Only trigger RPC if they hit a specific milestone number
+        let shouldCheck = false;
+        if (isWeeklyMode && score === 25) shouldCheck = true;
+        if (isLiteMode && score === 50) shouldCheck = true;
+        
+        if (shouldCheck) {
+            // Fire and forget so the game flow isn't interrupted
+            supabase.rpc('check_game_achievements', {
+                p_mode: isWeeklyMode ? 'weekly' : 'lite',
+                p_score: score,
+                p_time_ms: Math.floor(Date.now() - gameStartTime)
+            }).then(({ data: results }) => {
+                if (results) {
+                    results.forEach(r => {
+                        // Only show if it's actually the first time (is_new)
+                        if (r.is_new) showAchievementNotification(r.display_name);
+                    });
+                }
+            });
+        }
+        
         setTimeout(loadQuestion, 1000);
     } else {
         // Wrong answer logic
@@ -1166,6 +1198,43 @@ async function endGame() {
   
     // 1. PREPARE DATA FIRST (Quietly in background)
     const { data: { session } } = await supabase.auth.getSession();
+  
+    if (session) {
+        // Determine the mode string for the RPC
+        let mode = 'normal';
+        if (isDailyMode) mode = 'daily';
+        else if (isWeeklyMode) mode = 'weekly';
+        else if (isLiteMode) mode = 'lite';
+    
+    
+        // This replaces updateDailyStreak and multiple saveAchievement calls
+        const { data: results, error: achError } = await supabase.rpc('check_game_achievements', {
+            p_mode: mode,
+            p_score: score,
+            p_time_ms: Math.floor(totalMs)
+        });
+    
+        if (!achError && results && results.length > 0) {
+            // 1. Update LocalStorage from the DB "Source of Truth"
+            const stats = results[0].current_stats;
+            if (stats) {
+                localStorage.setItem('cached_daily_streak', stats.daily_streak || 0);
+                localStorage.setItem('stat_max_streak', stats.max_streak || 0);
+                localStorage.setItem('cached_daily_total', stats.daily_total || 0);
+                localStorage.setItem('stat_daily_perfect', stats.daily_perfect || false);
+                
+                // Update the global variable for the UI
+                currentDailyStreak = stats.daily_streak || 0;
+            }
+    
+            // 2. Show all earned achievement notifications
+            results.forEach(res => {
+                if (res.is_new) {
+                    showAchievementNotification(res.display_name);
+                }
+            });
+        }
+    }
     const scoreKey = Math.min(Math.max(score, 0), 10);
     const options = dailyMessages[scoreKey] || ["Game Over!"];
     const randomMsg = options[Math.floor(Math.random() * options.length)];
@@ -1201,13 +1270,6 @@ async function endGame() {
         // UI Visibility resets
         if (playAgainBtn) playAgainBtn.classList.remove('hidden');
         if (dailyStreakContainer) dailyStreakContainer.style.display = 'none';
-    
-        // --- ACHIEVEMENTS CHECK ---
-        if (session && score >= 50) {
-            saveAchievement('weekly_50', true);
-            if (totalSeconds <= 120) await saveAchievement('weekly_sub_2', true);
-            if (totalSeconds <= 180) await saveAchievement('weekly_sub_3', true);
-        }
     
       displayFinalTime(totalMs);
       
@@ -1262,13 +1324,6 @@ async function endGame() {
       
       // 1. Lite Mode Specific Logic
         if (isLiteMode) {
-            
-          // --- ACHIEVEMENTS CHECK ---
-            if (session && score >= 100) { //change to 100 score
-                await saveAchievement('lite_100', true);
-                if (totalSeconds <= 360) await saveAchievement('lite_sub_6', true);
-                if (totalSeconds <= 480) await saveAchievement('lite_sub_8', true);
-            }
           
             let isLitePB = session ? await saveScore(session, 'lite', score, totalMs, username) : false;
         
@@ -1500,171 +1555,6 @@ if (shareBtn) {
     };
 }
 
-async function updateDailyStreak(currentScore) {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
-    const userId = session.user.id;
-    // 1. Get the current Streak from the DATABASE instead of local JS
-    const { data: actualStreak, error } = await supabase.rpc('get_daily_streak', { 
-        target_user_id: userId 
-    });
-
-    // 2. Get existing achievements from Profile
-    const { data: profile } = await supabase.from('profiles')
-        .select('achievements')
-        .eq('id', userId)
-        .maybeSingle();
-    
-    let oldAchieve = profile?.achievements || {};
-
-    // 3. Current stats before updating
-    const oldTotal = oldAchieve.daily_total || 0;
-    const newTotal = oldTotal + 1; // Increment total
-    
-    // --- MILESTONE LOGIC ---
-
-    // Milestone 1: Complete Daily Mode (Once)
-    if (newTotal === 1 && !oldAchieve.daily_total) {
-        showAchievementNotification("First Daily Mode");
-    }
-
-    // Milestone 2: 10 Day Streak (Exactly 10)
-    // We check if their new streak is 10 AND their previous max was less than 10
-    if (actualStreak === 10 && (oldAchieve.max_streak || 0) < 10) {
-        showAchievementNotification("10 Day Streak");
-    }
-
-    // Milestone 3: 20 Total Games
-    if (newTotal === 20 && oldTotal < 20) {
-        showAchievementNotification("20 Daily Games");
-    }
-
-    // Milestone 4: 100 Total Games
-    if (newTotal === 100 && oldTotal < 100) {
-        showAchievementNotification("100 Daily Games");
-    }
-
-    // Milestone 5: Perfect 10/10 (One-time unlock)
-    if (currentScore === 10 && !oldAchieve.daily_perfect) {
-        showAchievementNotification("Perfect 10/10");
-    }
-
-    // 4. Construct and Save updated object
-    const updatedAchieve = {
-        ...oldAchieve, 
-        daily_streak: actualStreak,
-        max_streak: Math.max(actualStreak, (oldAchieve.max_streak || 0)),
-        daily_total: newTotal,
-        daily_perfect: currentScore === 10 ? true : (oldAchieve.daily_perfect || false)
-    };
-
-    await supabase
-        .from('profiles')
-        .update({ achievements: updatedAchieve })
-        .eq('id', userId);
-
-    // 5. Sync LocalStorage for UI
-    localStorage.setItem('cached_daily_streak', updatedAchieve.daily_streak);
-    localStorage.setItem('stat_max_streak', updatedAchieve.max_streak);
-    localStorage.setItem('cached_daily_total', updatedAchieve.daily_total);
-    localStorage.setItem('stat_daily_perfect', updatedAchieve.daily_perfect.toString());
-    currentDailyStreak = updatedAchieve.daily_streak || 0;
-}
-
-async function saveAchievement(key, value) {
-    // 1. Get session from the current state rather than a slow network call if possible
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
-
-    // 2. Fetch existing achievements
-    const { data, error } = await supabase
-        .from('profiles')
-        .select('achievements')
-        .eq('id', session.user.id)
-        .single();
-
-    if (error) {
-        console.error("Error fetching achievements:", error);
-        return;
-    }
-
-    let achievements = data?.achievements || {};
-    let isNewAchievement = false;
-    let notificationText = "";
-
-    // 3. Logic Checks (Structure kept exactly as you requested)
-    if (key === 'fastest_guess' && !achievements[key]) {
-        isNewAchievement = true;
-        notificationText = "Lucky Guess";
-    } 
-    else if (key === 'just_in_time' && !achievements[key]) {
-        isNewAchievement = true;
-        notificationText = "Just in Time";
-    }
-    // --- Weekly Boolean Achievements ---
-    else if (key === 'weekly_25' && !achievements[key]) {
-        isNewAchievement = true;
-        notificationText = "Halfway 25/50";
-    }
-    else if (key === 'weekly_50' && !achievements[key]) {
-        isNewAchievement = true;
-        notificationText = "Perfect 50/50";
-    }
-    else if (key === 'weekly_sub_3' && !achievements[key]) {
-        isNewAchievement = true;
-        notificationText = "Speedrunner 50/50 sub 3m";
-    }
-    else if (key === 'weekly_sub_2' && !achievements[key]) {
-        isNewAchievement = true;
-        notificationText = "GM speedrunner 50/50 sub 2m";
-    }
-  // --- Lite Mode Boolean Achievements ---
-    else if (key === 'lite_50' && !achievements[key]) {
-        isNewAchievement = true;
-        notificationText = "Halfway 50/100";
-    }
-    else if (key === 'lite_100' && !achievements[key]) {
-        isNewAchievement = true;
-        notificationText = "Perfect 100/100";
-    }
-    else if (key === 'lite_sub_6' && !achievements[key]) {
-        isNewAchievement = true;
-        notificationText = "Speedrunner 100/100 sub 6m";
-    }
-    else if (key === 'lite_sub_8' && !achievements[key]) {
-        isNewAchievement = true;
-        notificationText = "GM speedrunner 100/100 sub 8m";
-    }
-  
-    // 4. EXECUTE SAVING
-    if (isNewAchievement) {
-        if (typeof showAchievementNotification === "function") {
-            showAchievementNotification(notificationText);
-        }
-
-        // Update the object
-        achievements[key] = value;
-        
-        // Push to Supabase
-        await supabase
-            .from('profiles')
-            .update({ achievements: achievements })
-            .eq('id', session.user.id);
-
-        // 5. Update local storage for immediate UI sync
-        let storageKey;
-        if (key === 'fastest_guess') {
-            storageKey = 'stat_fastest';
-        } else if (key === 'just_in_time') {
-            storageKey = 'stat_just_in_time';
-        } else {
-            // Consistent naming for new weekly and level achievements
-            storageKey = `ach_stat_${key}`;
-        }
-        
-        localStorage.setItem(storageKey, value.toString());
-    }
-}
 
 // 1. Create a variable outside the function to track the timer
 let petNotificationTimeout = null;
@@ -2027,6 +1917,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
