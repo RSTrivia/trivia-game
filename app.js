@@ -754,6 +754,10 @@ isDailyMode = false;
 isWeeklyMode = false;
 // 1. CLEAR & PREFETCH #1 (Wait for this!)
 remainingQuestions = [];
+pendingIds = [];
+usedInThisSession = [];
+weeklySessionPool = [];
+dailySessionPool = [];
 // 2. INTERNAL STATE RESET
   clearInterval(timer);
   score = 0;
@@ -1922,6 +1926,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
