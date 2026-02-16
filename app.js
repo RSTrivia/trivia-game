@@ -212,6 +212,7 @@ let gameStartTime = 0;
 // ====== INITIAL UI SYNC ======
 // Replace your existing refreshAuthUI with this:
 async function syncDailySystem() {
+  try {
     const { data: { session } } = await supabase.auth.getSession();
     
     if (!session) {
@@ -256,6 +257,12 @@ async function syncDailySystem() {
         shareBtn.classList.add('is-disabled');
         shareBtn.style.pointerEvents = "none";
         shareBtn.style.opacity = "0.5";
+    }
+  } catch (err) { 
+    // Silently catch the "Failed to fetch" browser crash
+        if (err.message !== 'Failed to fetch') {
+            console.error("System Sync Error:", err);
+        }
     }
 }
 
@@ -1881,6 +1888,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
