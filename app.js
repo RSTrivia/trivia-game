@@ -719,7 +719,7 @@ remainingQuestions = [];
   score = 0;
   streak = 0;
   // Tell the DB: "This is a new game, start my streak at 0"
-  supabase.rpc('reset_my_streak');
+  await supabase.rpc('reset_my_streak');
   dailyQuestionCount = 0;
   currentQuestion = null;
   updateScore();
@@ -1720,7 +1720,7 @@ async function startWeeklyChallenge() {
     score = 0;
     streak = 0;
     // Tell the DB: "This is a new game, start my streak at 0"
-    supabase.rpc('reset_my_streak');
+    await supabase.rpc('reset_my_streak');
   
     if (weeklySessionPool.length === 0) {
           // 1. Parallelize the slow stuff
@@ -1833,7 +1833,7 @@ async function startDailyChallenge(session) {
     isWeeklyMode = false;
     preloadQueue = []; 
     // Tell the DB: "This is a new game, start my streak at 0"
-    supabase.rpc('reset_my_streak');
+    await supabase.rpc('reset_my_streak');
     streak = 0;
   
     remainingQuestions = dailyIds.sort(() => Math.random() - 0.5);   
@@ -1916,6 +1916,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
