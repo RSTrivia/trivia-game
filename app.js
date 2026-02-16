@@ -1110,6 +1110,7 @@ function getLevel(xp) {
     }
     return 99;
 }
+  
 
 function triggerFireworks() {
     const container = document.getElementById('game');
@@ -1886,6 +1887,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
