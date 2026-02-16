@@ -632,20 +632,24 @@ async function loadCollection() {
         supabase.from('daily_attempts').select('score').eq('user_id', session.user.id)
     ]);
 
-    if (profileRes.error) return;
-    
+    if (profileRes.error) {
+        console.error("Error loading profile:", profileRes.error);
+        return;
+    }
+    // Extract the actual data from the response object
+    const profileData = profileRes.data;
     const maxScore = scoreRes.data?.score || 0;
-    const officialLevel = profileRes.level || 1;
+    const officialLevel = profileData.level || 1;
     
     // Calculate total games and check for a perfect 10/10 from the attempts list
     const attempts = attemptsRes.data || [];
     const realTotalGames = attempts.length;
     const hasPerfectGame = attempts.some(attempt => attempt.score === 10);
 
-    if (profileRes) {
-        const a = profileRes.achievements || {}; // Define 'a' here so it's available below
+    if (profileData) {
+        const a = profileData.achievements || {}; // Define 'a' here so it's available below
         
-        localStorage.setItem('cached_xp', profileRes.xp || 0);
+        localStorage.setItem('cached_xp', profileData.xp || 0);
         localStorage.setItem('cached_level', officialLevel);
         localStorage.setItem('cached_max_score', maxScore);
         // Save Weekly stats to LocalStorage so renderAchievements can see them
@@ -671,7 +675,7 @@ async function loadCollection() {
         localStorage.setItem('stat_max_streak', a.max_streak || 0);
         localStorage.setItem('stat_fastest', (a.fastest_guess || false).toString());
         localStorage.setItem('stat_just_in_time', (a.just_in_time || false).toString());
-        currentEquippedPet = profileRes.equipped_pet || null;
+        currentEquippedPet = profileData.equipped_pet || null;
         if (currentEquippedPet) {
             localStorage.setItem('equipped_pet_id', currentEquippedPet);
         } else {
@@ -679,7 +683,7 @@ async function loadCollection() {
         }
         
         // Update Pets and UI
-        const freshPets = profileRes.collection_log || [];
+        const freshPets = profileData.collection_log || [];
         localStorage.setItem('cached_pets', JSON.stringify(freshPets));
         applyUnlocks(freshPets);
 
