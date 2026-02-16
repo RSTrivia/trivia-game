@@ -1092,16 +1092,18 @@ function getLevel(xp) {
     if (xp >= 100000) return 99;
 
     const HALFWAY_XP = 50000;
-    const MAX_XP = 100000;
 
     for (let L = 1; L <= 99; L++) {
         let threshold;
 
         if (L <= 92) {
-            // Updated to 3.1 to ensure Level 92 is exactly 50k 
-            // and Level 10 is near 200.
-            threshold = Math.floor(Math.pow((L - 1) / 91, 3.1) * HALFWAY_XP);
+            // Pure Linear Gap Growth
+            // (n * (n-1) / 2) * growth
+            let n = L - 1;
+            let growth = 12.11; 
+            threshold = Math.floor((growth * n * (n - 1)) / 2);
         } else {
+            // Your Segment 2 Logic
             let n = L - 92; 
             let baseGap = 3000;
             let growth = 1381; 
@@ -1888,6 +1890,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
