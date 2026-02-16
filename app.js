@@ -1348,7 +1348,6 @@ async function endGame() {
         let isNormalPB = false;
         // Trigger the high-score save
         if (session && score > 0) {
-          console.log("hello");
             // We pass the current username, and the score achieved
             isNormalPB = await saveScore(session, 'normal', score, totalMs, username);
         }
@@ -1917,6 +1916,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
