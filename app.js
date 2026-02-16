@@ -208,7 +208,6 @@ let weeklyQuestionCount = 0;
 let isLiteMode = false;
 let liteQuestions = []; // To store the shuffled subset
 let gameStartTime = 0;
-let dailyEdition = null;
 
 // ====== INITIAL UI SYNC ======
 // Replace your existing refreshAuthUI with this:
@@ -1506,9 +1505,16 @@ if (shareBtn) {
             return;
         }
 
+        // 3. FETCH THE EDITION NUMBER (Directly from DB Truth)
+        const { data: dailyData, error: dailyErr } = await supabase.rpc('get_daily_questions');
+        if (dailyErr || !dailyData || dailyData.length === 0) {
+            console.error("Could not fetch daily edition for sharing");
+            return;
+        }
+        const dailyEdition = dailyData[0].edition_number;
+          
         // 3. Get Data
         const currentScore = parseInt(localStorage.getItem('lastDailyScore') || "0");
-        
         // Pull the streak we just saved in handleAuthChange
         const currentStreak = localStorage.getItem('cached_daily_streak') || "0";
       
@@ -1748,10 +1754,6 @@ async function startDailyChallenge(session) {
         console.error(questionsRes.error);
         return alert("Error loading daily questions.");
     }
-    // 2. SET THE POOL & SAVE THE EDITION
-    // Grab the edition number from the first row (they are all the same)
-    dailyEdition = questionsRes.data[0].edition_number;
-   
     dailySessionPool = questionsRes.data.map(q => q.question_id).sort(() => Math.random() - 0.5);
   
     // Tell the DB: "This is a new game, start my streak at 0"
@@ -1873,6 +1875,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
