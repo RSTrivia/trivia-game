@@ -998,7 +998,11 @@ async function checkAnswer(choiceId, btn) {
             // UI Feedback
             showCollectionLogNotification(petData.pet_name);
         }
-
+      
+        let instantID = null;
+        if (timeLeft >= 14) instantID = 777; // Lucky Guess
+        else if (timeLeft <= 1 && timeLeft > 0) instantID = 999; // Just in Time
+      
         if (instantID) {
             supabase.rpc('check_game_achievements', {
                 p_mode: 'instant',
@@ -1912,6 +1916,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
