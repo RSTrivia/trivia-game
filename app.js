@@ -18,6 +18,8 @@ let weeklySessionPool = [];
 let firstQuestionSent = false; // Reset this when a match starts
 let userId = null; 
 let syncChannel;
+// Add this at the top of your script with your other global variables
+let pendingIds = [];
 
 const RELEASE_DATE = '2025-12-22';
 const DAILY_LIMIT = 10;
@@ -658,6 +660,9 @@ async function preloadNextQuestions(targetCount = 6) {
         fetchAndBufferQuestion();
     }
 }
+// Add this at the top of your script with your other global variables
+let pendingIds = []; 
+
 async function fetchAndBufferQuestion() {
     let questionData = null;
 
@@ -666,25 +671,42 @@ async function fetchAndBufferQuestion() {
             if (remainingQuestions.length > 0) {
                 const qId = remainingQuestions.shift();
                 questionData = await fetchDeterministicQuestion(qId);
+            } else {
+              questionData = await fetchRandomQuestion();
             }
         } else {
-            questionData = await fetchRandomQuestion();
+            // 1. Get IDs currently in the queue + the current question
+            const excludeIds = preloadQueue.map(q => q.id.toString());
+            if (currentQuestion) excludeIds.push(currentQuestion.id.toString());
+            
+            // 2. ALSO exclude IDs that are currently being fetched by other workers
+            const allExcludes = [...excludeIds, ...pendingIds];
+
+            const { data, error } = await supabase.rpc('get_random_question', {
+                excluded_ids: allExcludes,
+                included_ids: isWeeklyMode ? weeklySessionPool : null
+            });
+
+            if (data && data[0]) {
+                questionData = data[0];
+                // 3. Mark this ID as "pending" so other workers don't grab it
+                pendingIds.push(questionData.id.toString());
+            }
         }
 
         if (questionData) {
-            // 1. Warm up the image cache immediately
             if (questionData.question_image) {
                 const img = new Image();
                 img.src = questionData.question_image;
-                // decode() is great, but we don't await it here so the 
-                // question data becomes available for the text part immediately.
-                img.decode().catch(() => {/* Silent catch */});
-                // Attach the image object to the data so loadQuestion can reuse it
+                img.decode().catch(() => {});
                 questionData._preloadedImg = img;
             }
 
-            // 2. Push to queue as soon as this SPECIFIC request is done
             preloadQueue.push(questionData);
+            
+            // REMOVE FROM PENDING: Now that it's in the queue, 
+            // the 'excludeIds' map will catch it, so we don't need it in pending.
+            pendingIds = pendingIds.filter(id => id !== questionData.id.toString());
         }
     } catch (err) {
         console.error("Fetch worker failed:", err);
@@ -696,18 +718,29 @@ async function fetchDeterministicQuestion(qId) {
     return (!error && data?.[0]) ? data[0] : null;
 }
 
-// Helper: Fetch a random ID (Normal/Lite)
+// Helper: Fetch a random ID (Normal/Lite/Weekly)
 async function fetchRandomQuestion() {
-    // Exclude IDs already in the queue AND the one currently being answered
-    const excludeIds = preloadQueue.map(q => q.id);
-    if (currentQuestion) excludeIds.push(currentQuestion.id);
+    // 1. Collect IDs already in the queue or being viewed
+    const excludeIds = preloadQueue.map(q => q.id.toString());
+    if (currentQuestion) excludeIds.push(currentQuestion.id.toString());
+
+    // 2. MERGE with pending IDs (the "Reservation" list)
+    // This prevents parallel workers from picking the same question
+    const allExcludes = [...new Set([...excludeIds, ...pendingIds])];
 
     const { data, error } = await supabase.rpc('get_random_question', {
-        excluded_ids: excludeIds,
-        // NEW: If weekly, only pick from the 50 IDs. If not, pick from NULL (all).
+        excluded_ids: allExcludes,
         included_ids: isWeeklyMode ? weeklySessionPool : null
     });
-    return (!error && data?.[0]) ? data[0] : null;
+
+    if (!error && data?.[0]) {
+        const question = data[0];
+        // 3. Add to pending so the NEXT parallel worker avoids this ID
+        pendingIds.push(question.id.toString());
+        return question;
+    }
+    
+    return null;
 }
 
 async function startGame() {
@@ -1777,9 +1810,7 @@ async function startWeeklyChallenge() {
         startTimer();
       
         // 3. NOW fill the rest while the user is reading
-        if (remainingQuestions.length > 0) {
-            preloadNextQuestions(3);
-        }
+        preloadNextQuestions(3);
   });
 }
 
@@ -1907,6 +1938,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
