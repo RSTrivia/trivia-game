@@ -1084,18 +1084,27 @@ function getLevel(xp) {
     if (!xp || xp <= 0) return 1;
     if (xp >= 100000) return 99;
 
-    // This formula is tuned so that Level 92 hits at exactly 50,000 XP
-    // and Level 99 hits at 100,000 XP.
-    // We use a power function: Level = constant * XP^(1/power)
-    
-    // Reverse check for the table:
+    const HALFWAY_XP = 50000;
+    const MAX_XP = 100000;
+
     for (let L = 1; L <= 99; L++) {
-        let threshold = Math.floor(Math.pow((L - 1) / 98, 3.1) * 100000);
-        if (xp < threshold) return L - 1;
+        let threshold;
+
+        if (L <= 92) {
+            // Updated to 3.1 to ensure Level 92 is exactly 50k 
+            // and Level 10 is near 200.
+            threshold = Math.floor(Math.pow((L - 1) / 91, 3.1) * HALFWAY_XP);
+        } else {
+            let n = L - 92; 
+            let baseGap = 3000;
+            let growth = 1381; 
+            threshold = HALFWAY_XP + (n * baseGap) + Math.floor((growth * n * (n - 1)) / 2);
+        }
+
+        if (xp < threshold) return Math.max(1, L - 1);
     }
     return 99;
 }
-
 
 function triggerFireworks() {
     const container = document.getElementById('game');
@@ -1872,6 +1881,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
