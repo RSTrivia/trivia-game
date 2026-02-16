@@ -495,33 +495,29 @@ async function handleAuthChange(event, session) {
             localStorage.removeItem('manual_logout');
             username = 'Guest';
             currentProfileXp = 0;
-            if (span) span.textContent = ' Guest';
-            if (label) label.textContent = 'Log In';
             // Clear all session-specific UI and storage
             localStorage.removeItem('lastDailyScore');
             localStorage.removeItem('dailyPlayedDate');
             localStorage.removeItem('cached_xp');
             localStorage.removeItem('cachedUsername');
             localStorage.removeItem('lastDailyMessage'); 
-            
-            lockDailyButton();
-             [shareBtn, logBtn].forEach(btn => {
-                      if (btn) {
-                    btn.classList.add('is-disabled');
-                    btn.style.opacity = '0.5';
-                    btn.style.pointerEvents = 'none';
-                }
-            });
         } else {
             // This handles the "waiting" state - show cache if it exists
-            username = localStorage.getItem('cachedUsername') || 'Guest';
-            currentProfileXp = parseInt(localStorage.getItem('cached_xp')) || 0;
+           username = 'Guest'; // Force 'Guest' instead of cached username
+           currentProfileXp = 0; // Force 0 XP for guests
         }
         if (span) span.textContent = 'Guest';
         if (label) label.textContent = 'Log In';
         //syncDailyButton();
         updateLevelUI()
         lockDailyButton();
+        [shareBtn, logBtn].forEach(btn => {
+           if (btn) {
+              btn.classList.add('is-disabled');
+              btn.style.opacity = '0.5';
+              btn.style.pointerEvents = 'none';
+            }
+        });
         return; // Stop here for guests
     }
     // 3. Handle LOGGED IN State
@@ -990,104 +986,105 @@ async function checkAnswer(choiceId, btn) {
         btn.classList.add('correct');
         score++;
         updateScore();
-
-        const xpData = res.xp_info;
-        // Check if xpData exists AND it's not null (Guest check)
-        if (xpData && xpData.new_xp !== undefined) { 
-            // Update local state with truth from DB
-            currentProfileXp = xpData.new_xp;
-            localStorage.setItem('cached_xp', currentProfileXp);
-            
-            updateLevelUI(); 
-            triggerXpDrop(res.xp_gained);
-
-            if (res.bonus_earned) {
-                showNotification("BONUS XP!", bonusBuffer, "#a335ee");
-            }
-
-            // Level Up logic
-            if (xpData.leveled_up) {
-                triggerFireworks();
-                showNotification(`LEVEL UP!`, levelUpBuffer, "#ffde00"); // (${xpData.new_level})
-
-                // Milestone notifications
-                if (xpData.new_level >= 10 && xpData.old_level < 10) showAchievementNotification("Reach Level 10");
-                if (xpData.new_level >= 50 && xpData.old_level < 50) showAchievementNotification("Reach Level 50");
-                if (xpData.new_level >= 99 && xpData.old_level < 99) showAchievementNotification("Reach Max Level");
-            }
-        }
-        // 2. NEW: Score Milestone Logic
-        // This only fires for Normal Mode
-        if (res.milestone) {
-            showAchievementNotification(res.milestone);
-        }
-      
-        // --- 2. INTEGRATED PET LOGIC ---
-        const petData = res.pet_info;
-        if (petData && petData.unlocked) {
-            
-            // Achievement: Unlock 1 Pet
-            if (petData.total_unlocked === 1) {
-                showAchievementNotification("Unlock 1 Pet");
-            }
-
-            // Achievement: Unlock all Pets
-            if (petData.is_all_pets) {
-                showAchievementNotification("Unlock all Pets");
-            }
-
-            // Update LocalStorage Cache
-            let currentCached = JSON.parse(localStorage.getItem('cached_pets') || "[]");
-            if (!currentCached.includes(petData.pet_id)) {
-                currentCached.push(petData.pet_id);
-                localStorage.setItem('cached_pets', JSON.stringify(currentCached));
-            }
-
-            // UI Feedback
-            showCollectionLogNotification(petData.pet_name);
-        }
-      
-        let instantID = null;
-        if (timeLeft >= 14) instantID = 777; // Lucky Guess
-        else if (timeLeft <= 1 && timeLeft > 0) instantID = 999; // Just in Time
-      
-        if (instantID) {
-            supabase.rpc('check_game_achievements', {
-                p_mode: 'instant',
-                p_score: parseInt(instantID, 10), // Explicitly force integer
-                p_time_ms: 0                      // Explicitly 0
-            }).then(({ data: results, error }) => {
-                if (error) console.error("Achievement RPC Error:", error.message);
-                if (results) {
-                    results.forEach(r => {
-                        if (r.is_new) showAchievementNotification(r.display_name);
-                    });
+        // 🛡️ THE "MASTER" GUEST CHECK
+        if (userId) {
+            const xpData = res.xp_info;
+            // Check if xpData exists AND it's not null (Guest check)
+            if (xpData && xpData.new_xp !== undefined) { 
+                // Update local state with truth from DB
+                currentProfileXp = xpData.new_xp;
+                localStorage.setItem('cached_xp', currentProfileXp);
+                
+                updateLevelUI(); 
+                triggerXpDrop(res.xp_gained);
+    
+                if (res.bonus_earned) {
+                    showNotification("BONUS XP!", bonusBuffer, "#a335ee");
                 }
-            });
-        }
-                          
-        // --- MID-GAME ACHIEVEMENT CHECK ---
-        // Only trigger RPC if they hit a specific milestone number
-        let shouldCheck = false;
-        if (isWeeklyMode && score === 25) shouldCheck = true;
-        if (isLiteMode && score === 50) shouldCheck = true;
-        
-        if (shouldCheck) {
-            // Fire and forget so the game flow isn't interrupted
-            supabase.rpc('check_game_achievements', {
-                p_mode: isWeeklyMode ? 'weekly' : 'lite',
-                p_score: score,
-                p_time_ms: Math.floor(Date.now() - gameStartTime)
-            }).then(({ data: results }) => {
-                if (results) {
-                    results.forEach(r => {
-                        // Only show if it's actually the first time (is_new)
-                        if (r.is_new) showAchievementNotification(r.display_name);
-                    });
+    
+                // Level Up logic
+                if (xpData.leveled_up) {
+                    triggerFireworks();
+                    showNotification(`LEVEL UP!`, levelUpBuffer, "#ffde00"); // (${xpData.new_level})
+    
+                    // Milestone notifications
+                    if (xpData.new_level >= 10 && xpData.old_level < 10) showAchievementNotification("Reach Level 10");
+                    if (xpData.new_level >= 50 && xpData.old_level < 50) showAchievementNotification("Reach Level 50");
+                    if (xpData.new_level >= 99 && xpData.old_level < 99) showAchievementNotification("Reach Max Level");
                 }
-            });
+            }
+              // 2. NEW: Score Milestone Logic
+              // This only fires for Normal Mode
+              if (res.milestone) {
+                  showAchievementNotification(res.milestone);
+              }
+            
+              // --- 2. INTEGRATED PET LOGIC ---
+              const petData = res.pet_info;
+              if (petData && petData.unlocked) {
+                  
+                  // Achievement: Unlock 1 Pet
+                  if (petData.total_unlocked === 1) {
+                      showAchievementNotification("Unlock 1 Pet");
+                  }
+      
+                  // Achievement: Unlock all Pets
+                  if (petData.is_all_pets) {
+                      showAchievementNotification("Unlock all Pets");
+                  }
+      
+                  // Update LocalStorage Cache
+                  let currentCached = JSON.parse(localStorage.getItem('cached_pets') || "[]");
+                  if (!currentCached.includes(petData.pet_id)) {
+                      currentCached.push(petData.pet_id);
+                      localStorage.setItem('cached_pets', JSON.stringify(currentCached));
+                  }
+      
+                  // UI Feedback
+                  showCollectionLogNotification(petData.pet_name);
+              }
+            
+              let instantID = null;
+              if (timeLeft >= 14) instantID = 777; // Lucky Guess
+              else if (timeLeft <= 1 && timeLeft > 0) instantID = 999; // Just in Time
+            
+              if (instantID) {
+                  supabase.rpc('check_game_achievements', {
+                      p_mode: 'instant',
+                      p_score: parseInt(instantID, 10), // Explicitly force integer
+                      p_time_ms: 0                      // Explicitly 0
+                  }).then(({ data: results, error }) => {
+                      if (error) console.error("Achievement RPC Error:", error.message);
+                      if (results) {
+                          results.forEach(r => {
+                              if (r.is_new) showAchievementNotification(r.display_name);
+                          });
+                      }
+                  });
+              }
+                                
+              // --- MID-GAME ACHIEVEMENT CHECK ---
+              // Only trigger RPC if they hit a specific milestone number
+              let shouldCheck = false;
+              if (isWeeklyMode && score === 25) shouldCheck = true;
+              if (isLiteMode && score === 50) shouldCheck = true;
+              
+              if (shouldCheck) {
+                  // Fire and forget so the game flow isn't interrupted
+                  supabase.rpc('check_game_achievements', {
+                      p_mode: isWeeklyMode ? 'weekly' : 'lite',
+                      p_score: score,
+                      p_time_ms: Math.floor(Date.now() - gameStartTime)
+                  }).then(({ data: results }) => {
+                      if (results) {
+                          results.forEach(r => {
+                              // Only show if it's actually the first time (is_new)
+                              if (r.is_new) showAchievementNotification(r.display_name);
+                          });
+                      }
+                  });
+              }
         }
-        
         setTimeout(loadQuestion, 1000);
     } else {
         // Wrong answer logic
@@ -1922,6 +1919,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
