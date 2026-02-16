@@ -209,8 +209,7 @@ let isLiteMode = false;
 let liteQuestions = []; // To store the shuffled subset
 let gameStartTime = 0;
 
-// ====== INITIAL UI SYNC ======
-// Replace your existing refreshAuthUI with this:
+
 async function syncDailySystem() {
   try {
     const { data: { session } } = await supabase.auth.getSession();
@@ -506,6 +505,7 @@ async function handleAuthChange(event, session) {
             localStorage.removeItem('cached_xp');
             localStorage.removeItem('cachedUsername');
             localStorage.removeItem('lastDailyMessage'); 
+            localStorage.removeItem('cached_level');
         }
       
         username = 'Guest'; // Force 'Guest' instead of cached username
@@ -553,12 +553,14 @@ async function handleAuthChange(event, session) {
             currentProfileXp = profile.xp || 0;
             // Access the daily_streak inside the achievements JSONB
             currentDailyStreak = profile.achievements?.daily_streak || 0;
+            const currentLevel = profile.level || 1;
           
             // Save to cache
             localStorage.setItem('cachedUsername', username);
             localStorage.setItem('cached_xp', currentProfileXp);
             localStorage.setItem('cached_daily_streak', currentDailyStreak); // Also cache it
-          
+            localStorage.setItem('cached_level', currentLevel);
+              
             // UI Update
             if (span) span.textContent = ' ' + username;
             updateLevelUI();
@@ -1084,37 +1086,10 @@ function updateLevelUI() {
     const xpBracket = document.getElementById('xpBracket');
     
     if (lvlNum && xpBracket) {
-        const safeXp = Number(currentProfileXp) || 0;
-        const currentLvl = getLevel(safeXp);
-        lvlNum.textContent = currentLvl;
-        xpBracket.textContent = `(${safeXp.toLocaleString()} XP)`;
+        lvlNum.textContent = level || 1;
+        xpBracket.textContent = `(${(xp || 0).toLocaleString()} XP)`;
     }
 }
-
-function getLevel(xp) {
-    if (!xp || xp <= 0) return 1;
-    if (xp >= 100000) return 99;
-  
-    const HALFWAY_XP = 50000;
-
-    for (let L = 1; L <= 99; L++) {
-        let threshold;
-
-        if (L <= 92) {
-            threshold = Math.floor(5.922 * Math.pow(L, 1.9925));
-        } else {
-            // Your Segment 2 Logic
-            let n = L - 92; 
-            let baseGap = 3000;
-            let growth = 1381; 
-            threshold = HALFWAY_XP + (n * baseGap) + Math.floor((growth * n * (n - 1)) / 2);
-        }
-
-        if (xp < threshold) return Math.max(1, L - 1);
-    }
-    return 99;
-}
-  
 
 function triggerFireworks() {
     const container = document.getElementById('game');
@@ -1887,6 +1862,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
