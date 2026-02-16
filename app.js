@@ -662,6 +662,7 @@ async function preloadNextQuestions(targetCount = 6) {
 }
 
 async function fetchAndBufferQuestion() {
+    console.log(`Worker fetching. Mode: ${isWeeklyMode ? 'Weekly' : 'Normal'}. Excludes:`, pendingIds);
     let questionData = null;
 
     try {
@@ -718,26 +719,24 @@ async function fetchDeterministicQuestion(qId) {
 
 // Helper: Fetch a random ID (Normal/Lite/Weekly)
 async function fetchRandomQuestion() {
-    // 1. Collect IDs already in the queue or being viewed
-    const excludeIds = preloadQueue.map(q => q.id.toString());
-    if (currentQuestion) excludeIds.push(currentQuestion.id.toString());
-
-    // 2. MERGE with pending IDs (the "Reservation" list)
-    // This prevents parallel workers from picking the same question
-    const allExcludes = [...new Set([...excludeIds, ...pendingIds])];
+    // Force everything to String for strict comparison
+    const queueIds = preloadQueue.map(q => String(q.id));
+    const currentId = currentQuestion ? [String(currentQuestion.id)] : [];
+    
+    // Combine them
+    const allExcludes = [...new Set([...queueIds, ...currentId, ...pendingIds])];
 
     const { data, error } = await supabase.rpc('get_random_question', {
-        excluded_ids: allExcludes,
+        excluded_ids: allExcludes, // Ensure your SQL expects an array of BIGINT or TEXT
         included_ids: isWeeklyMode ? weeklySessionPool : null
     });
 
     if (!error && data?.[0]) {
         const question = data[0];
-        // 3. Add to pending so the NEXT parallel worker avoids this ID
-        pendingIds.push(question.id.toString());
+        // Mark as pending as a STRING
+        pendingIds.push(String(question.id));
         return question;
     }
-    
     return null;
 }
 
@@ -1753,12 +1752,14 @@ function updateScore() {
 }
 
 async function startWeeklyChallenge() {
-    preloadQueue = [];
     gameEnding = false;
     isWeeklyMode = true;
     isDailyMode = false;
     isLiteMode = false;
+    pendingIds = []
     // RESET THESE HERE
+    // 2. CLEAR PRELOADS FOR NEW GAME
+    preloadQueue = [];
     weeklyQuestionCount = 0; 
     score = 0;
     streak = 0;
@@ -1779,9 +1780,7 @@ async function startWeeklyChallenge() {
         // Log this if the pool was already cached in the browser
         console.log("Using cached Weekly Pool IDs:", weeklySessionPool);
     }
-    
-    // 2. CLEAR PRELOADS FOR NEW GAME
-    preloadQueue = [];
+
 
     // 3. THE BARRIER (Wait for Question 1)
     if (preloadQueue.length === 0) {
@@ -1936,6 +1935,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
