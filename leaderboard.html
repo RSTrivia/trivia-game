@@ -152,8 +152,6 @@ function getLevel(xp) {
         let threshold;
 
         if (L <= 92) {
-            // New Power-Law Curve: 1 XP at L=1, 50,000 XP at L=92
-            // Formula: 1 + (49999 * ((L-1)/91)^2.5)
             threshold = Math.floor(5.922 * Math.pow(L, 1.9925));
         } else {
             // Your Segment 2 Logic
@@ -417,6 +415,7 @@ if(dailyTab) dailyTab.onclick = () => handleTabClick('daily', dailyTab);
 </script>
 </body>
 </html>
+
 
 
 
