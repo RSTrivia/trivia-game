@@ -133,8 +133,6 @@
       });
     }
 
-    if (authBtn) authBtn.onclick = handleAuthAction;
-
   // Open Modal
   helpBtn.onclick = () => {
     helpModal.classList.remove('hidden');
@@ -235,7 +233,7 @@
       </div>
         <!-- Fifth row: Login + Leaderboard -->
         <div class="row">
-         <button id="authBtn" class="btn-small" onclick="handleAuthAction()">
+         <button id="authBtn" class="btn-small">
             <span class="btn-label">Log In</span>
         </button>
           <a href="leaderboard.html" class="btn-small">Leaderboard</a>
@@ -376,6 +374,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
 
 
