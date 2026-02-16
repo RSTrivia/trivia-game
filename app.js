@@ -16,7 +16,7 @@ let isShowingNotification = false;
 let notificationQueue = [];
 let weeklySessionPool = [];
 let dailySessionPool = [];
-let firstQuestionSent = false; // Reset this when a match starts
+
 let userId = null; 
 let syncChannel;
 // Add this at the top of your script with your other global variables
@@ -325,9 +325,6 @@ async function init() {
       }
   };
 
-
-
-  
     // 3. Game Buttons
     if (startBtn) {
         startBtn.onclick = async () => {
@@ -1875,6 +1872,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
