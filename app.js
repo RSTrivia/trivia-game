@@ -666,8 +666,7 @@ async function preloadNextQuestions(targetCount = 6) {
 async function fetchAndBufferQuestion() {
     console.log(`Worker fetching. Mode: ${isWeeklyMode ? 'Weekly' : 'Normal'}. Excludes:`, pendingIds);
     let questionData = null;
-
-    let questionData = null;
+  
     try {
         if (isWeeklyMode) {
             // 1. Find IDs in the pool that haven't been used or queued yet
@@ -1936,6 +1935,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
