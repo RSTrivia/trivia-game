@@ -142,30 +142,6 @@ const liteTab = document.getElementById('liteTab');
 let currentMode = 'score'; 
 let realtimeSubscription = null; // Track the active listener
   
-function getLevel(xp) {
-    if (!xp || xp <= 0) return 1;
-    if (xp >= 100000) return 99;
-  
-    const HALFWAY_XP = 50000;
-
-    for (let L = 1; L <= 99; L++) {
-        let threshold;
-
-        if (L <= 92) {
-            threshold = Math.floor(5.922 * Math.pow(L, 1.9925));
-        } else {
-            // Your Segment 2 Logic
-            let n = L - 92; 
-            let baseGap = 3000;
-            let growth = 1381; 
-            threshold = HALFWAY_XP + (n * baseGap) + Math.floor((growth * n * (n - 1)) / 2);
-        }
-
-        if (xp < threshold) return Math.max(1, L - 1);
-    }
-    return 99;
-}
-  
 function formatLeaderboardTime(ms) {
     // Hide if 0, null, or the default "empty" values
     if (!ms || ms <= 0 || ms === 9999 || ms === 9999999) return "";
@@ -211,7 +187,7 @@ function updateLeaderboard(data) {
     
     if (currentMode === 'xp') {
       const xpValue = entry.val || 0;
-      const level = getLevel(entry.val);
+      const level = entry.level || 1;
       finalHTML = `${xpValue.toLocaleString()} <span style="font-size: 0.85em; opacity: 0.6;">(Lvl ${level})</span>`;
       
     } else if (currentMode === 'weekly' || currentMode === 'lite' || currentMode === 'daily') {
@@ -282,7 +258,7 @@ async function fetchLeaderboard() {
     query = supabase
       .from('public_profiles')
       // Added equipped_pet here
-      .select('username, val:xp, equipped_pet')
+      .select('username, val:xp, level, equipped_pet')
       .gt('xp', 0)
       .order('xp', { ascending: false });
   }
@@ -421,6 +397,7 @@ if(dailyTab) dailyTab.onclick = () => handleTabClick('daily', dailyTab);
 </script>
 </body>
 </html>
+
 
 
 
