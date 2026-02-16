@@ -1890,8 +1890,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-// 6. EVENT LISTENERS (The code you asked about)
-
 
 
 
