@@ -1673,7 +1673,8 @@ input.input-field:-webkit-autofill:active {
     object-fit: contain;
     image-rendering: auto;
     vertical-align: middle;
-  
+    /* This stops the mouse from interacting with it at all */
+    pointer-events: none;
     -webkit-user-drag: none;
     user-select: none;
     margin-left: 5px;
@@ -1744,4 +1745,5 @@ input.input-field:-webkit-autofill:active {
     to { opacity: 0; transform: scale(0.9); }
 }
 /*   -------------------------------------- */
+
 
