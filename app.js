@@ -715,26 +715,32 @@ async function fetchDeterministicQuestion(qId) {
     return (!error && data?.[0]) ? data[0] : null;
 }
 
-// Helper: Fetch a random ID (Normal/Lite/Weekly)
 async function fetchRandomQuestion() {
-    // Force everything to String for strict comparison
+    // 1. Force everything to String for strict comparison to avoid duplicates
     const queueIds = preloadQueue.map(q => String(q.id));
     const currentId = currentQuestion ? [String(currentQuestion.id)] : [];
     
-    // Combine them
+    // Combine them with pendingIds (which are already strings)
     const allExcludes = [...new Set([...queueIds, ...currentId, ...pendingIds])];
 
+    // 2. Determine if we should limit the search to a specific pool
+    // If Weekly or Daily is active, we only want to pull from their respective pools
+    let poolFilter = null;
+    if (isWeeklyMode) poolFilter = weeklySessionPool;
+    else if (isDailyMode) poolFilter = dailySessionPool;
+
     const { data, error } = await supabase.rpc('get_random_question', {
-        excluded_ids: allExcludes, // Ensure your SQL expects an array of BIGINT or TEXT
-        included_ids: isWeeklyMode ? weeklySessionPool : null
+        excluded_ids: allExcludes, 
+        included_ids: poolFilter // Sends the array if in pool mode, else null
     });
 
     if (!error && data?.[0]) {
         const question = data[0];
-        // Mark as pending as a STRING
+        // 3. Mark as pending to prevent other parallel workers from picking it
         pendingIds.push(String(question.id));
         return question;
     }
+    
     return null;
 }
 
@@ -1916,6 +1922,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
