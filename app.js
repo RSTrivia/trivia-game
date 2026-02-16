@@ -1728,7 +1728,7 @@ async function startWeeklyChallenge() {
   
     // 1. ENSURE THE POOL IS READY (We only fetch the 50 IDs, not the full data)
     if (weeklySessionPool.length === 0) {
-        const { data, error } = await supabase.rpc('get_weekly_questions');
+        const { data, error } = await supabase.rpc('get_weekly_questions', {});
         if (error) return alert("Error loading weekly pool.");
         weeklySessionPool = data.map(q => q.question_id);
       // --- VERIFICATION LOG ---
@@ -1899,6 +1899,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
