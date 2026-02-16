@@ -20,6 +20,8 @@ let userId = null;
 let syncChannel;
 // Add this at the top of your script with your other global variables
 let pendingIds = [];
+// NEW GLOBAL TRACKER
+let usedInThisSession = [];
 
 const RELEASE_DATE = '2025-12-22';
 const DAILY_LIMIT = 10;
@@ -665,31 +667,31 @@ async function fetchAndBufferQuestion() {
     console.log(`Worker fetching. Mode: ${isWeeklyMode ? 'Weekly' : 'Normal'}. Excludes:`, pendingIds);
     let questionData = null;
 
+    let questionData = null;
     try {
-        if (isDailyMode) {
+        if (isWeeklyMode) {
+            // 1. Find IDs in the pool that haven't been used or queued yet
+            const queuedIds = preloadQueue.map(q => q.id);
+            const availableIds = weeklySessionPool.filter(id => 
+                !queuedIds.includes(id) && 
+                !usedInThisSession.includes(id) &&
+                (currentQuestion ? currentQuestion.id !== id : true)
+            );
+
+            if (availableIds.length > 0) {
+                // 2. Pick one IMMEDIATELY and mark it as used
+                const pick = availableIds[Math.floor(Math.random() * availableIds.length)];
+                usedInThisSession.push(pick); 
+                
+                // 3. Now fetch that SPECIFIC ID (Deterministic)
+                questionData = await fetchDeterministicQuestion(pick);
+            }
+        else if (isDailyMode) {
             if (remainingQuestions.length > 0) {
                 const qId = remainingQuestions.shift();
                 questionData = await fetchDeterministicQuestion(qId);
             } else {
               questionData = await fetchRandomQuestion();
-            }
-        } else {
-            // 1. Get IDs currently in the queue + the current question
-            const excludeIds = preloadQueue.map(q => q.id.toString());
-            if (currentQuestion) excludeIds.push(currentQuestion.id.toString());
-            
-            // 2. ALSO exclude IDs that are currently being fetched by other workers
-            const allExcludes = [...excludeIds, ...pendingIds];
-
-            const { data, error } = await supabase.rpc('get_random_question', {
-                excluded_ids: allExcludes,
-                included_ids: isWeeklyMode ? weeklySessionPool : null
-            });
-
-            if (data && data[0]) {
-                questionData = data[0];
-                // 3. Mark this ID as "pending" so other workers don't grab it
-                pendingIds.push(questionData.id.toString());
             }
         }
 
@@ -1757,9 +1759,8 @@ async function startWeeklyChallenge() {
     isDailyMode = false;
     isLiteMode = false;
     pendingIds = []
-    // RESET THESE HERE
-    // 2. CLEAR PRELOADS FOR NEW GAME
     preloadQueue = [];
+    usedInThisSession = [];
     weeklyQuestionCount = 0; 
     score = 0;
     streak = 0;
@@ -1935,6 +1936,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
