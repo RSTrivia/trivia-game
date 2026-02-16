@@ -247,7 +247,7 @@ async function fetchLeaderboard() {
     query = supabase
       .from('scores')
       // Added profiles(equipped_pet) here
-      .select('username, val:score, time_ms, public_profiles!user_id(equipped_pet)')
+      .select('username, val:score, time_ms)
       .gt('score', 0)
       .order('score', { ascending: false })
       .order('time_ms', { ascending: true });
@@ -256,7 +256,7 @@ async function fetchLeaderboard() {
     query = supabase
       .from('scores')
       // Added profiles(equipped_pet) here
-      .select('username, lite_data, public_profiles!user_id(equipped_pet)')
+      .select('username, lite_data)
       .not('lite_data', 'is', null)
       .gt('lite_data->score', 0)
       .order('lite_data->score', { ascending: false })
@@ -265,7 +265,7 @@ async function fetchLeaderboard() {
     query = supabase
       .from('scores')
       // Added profiles(equipped_pet) here
-     .select('username, weekly_data, public_profiles!user_id(equipped_pet)')
+     .select('username, weekly_data)
       .not('weekly_data', 'is', null)
       .gt('weekly_data->score', 0)
       .order('weekly_data->score', { ascending: false })
@@ -273,7 +273,7 @@ async function fetchLeaderboard() {
   } else if (currentMode === 'daily') {
     query = supabase
       .from('scores')
-      .select('username, daily_data, public_profiles!user_id(equipped_pet)')
+      .select('username, daily_data)
       .not('daily_data', 'is', null)
       .gt('daily_data->score', 0)
       .order('daily_data->score', { ascending: false })
@@ -290,15 +290,30 @@ async function fetchLeaderboard() {
   const { data, error } = await query.limit(10);
   if (error) return console.error(error);
 
-// Formatting the data so the updateLeaderboard function understands it
-  const formattedData = data.map(entry => {
-    // If the data came from the scores join, the pet is nested
-    const pet = entry.public_profiles ? entry.public_profiles.equipped_pet : entry.equipped_pet;
-    return {
-      ...entry,
-      equipped_pet: pet
-    };
-  });
+
+  let formattedData = data;
+
+  // The "Manual Join" for Pets (Only if not in XP mode)
+  if (currentMode !== 'xp' && data.length > 0) {
+    const usernames = data.map(entry => entry.username);
+    
+    // Fetch pets for these 10 users from the public view
+    const { data: petData, error: petError } = await supabase
+      .from('public_profiles')
+      .select('username, equipped_pet')
+      .in('username', usernames);
+
+    if (!petError && petData) {
+      // Merge the pet data into our score rows
+      formattedData = data.map(entry => {
+        const userProfile = petData.find(p => p.username === entry.username);
+        return {
+          ...entry,
+          equipped_pet: userProfile ? userProfile.equipped_pet : null
+        };
+      });
+    }
+  }
   
   if (formattedData) {
     localStorage.setItem(`leaderboard_${currentMode}`, JSON.stringify(formattedData));
@@ -406,6 +421,7 @@ if(dailyTab) dailyTab.onclick = () => handleTabClick('daily', dailyTab);
 </script>
 </body>
 </html>
+
 
 
 
