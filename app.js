@@ -23,6 +23,9 @@ let syncChannel;
 let pendingIds = [];
 // NEW GLOBAL TRACKER
 let usedInThisSession = [];
+let achievementNotificationTimeout = null;
+// 1. Create a variable outside the function to track the timer
+let petNotificationTimeout = null;
 
 const RELEASE_DATE = '2025-12-22';
 const DAILY_LIMIT = 10;
@@ -589,10 +592,10 @@ function lockDailyButton() {
 
 function lockWeeklyButton() {
     if (!weeklyBtn) return;
-    weeklyBtn.classList.add('is-disabled'); // fix ??
+    weeklyBtn.classList.add('is-disabled');
     weeklyBtn.classList.remove('is-active');
-    //weeklyBtn.style.opacity = '0.5';
-    //weeklyBtn.style.pointerEvents = 'none'; // Makes it ignore all clicks/touches
+    weeklyBtn.style.opacity = '0.5';
+    weeklyBtn.style.pointerEvents = 'none';
     
 }
 
@@ -608,10 +611,7 @@ function resetGame() {
     currentQuestion = null;
     streak = 0;
     weeklyQuestionCount = 0;
-    dailyQuestionCount = 0; // Don't forget this!
-    // 4. WIPE UI IMMEDIATELY
-    //questionText.textContent = '';
-    //answersBox.innerHTML = '';
+    dailyQuestionCount = 0; 
 
     // 5. Reset Timer Visuals
     timeLeft = 15;
@@ -620,24 +620,6 @@ function resetGame() {
     
     // 6. Reset Score Visual
     if (scoreDisplay) scoreDisplay.textContent = `Score: 0`;
-    // 7. Image cleanup
-    // Don't set a Base64 src here, just hide it and clear the src.
-   
-    // 7. Image cleanup
-  
-    // 8. Title cleanup
-    //const gameOverTitle = document.getElementById('game-over-title');
-    //const gzTitle = document.getElementById('gz-title');
-    //if (gameOverTitle && !isWeeklyMode) {
-        //gameOverTitle.classList.add('hidden');
-        //gameOverTitle.textContent = ""; // Clear text too
-    //}
-    //if (gzTitle) {
-        //gzTitle.classList.add('hidden');
-       // gzTitle.textContent = "";
-    //}
-    
-    //if (weeklyTimeContainer && !isWeeklyMode) weeklyTimeContainer.style.display = 'none';
 }
 
 
@@ -760,13 +742,13 @@ dailySessionPool = [];
   currentQuestion = null;
   updateScore();
   resetGame();
-// 1. CONDITIONAL CLEAR
-    // Only clear if we have nothing. If we have items, the game starts INSTANTLY.
-    if (preloadQueue.length === 0) {
-        await preloadNextQuestions(1); 
-    }
+  // 1. CONDITIONAL CLEAR
+  // Only clear if we have nothing. If we have items, the game starts INSTANTLY.
+  if (preloadQueue.length === 0) {
+      await preloadNextQuestions(1); 
+  }
   
-await loadQuestion(true);
+  await loadQuestion(true);
  
   // 4. WAIT FOR IMAGE TO BE READY FOR DISPLAY
     if (currentQuestion && currentQuestion.question_image) {
@@ -927,17 +909,6 @@ function startTimer() {
       handleTimeout();
     }
   }, 1000);
-}
-
-function stopTickSound() {
-    if (activeTickSource) {
-        try {
-            activeTickSource.stop();
-        } catch (e) {
-            // Handle cases where it already stopped
-        }
-        activeTickSource = null;
-    }
 }
 
 async function handleTimeout() {
@@ -1149,8 +1120,6 @@ function showNotification(message, soundToPlay = null, color = "#ffde00") {
     });
     processQueue();
 }
-// Add this right after your function definition in your JS file
-window.showNotification = showNotification;
 
 function processQueue() {
     if (isShowingNotification || notificationQueue.length === 0) return;
@@ -1602,9 +1571,6 @@ if (shareBtn) {
 }
 
 
-// 1. Create a variable outside the function to track the timer
-let petNotificationTimeout = null;
-
 function showCollectionLogNotification(petName) {
     let modal = document.getElementById('pet-modal');
     
@@ -1672,7 +1638,6 @@ function showCollectionLogNotification(petName) {
     }, displayTime); 
 }
 
-let achievementNotificationTimeout = null;
 
 function showAchievementNotification(achievementName) {
     let modal = document.getElementById('achievement-modal');
@@ -1710,50 +1675,6 @@ function showAchievementNotification(achievementName) {
         modal.classList.remove('active');
         achievementNotificationTimeout = null;
     }, displayTime); 
-}
-
-// ====== HELPERS & AUDIO ======
-async function loadSounds() {
-    if (!correctBuffer) correctBuffer = await loadAudio('./sounds/correct.mp3');
-    if (!wrongBuffer) wrongBuffer = await loadAudio('./sounds/wrong.mp3');
-    if (!tickBuffer) tickBuffer = await loadAudio('./sounds/tick.mp3');
-    if (!levelUpBuffer) levelUpBuffer = await loadAudio('./sounds/level.mp3');
-    if (!bonusBuffer) bonusBuffer = await loadAudio('./sounds/bonus.mp3');
-    if (!petBuffer) petBuffer = await loadAudio('./sounds/pet.mp3');
-    if (!achieveBuffer) achieveBuffer = await loadAudio('./sounds/achievement.mp3');
-}
-
-async function loadAudio(url) {
-    const resp = await fetch(url);
-    const buf = await resp.arrayBuffer();
-    return audioCtx.decodeAudioData(buf);
-}
-
-function playSound(buffer, loop = false) {
-    if (!buffer || muted) return;
-    
-    // 🔥 On mobile, we must resume inside the play call too 
-    // just in case the context auto-suspended
-    if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-    }
-
-    const source = audioCtx.createBufferSource();
-    source.buffer = buffer;
-    source.loop = loop; // Enable looping for the 3-second alarm
-  
-    const gain = audioCtx.createGain();
-    gain.gain.value = 0.6;
-  
-    source.connect(gain).connect(audioCtx.destination);
-    source.start(0); // Add the 0 for older mobile browser compatibility
-    return source; // Return this so we can call .stop()
-}
-
-function updateScore() {
-    if (scoreDisplay) {
-        scoreDisplay.textContent = `Score: ${score}`;
-    }
 }
 
 async function startWeeklyChallenge() {
@@ -1871,21 +1792,60 @@ async function startDailyChallenge(session) {
     });
 }
 
-function shuffleWithSeed(array, seed) {
-    let arr = [...array];
-    let m = arr.length, t, i;
-    while (m) {
-        i = Math.floor(seededRandom(seed++) * m--);
-        t = arr[m]; arr[m] = arr[i]; arr[i] = t;
+// ====== HELPERS & AUDIO ======
+async function loadSounds() {
+    if (!correctBuffer) correctBuffer = await loadAudio('./sounds/correct.mp3');
+    if (!wrongBuffer) wrongBuffer = await loadAudio('./sounds/wrong.mp3');
+    if (!tickBuffer) tickBuffer = await loadAudio('./sounds/tick.mp3');
+    if (!levelUpBuffer) levelUpBuffer = await loadAudio('./sounds/level.mp3');
+    if (!bonusBuffer) bonusBuffer = await loadAudio('./sounds/bonus.mp3');
+    if (!petBuffer) petBuffer = await loadAudio('./sounds/pet.mp3');
+    if (!achieveBuffer) achieveBuffer = await loadAudio('./sounds/achievement.mp3');
+}
+
+async function loadAudio(url) {
+    const resp = await fetch(url);
+    const buf = await resp.arrayBuffer();
+    return audioCtx.decodeAudioData(buf);
+}
+
+function playSound(buffer, loop = false) {
+    if (!buffer || muted) return;
+    
+    // 🔥 On mobile, we must resume inside the play call too 
+    // just in case the context auto-suspended
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
     }
-    return arr;
+
+    const source = audioCtx.createBufferSource();
+    source.buffer = buffer;
+    source.loop = loop; // Enable looping for the 3-second alarm
+  
+    const gain = audioCtx.createGain();
+    gain.gain.value = 0.6;
+  
+    source.connect(gain).connect(audioCtx.destination);
+    source.start(0); // Add the 0 for older mobile browser compatibility
+    return source; // Return this so we can call .stop()
 }
 
-function seededRandom(seed) {
-    let x = Math.sin(seed) * 10000;
-    return x - Math.floor(x);
+function stopTickSound() {
+    if (activeTickSource) {
+        try {
+            activeTickSource.stop();
+        } catch (e) {
+            // Handle cases where it already stopped
+        }
+        activeTickSource = null;
+    }
 }
 
+function updateScore() {
+    if (scoreDisplay) {
+        scoreDisplay.textContent = `Score: ${score}`;
+    }
+}
 
 // ====== MOBILE TAP FEEDBACK (THE FLASH) ======
 document.addEventListener('DOMContentLoaded', () => {
@@ -1919,6 +1879,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
