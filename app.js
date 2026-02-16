@@ -1511,9 +1511,6 @@ if (shareBtn) {
         // Pull the streak we just saved in handleAuthChange
         const currentStreak = localStorage.getItem('cached_daily_streak') || "0";
       
-        // Calculate edition on the fly
-        const dailyNum = getDailyEditionNumber();
-      
         const dateStr = new Date().toLocaleDateString('en-US', { 
             month: 'short', 
             day: 'numeric', 
@@ -1524,7 +1521,7 @@ if (shareBtn) {
         const totalQs = 10;
         const grid = "🟩".repeat(currentScore) + "🟥".repeat(totalQs - currentScore);
 
-        const shareText = `OSRS Trivia ${dailyNum}  ${currentScore}/${totalQs} ⚔️\n` +
+        const shareText = `OSRS Trivia ${window.currentDailyEdition}  ${currentScore}/${totalQs} ⚔️\n` +
                           `${grid}\n` +
                           `Streak: ${currentStreak} 🔥\n`;
                           //`https://osrstrivia.pages.dev/`;
@@ -1725,12 +1722,6 @@ async function startWeeklyChallenge() {
   });
 }
 
-function getDailyEditionNumber() {
-    const startDate = new Date(RELEASE_DATE); 
-    const diffTime = Math.abs(new Date() - startDate);
-    return Math.floor(diffTime / (1000 * 60 * 60 * 24));
-}
-
 async function startDailyChallenge(session) {
     gameEnding = false;
     isDailyMode = true;
@@ -1756,8 +1747,11 @@ async function startDailyChallenge(session) {
         console.error(questionsRes.error);
         return alert("Error loading daily questions.");
     }
-    // 2. SET THE POOL (Extracting just the IDs)
-    // We shuffle them so the order is random for this specific user
+    // 2. SET THE POOL & SAVE THE EDITION
+    // Grab the edition number from the first row (they are all the same)
+    const dailyEdition = questionsRes.data[0].edition_number;
+    // Store it globally or in a variable for your Share Screen/UI
+    window.currentDailyEdition = dailyEdition;
     dailySessionPool = questionsRes.data.map(q => q.question_id).sort(() => Math.random() - 0.5);
   
     // Tell the DB: "This is a new game, start my streak at 0"
@@ -1879,6 +1873,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
