@@ -668,11 +668,12 @@ async function fetchAndBufferQuestion() {
     let questionData = null;
     
     try {
-        // 1. Determine which pool to use
-        const activePool = isWeeklyMode ? weeklySessionPool : (isDailyMode ? dailySessionPool : null);
+        // 1. Identify if we are in a "Pool" mode
+        const isPoolMode = isWeeklyMode || isDailyMode;
+        const activePool = isWeeklyMode ? weeklySessionPool : dailySessionPool;
 
-        if (activePool && activePool.length > 0) {
-            // 2. Filter out what is already in the queue or already answered
+        // 2. Logic for Pool Modes (Weekly/Daily)
+        if (isPoolMode) {
             const queuedIds = preloadQueue.map(q => q.id);
             const availableIds = activePool.filter(id => 
                 !queuedIds.includes(id) && 
@@ -681,26 +682,18 @@ async function fetchAndBufferQuestion() {
             );
 
             if (availableIds.length > 0) {
-                // 3. Pick the next one. 
-                // Note: For Daily/Weekly, we usually want to follow the pool order or pick randomly from it.
-                // Using availableIds[0] follows your 'remainingQuestions.shift()' logic.
                 const pick = availableIds[0]; 
-                
-                // Mark as used so the next parallel worker doesn't grab the same ID
                 usedInThisSession.push(pick); 
-                
-                // 4. Fetch the specific data
                 questionData = await fetchDeterministicQuestion(pick);
-            } else if (!isDailyMode && !isWeeklyMode) {
-                // If the pool is exhausted but we aren't in a fixed-limit mode, fallback
-                questionData = await fetchRandomQuestion();
-            }
-        } else {
-            // 5. Standard Random Mode (Lite or Normal)
+            } 
+            // If the pool is empty, Pool Mode just ends (no fallback to random)
+        } 
+        // 3. Logic for Normal / Lite Mode
+        else {
             questionData = await fetchRandomQuestion();
         }
 
-        // 6. Image Warming & Queue Push
+        // 4. Image Warming & Queue Push
         if (questionData) {
             if (questionData.question_image) {
                 const img = new Image();
@@ -708,10 +701,7 @@ async function fetchAndBufferQuestion() {
                 img.decode().catch(() => {});
                 questionData._preloadedImg = img;
             }
-
             preloadQueue.push(questionData);
-            
-            // Clean up pending list
             pendingIds = pendingIds.filter(id => id !== questionData.id.toString());
         }
     } catch (err) {
@@ -1926,6 +1916,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 6. EVENT LISTENERS (The code you asked about)
+
 
 
 
