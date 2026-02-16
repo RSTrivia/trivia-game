@@ -280,7 +280,7 @@ async function fetchLeaderboard() {
       .order('daily_data->time', { ascending: true });
   } else {
     query = supabase
-      .from('profiles')
+      .from('public_profiles')
       // Added equipped_pet here
       .select('username, val:xp, equipped_pet')
       .gt('xp', 0)
@@ -290,27 +290,19 @@ async function fetchLeaderboard() {
   const { data, error } = await query.limit(10);
   if (error) return console.error(error);
 
-  // --- MANUAL PET FETCH ---
-    // If we found scores and we aren't in XP mode (where we already have the pet),
-    // go get the pets for these specific usernames.
-    if (data && data.length > 0 && currentMode !== 'xp') {
-      const names = data.map(d => d.username);
-      const { data: petProfiles } = await supabase
-        .from('profiles')
-        .select('username, equipped_pet')
-        .in('username', names);
+// Formatting the data so the updateLeaderboard function understands it
+  const formattedData = data.map(entry => {
+    // If the data came from the scores join, the pet is nested
+    const pet = entry.public_profiles ? entry.public_profiles.equipped_pet : entry.equipped_pet;
+    return {
+      ...entry,
+      equipped_pet: pet
+    };
+  });
   
-      if (petProfiles) {
-        data.forEach(entry => {
-          const found = petProfiles.find(p => p.username === entry.username);
-          entry.equipped_pet = found ? found.equipped_pet : null;
-        });
-      }
-    }
-  
-  if (data) {
-    localStorage.setItem(`leaderboard_${currentMode}`, JSON.stringify(data));
-    updateLeaderboard(data);
+  if (formattedData) {
+    localStorage.setItem(`leaderboard_${currentMode}`, JSON.stringify(formattedData));
+    updateLeaderboard(formattedData);
   }
 }
 
@@ -338,9 +330,10 @@ async function subscribeToLeaderboard() {
     // LISTENER 1: Your original logic (Score or XP updates)
     realtimeSubscription.on(
         'postgres_changes', 
-        { event: '*', schema: 'public', table: tableToWatch }, 
+       { event: 'UPDATE', schema: 'public', table: 'profiles' },
         (payload) => {
-            fetchLeaderboard(); 
+          if (payload.new && payload.new.equipped_pet !== undefined) {
+            fetchLeaderboard(); // Refresh when someone changes their pet
         }
     );
 
@@ -415,6 +408,7 @@ if(dailyTab) dailyTab.onclick = () => handleTabClick('daily', dailyTab);
 </script>
 </body>
 </html>
+
 
 
 
