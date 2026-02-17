@@ -1774,7 +1774,7 @@ input.input-field:-webkit-autofill:active {
 #discordBtn {
   position: absolute !important;
   top: 6px;     /* Aligned with Help button */
-  right: 36px;  /* Positioned to the left of Help (3px + 26px + 7px gap) */
+  right: 60px;  /* Positioned to the left of Help (3px + 26px + 7px gap) */
   width: 24px; 
   height: 24px;
   z-index: 100;
@@ -1813,6 +1813,7 @@ input.input-field:-webkit-autofill:active {
 
 
 /*   -------------------------------------- */
+
 
 
 
