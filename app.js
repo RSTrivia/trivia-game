@@ -17,6 +17,7 @@ let isShowingNotification = false;
 let notificationQueue = [];
 let weeklySessionPool = [];
 let dailySessionPool = [];
+let gridPattern = "";
 
 let userId = null; 
 let syncChannel;
@@ -950,7 +951,7 @@ async function checkAnswer(choiceId, btn) {
     if (timeLeft <= 0) return;
     clearInterval(timer);
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
-
+   
     if (isWeeklyMode) weeklyQuestionCount++;
     if (isDailyMode) dailyQuestionCount++;
 
@@ -964,15 +965,31 @@ async function checkAnswer(choiceId, btn) {
     });
 
     if (rpcErr) return console.error("RPC Error:", rpcErr);
-
-     // Sync local streak with DB Truth
-        streak = res.new_streak;
+    // Sync local streak with DB Truth
+    streak = res.new_streak;
 
     if (res.correct) {
         playSound(correctBuffer);
         btn.classList.add('correct');
         score++;
         updateScore();
+        // --- NEW: DAILY GRID PATTERN LOGIC ---
+          if (isDailyMode) {
+             // 1. Map the question number to the correct string index
+              let patternArray = gridPattern.split('');
+              let index = dailyQuestionCount - 1; 
+          
+              // 2. Flip the 0 to a 1
+              patternArray[index] = "1";
+              gridPattern = patternArray.join('');
+          
+              // 3. Update the DB immediately
+              // Using .match ensures we hit the specific attempt for today
+              await supabase
+                  .from('daily_attempts')
+                  .update({ grid_pattern: gridPattern })
+                  .match({ user_id: userId, attempt_date: todayStr });
+          }
         // 🛡️ THE "MASTER" GUEST CHECK
         if (userId) {
             const xpData = res.xp_info; // This is the JSON object from add_user_xp
@@ -1537,11 +1554,23 @@ if (shareBtn) {
         });
 
         // 4. Build the Grid
+        // 4. FETCH THE REAL PATTERN FROM DB
+        const { data: attemptData } = await supabase
+            .from('daily_attempts')
+            .select('grid_pattern')
+            .match({ user_id: session.user.id, attempt_date: todayStr })
+            .single();
+        
+        const pattern = attemptData?.grid_pattern || "0000000000";
+        // This maps '1' to 🟩 and '0' to 🟥 based on the exact order of play
+        const dynamicGrid = pattern.split('')
+            .map(bit => bit === "1" ? "🟩" : "🟥")
+            .join('');
+      
         const totalQs = 10;
-        const grid = "🟩".repeat(currentScore) + "🟥".repeat(totalQs - currentScore);
 
         const shareText = `OSRS Trivia ${dailyEdition}  ${currentScore}/${totalQs} ⚔️\n` +
-                          `${grid}\n` +
+                          `${dynamicGrid}\n` +
                           `Streak: ${currentStreak} 🔥\n`;
                           //`https://osrstrivia.pages.dev/`;
    
@@ -1742,6 +1771,7 @@ async function startWeeklyChallenge() {
 }
 
 async function startDailyChallenge(session) {
+    gridPattern = "0000000000";
     gameEnding = false;
     isDailyMode = true;
     isWeeklyMode = false;
@@ -1755,7 +1785,8 @@ async function startDailyChallenge(session) {
     const [burnRes, questionsRes] = await Promise.all([
         supabase.from('daily_attempts').insert({ 
             user_id: session.user.id, 
-            attempt_date: todayStr 
+            attempt_date: todayStr,
+            grid_pattern: gridPattern
         }),
         supabase.rpc('get_daily_questions') // The new logic happens here!
     ]);
@@ -1884,6 +1915,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
