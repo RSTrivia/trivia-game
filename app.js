@@ -1084,15 +1084,45 @@ async function checkAnswer(choiceId, btn) {
 function updateLevelUI() {
     const lvlNum = document.getElementById('levelNumber');
     const xpBracket = document.getElementById('xpBracket');
-    
-    if (lvlNum && xpBracket) {
-      if (lvlNum) {
-        lvlNum.textContent = localStorage.getItem('cached_level') || 1;
-      }
-      let safeXp = currentProfileXp || 0;
-      if (xpBracket) {
-        xpBracket.textContent = `(${safeXp.toLocaleString()} XP)`;
+    if (!lvlNum || !xpBracket) return;
+  // 1. Set Initial Value (from Cache or passed Level)
+    const displayLevel = forcedLevel || localStorage.getItem('cached_level') || 1;
+    const displayXp = currentProfileXp || 0;
+  
+    lvlNum.textContent = displayLevel;
+    xpBracket.textContent = `(${displayXp.toLocaleString()} XP)`;
+  
+    // 2. If we aren't "forced" and we have a user, let's verify with the DB
+    // We only do this if a fetch isn't already running (optional optimization)
+    if (!forcedLevel && userId) {
+        syncLevelFromDB(); 
+    }
+}
+
+async function syncLevelFromDB() {
+    try {
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('level, xp')
+            .eq('id', userId)
+            .single();
+
+        if (data && !error) {
+            // Update globals
+            currentProfileXp = data.xp;
+            
+            // Update Cache
+            localStorage.setItem('cached_level', data.level);
+            localStorage.setItem('cached_xp', data.xp);
+
+            // Update UI quietly without re-triggering the sync
+            const lvlNum = document.getElementById('levelNumber');
+            const xpBracket = document.getElementById('xpBracket');
+            if (lvlNum) lvlNum.textContent = data.level;
+            if (xpBracket) xpBracket.textContent = `(${data.xp.toLocaleString()} XP)`;
         }
+    } catch (err) {
+        console.error("Failed to sync level truth:", err);
     }
 }
 
@@ -1867,6 +1897,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
