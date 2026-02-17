@@ -515,10 +515,10 @@ h1 {
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  /* THE MATCHING GOLD FILTER (From your icon-group buttons) */
-    filter: sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85);
-    opacity: 0.9;
-    transition: filter 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
+ /* REFINED BASE FILTER: Lower saturation and brightness for a "dimmer" look */
+    filter: sepia(1) saturate(1.2) hue-rotate(-18deg) brightness(0.75);
+    opacity: 0.8; /* Slightly more transparent when idle */
+    transition: filter 0.3s ease, opacity 0.3s ease, transform 0.2s ease;
 }
 
 /* Adjust the icon size and look */
@@ -527,7 +527,7 @@ h1 {
   font-size: 1.1rem !important;
   line-height: 1.5;
   filter: drop-shadow(0px 1px 1px rgba(0,0,0,0.8)) !important;
-  color: #fff;
+  color: #ffffff;
 }
 
 #helpBtn:hover .gold-text-icon {
@@ -536,20 +536,18 @@ h1 {
   transition: filter 0.2s ease;
 }
 
-/* MATCHING HOVER LOGIC (Bright Flash + Glow) */
 @media (hover: hover) {
     #helpBtn:hover {
         opacity: 1 !important;
-        /* Matches your #shareBtn:hover filter exactly */
+        /* Returns to the full vibrant gold on hover */
         filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.2) drop-shadow(0 0 5px #ffea8a) !important;
     }
 }
 
-/* MATCHING ACTIVE/TAP STATE */
+/* ACTIVE / TAP */
 #helpBtn:active {
-    filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.3) drop-shadow(0 0 8px #ffea8a) !important;
+    filter: sepia(1) saturate(3.5) hue-rotate(-18deg) brightness(1.3) !important;
     transform: scale(0.9);
-    opacity: 1 !important;
     transition: 0s !important;
 }
 
@@ -1762,6 +1760,7 @@ input.input-field:-webkit-autofill:active {
     to { opacity: 0; transform: scale(0.9); }
 }
 /*   -------------------------------------- */
+
 
 
 
