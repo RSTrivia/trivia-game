@@ -528,7 +528,6 @@ h1 {
   line-height: 1.5;
   /* Darker drop shadow for better metallic "pop" */
   filter: drop-shadow(0px 1px 2px rgba(0,0,0,0.9)) !important;
-  color: #ffffff;
 }
 
 #helpBtn:hover .gold-text-icon {
@@ -1762,6 +1761,7 @@ input.input-field:-webkit-autofill:active {
     to { opacity: 0; transform: scale(0.9); }
 }
 /*   -------------------------------------- */
+
 
 
 
