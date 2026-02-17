@@ -1744,6 +1744,7 @@ async function startDailyChallenge(session) {
     usedInThisSession = [];
     score = 0;
     streak = 0;
+    resetGame();
     // 1. BURN ATTEMPT & FETCH DAILY IDs FROM RPC
     const [burnRes, questionsRes] = await Promise.all([
         supabase.from('daily_attempts').insert({ 
@@ -1759,7 +1760,7 @@ async function startDailyChallenge(session) {
         console.error(questionsRes.error);
         return alert("Error loading daily questions.");
     }
-    dailySessionPool = questionsRes.data.map(q => q.question_id);
+    dailySessionPool = questionsRes.data.map(q => Number(q.question_id));
   
     // Tell the DB: "This is a new game, start my streak at 0"
     await supabase.rpc('reset_my_streak');
@@ -1771,7 +1772,7 @@ async function startDailyChallenge(session) {
     await preloadNextQuestions(1); // Modified to accept a 'count'
     
     // 6. UI TRANSITION (Only happens once data is ready)
-    resetGame();
+    
   
     await loadQuestion(true);
   
@@ -1876,6 +1877,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
