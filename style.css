@@ -1769,51 +1769,6 @@ input.input-field:-webkit-autofill:active {
 /*   -------------------------------------- */
 
 
-/*   -------------------------------------- */
-/* Discord Button Wrapper */
-#discordBtn {
-  position: absolute !important;
-  top: 6px;     /* Aligned with Help button */
-  right: 60px;  /* Positioned to the left of Help (3px + 26px + 7px gap) */
-  width: 24px; 
-  height: 24px;
-  z-index: 100;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-decoration: none;
-
-  /* THE MATTE BRONZE FILTER (Matches your Help button) */
-  filter: sepia(1) saturate(3.5) hue-rotate(-38deg) brightness(0.65) contrast(0.9);
-  opacity: 0.85; 
-  transition: all 0.3s ease;
-}
-
-/* The Image inside */
-.discord-icon-img {
-  width: 20px;
-  height: auto;
-  display: block;
-}
-
-/* HOVER: Polished Bronze effect */
-@media (hover: hover) {
-    #discordBtn:hover {
-        opacity: 1 !important;
-        filter: sepia(1) saturate(4.5) hue-rotate(-30deg) brightness(0.85) contrast(1) !important;
-        transform: scale(1.05);
-    }
-}
-
-/* CLICK: Press effect */
-#discordBtn:active {
-    transform: scale(0.9);
-    filter: sepia(1) saturate(5) hue-rotate(-25deg) brightness(1) !important;
-}
-
-
-/*   -------------------------------------- */
-
 
 
 
