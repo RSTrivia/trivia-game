@@ -522,39 +522,19 @@ h1 {
 }
 
 /* Adjust the icon size and look */
-/* Adjust the icon size and look */
 .gold-text-icon {
-  font-weight: 900;
-  font-size: 1.1rem !important;
-  line-height: 1.5;
-  /* Swapped to deeper, more muted gold tones */
-  background: linear-gradient(to bottom, #d4af37 0%, #b8860b 50%, #8b6508 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  display: inline-block;
-  
-  /* Standard shadow - removed the bright glow filters */
-  filter: drop-shadow(0px 1px 1px rgba(0,0,0,0.8)) !important;
+    font-weight: 900;
+    font-size: 1.3rem !important; /* Matches icon font size */
+    line-height: 1;
+    color: #fff; /* Base color for filters to work on */
+    display: inline-block;
+    user-select: none;
 }
 
 #helpBtn:hover .gold-text-icon {
   /* Hover is now a subtle highlight rather than a bright flash */
   filter: drop-shadow(0 0 2px rgba(212, 175, 55, 0.5)) brightness(1.1) !important;
   transition: filter 0.2s ease;
-}
-
-/* MATCHING HOVER LOGIC */
-@media (hover: hover) {
-    #helpBtn:hover {
-        opacity: 1 !important;
-        filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.2) drop-shadow(0 0 5px #ffea8a) !important;
-    }
-}
-
-/* MATCHING ACTIVE/TAP LOGIC */
-#helpBtn:active {
-    transform: scale(0.9);
-    filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.3) drop-shadow(0 0 8px #ffea8a) !important;
 }
 
 /* MOBILE FIX: Stop the icons from jumping out of the container */
@@ -1015,7 +995,8 @@ input.input-field:-webkit-autofill:active {
   .btn-small.tapped:not(.is-disabled),
   #dailyBtn.tapped,
   #weeklyBtn.tapped,  /* ADDED THIS */
-  #lobbyBtn.tapped {/* ADDED THIS */
+  #lobbyBtn.tapped,
+  #helpBtn:active {/* ADDED THIS */
     background-color: #000000 !important;
     border-color: #ffea8a !important;
     color: #ffea8a !important;
@@ -1031,13 +1012,13 @@ input.input-field:-webkit-autofill:active {
   }
   
   /* 3. THE RELEASE (Finger Up - The "Slow Glow" Return) */
-  .btn, .btn-small, #dailyBtn.is-active, #weeklyBtn, #lobbyBtn {
+  .btn, .btn-small, #dailyBtn.is-active, #weeklyBtn, #lobbyBtn, #helpBtn {
     /* We use 0.5s here so you can actually see the gold highlight fade away */
     transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.1s ease !important;
   }
 
   /* 1. Prevent icons from flickering between gold and grey on touch */
-  #shareBtn, #muteBtn, #logBtn, #weeklyBtn, #lobbyBtn {
+  #shareBtn, #muteBtn, #logBtn, #weeklyBtn, #lobbyBtn, #helpBtn {
     -webkit-tap-highlight-color: transparent;
     /* Disable transitions for filters on mobile to stop the "flash" */
     transition: transform 0.1s ease !important; 
@@ -1765,6 +1746,7 @@ input.input-field:-webkit-autofill:active {
     to { opacity: 0; transform: scale(0.9); }
 }
 /*   -------------------------------------- */
+
 
 
 
