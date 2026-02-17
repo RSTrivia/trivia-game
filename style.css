@@ -515,20 +515,24 @@ h1 {
   justify-content: center;
   align-items: center;
   cursor: pointer;
-/* MATTE BRONZE: High saturation (for color) but low brightness & contrast (to kill the shine) */
-  filter: sepia(1) saturate(3.5) hue-rotate(-38deg) brightness(0.65) contrast(0.9);
-  opacity: 0.85; 
-  transition: filter 0.3s ease, opacity 0.3s ease, transform 0.2s ease;
+  /* overflow: visible;*/
+  filter: none !important; /* Clear the global dark filter */
 }
 
+/* Adjust the icon size and look */
 /* Adjust the icon size and look */
 .gold-text-icon {
   font-weight: 900;
   font-size: 1.1rem !important;
   line-height: 1.5;
-  color: #fff;
-  /* Darker drop shadow for better metallic "pop" */
-  filter: drop-shadow(0px 1px 1px rgba(0,0,0,0.5)) !important;
+  /* Swapped to deeper, more muted gold tones */
+  background: linear-gradient(to bottom, #d4af37 0%, #b8860b 50%, #8b6508 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  
+  /* Standard shadow - removed the bright glow filters */
+  filter: drop-shadow(0px 1px 1px rgba(0,0,0,0.8)) !important;
 }
 
 #helpBtn:hover .gold-text-icon {
@@ -1762,6 +1766,7 @@ input.input-field:-webkit-autofill:active {
     to { opacity: 0; transform: scale(0.9); }
 }
 /*   -------------------------------------- */
+
 
 
 
