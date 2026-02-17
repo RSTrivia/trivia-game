@@ -515,8 +515,10 @@ h1 {
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  /* overflow: visible;*/
-  filter: none !important; /* Clear the global dark filter */
+  /* THE MATCHING GOLD FILTER */
+    filter: sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85);
+    opacity: 0.9;
+    transition: filter 0.2s ease, opacity 0.2s ease, transform 0.1s ease;
 }
 
 /* Adjust the icon size and look */
@@ -539,6 +541,20 @@ h1 {
   /* Hover is now a subtle highlight rather than a bright flash */
   filter: drop-shadow(0 0 2px rgba(212, 175, 55, 0.5)) brightness(1.1) !important;
   transition: filter 0.2s ease;
+}
+
+/* MATCHING HOVER LOGIC */
+@media (hover: hover) {
+    #helpBtn:hover {
+        opacity: 1 !important;
+        filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.2) drop-shadow(0 0 5px #ffea8a) !important;
+    }
+}
+
+/* MATCHING ACTIVE/TAP LOGIC */
+#helpBtn:active {
+    transform: scale(0.9);
+    filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.3) drop-shadow(0 0 8px #ffea8a) !important;
 }
 
 /* MOBILE FIX: Stop the icons from jumping out of the container */
@@ -1749,6 +1765,7 @@ input.input-field:-webkit-autofill:active {
     to { opacity: 0; transform: scale(0.9); }
 }
 /*   -------------------------------------- */
+
 
 
 
