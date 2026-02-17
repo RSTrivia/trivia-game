@@ -146,26 +146,21 @@
 
   <!-- App wrapper -->
   <div id="app">
-    <div class="container">
-  <div class="top-nav" style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 10px;">
+   <div class="container" style="position: relative;">
+  <div class="top-actions" style="position: absolute; top: 10px; right: 10px; display: flex; align-items: center; gap: 10px;">
     
-    <div style="flex: 1; display: flex; justify-content: flex-start;">
-      <a id="discordBtn" href="https://discord.gg/74vQZwWTJX" target="_blank" rel="noopener noreferrer">
-        <img src="https://cdn.prod.website-files.com/6257adef93467e42288b41fd/636e0a6a49f95197577f3231_icon_clyde_blurple_RGB.svg" 
-             alt="Discord" 
-             style="width: 32px; height: 32px; display: block;">
-      </a>
-    </div>
+    <a id="discordBtn" href="https://discord.gg/74vQZwWTJX" target="_blank" rel="noopener noreferrer">
+      <img src="https://cdn.prod.website-files.com/6257adef93467e42288b41fd/636e0a6a49f95197577f3231_icon_clyde_blurple_RGB.svg" 
+           alt="Discord" 
+           style="width: 28px; height: 28px; display: block;">
+    </a>
 
-    <div style="flex: 1; display: flex; justify-content: flex-end;">
-      <button id="helpBtn" type="button" style="background: none; border: none; cursor: pointer; padding: 0;">
-        <span id="helpIcon" class="gold-text-icon" style="font-family: 'Cinzel', serif; font-size: 24px;">❔</span>
-      </button>
-    </div>
+    <button id="helpBtn" type="button" style="background: none; border: none; cursor: pointer; padding: 0; line-height: 1;">
+      <span id="helpIcon" class="gold-text-icon" style="font-family: 'Cinzel', serif; font-size: 22px;">❔</span>
+    </button>
   </div>
 
   <h1 id="main-title">OSRS Trivia</h1>
-
       <!-- First row: User + Mute -->
       <div id="user-controls" class="row">
         <div class="icon-group">
@@ -365,6 +360,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
 
 
