@@ -147,17 +147,18 @@
   <!-- App wrapper -->
   <div id="app">
    <div class="container" style="position: relative;">
-<div class="top-actions" style="position: absolute; top: 10px; right: 15px; display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; align-items: center !important; justify-content: flex-end !important; width: 80px !important; height: 32px !important; z-index: 999;">
+<div class="top-actions" style="position: absolute; top: 15px; right: 15px; z-index: 1000; display: flex; align-items: center; white-space: nowrap;">
     
-        <a id="discordBtn" href="https://discord.gg/74vQZwWTJX" target="_blank" rel="noopener noreferrer" style="display: block !important; width: 28px !important; height: 28px !important; margin-right: 12px !important; padding: 0 !important; border: none !important; background: none !important;">
-      <img src="https://cdn.prod.website-files.com/6257adef93467e42288b41fd/636e0a6a49f95197577f3231_icon_clyde_blurple_RGB.svg" 
-           alt="Discord" 
-           style="width: 28px !important; height: 28px !important; display: block !important; pointer-events: none;">
-    </a>
+    <a id="discordBtn" href="https://discord.gg/74vQZwWTJX" target="_blank" rel="noopener noreferrer" style="text-decoration: none; margin-right: 12px; display: inline-flex;">
+      <img src="https://cdn.prod.website-files.com/6257adef93467e42288b41fd/636e0a6a49f95197577f3231_icon_clyde_blurple_RGB.svg" 
+           alt="Discord" 
+           style="width: 24px; height: 24px; border: none; background: none; display: block;">
+    </a>
 
-        <button id="helpBtn" type="button" style="display: block !important; background: none !important; border: none !important; cursor: pointer !important; padding: 0 !important; margin: 0 !important; width: 24px !important; height: 24px !important; line-height: 1 !important;">
-      <span id="helpIcon" class="gold-text-icon" style="font-family: 'Cinzel', serif; font-size: 22px !important; display: block !important; line-height: 1 !important; pointer-events: none;">❔</span>
-    </button>
+    <button id="helpBtn" type="button" style="background: none; border: none; cursor: pointer; padding: 0; margin: 0; display: inline-flex; align-items: center; justify-content: center;">
+      <span id="helpIcon" class="gold-text-icon" style="font-family: 'Cinzel', serif; font-size: 20px; color: #d4af37; line-height: 1;">❔</span>
+    </button>
+
 </div>
   <h1 id="main-title">OSRS Trivia</h1>
       <!-- First row: User + Mute -->
@@ -359,6 +360,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
 
 
