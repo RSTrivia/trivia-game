@@ -523,12 +523,17 @@ h1 {
 
 /* Adjust the icon size and look */
 .gold-text-icon {
-    font-weight: 900;
-    font-size: 1.3rem !important; /* Matches icon font size */
-    line-height: 1;
-    color: #fff; /* Base color for filters to work on */
-    display: inline-block;
-    user-select: none;
+  font-weight: 900;
+  font-size: 1.1rem !important;
+  line-height: 1.5;
+  /* Swapped to deeper, more muted gold tones /
+  background: linear-gradient(to bottom, #d4af37 0%, #b8860b 50%, #8b6508 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+
+  / Standard shadow - removed the bright glow filters */
+  filter: drop-shadow(0px 1px 1px rgba(0,0,0,0.8)) !important;
 }
 
 #helpBtn:hover .gold-text-icon {
@@ -1746,6 +1751,7 @@ input.input-field:-webkit-autofill:active {
     to { opacity: 0; transform: scale(0.9); }
 }
 /*   -------------------------------------- */
+
 
 
 
