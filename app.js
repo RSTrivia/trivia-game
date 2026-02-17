@@ -1193,6 +1193,11 @@ function createParticle(parent, xPosPercent, colors) {
 }
 
 async function highlightCorrectAnswer() {
+  // If the question failed to load, don't try to read its ID
+    if (!currentQuestion) {
+        console.warn("No current question to highlight.");
+        return; 
+    }
     const { data: correctId } = await supabase.rpc('reveal_correct_answer', { 
         input_id: currentQuestion.id 
     });
@@ -1744,7 +1749,6 @@ async function startDailyChallenge(session) {
     usedInThisSession = [];
     score = 0;
     streak = 0;
-    resetGame();
     // 1. BURN ATTEMPT & FETCH DAILY IDs FROM RPC
     const [burnRes, questionsRes] = await Promise.all([
         supabase.from('daily_attempts').insert({ 
@@ -1766,13 +1770,13 @@ async function startDailyChallenge(session) {
     await supabase.rpc('reset_my_streak');
     
     // 5. Start the engine
-    //await preloadNextQuestions();
-    // FETCH ONLY THE FIRST QUESTION IMMEDIATELY
-    // If queue is empty, get one right now so we can start
-    await preloadNextQuestions(1); // Modified to accept a 'count'
-    
-    // 6. UI TRANSITION (Only happens once data is ready)
-    
+    // 3. THE BARRIER (Wait for Question 1)
+    if (preloadQueue.length === 0) {
+        await preloadNextQuestions(1); 
+    }
+  
+    // THE UI SWAP (Triggered only when we HAVE the data)
+    resetGame();
   
     await loadQuestion(true);
   
@@ -1877,6 +1881,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
