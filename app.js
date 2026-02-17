@@ -1759,7 +1759,7 @@ async function startDailyChallenge(session) {
         console.error(questionsRes.error);
         return alert("Error loading daily questions.");
     }
-    dailySessionPool = questionsRes.data.map(q => q.question_id).sort(() => Math.random() - 0.5);
+    //dailySessionPool = questionsRes.data.map(q => q.question_id).sort(() => Math.random() - 0.5);
   
     // Tell the DB: "This is a new game, start my streak at 0"
     await supabase.rpc('reset_my_streak');
@@ -1876,6 +1876,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
