@@ -515,9 +515,9 @@ h1 {
   justify-content: center;
   align-items: center;
   cursor: pointer;
-/* RICH BRONZE FILTER: High saturation + warm hue-rotate kills the greyness */
-  filter: sepia(1) saturate(5) hue-rotate(-40deg) brightness(0.9) contrast(1.1);
-  opacity: 0.9; 
+/* MATTE BRONZE: High saturation (for color) but low brightness & contrast (to kill the shine) */
+  filter: sepia(1) saturate(3.5) hue-rotate(-38deg) brightness(0.65) contrast(0.9);
+  opacity: 0.85; 
   transition: filter 0.3s ease, opacity 0.3s ease, transform 0.2s ease;
 }
 
@@ -1762,6 +1762,7 @@ input.input-field:-webkit-autofill:active {
     to { opacity: 0; transform: scale(0.9); }
 }
 /*   -------------------------------------- */
+
 
 
 
