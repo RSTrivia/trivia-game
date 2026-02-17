@@ -1768,8 +1768,29 @@ input.input-field:-webkit-autofill:active {
 }
 /*   -------------------------------------- */
 
+/*   ------------discord icon------------ */
+/* Make the SVG version of the gold icon match the text version */
+.gold-svg-icon {
+    filter: drop-shadow(0px 1px 1px rgba(0,0,0,0.8)) !important;
+    transition: filter 0.2s ease;
+}
 
+/* Hover State - Matching the Polished Brass look */
+@media (hover: hover) {
+    #discordBtn:hover {
+        opacity: 1 !important;
+        filter: sepia(1) saturate(2.5) hue-rotate(-20deg) brightness(1.1) drop-shadow(0 0 5px rgba(212, 175, 55, 0.6)) !important;
+    }
+}
 
+/* Active State - The "Flash" click effect */
+#discordBtn:active {
+    filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.3) drop-shadow(0 0 8px #ffea8a) !important;
+    transform: scale(0.9);
+    opacity: 1 !important;
+    transition: 0s !important;
+}
+/*   ------------discord icon------------ */
 
 
 
