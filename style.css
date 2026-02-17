@@ -4,7 +4,7 @@ html, body {
   padding: 0;
   height: 100%;
   overflow: hidden;
-  background: none;
+  background-color: #0e0e0e; /* Matches OSRS dark theme */;
   font-family: Arial, sans-serif;
 }
 
@@ -26,6 +26,7 @@ html, body {
   -webkit-backface-visibility: hidden;
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
+  background-color: #0e0e0e;
 }
 
 #background-img {
@@ -1745,6 +1746,7 @@ input.input-field:-webkit-autofill:active {
     to { opacity: 0; transform: scale(0.9); }
 }
 /*   -------------------------------------- */
+
 
 
 
