@@ -10,6 +10,7 @@ let streak = 0;              // Tracking for normal game bonus
 let dailyQuestionCount = 0;   // Tracking for daily bonus
 let currentDailyStreak = 0; 
 let currentProfileXp = parseInt(localStorage.getItem('cached_xp')) || 0;    // Store the player's current XP locally
+let currentLevel = parseInt(localStorage.getItem('cached_level')) || 1;
 let username = 'Guest';
 let gameEnding = false;
 let isShowingNotification = false;
@@ -310,6 +311,7 @@ async function init() {
           // --- FIX STARTS HERE ---
           // Specifically remove the profile-related caches
           localStorage.removeItem('cached_xp');
+          localStorage.removeItem('cached_level');
           localStorage.removeItem('cachedUsername');
           localStorage.removeItem('lastDailyScore');
           localStorage.removeItem('dailyPlayedDate');
@@ -324,6 +326,7 @@ async function init() {
           
           // Reset the global variable so the UI doesn't flicker before reload
           currentProfileXp = 0; 
+          currentLevel = 1;
           
           window.location.reload(); 
       } else {
@@ -510,6 +513,7 @@ async function handleAuthChange(event, session) {
       
         username = 'Guest'; // Force 'Guest' instead of cached username
         currentProfileXp = 0; // Force 0 XP for guests
+        currentLevel = 1;
        
         if (span) span.textContent = 'Guest';
         if (label) label.textContent = 'Log In';
@@ -531,7 +535,8 @@ async function handleAuthChange(event, session) {
     // 1. Immediately sync with local cache so we don't overwrite the HTML script's work
     username = localStorage.getItem('cachedUsername') || 'Player';
     currentProfileXp = parseInt(localStorage.getItem('cached_xp')) || 0;
- 
+    currentLevel = parseInt(localStorage.getItem('cached_level')) || 1;
+  
     // 2. Update the UI with the cached values right now
     if (span) span.textContent = ' ' + username;
     if (label) label.textContent = 'Log Out';
@@ -551,9 +556,10 @@ async function handleAuthChange(event, session) {
             if (profile.xp !== currentProfileXp || profile.username !== username) {
             username = profile.username || 'Player';
             currentProfileXp = profile.xp || 0;
+            currentLevel = profile.level || 1;
             // Access the daily_streak inside the achievements JSONB
             currentDailyStreak = profile.achievements?.daily_streak || 0;
-            const currentLevel = profile.level || 1;
+         
           
             // Save to cache
             localStorage.setItem('cachedUsername', username);
@@ -969,13 +975,19 @@ async function checkAnswer(choiceId, btn) {
         updateScore();
         // 🛡️ THE "MASTER" GUEST CHECK
         if (userId) {
-            const xpData = res.xp_info;
+            const xpData = res.xp_info; // This is the JSON object from add_user_xp
             // Check if xpData exists AND it's not null (Guest check)
             if (xpData && xpData.new_xp !== undefined) { 
                 // Update local state with truth from DB
                 currentProfileXp = xpData.new_xp;
+                currentLevel = xpData.new_level;
+                // Sync the Cache (XP and Level)
                 localStorage.setItem('cached_xp', currentProfileXp);
-              
+                localStorage.setItem('cached_level', xpData.new_level);
+                // Refresh the UI
+                updateLevelUI(); 
+                triggerXpDrop(res.xp_gained);
+               
                 if (res.bonus_earned) {
                     showNotification("BONUS XP!", bonusBuffer, "#a335ee");
                 }
@@ -984,7 +996,6 @@ async function checkAnswer(choiceId, btn) {
                 if (xpData.leveled_up) {
                     triggerFireworks();
                     showNotification(`LEVEL UP!`, levelUpBuffer, "#ffde00"); // (${xpData.new_level})
-                    localStorage.setItem('cached_level', xpData.leveled_up);
     
                     // Milestone notifications
                     if (xpData.new_level >= 10 && xpData.old_level < 10) showAchievementNotification("Reach Level 10");
@@ -992,8 +1003,7 @@ async function checkAnswer(choiceId, btn) {
                     if (xpData.new_level >= 99 && xpData.old_level < 99) showAchievementNotification("Reach Max Level");
                 }
               
-                triggerXpDrop(res.xp_gained);
-                updateLevelUI(); 
+         
             }
 
               // 2. NEW: Score Milestone Logic
@@ -1089,7 +1099,7 @@ function updateLevelUI() {
     
     if (lvlNum && xpBracket) {
         // Pull the level we just saved in checkAnswer
-        const level = localStorage.getItem('cached_level') || 1;
+        const level = currentLevel || 1;
         const xp = currentProfileXp || 0;
 
         lvlNum.textContent = level;
@@ -1868,6 +1878,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
