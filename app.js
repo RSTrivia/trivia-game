@@ -645,15 +645,17 @@ async function preloadNextQuestions(targetCount = 6) {
     // Safety for Lite Mode
     if (isLiteMode && (score + preloadQueue.length >= LITE_LIMIT)) return;
 
-    // 2. Prepare an array of "fetch tasks"
-    const tasks = [];
-
-    // 2. Fire individual fetch tasks
+    if (isDailyMode) {
+        for (let i = 0; i < needed; i++) {
+            await fetchAndBufferQuestion();
+        }
+    } else {
     // We don't 'await' the loop itself, allowing them to run in parallel
     for (let i = 0; i < needed; i++) {
         // This helper handles the fetch, the image warming, and the queue push
         fetchAndBufferQuestion();
     }
+  }
 }
 
 async function fetchAndBufferQuestion() {
@@ -1882,6 +1884,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
