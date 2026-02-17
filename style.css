@@ -1,10 +1,13 @@
 /* ====== GLOBAL RESET ====== */
+html {
+  background-color: #0e0e0e; /* The 'Flash' protection */
+}
 html, body {
   margin: 0;
   padding: 0;
   height: 100%;
   overflow: hidden;
-  background-color: #0e0e0e; /* Matches OSRS dark theme */;
+  background: transparent;
   font-family: Arial, sans-serif;
 }
 
@@ -1746,6 +1749,7 @@ input.input-field:-webkit-autofill:active {
     to { opacity: 0; transform: scale(0.9); }
 }
 /*   -------------------------------------- */
+
 
 
 
