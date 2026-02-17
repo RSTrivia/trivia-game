@@ -975,10 +975,7 @@ async function checkAnswer(choiceId, btn) {
                 // Update local state with truth from DB
                 currentProfileXp = xpData.new_xp;
                 localStorage.setItem('cached_xp', currentProfileXp);
-                
-                updateLevelUI(); 
-                triggerXpDrop(res.xp_gained);
-    
+              
                 if (res.bonus_earned) {
                     showNotification("BONUS XP!", bonusBuffer, "#a335ee");
                 }
@@ -987,13 +984,18 @@ async function checkAnswer(choiceId, btn) {
                 if (xpData.leveled_up) {
                     triggerFireworks();
                     showNotification(`LEVEL UP!`, levelUpBuffer, "#ffde00"); // (${xpData.new_level})
+                    localStorage.setItem('cached_level', xpData.leveled_up);
     
                     // Milestone notifications
                     if (xpData.new_level >= 10 && xpData.old_level < 10) showAchievementNotification("Reach Level 10");
                     if (xpData.new_level >= 50 && xpData.old_level < 50) showAchievementNotification("Reach Level 50");
                     if (xpData.new_level >= 99 && xpData.old_level < 99) showAchievementNotification("Reach Max Level");
                 }
+              
+                triggerXpDrop(res.xp_gained);
+                updateLevelUI(); 
             }
+
               // 2. NEW: Score Milestone Logic
               // This only fires for Normal Mode
               if (res.milestone) {
@@ -1084,45 +1086,14 @@ async function checkAnswer(choiceId, btn) {
 function updateLevelUI() {
     const lvlNum = document.getElementById('levelNumber');
     const xpBracket = document.getElementById('xpBracket');
-    if (!lvlNum || !xpBracket) return;
-  // 1. Set Initial Value (from Cache or passed Level)
-    const displayLevel = forcedLevel || localStorage.getItem('cached_level') || 1;
-    const displayXp = currentProfileXp || 0;
-  
-    lvlNum.textContent = displayLevel;
-    xpBracket.textContent = `(${displayXp.toLocaleString()} XP)`;
-  
-    // 2. If we aren't "forced" and we have a user, let's verify with the DB
-    // We only do this if a fetch isn't already running (optional optimization)
-    if (!forcedLevel && userId) {
-        syncLevelFromDB(); 
-    }
-}
+    
+    if (lvlNum && xpBracket) {
+        // Pull the level we just saved in checkAnswer
+        const level = localStorage.getItem('cached_level') || 1;
+        const xp = currentProfileXp || 0;
 
-async function syncLevelFromDB() {
-    try {
-        const { data, error } = await supabase
-            .from('profiles')
-            .select('level, xp')
-            .eq('id', userId)
-            .single();
-
-        if (data && !error) {
-            // Update globals
-            currentProfileXp = data.xp;
-            
-            // Update Cache
-            localStorage.setItem('cached_level', data.level);
-            localStorage.setItem('cached_xp', data.xp);
-
-            // Update UI quietly without re-triggering the sync
-            const lvlNum = document.getElementById('levelNumber');
-            const xpBracket = document.getElementById('xpBracket');
-            if (lvlNum) lvlNum.textContent = data.level;
-            if (xpBracket) xpBracket.textContent = `(${data.xp.toLocaleString()} XP)`;
-        }
-    } catch (err) {
-        console.error("Failed to sync level truth:", err);
+        lvlNum.textContent = level;
+        xpBracket.textContent = `(${xp.toLocaleString()} XP)`;
     }
 }
 
@@ -1897,6 +1868,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
