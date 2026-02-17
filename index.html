@@ -147,10 +147,20 @@
   <!-- App wrapper -->
   <div id="app">
     <div class="container">
-    <button id="helpBtn" type="button">
-      <span id="helpIcon" class="gold-text-icon" style="font-family: 'Cinzel', serif;">❔</span>
+  <div class="top-nav" style="display: flex; justify-content: space-between; align-items: center; width: 100%; position: relative; margin-bottom: -20px;">
+    
+    <a id="discordBtn" href="https://discord.gg/74vQZwWTJX" target="_blank" rel="noopener noreferrer" style="z-index: 10;">
+      <img src="https://cdn.prod.website-files.com/6257adef93467e42288b41fd/636e0a6a49f95197577f3231_icon_clyde_blurple_RGB.svg" 
+           alt="Discord" 
+           style="width: 32px; height: 32px; display: block;">
+    </a>
+
+    <button id="helpBtn" type="button" style="background: none; border: none; cursor: pointer; padding: 5px; z-index: 10;">
+      <span id="helpIcon" class="gold-text-icon" style="font-family: 'Cinzel', serif; font-size: 24px;">❔</span>
     </button>
-      <h1 id="main-title">OSRS Trivia</h1>
+  </div>
+
+  <h1 id="main-title" style="margin-top: 10px;">OSRS Trivia</h1>
 
       <!-- First row: User + Mute -->
       <div id="user-controls" class="row">
@@ -351,6 +361,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
 
 
