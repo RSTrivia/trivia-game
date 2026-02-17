@@ -515,10 +515,6 @@ h1 {
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  /* THE MATCHING GOLD FILTER */
-    filter: sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85);
-    opacity: 0.9;
-    transition: filter 0.2s ease, opacity 0.2s ease, transform 0.1s ease;
 }
 
 /* Adjust the icon size and look */
@@ -1751,6 +1747,7 @@ input.input-field:-webkit-autofill:active {
     to { opacity: 0; transform: scale(0.9); }
 }
 /*   -------------------------------------- */
+
 
 
 
