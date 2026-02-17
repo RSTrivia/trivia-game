@@ -547,7 +547,7 @@ async function handleAuthChange(event, session) {
   try {
       const { data: profile, error } = await supabase
           .from('profiles')
-          .select('username, xp, achievements')
+          .select('username, xp, achievements, level')
           .eq('id', userId)
           .single();
   
@@ -559,14 +559,12 @@ async function handleAuthChange(event, session) {
             currentLevel = profile.level || 1;
             // Access the daily_streak inside the achievements JSONB
             currentDailyStreak = profile.achievements?.daily_streak || 0;
-         
-          
             // Save to cache
+            localStorage.setItem('cached_level', currentLevel);
             localStorage.setItem('cachedUsername', username);
             localStorage.setItem('cached_xp', currentProfileXp);
             localStorage.setItem('cached_daily_streak', currentDailyStreak); // Also cache it
-            localStorage.setItem('cached_level', currentLevel);
-              
+ 
             // UI Update
             if (span) span.textContent = ' ' + username;
             updateLevelUI();
@@ -1099,8 +1097,8 @@ function updateLevelUI() {
     
     if (lvlNum && xpBracket) {
         // Pull the level we just saved in checkAnswer
-        const level = currentLevel || 1;
-        const xp = currentProfileXp || 0;
+        const level = currentLevel || localStorage.getItem('cached_level') || 1;
+        const xp = currentProfileXp || localStorage.getItem('cached_xp') || 0;
 
         lvlNum.textContent = level;
         xpBracket.textContent = `(${xp.toLocaleString()} XP)`;
@@ -1878,6 +1876,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
