@@ -396,7 +396,7 @@ h1 {
   font-size: 1.2rem;
   color: #d4af37;
   /* 1. Use line-height to define space instead of a hard height */
-  min-height: 40px; 
+  min-height: 52px; 
   overflow: visible;
 }
 
@@ -1841,6 +1841,7 @@ input.input-field:-webkit-autofill:active {
   transition: 0s !important;
 }
 /* ------------ help icon ------------ */
+
 
 
 
