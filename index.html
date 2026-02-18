@@ -361,9 +361,29 @@ document.addEventListener('DOMContentLoaded', () => {
     setupMenuPetRealtime();
 });
 
+// This looks for buttons AND the specific top-right icons
+const allButtons = document.querySelectorAll('.btn, .btn-small, .tab-btn, #helpBtn, #discordBtn');
+
+allButtons.forEach(button => {
+  button.addEventListener('touchstart', () => {
+    button.classList.add('tapped');
+  }, { passive: true });
+
+  button.addEventListener('touchend', () => {
+    setTimeout(() => {
+      button.classList.remove('tapped');
+    }, 100); 
+  });
+
+  button.addEventListener('touchcancel', () => {
+    button.classList.remove('tapped');
+  });
+});
+      
 </script>
 </body>
 </html>
+
 
 
 
