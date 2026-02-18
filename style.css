@@ -589,18 +589,6 @@ h1 {
     0 0 8px rgba(255, 0, 0, 0.6);
 }
 
-
-/* End screen titles and score */
-#end-screen h2,
-#end-screen h1,
-#end-screen p {
-  color: #f5f5f5 !important;/* #d4af37;*/
-}
-
-#finalScore {
-  color: #d4af37 !important; /* #d4af37;*/
-}
-
 /* ====== INPUT & BUTTON ALIGNMENT FIX ===== */
 .input-field,
 .btn,
@@ -1845,6 +1833,18 @@ input.input-field:-webkit-autofill:active {
 /* ------------ help icon ------------ */
 
 
+
+/* End screen titles and score */
+#end-screen h2,
+#end-screen h1,
+#end-screen p {
+  color: #f5f5f5 !important;/* #d4af37;*/
+}
+
+#finalScore {
+  color: #d4af37 !important; /* #d4af37;*/
+}
+
 /* Keeps the numbers white so they remain the focus */
 #finalScore span, 
 #end-screen p span,
@@ -1853,6 +1853,7 @@ input.input-field:-webkit-autofill:active {
  /* Very soft, diffused shadow to avoid a "harsh" look */
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
+/* End screen titles and score */
 
 
 
