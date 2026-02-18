@@ -1843,7 +1843,7 @@ input.input-field:-webkit-autofill:active {
 
 /* 2. The Labels: Score, Time, Streak (Gold) */
 /* This targets the <p> tags but NOT the spans inside them */
-#end-screen p,
+/*#end-screen p,
 #finalScore {
     color: #d4af37 !important;
     -webkit-text-fill-color: #d4af37 !important;
@@ -1858,6 +1858,7 @@ input.input-field:-webkit-autofill:active {
     -webkit-text-fill-color: #f5f5f5 !important;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8) !important;
 }
+
 
 
 
