@@ -516,33 +516,39 @@ h1 {
 /* ====== user controls and name and level ===== */
 @media (max-width: 480px) {
   #user-controls {
-    gap: 2px !important; 
-    padding: 0 5px !important;
+    /* Magnetize everything to the left */
+    justify-content: flex-start !important; 
+    gap: 12px !important; /* This is the gap between icons and the Name */
+    padding-left: 0 !important;
   }
 
   .icon-group {
-    flex: 1 !important;    /* Left weight */
-    gap: 2px !important;   /* Very tight icons */
+    /* Remove the flex: 1 that was pushing the name away */
+    flex: 0 0 auto !important; 
+    gap: 0px !important; /* Maximum tightness between icons */
   }
 
   #userDisplay {
-    flex: 3 !important;    /* Give the name more priority in the center */
-    margin-left: -10px !important; /* Nudges it back toward the icons slightly if it feels too far right */
+    /* Remove centering and flex: 2 */
+    flex: 1 !important; 
+    text-align: left !important;
+    align-items: flex-start !important;
+    margin: 0 !important;
+    padding-left: 0 !important;
   }
 
+  /* Kill the spacer that was forcing the name to the middle/right */
   #user-controls::after {
-    display: block !important;
-    content: "";
-    flex: 1 !important;    /* Right weight (Perfect balance) */
+    display: none !important;
   }
 
-  /* Fix the jumping button position */
+  /* Ensure icons are compact */
   #shareBtn, #muteBtn, #logBtn {
-    left: 0 !important;    /* Stop the shifting */
-    width: 30px;           /* Slightly smaller icons for mobile */
+    left: 0 !important;
+    width: 28px !important; /* Slightly smaller to save space */
+    margin-right: 2px !important; 
   }
 }
-
 
 
 
@@ -1850,6 +1856,7 @@ input.input-field:-webkit-autofill:active {
   transition: 0s !important;
 }
 /* ------------ help icon ------------ */
+
 
 
 
