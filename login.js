@@ -47,7 +47,7 @@ signupBtn.addEventListener('click', async () => {
     
     setBusy(true);
     // 🛑 STOP if the name is longer than 8
-    if (username.length > 8) {
+    if (username.length > 7) {
         setBusy(false);
         return showGoldAlert("Max 8 characters allowed!");
     }
