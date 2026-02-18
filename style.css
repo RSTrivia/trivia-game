@@ -919,7 +919,7 @@ input.input-field:-webkit-autofill:active {
 
 
 #end-screen #game-over-title {
-  color: #d4af37 !important;             /* test color */
+  color: #f5f5f5;           /* test color */
   -webkit-text-fill-color: #d4af37 !important; /* force the color in WebKit #cccccc*/
   background: none !important;
   /*text-shadow: 0 0 4px rgba(0,0,0,0.8) !important;   subtle shadow like final score */
@@ -1835,32 +1835,31 @@ input.input-field:-webkit-autofill:active {
 
 
 /* End screen titles and score */
-#end-screen h2,
-#end-screen h1,
+/* 1. Set all general titles/labels to White first */
+#end-screen h1, 
+#end-screen h2, 
+#game-over-title {
+    color: #f5f5f5 !important;
+    -webkit-text-fill-color: #f5f5f5 !important;
+}
+
+/* 2. Set the Score and Streak labels to Gold */
+#finalScore,
 #end-screen p {
-  color: #f5f5f5 !important;/* #d4af37;*/
+    color: #d4af37 !important;
+    -webkit-text-fill-color: #d4af37 !important;
 }
 
-#finalScore {
-  color: #d4af37 !important; /* #d4af37;*/
-}
-
-/* Keeps the numbers white so they remain the focus */
+/* 3. Force the actual numbers (the spans) to be White so they pop */
 #finalScore span, 
-#end-screen p span,
-#streakCount {
-  color: #f5f5f5 !important; /*#D6C392*/
- /* Very soft, diffused shadow to avoid a "harsh" look */
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+#streakCount,
+#scoreValue {
+    color: #f5f5f5 !important; /*#D6C392*/
+    -webkit-text-fill-color: #f5f5f5 !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8) !important;
 }
+
 /* End screen titles and score */
-
-
-
-
-
-
-
 
 
 
