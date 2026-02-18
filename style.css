@@ -512,40 +512,39 @@ h1 {
     100% { opacity: 0; }
 }
 
+
+/* ====== user controls and name and level ===== */
 @media (max-width: 480px) {
   #user-controls {
-    /* Change from center to flex-start to move everything left */
-    justify-content: flex-start !important; 
-    padding-left: 5px !important;
-    gap: 8px !important; /* This is the gap between the Icon Group and the Name */
+    gap: 2px !important; 
+    padding: 0 5px !important;
   }
 
   .icon-group {
-    /* Takes only exactly the space the icons need */
-    flex: 0 0 auto !important; 
-    gap: 2px !important; /* Tighter gap between the icons themselves */
+    flex: 1 !important;    /* Left weight */
+    gap: 2px !important;   /* Very tight icons */
   }
 
   #userDisplay {
-    /* Allows the name to sit right next to the icons */
-    flex: 0 1 auto !important; 
-    margin-left: 0 !important;
-    align-items: flex-start !important;
-    text-align: left !important;
+    flex: 3 !important;    /* Give the name more priority in the center */
+    margin-left: -10px !important; /* Nudges it back toward the icons slightly if it feels too far right */
   }
 
-  /* Remove the 'ghost' balancer that was pushing the name to the center */
   #user-controls::after {
-    display: none !important;
+    display: block !important;
+    content: "";
+    flex: 1 !important;    /* Right weight (Perfect balance) */
+  }
+
+  /* Fix the jumping button position */
+  #shareBtn, #muteBtn, #logBtn {
+    left: 0 !important;    /* Stop the shifting */
+    width: 30px;           /* Slightly smaller icons for mobile */
   }
 }
-/* Tapped State: If you use the mobileFlash function, this matches the gold flash */
-/*#muteBtn.tapped {
-  /* Reduced brightness from 1.3 to 1.0 and saturation from 4 to 2.5 */
-  /*filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.1) !important;
-  opacity: 1;
-  transition: none; /* Makes the tap feel instant/responsive */
-/*}*/
+
+
+
 
 /* ====== GAME SCREEN TEXT ===== */
 
@@ -1851,6 +1850,7 @@ input.input-field:-webkit-autofill:active {
   transition: 0s !important;
 }
 /* ------------ help icon ------------ */
+
 
 
 
