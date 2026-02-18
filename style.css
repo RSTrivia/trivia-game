@@ -1848,55 +1848,46 @@ input.input-field:-webkit-autofill:active {
 
 
 
-/* ====== OSRS-STYLE END SCREEN ====== */
 
-/* 1. The Title: Solid Yellow with "Staircase" Shadow */
+
+
+/* ====== END SCREEN TITLES & SCORE (CLEAN GOLD) ====== */
+
 #end-screen #game-over-title {
-  color: #ff981f !important; /* Classic OSRS Orange-Gold */
-  -webkit-text-fill-color: #ff981f !important;
+  color: #d4af37 !important;           /* Matching your button gold */
+  -webkit-text-fill-color: #d4af37 !important;
   background: none !important;
-  font-family: 'Cinzel', serif;
-  font-size: 2rem;
+  font-size: 1.4rem;                   /* Original size */
   text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  
-  /* This specific shadow mimics the "thick" OSRS font depth */
-  text-shadow: 
-    2px 2px 0px #000, 
-    3px 3px 0px rgba(0,0,0,0.5),
-    0px 0px 10px rgba(255, 152, 31, 0.3);
+  font-family: Arial, sans-serif;
+  white-space: pre-line;
+  line-height: 1.4;
+  text-shadow: 0 0 4px rgba(0,0,0,0.8); /* Subtle depth */
 }
 
-/* 2. Score & Time: The "Yellow Chat" Look */
 #end-screen p, 
 #finalScore {
-  color: #ffff00 !important; /* Bright Interface Yellow */
+  color: #d4af37 !important;           /* Matching your button gold */
   font-family: Arial, sans-serif;
-  font-weight: bold;
-  font-size: 1.2rem;
+  font-size: 1.2rem;                   /* Original size */
   text-align: center;
-  margin: 8px 0;
-  
-  /* Sharp black outline for that old-school readability */
-  text-shadow: 
-    1px 1px 0 #000,
-    -1px -1px 0 #000,
-    1px -1px 0 #000,
-    -1px 1px 0 #000,
-    2px 2px 3px rgba(0,0,0,0.8);
+  margin: 5px 0;
+  text-shadow: 0 0 4px rgba(0,0,0,0.8);
 }
 
-/* 3. The actual values (The numbers) */
+/* Keeps the numbers white so they remain the focus */
 #finalScore span, 
 #end-screen p span {
-  color: #ffffff !important; /* White numbers for contrast */
-  text-shadow: 1px 1px 0 #000;
+  color: #ffffff !important;
 }
 
-
-
-
+/* ====== END SCREEN SPACING ====== */
+#end-screen {
+  display: flex;
+  flex-direction: column;
+  gap: 20px; 
+  align-items: center;
+}
 
 
 
