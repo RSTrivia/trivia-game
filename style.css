@@ -515,32 +515,41 @@ h1 {
 
 /* here now====== user controls and name and level ===== */
 @media (max-width: 480px) {
-  /* 1. Reduce the container's internal wall on the left */
-  .container {
-    padding-left: 8px !important; /* Standard was 15px/25px; 8px brings it much closer to edge */
-  }
-
   #user-controls {
     justify-content: flex-start !important;
-    padding-left: 0 !important; /* Ensure the row isn't pushing itself in */
-    margin-left: -4px !important; /* Negative margin to "cheat" even closer to the edge */
+    padding: 0 !important;
+    width: 100%;
     gap: 0 !important;
   }
 
   .icon-group {
     flex: 0 0 auto !important;
-    gap: 1px !important; /* Tiny gap between buttons */
-    margin-left: 0 !important;
-    padding-left: 0 !important;
-  }
-
-  #shareBtn {
-    /* Ensure the first button has no left-side margin */
-    margin-left: 0 !important;
+    display: flex !important;
+    /* NEGATIVE MARGIN: Pulls buttons toward the container edge */
+    margin-left: -12px !important; 
+    /* CRUSH GAPS: Overlap buttons slightly to remove dead space */
+    gap: -4px !important; 
   }
 
   #userDisplay {
-    margin-left: -5px !important; /* Pulls text closer to mic as we did before */
+    flex: 1 !important;
+    text-align: left !important;
+    align-items: flex-start !important;
+    /* ULTRA-TIGHT: Pulls text much closer to the mic icon */
+    margin-left: -10px !important; 
+    padding: 0 !important;
+  }
+
+  #shareBtn, #muteBtn, #logBtn {
+    left: 0 !important; /* Lock position to stop jumping */
+    width: 32px !important;
+    padding: 0 !important;
+    /* Ensure no ghost margins */
+    margin: 0 !important; 
+  }
+
+  #user-controls::after {
+    display: none !important;
   }
 }
 
@@ -1848,6 +1857,7 @@ input.input-field:-webkit-autofill:active {
   transition: 0s !important;
 }
 /* ------------ help icon ------------ */
+
 
 
 
