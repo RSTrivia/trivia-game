@@ -46,7 +46,11 @@ signupBtn.addEventListener('click', async () => {
     const password = passwordInput.value;
     
     setBusy(true);
-    
+    // 🛑 STOP if the name is longer than 8
+    if (username.length > 8) {
+        setBusy(false);
+        return showGoldAlert("Max 8 characters allowed!");
+    }
     // Add a Password Length Check
     if (password.length < 6) {
         setBusy(false);
