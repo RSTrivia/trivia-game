@@ -1209,7 +1209,7 @@ input.input-field:-webkit-autofill:active {
 .user-info-row {
   font-size: 1.2rem;       /* Matches your #userDisplay font-size */
   color: #d4af37;           /* The exact gold from your Player:Shir style */
-  min-height: 24px;
+  min-height: 30px; /* change fhere */
   display: flex;
   align-items: center;
   white-space: nowrap;
@@ -1846,6 +1846,7 @@ input.input-field:-webkit-autofill:active {
   transition: 0s !important;
 }
 /* ------------ help icon ------------ */
+
 
 
 
