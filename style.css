@@ -1110,36 +1110,6 @@ input.input-field:-webkit-autofill:active {
 }
 
 
-
-/* ====== MOBILE NO-FLASH & FIXED BORDERS ====== */
-@media (pointer: coarse) {
-  /* 1. Remove all hover/active highlights (The "Flash") */
-  .answer-btn:hover, 
-  .answer-btn:active {
-    background-color: #181A1B !important;
-    border-color: #8C8273 !important; /* Keep original border */
-    transition: none !important;
-  }
-
-  /* 2. Success/Failure colors - NO border change */
-  .answer-btn.correct { 
-    background-color: #3d8c40 !important; 
-    border-color: #8C8273 !important; /* Force original border even when correct */
-  }
-  
-  .answer-btn.wrong { 
-    background-color: #a63232 !important; 
-    border-color: #8C8273 !important; /* Force original border even when wrong */
-  }
-
-  /* 3. Disable the browser's default grey tap highlight */
-  * {
-    -webkit-tap-highlight-color: transparent;
-  }
-}
-
-
-
 /*                            new for xp drops                                              */
 
 /* Ensure the game div is the absolute anchor */
@@ -1871,19 +1841,6 @@ input.input-field:-webkit-autofill:active {
   border-color: #d4af37;
   /* Subtle glow to make the answer feel "active" */
   box-shadow: 0 0 10px rgba(166, 141, 82, 0.2);
-}
-
-/* Keep these solid so the player clearly knows if they were right or wrong */
-.correct { 
-  background-color: #2d5a27 !important; 
-  border-color: #3d8c40 !important; 
-  color: #ffffff !important; 
-}
-
-.wrong { 
-  background-color: #7a2020 !important; 
-  border-color: #a63232 !important; 
-  color: #ffffff !important; 
 }
 
 
