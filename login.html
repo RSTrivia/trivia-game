@@ -78,8 +78,32 @@
   <!-- Scripts -->
   <script src="background.js"></script>
   <script type="module" src="login.js"></script>
+  <script>
+  // This looks for EVERY button (big and small)
+  const allButtons = document.querySelectorAll('.btn, .btn-small');
+
+  allButtons.forEach(button => {
+    // When finger touches down
+    button.addEventListener('touchstart', () => {
+      button.classList.add('tapped');
+    }, { passive: true });
+
+    // When finger lifts up
+    button.addEventListener('touchend', () => {
+      setTimeout(() => {
+        button.classList.remove('tapped');
+      }, 100); // The 100ms delay makes the flash visible to the eye
+    });
+
+    // Safety: if the user slides their finger off the button
+    button.addEventListener('touchcancel', () => {
+      button.classList.remove('tapped');
+    });
+  });
+</script>
 </body>
 </html>
+
 
 
 
