@@ -1863,68 +1863,6 @@ input.input-field:-webkit-autofill:active {
 
 
 
-/* ====== ANSWER BUTTONS ===== */
-.answer-btn {
-  /* Darker obsidian-style background */
-  background-color: #121212; 
-  /* BRONZE-GOLD BORDER: Muted and professional, not "boring" white */
-  border: 2px solid #a68d52; 
-  /* GENTLE ANTIQUE TEXT: Using a variation of the color you liked (#C5AA66) */
-  color: #c5aa66;
-  padding: 12px;
-  margin: 6px 0;
-  width: 100%;
-  min-width: 100%;
-  flex-shrink: 0;
-  border-radius: 6px;
-  font-size: 1rem;
-  transition: all 0.15s ease;
-  cursor: pointer;
-  box-sizing: border-box;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-}
-
-.answer-btn:hover {
-  /* Slightly lighter background */
-  background-color: #1c1c1c;
-  /* HIGHLIGHT GOLD BORDER: A brighter pop when hovering */
-  border-color: #d4af37;
-  /* WHITE-GOLD TEXT: Looks like it's glowing under a torch */
-  color: #fff8dc; 
-  /* Subtle glow to make the answer feel "active" */
-  box-shadow: 0 0 10px rgba(166, 141, 82, 0.2);
-}
-
-.answer-btn:disabled:hover {
-  background-color: #121212;
-  border-color: #a68d52;
-  color: #c5aa66;
-  cursor: default;
-}
-
-/* Keep these solid so the player clearly knows if they were right or wrong */
-.correct { 
-  background-color: #2d5a27 !important; 
-  border-color: #3d8c40 !important; 
-  color: #ffffff !important; 
-}
-
-.wrong { 
-  background-color: #7a2020 !important; 
-  border-color: #a63232 !important; 
-  color: #ffffff !important; 
-}
-
-
-
-
-
-
-
-
-
-
-
 
 
 
