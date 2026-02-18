@@ -1846,9 +1846,11 @@ input.input-field:-webkit-autofill:active {
 #finalScore span, 
 #end-screen p span,
 #streakCount {
-  color: #C5AA66 !important;
-  text-shadow: 0 0 5px rgba(255, 255, 255, 0.2); /* Optional: very subtle white glow */
+  color: #D6C392 !important;
+ /* Very soft, diffused shadow to avoid a "harsh" look */
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
+
 
 
 
