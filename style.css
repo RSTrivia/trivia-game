@@ -1784,82 +1784,85 @@ input.input-field:-webkit-autofill:active {
 
 
 /* ------------ discord icon ------------ */
-/* 1. The Square Container - STRICTOR RESET */
-#discordBtn {
-  position: absolute !important;
-  top: 7px;
-  right: 35px;
-  width: 26px;
-  height: 26px;
-  z-index: 100;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  
-  /* Kill all browser-injected highlights */
-  background: none !important;
-  background-color: transparent !important;
-  border: none !important;
-  outline: none !important;
-  -webkit-tap-highlight-color: transparent !important;
-  
-  /* Kill all filters on the box itself */
-  filter: none !important; 
-  -webkit-filter: none !important;
-  
-  /* Anti-Drag */
-  -webkit-user-drag: none;
-  user-select: none;
-  touch-action: manipulation;
-}
 
-/* 2. The Actual Icon - The ONLY thing allowed to glow */
+/* 1. Base Icon Style - The ONLY place filters should live */
 .gold-svg-icon {
-  filter: drop-shadow(0px 1px 1px rgba(0,0,0,0.8));
-  transition: filter 0.2s ease, opacity 0.2s ease;
-  opacity: 0.9;
-  pointer-events: none; /* Crucial: touch passes through to the button */
+    filter: drop-shadow(0px 1px 1px rgba(0,0,0,0.8)) !important;
+    transition: filter 0.2s ease, opacity 0.2s ease;
+    opacity: 0.9;
+    pointer-events: none; /* Touches pass through to the button */
 }
 
-/* 3. PC Hover - ICON ONLY */
+/* 2. The Button Container - Strictly for positioning and scaling */
+#discordBtn {
+    position: absolute !important;
+    top: 7px;
+    right: 35px;
+    width: 26px;
+    height: 26px;
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    
+    /* REMOVE ALL VISUAL BOX ELEMENTS */
+    background: none !important;
+    background-color: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    filter: none !important; 
+    -webkit-tap-highlight-color: transparent !important;
+
+    /* Anti-Drag */
+    -webkit-user-drag: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    touch-action: manipulation;
+}
+
+/* 3. HOVER / ACTIVE / TAPPED - Target the ICON ONLY */
 @media (hover: hover) {
-  #discordBtn:hover .gold-svg-icon {
-    opacity: 1 !important;
-    filter: sepia(1) saturate(2.5) hue-rotate(-20deg) brightness(1.1) drop-shadow(0 0 5px rgba(212, 175, 55, 0.6)) !important;
-  }
+    #discordBtn:hover .gold-svg-icon {
+        opacity: 1 !important;
+        filter: sepia(1) saturate(2.5) hue-rotate(-20deg) brightness(1.1) drop-shadow(0 0 5px rgba(212, 175, 55, 0.6)) !important;
+    }
 }
 
-/* 4. PC Click & Mobile Tap - ICON ONLY */
-/* We target the icon specifically so the box stays invisible */
+/* Combined PC Click and Mobile Tap for the ICON */
 #discordBtn:active .gold-svg-icon,
-#discordBtn.tapped .gold-svg-icon {
-  filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.3) drop-shadow(0 0 8px #ffea8a) !important;
-  opacity: 1 !important;
-}
-
-/* 5. The "Press" Animation - Container ONLY */
-#discordBtn:active,
-#discordBtn.tapped {
-  transform: scale(0.9) !important;
-  background: transparent !important;
-  filter: none !important; /* Double-down: no filter on the container! */
-}
-
-/* 6. Strict Mobile Override */
-@media (pointer: coarse) {
-  /* Prevent the browser from applying hover filters to the button on tap */
-  #discordBtn:hover {
-    filter: none !important;
-  }
-  
-  #discordBtn.tapped .gold-svg-icon {
+#discordBtn.tapped .gold-svg-icon,
+#helpBtn:active .gold-text-icon,
+#helpBtn.tapped .gold-text-icon {
     filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.3) drop-shadow(0 0 8px #ffea8a) !important;
-  }
+    opacity: 1 !important;
+}
+
+/* 4. Physical Press - Scale the BUTTON (but no filters here!) */
+#discordBtn:active,
+#discordBtn.tapped,
+#helpBtn:active,
+#helpBtn.tapped {
+    transform: scale(0.9) !important;
+    background: transparent !important;
+    filter: none !important; /* Ensure the square box never gets a filter */
+    transition: 0s !important;
+}
+
+/* 5. Clean up Mobile-specific "Sticky" behaviors */
+@media (pointer: coarse) {
+    #discordBtn, #helpBtn {
+        background: transparent !important;
+        -webkit-filter: none !important;
+    }
+    /* Stop mobile from showing hover effects on the box */
+    #discordBtn:hover, #helpBtn:hover {
+        filter: none !important;
+    }
 }
 /* ------------ discord icon ------------ */
-
-
 
 
 
