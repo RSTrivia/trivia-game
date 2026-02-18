@@ -374,7 +374,7 @@ h1 {
   margin-bottom: 30px;
   padding: 0 10px; /* Keeps icons from touching the very edge */
   box-sizing: border-box;
-  height: 50px;
+  height: 40px;
 }
 
 /* 1. The Left Side (Icons) */
@@ -395,8 +395,16 @@ h1 {
   margin: 0 !important;
   font-size: 1.2rem;
   color: #d4af37;
+  /* 1. Use line-height to define space instead of a hard height */
+  line-height: 1.2; 
+  overflow: visible;
 }
-
+/* 4. This is the "Anchor" for the Level text */
+#levelDisplay {
+  display: block;
+  min-height: 1.2em; /* This reserves exactly one line of space */
+  width: 100%;
+}
 /* 3. The "Ghost" Right Side (To balance the center) */
 #user-controls::after {
   content: "";
@@ -1838,6 +1846,7 @@ input.input-field:-webkit-autofill:active {
   transition: 0s !important;
 }
 /* ------------ help icon ------------ */
+
 
 
 
