@@ -383,22 +383,23 @@ h1 {
   gap: 8px;
   flex: 1; /* Takes up 1/3 of the space */
   justify-content: flex-start; /* Aligns icons to the left */
-  min-height: 30px; /* vhange here */
 }
 
 /* 2. The Center Side (Name) */
 #userDisplay {
-  flex: 2; /* Takes up more space to stay centered */
-  text-align: center;
+  flex: 2;
+  text-align: left;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  justify-content: center; /* Center vertically */
   margin: 0 !important;
   font-size: 1.2rem;
   color: #d4af37;
-  /* 1. Use line-height to define space instead of a hard height */
-  min-height: 52px; 
-  overflow: visible;
+  /* LOCK THE HEIGHT: This prevents jumping when text appears */
+  height: 44px; 
+  min-height: 44px;
+  /* Prevent horizontal shifting */
+  min-width: 120px; 
 }
 
 /* 3. The "Ghost" Right Side (To balance the center) */
@@ -1094,7 +1095,7 @@ input.input-field:-webkit-autofill:active {
   /* 3. INCREASE gap between Text and Mic */
   #userDisplay {
     /* This creates the wide gap you want without pushing buttons off-screen */
-    margin-left: 1px !important;
+    margin-left: 10px !important;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -1842,6 +1843,7 @@ input.input-field:-webkit-autofill:active {
   transition: 0s !important;
 }
 /* ------------ help icon ------------ */
+
 
 
 
