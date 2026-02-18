@@ -519,7 +519,7 @@ h1 {
     /* Magnetize everything to the left */
     justify-content: flex-start !important; 
     /* This is the gap between the last icon (mic) and the text */
-    gap: 6px !important; 
+    gap: 2px !important; 
     padding-left: 2px !important;
     width: 100%;
   }
@@ -527,7 +527,7 @@ h1 {
   .icon-group {
     flex: 0 0 auto !important; 
     /* This is the gap BETWEEN the 3 icons */
-    gap: 4px !important; 
+    gap: 2px !important; 
   }
 
   #userDisplay {
@@ -1856,6 +1856,7 @@ input.input-field:-webkit-autofill:active {
   transition: 0s !important;
 }
 /* ------------ help icon ------------ */
+
 
 
 
