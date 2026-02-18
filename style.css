@@ -1844,9 +1844,12 @@ input.input-field:-webkit-autofill:active {
 
 /* Keeps the numbers white so they remain the focus */
 #finalScore span, 
-#end-screen p span {
+#end-screen p span,
+#streakCount {
   color: #ffffff !important;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.2); /* Optional: very subtle white glow */
 }
+
 
 
 
