@@ -524,6 +524,12 @@ h1 {
   cursor: pointer;
   /* overflow: visible;*/
   filter: none !important; /* Clear the global dark filter */
+  /* ANTI-DRAG PROPERTIES */
+  -webkit-user-drag: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: manipulation; /* Prevents double-tap zoom delay */
 }
 
 /* Adjust the icon size and look */
@@ -1815,6 +1821,12 @@ input.input-field:-webkit-autofill:active {
   cursor: pointer;
   text-decoration: none;
   filter: none !important;
+  /* ANTI-DRAG PROPERTIES */
+  -webkit-user-drag: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: manipulation; /* Prevents double-tap zoom delay */
 }
 
 .gold-svg-icon {
@@ -1839,6 +1851,7 @@ input.input-field:-webkit-autofill:active {
   transition: 0s !important;
 }
 /*   ------------discord icon------------ */
+
 
 
 
