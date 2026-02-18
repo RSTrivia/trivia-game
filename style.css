@@ -1835,7 +1835,7 @@ input.input-field:-webkit-autofill:active {
   transition: filter 0.2s ease;
 }
 
-/* HOVER - Exact match to your @media (hover: hover) logic */
+/* 3. PC Hover - Targets the ICON */
 @media (hover: hover) {
   #discordBtn:hover {
     opacity: 1 !important;
@@ -1843,8 +1843,10 @@ input.input-field:-webkit-autofill:active {
   }
 }
 
-/* ACTIVE - Exact match to your click logic */
-#discordBtn:active {
+/* 4. PC Click (:active) AND Mobile Tap (.tapped) - Targets the ICON */
+/* This is the fix: It applies the glow to the logo shape only */
+#discordBtn:active .gold-svg-icon,
+#discordBtn.tapped .gold-svg-icon {
   filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.3) drop-shadow(0 0 8px #ffea8a) !important;
   transform: scale(0.9);
   opacity: 1 !important;
@@ -1860,7 +1862,12 @@ input.input-field:-webkit-autofill:active {
     transition: 0s !important;
     background: transparent !important; /* Forces no square background */
   }
-
+  /* 5. Physical "Press" feel - Shrink the container */
+  #discordBtn:active,
+  #discordBtn.tapped {
+    transform: scale(0.9) !important;
+    transition: 0s !important;
+  }
   /* 2. Apply the "Flash" ONLY to the icon/text pixels */
   #helpBtn.tapped .gold-text-icon,
   #discordBtn.tapped .gold-svg-icon {
@@ -1869,6 +1876,7 @@ input.input-field:-webkit-autofill:active {
   }
 }
 /*   ------------discord icon------------ */
+
 
 
 
