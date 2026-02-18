@@ -507,70 +507,6 @@ h1 {
     100% { opacity: 0; }
 }
 
-/* Position the Help Button in the top right corner of the .container */
-#helpBtn {
-  position: absolute !important;
-  top: 5px;    /* Distance from top edge */
-  right: 3px;  /* Distance from right edge */
-  width: 26px; /* Reduced size (was 32px) */
-  height: 26px;/* Reduced size (was 32px) */
-  z-index: 100;
-  padding: 0;
-  background: none;
-  border: none;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  /* overflow: visible;*/
-  filter: none !important; /* Clear the global dark filter */
-  /* ANTI-DRAG PROPERTIES */
-  -webkit-user-drag: none;
-  user-select: none;
-  -webkit-user-select: none;
-  -webkit-touch-callout: none;
-  touch-action: manipulation; /* Prevents double-tap zoom delay */
-}
-
-/* Adjust the icon size and look */
-/* Adjust the icon size and look */
-.gold-text-icon {
-  font-weight: 900;
-  font-size: 1.1rem !important;
-  line-height: 1.5;
-  /* Swapped to deeper, more muted gold tones */
-  background: linear-gradient(to bottom, #d4af37 0%, #b8860b 50%, #8b6508 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  display: inline-block;
-  
-  /* Standard shadow - removed the bright glow filters */
-  filter: drop-shadow(0px 1px 1px rgba(0,0,0,0.8)) !important;
-}
-
-#helpBtn:hover .gold-text-icon {
-  /* Hover is now a subtle highlight rather than a bright flash */
-  filter: drop-shadow(0 0 2px rgba(212, 175, 55, 0.5)) brightness(1.1) !important;
-  transition: filter 0.2s ease;
-}
-
-@media (hover: hover) {
-    #helpBtn:hover {
-        opacity: 1 !important;
-        /* Transitions from Bronze to a Polished Brass Gold on hover */
-        filter: sepia(1) saturate(2.5) hue-rotate(-20deg) brightness(1.1) drop-shadow(0 0 5px rgba(212, 175, 55, 0.6)) !important;
-    }
-}
-
-/* ACTIVE / TAP */
-#helpBtn:active {
-    /* Instant bright flash when clicked */
-  filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.3) drop-shadow(0 0 8px #ffea8a) !important;
-  transform: scale(0.9);
-  opacity: 1 !important;
-  transition: 0s !important;
-}
-
 /* MOBILE FIX: Stop the icons from jumping out of the container */
 @media (max-width: 480px) {
   #user-controls {
@@ -1835,10 +1771,74 @@ input.input-field:-webkit-autofill:active {
   transition: 0s !important;
   filter: none !important; /* Ensure the container never glows */
 }
+/* ------------ discord icon ------------ */
 
 
+/* ------------ help icon ------------ */
+#helpBtn {
+  position: absolute !important;
+  top: 5px;
+  right: 3px;
+  width: 26px;
+  height: 26px;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  padding: 0;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  
+  /* CRITICAL FIXES */
+  overflow: visible !important; /* Let the glow escape the box */
+  filter: none !important;     /* Keep the square container clear */
+  -webkit-tap-highlight-color: transparent !important;
 
+  /* ANTI-DRAG */
+  -webkit-user-drag: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+}
 
+.gold-text-icon {
+  font-weight: 900;
+  font-size: 1.1rem !important;
+  line-height: 1.5;
+  background: linear-gradient(to bottom, #d4af37 0%, #b8860b 50%, #8b6508 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  filter: drop-shadow(0px 1px 1px rgba(0,0,0,0.8)) !important;
+  transition: filter 0.2s ease;
+}
+
+/* PC HOVER - Target the ICON */
+@media (hover: hover) {
+  #helpBtn:hover .gold-text-icon {
+    filter: sepia(1) saturate(2.5) hue-rotate(-20deg) brightness(1.1) drop-shadow(0 0 5px rgba(212, 175, 55, 0.6)) !important;
+  }
+}
+
+/* ACTIVE (PC) & TAPPED (MOBILE) - Target the ICON */
+#helpBtn:active .gold-text-icon,
+#helpBtn.tapped .gold-text-icon {
+  filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.3) drop-shadow(0 0 8px #ffea8a) !important;
+  opacity: 1 !important;
+  transition: 0s !important;
+}
+
+/* PHYSICAL PRESS - Scale the button but NO filter on the box */
+#helpBtn:active,
+#helpBtn.tapped {
+  transform: scale(0.9) !important;
+  filter: none !important; 
+  transition: 0s !important;
+}
+/* ------------ help icon ------------ */
 
 
 
