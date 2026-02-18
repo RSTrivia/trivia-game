@@ -513,7 +513,7 @@ h1 {
 }
 
 
-/* here now====== user controls and name and level ===== */
+/* ====== user controls and name and level ===== */
 @media (max-width: 480px) {
   #user-controls {
     justify-content: flex-start !important;
@@ -528,7 +528,7 @@ h1 {
     /* NEGATIVE MARGIN: Pulls buttons toward the container edge */
     margin-left: -12px !important; 
     /* CRUSH GAPS: Overlap buttons slightly to remove dead space */
-    gap: 0px !important; 
+    gap: 1px !important; 
   }
 
   #userDisplay {
@@ -536,7 +536,7 @@ h1 {
     text-align: left !important;
     align-items: flex-start !important;
     /* ULTRA-TIGHT: Pulls text much closer to the mic icon */
-    margin-left: 4px !important; 
+    margin-left: 3px !important; 
     padding: 0 !important;
   }
 
@@ -1840,6 +1840,7 @@ input.input-field:-webkit-autofill:active {
   transition: 0s !important;
 }
 /* ------------ help icon ------------ */
+
 
 
 
