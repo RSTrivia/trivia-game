@@ -512,27 +512,31 @@ h1 {
     100% { opacity: 0; }
 }
 
-/* MOBILE FIX: Stop the icons from jumping out of the container */
 @media (max-width: 480px) {
   #user-controls {
-    justify-content: flex-start; /* Align everything to the left side */
-    gap: 0; 
-  }
-
-  /* Remove the 'left' property which causes the jump */
-  #shareBtn, #muteBtn, #logBtn {
-    left: 0 !important; 
-    margin-right: 5px !important;
-    flex-shrink: 0; /* Stop them from squishing */
+    /* Change from center to flex-start to move everything left */
+    justify-content: flex-start !important; 
+    padding-left: 5px !important;
+    gap: 8px !important; /* This is the gap between the Icon Group and the Name */
   }
 
   .icon-group {
-    flex: 0 0 auto !important; /* Take only exactly the space needed */
-    gap: 4px !important;
+    /* Takes only exactly the space the icons need */
+    flex: 0 0 auto !important; 
+    gap: 2px !important; /* Tighter gap between the icons themselves */
   }
 
   #userDisplay {
-    margin-left: 10px !important; /* Controlled gap from the icons */
+    /* Allows the name to sit right next to the icons */
+    flex: 0 1 auto !important; 
+    margin-left: 0 !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+  }
+
+  /* Remove the 'ghost' balancer that was pushing the name to the center */
+  #user-controls::after {
+    display: none !important;
   }
 }
 /* Tapped State: If you use the mobileFlash function, this matches the gold flash */
@@ -1847,6 +1851,7 @@ input.input-field:-webkit-autofill:active {
   transition: 0s !important;
 }
 /* ------------ help icon ------------ */
+
 
 
 
