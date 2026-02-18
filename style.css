@@ -1848,6 +1848,51 @@ input.input-field:-webkit-autofill:active {
 
 
 
+/* ====== OSRS-STYLE END SCREEN ====== */
+
+/* 1. The Title: Solid Yellow with "Staircase" Shadow */
+#end-screen #game-over-title {
+  color: #ff981f !important; /* Classic OSRS Orange-Gold */
+  -webkit-text-fill-color: #ff981f !important;
+  background: none !important;
+  font-family: 'Cinzel', serif;
+  font-size: 2rem;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  
+  /* This specific shadow mimics the "thick" OSRS font depth */
+  text-shadow: 
+    2px 2px 0px #000, 
+    3px 3px 0px rgba(0,0,0,0.5),
+    0px 0px 10px rgba(255, 152, 31, 0.3);
+}
+
+/* 2. Score & Time: The "Yellow Chat" Look */
+#end-screen p, 
+#finalScore {
+  color: #ffff00 !important; /* Bright Interface Yellow */
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+  font-size: 1.2rem;
+  text-align: center;
+  margin: 8px 0;
+  
+  /* Sharp black outline for that old-school readability */
+  text-shadow: 
+    1px 1px 0 #000,
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    2px 2px 3px rgba(0,0,0,0.8);
+}
+
+/* 3. The actual values (The numbers) */
+#finalScore span, 
+#end-screen p span {
+  color: #ffffff !important; /* White numbers for contrast */
+  text-shadow: 1px 1px 0 #000;
+}
 
 
 
