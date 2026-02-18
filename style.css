@@ -1094,7 +1094,10 @@ input.input-field:-webkit-autofill:active {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    min-height: 48px;
+    /* LOCK THE BOX */
+    min-height: 52px;       /* Reserves exact height for 2 lines of text */
+    justify-content: flex-start; /* Keeps text pinned to the top so it doesn't "grow" downwards */
+    overflow: hidden;       /* Prevents any layout spilling */
   }
 
 }
@@ -1839,6 +1842,7 @@ input.input-field:-webkit-autofill:active {
   transition: 0s !important;
 }
 /* ------------ help icon ------------ */
+
 
 
 
