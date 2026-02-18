@@ -536,7 +536,7 @@ h1 {
     text-align: left !important;
     align-items: flex-start !important;
     /* ULTRA-TIGHT: Pulls text much closer to the mic icon */
-    margin-left: -8px !important; 
+    margin-left: -20px !important; 
     padding: 0 !important;
   }
 
@@ -1861,6 +1861,7 @@ input.input-field:-webkit-autofill:active {
   transition: 0s !important;
 }
 /* ------------ help icon ------------ */
+
 
 
 
