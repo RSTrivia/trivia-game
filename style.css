@@ -469,6 +469,13 @@ h1 {
     filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.2) drop-shadow(0 0 5px #ffea8a) !important;
     /* filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.1);*/
   }
+  /* This targets the mic ONLY when it has the .is-muted class */
+  #muteBtn.is-muted:hover {
+    opacity: 0.8 !important; /* Slightly clearer than 0.5 */
+    /* Brightens the grey without adding color/sepia */
+    filter: grayscale(1) brightness(0.8) !important; 
+    cursor: pointer;
+  }
 }
 
 .copy-tooltip {
@@ -1832,6 +1839,7 @@ input.input-field:-webkit-autofill:active {
   transition: 0s !important;
 }
 /*   ------------discord icon------------ */
+
 
 
 
