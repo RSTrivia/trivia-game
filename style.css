@@ -515,20 +515,24 @@ h1 {
 /* MOBILE FIX: Stop the icons from jumping out of the container */
 @media (max-width: 480px) {
   #user-controls {
-    justify-content: center;
-    width: 100%;
-    gap: 3px; /* Tighten the icon gap */
+    justify-content: flex-start; /* Align everything to the left side */
+    gap: 0; 
   }
 
+  /* Remove the 'left' property which causes the jump */
   #shareBtn, #muteBtn, #logBtn {
-    left: -10px !important; /* Smaller shift for small screens change here*/
+    left: 0 !important; 
+    margin-right: 5px !important;
+    flex-shrink: 0; /* Stop them from squishing */
   }
+
   .icon-group {
-      gap: 2px !important; /* Reduced from 8px to 4px */
-     /*flex: 0 1 auto !important;  Stop it from taking up 1/3 of the screen */
-    }
+    flex: 0 0 auto !important; /* Take only exactly the space needed */
+    gap: 4px !important;
+  }
+
   #userDisplay {
-    margin-left: 5px !important;
+    margin-left: 10px !important; /* Controlled gap from the icons */
   }
 }
 /* Tapped State: If you use the mobileFlash function, this matches the gold flash */
@@ -1843,6 +1847,7 @@ input.input-field:-webkit-autofill:active {
   transition: 0s !important;
 }
 /* ------------ help icon ------------ */
+
 
 
 
