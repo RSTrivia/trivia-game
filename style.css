@@ -244,7 +244,7 @@ a {
 .answer-btn {
   background-color: #181A1B;
   border: 2px solid #8C8273;
-  color: #f5f5f5;
+  color: #D7D8D9;
   padding: 12px;
   margin: 6px 0;
   width: 100%;             /* Occupy full container width */
@@ -302,7 +302,7 @@ a {
 }
 
 #questionText {
-  color: #f5f5f5;
+  color: #D7D8D9;
   font-size: 1.2rem;
   margin: 10px 0;
   text-align: center;
@@ -1858,6 +1858,7 @@ input.input-field:-webkit-autofill:active {
     -webkit-text-fill-color: #D7D8D9 !important;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8) !important;
 }
+
 
 
 
