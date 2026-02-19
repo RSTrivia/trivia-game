@@ -641,6 +641,13 @@ function resetGame() {
 
 
 async function preloadNextQuestions(targetCount = 6) {
+    // Calculate how many we already have/used
+    const totalSeen = usedInThisSession.length + preloadQueue.length + (currentQuestion ? 1 : 0);
+    // SHORT CIRCUIT: If we've already queued or used everything in the DB, STOP.
+    if (totalSeen >= number_of_questions) {
+        console.log("Pool exhausted. Stopping preload.");
+        return;
+    }
     // 1. Calculate how many we actually need
     const needed = targetCount - preloadQueue.length;
     if (needed <= 0) return;
@@ -1926,6 +1933,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
