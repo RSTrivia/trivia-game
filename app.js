@@ -655,9 +655,11 @@ async function preloadNextQuestions(targetCount = 6) {
         }
     } else {
     // We don't 'await' the loop itself, allowing them to run in parallel
-    for (let i = 0; i < needed; i++) {
-        // This helper handles the fetch, the image warming, and the queue push
-        await fetchAndBufferQuestion();
+    // Fire all workers in parallel
+    const workers = Array.from({ length: needed }, () => fetchAndBufferQuestion());
+    
+    // Wait for all of them to finish their background work
+    await Promise.all(workers);
     }
   }
 }
@@ -676,12 +678,14 @@ async function fetchAndBufferQuestion() {
             const availableIds = activePool.filter(id => 
                 !queuedIds.includes(id) && 
                 !usedInThisSession.includes(id) &&
+                !pendingIds.includes(String(id)) &&
                 (currentQuestion ? currentQuestion.id !== id : true)
             );
 
             if (availableIds.length > 0) {
                 const pick = availableIds[0]; 
                 usedInThisSession.push(pick); 
+                pendingIds.push(String(pick));
                 questionData = await fetchDeterministicQuestion(pick);
             } 
             // If the pool is empty, Pool Mode just ends (no fallback to random)
@@ -727,15 +731,21 @@ async function fetchRandomQuestion() {
     if (isWeeklyMode) poolFilter = weeklySessionPool;
     else if (isDailyMode) poolFilter = dailySessionPool;
 
-    const { data, error } = await supabase.rpc('get_random_question', {
+    const { data, error } = await supabase.rpc('get_random_test_question', {
         excluded_ids: allExcludes, 
         included_ids: poolFilter // Sends the array if in pool mode, else null
     });
 
     if (!error && data?.[0]) {
         const question = data[0];
-        // 3. Mark as pending to prevent other parallel workers from picking it
-        pendingIds.push(String(question.id));
+        const qId = String(question.id);
+        // --- THE FIX: RACE CONDITION CHECK ---
+        // If another worker grabbed this ID while this request was in flight:
+        if (pendingIds.includes(qId)) {
+            return await fetchRandomQuestion(); // Recurse: Try again for a new random ID
+        }
+        // Reserve it for this worker
+        pendingIds.push(qId);
         return question;
     }
     
@@ -1927,6 +1937,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
