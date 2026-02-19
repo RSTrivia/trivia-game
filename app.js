@@ -567,7 +567,6 @@ async function handleAuthChange(event, session) {
  
             // UI Update
             if (span) span.textContent = ' ' + username;
-            ();
           }
       }
    } catch (err) {
@@ -1940,6 +1939,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
