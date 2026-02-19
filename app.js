@@ -725,7 +725,7 @@ async function fetchRandomQuestion() {
     if (isWeeklyMode) poolFilter = weeklySessionPool;
     else if (isDailyMode) poolFilter = dailySessionPool;
 
-    const { data, error } = await supabase.rpc('get_random_question', {
+    const { data, error } = await supabase.rpc('get_random_test_question', {
         excluded_ids: allExcludes, 
         included_ids: poolFilter // Sends the array if in pool mode, else null
     });
@@ -1924,6 +1924,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
