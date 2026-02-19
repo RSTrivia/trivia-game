@@ -678,31 +678,34 @@ async function preloadNextQuestions(targetCount = 6) {
 }
 
 async function fetchAndBufferQuestion(assignedId) {
-    if (!assignedId) return; // Safety check
+    if (!assignedId) return;
     
     try {
-        // Mark as pending immediately to prevent double-fetching
-        pendingIds.push(assignedId.toString());
-
-        // We use your existing deterministic helper
         const questionData = await fetchDeterministicQuestion(assignedId);
 
-        if (questionData) {
-            // Image Warming
-            if (questionData.question_image) {
-                const img = new Image();
-                img.src = questionData.question_image;
-                img.decode().catch(() => {});
-                questionData._preloadedImg = img;
+        if (questionData && questionData.question_image) {
+            // Create the image object immediately
+            const img = new Image();
+            img.src = questionData.question_image;
+            
+            // This 'decode()' is the secret sauce. It forces the browser to 
+            // decompress the image in the background thread.
+            try {
+                await img.decode();
+                questionData._preloadedImg = img; 
+            } catch (e) {
+                console.warn("Image decode failed in background", e);
             }
             
-            usedInThisSession.push(assignedId); // Mark as used
+            usedInThisSession.push(assignedId);
+            preloadQueue.push(questionData);
+        } else if (questionData) {
+            usedInThisSession.push(assignedId);
             preloadQueue.push(questionData);
         }
     } catch (err) {
         console.error("Fetch worker failed:", err);
     } finally {
-        // Remove from pending whether it succeeded or failed
         pendingIds = pendingIds.filter(id => id !== assignedId.toString());
     }
 }
@@ -892,27 +895,20 @@ async function loadQuestion(isFirst = false) {
     answersBox.innerHTML = ''; 
     answersBox.appendChild(fragment);
 
-        // F. IMAGE HANDLING
+    // F. IMAGE HANDLING
     if (currentQuestion.question_image) {
-        const imgToUse = currentQuestion._preloadedImg || new Image();
-        if (!imgToUse.src) imgToUse.src = currentQuestion.question_image;
-    
-        imgToUse.decode().then(() => {
-            // Double check we are still on the same question
-            if (currentQuestion.question_image === imgToUse.src) {
-                questionImage.src = imgToUse.src;
-                questionImage.style.display = 'block';
-                questionImage.style.opacity = '1'; 
-            }
-        }).catch(() => {
+        // Use the already decoded image if it exists
+        if (currentQuestion._preloadedImg) {
+            questionImage.src = currentQuestion._preloadedImg.src;
+            questionImage.style.display = 'block';
+            questionImage.style.opacity = '1'; // Show it instantly
+        } else {
+            // Fallback if the background worker hasn't finished yet
             questionImage.src = currentQuestion.question_image;
             questionImage.style.display = 'block';
-            questionImage.style.opacity = '1';
-        });
+            questionImage.onload = () => { questionImage.style.opacity = '1'; };
+        }
     } else {
-        // If NO image, hide it IMMEDIATELY. 
-        // Since this runs during the 'await' in startGame, 
-        // the layout shifts while the endScreen is still covering it.
         questionImage.style.display = 'none';
         questionImage.style.opacity = '0';
         questionImage.src = ''; 
@@ -1943,6 +1939,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
