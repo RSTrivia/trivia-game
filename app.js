@@ -644,12 +644,19 @@ async function preloadNextQuestions(targetCount = 6) {
     // Calculate how many we already have/used
     const totalSeen = usedInThisSession.length + preloadQueue.length + (currentQuestion ? 1 : 0);
     // SHORT CIRCUIT: If we've already queued or used everything in the DB, STOP.
-    if (totalSeen >= number_of_questions) {
-        console.log("Pool exhausted. Stopping preload.");
+    // 2. Determine how many are actually left in the DB
+    const remainingInDB = number_of_questions - totalSeen;
+    // 3. If nothing is left to fetch, exit immediately
+    if (remainingInDB <= 0) {
+        console.log("Pool exhausted. No more questions to fetch.");
         return;
     }
+
+    // 4. Don't try to fetch more than what actually exists
+    const needed = Math.min(targetCount - preloadQueue.length, remainingInDB);
+  
     // 1. Calculate how many we actually need
-    const needed = targetCount - preloadQueue.length;
+    //const needed = targetCount - preloadQueue.length;
     if (needed <= 0) return;
 
     // Safety for Lite Mode
@@ -1933,6 +1940,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
