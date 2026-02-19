@@ -1721,20 +1721,20 @@ async function startWeeklyChallenge() {
   
     // 1. ENSURE THE POOL IS READY (We only fetch the 50 IDs, not the full data)
     const { data, error } = await supabase.rpc('get_weekly_questions', {});
-    if (error || !questions) {
+    if (error || !data) {
         console.error(error);
         return alert("Error loading weekly questions.");
     }
   
     // 3. CONVERT TO STRING IDS
-    const allWeeklyIds = questions.map(q => String(q.question_id || q.id));
+    const allWeeklyIds = data.map(q => String(q.question_id || q.id));
     
     // 4. LOCK ALL 50 IDS IMMEDIATELY
     // This prevents any other background logic from "stealing" these IDs
     pendingIds = [...allWeeklyIds];
 
-    // 1. Fire the first 10 immediately for a fast start
-    allWeeklyIds.slice(0, 10).forEach(id => fetchAndBufferQuestion(id));
+    // 1. Fire the first 5 immediately for a fast start
+    allWeeklyIds.slice(0, 5).forEach(id => fetchAndBufferQuestion(id));
 
     // 6. WAIT FOR QUESTION #1 (The Barrier)
     // 2. Wait a tiny bit (until first question is ready)
@@ -1931,6 +1931,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
