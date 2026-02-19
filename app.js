@@ -680,8 +680,6 @@ async function preloadNextQuestions(targetCount = 6) {
     // 2. Fire them all at once (Parallel speed!)
     // but we use 'needed' to ensure we don't over-request
     Promise.all(tasks).catch(err => console.error("Parallel fetch failed", err));
-}
-    }
   }
 }
 
@@ -1950,6 +1948,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
