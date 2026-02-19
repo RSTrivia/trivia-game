@@ -728,6 +728,8 @@ async function fetchDeterministicQuestion(qId) {
 }
 
 async function fetchRandomQuestion() {
+    // 1. Check how many workers are ALREADY busy (before adding our own ticket)
+    const currentBusyWorkers = pendingIds.filter(id => id.startsWith('lock-')).length;
     // 0. GENERATE A UNIQUE TICKET IMMEDIATELY (STRICTLY SYNCHRONOUS)
     const ticket = `lock-${Math.random()}`;
     pendingIds.push(ticket);
@@ -745,8 +747,9 @@ async function fetchRandomQuestion() {
     else if (isDailyMode) poolFilter = dailySessionPool;
   try {
         const { data, error } = await supabase.rpc('get_random_test_question', {
-            excluded_ids: allExcludes, 
-            included_ids: poolFilter // Sends the array if in pool mode, else null
+            excluded_ids: allExcludes.filter(id => !id.startsWith('lock-')),
+            included_ids: poolFilter,
+            offset_val: currentBusyWorkers // The magic trick// Sends the array if in pool mode, else null
         });
         // 2. REMOVE THE TICKET IMMEDIATELY AFTER DB RESPONDS
             pendingIds = pendingIds.filter(id => id !== ticket);
@@ -754,8 +757,10 @@ async function fetchRandomQuestion() {
         if (!error && data?.[0]) {
             const question = data[0];
             // 3. Mark as pending to prevent other parallel workers from picking it
-            pendingIds.push(String(question.id));
-            return question;
+            if (!queueIds.includes(String(question.id))) {
+                pendingIds.push(String(question.id));
+                return question;
+            }
         }
     } catch (e) {
         pendingIds = pendingIds.filter(id => id !== ticket);
@@ -1948,6 +1953,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
