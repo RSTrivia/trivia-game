@@ -642,14 +642,15 @@ function resetGame() {
 
 
 async function preloadNextQuestions(targetCount = 6) {
+    // 1. EXIT EARLY for Batch Modes
+    // Daily and Weekly are handled entirely by their start functions.
+    if (isDailyMode || isWeeklyMode) return;
+  
     const needed = targetCount - preloadQueue.length;
     if (needed <= 0) return;
 
-    // Determine which pool we are pulling from
-    let activePool = [];
-    if (isDailyMode) activePool = dailySessionPool;
-    else if (isWeeklyMode) activePool = weeklySessionPool;
-    else activePool = normalSessionPool; // Normal and Lite use the shuffled master list
+    // 2. Normal / Lite Logic only
+    let activePool = normalSessionPool;
   
     const queuedIds = preloadQueue.map(q => String(q.id));
     // MOVE THE DECLARATION ABOVE THE LOGS
@@ -660,9 +661,7 @@ async function preloadNextQuestions(targetCount = 6) {
                !pendingIds.includes(sId) &&
                (currentQuestion ? String(currentQuestion.id) !== sId : true);
     });
-    
-    console.log("Active Pool Length:", activePool.length);
-    console.log("Available IDs after filtering:", availableIds.length);
+    ;
     // CRITICAL: Stop if we ran out of questions in the pool
     if (availableIds.length === 0) return;
 
@@ -714,41 +713,6 @@ async function fetchAndBufferQuestion(assignedId) {
 async function fetchDeterministicQuestion(qId) {
     const { data, error } = await supabase.rpc('get_question_by_id', { input_id: qId });
     return (!error && data?.[0]) ? data[0] : null;
-}
-
-async function fetchRandomQuestion() {
-    // 1. Force everything to String for strict comparison to avoid duplicates
-    const queueIds = preloadQueue.map(q => String(q.id));
-    const currentId = currentQuestion ? [String(currentQuestion.id)] : [];
-    
-    // Combine them with pendingIds (which are already strings)
-    const allExcludes = [...new Set([...queueIds, ...currentId, ...pendingIds])];
-
-    // 2. Determine if we should limit the search to a specific pool
-    // If Weekly or Daily is active, we only want to pull from their respective pools
-    let poolFilter = null;
-    if (isWeeklyMode) poolFilter = weeklySessionPool;
-    else if (isDailyMode) poolFilter = dailySessionPool;
-
-    const { data, error } = await supabase.rpc('get_random_test_question', {
-        excluded_ids: allExcludes, 
-        included_ids: poolFilter // Sends the array if in pool mode, else null
-    });
-
-    if (!error && data?.[0]) {
-        const question = data[0];
-        const qId = String(question.id);
-        // --- THE FIX: RACE CONDITION CHECK ---
-        // If another worker grabbed this ID while this request was in flight:
-        if (pendingIds.includes(qId)) {
-            return await fetchRandomQuestion(); // Recurse: Try again for a new random ID
-        }
-        // Reserve it for this worker
-        pendingIds.push(qId);
-        return question;
-    }
-    
-    return null;
 }
 
 async function startGame() {
@@ -837,20 +801,11 @@ async function loadQuestion(isFirst = false) {
         questionImage.style.opacity = '0';
     }
 
-   // B. REFILL THE BUFFER 
-    // CHANGE: In Weekly mode, we check our count vs the limit, 
-    // NOT the remainingQuestions array.
-    let needsRefill;
-    if (isDailyMode) {
-        needsRefill = dailyQuestionCount < DAILY_LIMIT;
-    } else if (isWeeklyMode) {
-        needsRefill = weeklyQuestionCount < WEEKLY_LIMIT;
-    } else {
-        needsRefill = true; // Normal/Lite mode
-    }
+    // B. REFILL THE BUFFER 
+   let needsRefill = !isDailyMode && !isWeeklyMode;
   
     // ONLY refill if we are NOT in Daily Mode (since Daily is pre-loaded)
-    if (!isFirst && !isDailyMode && preloadQueue.length <= 4 && needsRefill) {
+    if (!isFirst && preloadQueue.length <= 4 && needsRefill) {
         preloadNextQuestions(8); 
     }
 
@@ -1766,37 +1721,49 @@ async function startWeeklyChallenge() {
   
     // 1. ENSURE THE POOL IS READY (We only fetch the 50 IDs, not the full data)
     const { data, error } = await supabase.rpc('get_weekly_questions', {});
-    if (error) return alert("Error loading weekly pool.");
-    weeklySessionPool = data.map(q => q.question_id);
- 
-    // 3. THE BARRIER (Wait for Question 1)
-    if (preloadQueue.length === 0) {
-        await preloadNextQuestions(1); 
+    if (error || !questions) {
+        console.error(error);
+        return alert("Error loading weekly questions.");
     }
   
-    // THE UI SWAP (Triggered only when we HAVE the data)
-    resetGame();
-  
-    await loadQuestion(true);
+    // 3. CONVERT TO STRING IDS
+    const allWeeklyIds = questions.map(q => String(q.question_id || q.id));
+    
+    // 4. LOCK ALL 50 IDS IMMEDIATELY
+    // This prevents any other background logic from "stealing" these IDs
+    pendingIds = [...allWeeklyIds];
 
+    // 1. Fire the first 10 immediately for a fast start
+    allWeeklyIds.slice(0, 10).forEach(id => fetchAndBufferQuestion(id));
+
+    // 6. WAIT FOR QUESTION #1 (The Barrier)
+    // 2. Wait a tiny bit (until first question is ready)
+    while (preloadQueue.length === 0) {
+        await new Promise(r => setTimeout(r, 50)); 
+    }
+
+    // 3. Fire the remaining 40 in the background while the user plays
+    allWeeklyIds.slice(10).forEach(id => fetchAndBufferQuestion(id));
+  
+    // 7. UI TRANSITION
+    resetGame();
+    await loadQuestion(true);
+  
     requestAnimationFrame(() => {
         const gameOverTitle = document.getElementById('game-over-title');
         const gzTitle = document.getElementById('gz-title');
         if (gameOverTitle) { gameOverTitle.classList.add('hidden'); gameOverTitle.textContent = ""; }
         if (gzTitle) { gzTitle.classList.add('hidden'); gzTitle.textContent = ""; }
-          
-        document.body.classList.add('game-active');
-        game.classList.remove('hidden');
+      
+        document.body.classList.add('game-active'); 
         document.getElementById('start-screen').classList.add('hidden');
-        endScreen.classList.add('hidden');
-      
-        gameStartTime = Date.now(); // total weekly run time
+        game.classList.remove('hidden');
+
+        gameStartTime = Date.now();
         startTimer();
-      
-        // 3. NOW fill the rest while the user is reading
-        preloadNextQuestions(3);
-  });
+    });
 }
+
 
 async function startDailyChallenge(session) {
     gridPattern = "0000000000";
@@ -1964,6 +1931,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
