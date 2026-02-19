@@ -762,6 +762,7 @@ usedInThisSession = [];
 weeklySessionPool = [];
 dailySessionPool = [];
 normalSessionPool = [];
+preloadQueue = [];
   
 // Create array [1, 2, 3, ..., 640]
 normalSessionPool = Array.from({ length: number_of_questions }, (_, i) => i + 1);
@@ -847,8 +848,9 @@ async function loadQuestion(isFirst = false) {
     } else {
         needsRefill = true; // Normal/Lite mode
     }
-
-    if (!isFirst && preloadQueue.length <= 4 && needsRefill) {
+  
+    // ONLY refill if we are NOT in Daily Mode (since Daily is pre-loaded)
+    if (!isFirst && !isDailyMode && preloadQueue.length <= 4 && needsRefill) {
         preloadNextQuestions(8); 
     }
 
@@ -1827,10 +1829,20 @@ async function startDailyChallenge(session) {
     // Tell the DB: "This is a new game, start my streak at 0"
     await supabase.rpc('reset_my_streak');
     
-    // 5. Start the engine
-    // 3. THE BARRIER (Wait for Question 1)
-    if (preloadQueue.length === 0) {
-        await preloadNextQuestions(1); 
+    // 3. CONVERT RPC DATA TO ID ARRAY
+    const allDailyIds = questionsRes.data.map(q => String(q.question_id));
+
+    // 4. BATCH LOAD: Start all 10 workers immediately
+    // We don't use 'preloadNextQuestions' here because we already have the IDs.
+    pendingIds = [...allDailyIds]; // Lock all 10
+    
+    // Fire all fetchers. They will push to preloadQueue as they finish.
+    allDailyIds.forEach(id => fetchAndBufferQuestion(id));
+
+    // 5. WAIT FOR FIRST QUESTION TO HIT THE QUEUE
+    // This prevents the "Cannot read property of undefined" crash
+    while (preloadQueue.length === 0) {
+        await new Promise(r => setTimeout(r, 50)); 
     }
   
     // THE UI SWAP (Triggered only when we HAVE the data)
@@ -1850,9 +1862,6 @@ async function startDailyChallenge(session) {
 
         gameStartTime = Date.now();
         startTimer();
-        // FILL THE REST IN THE BACKGROUND
-        // We don't 'await' this; it runs while the user is looking at question 1
-        preloadNextQuestions(5);
     });
 }
 
@@ -1939,6 +1948,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
