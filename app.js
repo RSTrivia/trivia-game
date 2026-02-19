@@ -650,25 +650,28 @@ async function preloadNextQuestions(targetCount = 6) {
     if (isDailyMode) activePool = dailySessionPool;
     else if (isWeeklyMode) activePool = weeklySessionPool;
     else activePool = normalSessionPool; // Normal and Lite use the shuffled master list
+  
+    const queuedIds = preloadQueue.map(q => String(q.id));
+    // MOVE THE DECLARATION ABOVE THE LOGS
+    const availableIds = activePool.filter(poolId => {
+        const sId = String(poolId); // Convert current pool ID to string for comparison
+        return !queuedIds.includes(sId) && 
+               !usedInThisSession.includes(sId) &&
+               !pendingIds.includes(sId) &&
+               (currentQuestion ? String(currentQuestion.id) !== sId : true);
+    });
+    
     console.log("Active Pool Length:", activePool.length);
     console.log("Available IDs after filtering:", availableIds.length);
-    // Filter out IDs that are already in the queue or being fetched
-    const queuedIds = preloadQueue.map(q => String(q.id));
-    const sId = String(id);
-    const availableIds = activePool.filter(id => 
-        !queuedIds.includes(sId) && 
-        !usedInThisSession.includes(sId) &&
-        !pendingIds.includes(sId) &&
-        (currentQuestion ? String(currentQuestion.id) !== sId : true)
-    );
-
     // CRITICAL: Stop if we ran out of questions in the pool
     if (availableIds.length === 0) return;
 
     // Only take as many as we need (or as many as are left)
     const toFetch = availableIds.slice(0, needed);
+  
     // LOCK THEM IMMEDIATELY
     toFetch.forEach(id => pendingIds.push(String(id)));
+  
     // Fire workers in parallel with specific IDs assigned
     const workers = toFetch.map(id => fetchAndBufferQuestion(id));
     await Promise.all(workers);
@@ -1940,6 +1943,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
