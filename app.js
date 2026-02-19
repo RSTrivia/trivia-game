@@ -650,14 +650,16 @@ async function preloadNextQuestions(targetCount = 6) {
     if (isDailyMode) activePool = dailySessionPool;
     else if (isWeeklyMode) activePool = weeklySessionPool;
     else activePool = normalSessionPool; // Normal and Lite use the shuffled master list
-
+    console.log("Active Pool Length:", activePool.length);
+    console.log("Available IDs after filtering:", availableIds.length);
     // Filter out IDs that are already in the queue or being fetched
-    const queuedIds = preloadQueue.map(q => q.id);
+    const queuedIds = preloadQueue.map(q => String(q.id));
     const availableIds = activePool.filter(id => 
-        !queuedIds.includes(id) && 
-        !usedInThisSession.includes(id) &&
-        !pendingIds.includes(String(id)) &&
-        (currentQuestion ? currentQuestion.id !== id : true)
+    const sId = String(id);
+        !queuedIds.includes(sId) && 
+        !usedInThisSession.includes(sId) &&
+        !pendingIds.includes(sId) &&
+        (currentQuestion ? String(currentQuestion.id) !== sId : true)
     );
 
     // CRITICAL: Stop if we ran out of questions in the pool
@@ -665,7 +667,8 @@ async function preloadNextQuestions(targetCount = 6) {
 
     // Only take as many as we need (or as many as are left)
     const toFetch = availableIds.slice(0, needed);
-
+    // LOCK THEM IMMEDIATELY
+    toFetch.forEach(id => pendingIds.push(String(id)));
     // Fire workers in parallel with specific IDs assigned
     const workers = toFetch.map(id => fetchAndBufferQuestion(id));
     await Promise.all(workers);
@@ -686,7 +689,7 @@ async function fetchAndBufferQuestion(assignedId) {
             if (questionData.question_image) {
                 const img = new Image();
                 img.src = questionData.question_image;
-                await img.decode().catch(() => {});
+                img.decode().catch(() => {});
                 questionData._preloadedImg = img;
             }
             
@@ -1937,6 +1940,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
