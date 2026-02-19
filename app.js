@@ -567,7 +567,7 @@ async function handleAuthChange(event, session) {
  
             // UI Update
             if (span) span.textContent = ' ' + username;
-            updateLevelUI();
+            ();
           }
       }
    } catch (err) {
@@ -977,7 +977,7 @@ async function checkAnswer(choiceId, btn) {
                 localStorage.setItem('cached_xp', currentProfileXp);
                 localStorage.setItem('cached_level', xpData.new_level);
                 // Refresh the UI
-                updateLevelUI(); 
+                (); 
                 triggerXpDrop(res.xp_gained);
                
                 if (res.bonus_earned) {
@@ -1088,15 +1088,21 @@ async function checkAnswer(choiceId, btn) {
 function updateLevelUI() {
     const lvlNum = document.getElementById('levelNumber');
     const xpBracket = document.getElementById('xpBracket');
-    
-    if (lvlNum && xpBracket) {
-        // Pull the level we just saved in checkAnswer
-        const level = currentLevel || localStorage.getItem('cached_level') || 1;
-        const xp = currentProfileXp || localStorage.getItem('cached_xp') || 0;
-
-        lvlNum.textContent = level;
-        xpBracket.textContent = `(${xp.toLocaleString()} XP)`;
+  
+    // If these don't exist yet, don't try to set textContent
+    if (!lvlNum || !xpBracket) {
+        console.warn("UI Elements not found yet. Retrying...");
+        return; 
     }
+  
+
+    // Pull with fallback values to avoid 'undefined' appearing as text
+    const level = currentLevel || localStorage.getItem('cached_level') || 1;
+    const xp = currentProfileXp || localStorage.getItem('cached_xp') || 0;
+
+    lvlNum.textContent = level;
+    xpBracket.textContent = `(${xp.toLocaleString()} XP)`;
+    
 }
 
 function triggerFireworks() {
@@ -1934,6 +1940,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
