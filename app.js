@@ -671,9 +671,9 @@ async function preloadNextQuestions(targetCount = 6) {
     for (let i = 0; i < needed; i++) {
         // This helper handles the fetch, the image warming, and the queue push
         await fetchAndBufferQuestion();
+      }
   }
 }
-
 async function fetchAndBufferQuestion() {
     let questionData = null;
     
@@ -1939,6 +1939,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
