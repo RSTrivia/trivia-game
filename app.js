@@ -1405,7 +1405,7 @@ async function endGame() {
         if (isPerfectRun) {
           // Handle the "Completion" Titles
             if (gzTitle) {
-              const gzMessages = ['You won!', 'Gz!', 'Well done!'];
+              const gzMessages = ['You won!', 'Gz!', 'GG!', 'Victory!'];
               const randomMessage = gzMessages[Math.floor(Math.random() * gzMessages.length)];
                gzTitle.textContent = randomMessage;
                gzTitle.classList.remove('hidden');
@@ -1926,6 +1926,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
