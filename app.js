@@ -641,23 +641,8 @@ function resetGame() {
 
 
 async function preloadNextQuestions(targetCount = 6) {
-    const burstSeed = Math.random(); // Generate ONE seed for this preloading burst
-    // Calculate how many we already have/used
-    const totalSeen = usedInThisSession.length + preloadQueue.length + (currentQuestion ? 1 : 0);
-    // SHORT CIRCUIT: If we've already queued or used everything in the DB, STOP.
-    // 2. Determine how many are actually left in the DB
-    const remainingInDB = number_of_questions - totalSeen;
-    // 3. If nothing is left to fetch, exit immediately
-    if (remainingInDB <= 0) {
-        console.log("Pool exhausted. No more questions to fetch.");
-        return;
-    }
-
-    // 4. Don't try to fetch more than what actually exists
-    const needed = Math.min(targetCount - preloadQueue.length, remainingInDB);
-  
     // 1. Calculate how many we actually need
-    //const needed = targetCount - preloadQueue.length;
+    const needed = targetCount - preloadQueue.length;
     if (needed <= 0) return;
 
     // Safety for Lite Mode
@@ -671,11 +656,12 @@ async function preloadNextQuestions(targetCount = 6) {
     // We don't 'await' the loop itself, allowing them to run in parallel
     for (let i = 0; i < needed; i++) {
         // This helper handles the fetch, the image warming, and the queue push
-        fetchAndBufferQuestion(burstSeed);
-      }
+        await fetchAndBufferQuestion();
+    }
   }
 }
-async function fetchAndBufferQuestion(seed) {
+
+async function fetchAndBufferQuestion() {
     let questionData = null;
     
     try {
@@ -701,8 +687,7 @@ async function fetchAndBufferQuestion(seed) {
         } 
         // 3. Logic for Normal / Lite Mode
         else {
-            // THIS CALL NOW USES THE TICKET SYSTEM ABOVE
-            questionData = await fetchRandomQuestion(seed);
+            questionData = await fetchRandomQuestion();
         }
 
         // 4. Image Warming & Queue Push
@@ -714,8 +699,7 @@ async function fetchAndBufferQuestion(seed) {
                 questionData._preloadedImg = img;
             }
             preloadQueue.push(questionData);
-            // CLEAN UP: Remove the REAL ID from pendingIds because it's now in preloadQueue
-            pendingIds = pendingIds.filter(id => id !== String(questionData.id));
+            pendingIds = pendingIds.filter(id => id !== questionData.id.toString());
         }
     } catch (err) {
         console.error("Fetch worker failed:", err);
@@ -728,45 +712,32 @@ async function fetchDeterministicQuestion(qId) {
     return (!error && data?.[0]) ? data[0] : null;
 }
 
-async function fetchRandomQuestion(seed) {
-    // 1. Check how many workers are ALREADY busy (before adding our own ticket)
-    const currentBusyWorkers = pendingIds.filter(id => id.startsWith('lock-')).length;
-    // 0. GENERATE A UNIQUE TICKET IMMEDIATELY (STRICTLY SYNCHRONOUS)
-    const ticket = `lock-${Math.random()}`;
-    pendingIds.push(ticket);
+async function fetchRandomQuestion() {
     // 1. Force everything to String for strict comparison to avoid duplicates
     const queueIds = preloadQueue.map(q => String(q.id));
     const currentId = currentQuestion ? [String(currentQuestion.id)] : [];
     
     // Combine them with pendingIds (which are already strings)
-   const allExcludes = [...new Set([...queueIds, ...currentId, ...pendingIds])];
+    const allExcludes = [...new Set([...queueIds, ...currentId, ...pendingIds])];
 
     // 2. Determine if we should limit the search to a specific pool
     // If Weekly or Daily is active, we only want to pull from their respective pools
     let poolFilter = null;
     if (isWeeklyMode) poolFilter = weeklySessionPool;
     else if (isDailyMode) poolFilter = dailySessionPool;
-  try {
-        const { data, error } = await supabase.rpc('get_random_test_question', {
-            excluded_ids: allExcludes.filter(id => !id.startsWith('lock-')),
-            included_ids: poolFilter,
-            offset_val: currentBusyWorkers,
-            seed: seed 
-        });
-        // 2. REMOVE THE TICKET IMMEDIATELY AFTER DB RESPONDS
-            pendingIds = pendingIds.filter(id => id !== ticket);
-      
-        if (!error && data?.[0]) {
-            const question = data[0];
-            // 3. Mark as pending to prevent other parallel workers from picking it
-            if (!queueIds.includes(String(question.id))) {
-                pendingIds.push(String(question.id));
-                return question;
-            }
-        }
-    } catch (e) {
-        pendingIds = pendingIds.filter(id => id !== ticket);
+
+    const { data, error } = await supabase.rpc('get_random_test_question', {
+        excluded_ids: allExcludes, 
+        included_ids: poolFilter // Sends the array if in pool mode, else null
+    });
+
+    if (!error && data?.[0]) {
+        const question = data[0];
+        // 3. Mark as pending to prevent other parallel workers from picking it
+        pendingIds.push(String(question.id));
+        return question;
     }
+    
     return null;
 }
 
@@ -1955,22 +1926,6 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
