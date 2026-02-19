@@ -1076,6 +1076,13 @@ input.input-field:-webkit-autofill:active {
     margin-bottom: 15px !important;
     padding-top: 5px !important;
   }
+
+  /* Hides the main gold title when the end screen is displayed */
+  #end-screen:not(.hidden) ~ h1,
+  #end-screen:not([style*="display: none"]) ~ h1,
+  .container:has(#end-screen:not(.hidden)) h1 {
+    display: none !important;
+  }
   
 }
 
@@ -1857,6 +1864,7 @@ input.input-field:-webkit-autofill:active {
     -webkit-text-fill-color: #D7D8D9 !important;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8) !important;
 }
+
 
 
 
