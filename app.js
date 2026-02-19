@@ -1420,6 +1420,7 @@ async function endGame() {
                     gameOverTitle.textContent = "";
                 }
             // Otherwise, show standard Game Over, or PB achieved if its PB.
+            } 
         } else {
             // Standard Game Over (Failed/Partial run)
             if (gzTitle) gzTitle.classList.add('hidden'); // Ensure Gz is hidden
@@ -1924,6 +1925,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
