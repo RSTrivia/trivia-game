@@ -1829,41 +1829,57 @@ async function startDailyChallenge(session) {
     // Tell the DB: "This is a new game, start my streak at 0"
     await supabase.rpc('reset_my_streak');
     
-    // 3. CONVERT RPC DATA TO ID ARRAY
+    // 3. Extract IDs in the SPECIFIC order from SQL
     const allDailyIds = questionsRes.data.map(q => String(q.question_id));
 
     // 4. BATCH LOAD: Start all 10 workers immediately
     // We don't use 'preloadNextQuestions' here because we already have the IDs.
     pendingIds = [...allDailyIds]; // Lock all 10
-    
-    // Fire all fetchers. They will push to preloadQueue as they finish.
-    allDailyIds.forEach(id => fetchAndBufferQuestion(id));
 
-    // 5. WAIT FOR FIRST QUESTION TO HIT THE QUEUE
-    // This prevents the "Cannot read property of undefined" crash
-    while (preloadQueue.length === 0) {
-        await new Promise(r => setTimeout(r, 50)); 
+    // 4. ORDERED FETCH (The "Map" Strategy)
+    // We start all fetches, but we keep them in a Promise array to preserve index
+    const fetchPromises = allDailyIds.map(id => fetchDeterministicQuestion(id));
+    
+    // 5. Wait for ONLY the first question to display the game immediately
+    const firstQuestionData = await fetchPromises[0];
+    if (firstQuestionData) {
+        // Image pre-warming for Question 1
+        if (firstQuestionData.question_image) {
+            const img = new Image();
+            img.src = firstQuestionData.question_image;
+            try { await img.decode(); firstQuestionData._preloadedImg = img; } catch(e){}
+        }
+        preloadQueue.push(firstQuestionData);
     }
-  
-    // THE UI SWAP (Triggered only when we HAVE the data)
+
+    // 6. Start the Game UI
     resetGame();
-  
     await loadQuestion(true);
-  
+
     requestAnimationFrame(() => {
-        const gameOverTitle = document.getElementById('game-over-title');
-        const gzTitle = document.getElementById('gz-title');
-        if (gameOverTitle) { gameOverTitle.classList.add('hidden'); gameOverTitle.textContent = ""; }
-        if (gzTitle) { gzTitle.classList.add('hidden'); gzTitle.textContent = ""; }
-      
         document.body.classList.add('game-active'); 
         document.getElementById('start-screen').classList.add('hidden');
         game.classList.remove('hidden');
-
         gameStartTime = Date.now();
         startTimer();
     });
+
+    // 7. BACKGROUND: Fill the rest of the queue in the CORRECT order
+    // We already started the fetches in step 4, now we just wait for them in sequence
+    for (let i = 1; i < fetchPromises.length; i++) {
+        const qData = await fetchPromises[i];
+        if (qData) {
+            // Optional: warm the image in background
+            if (qData.question_image) {
+                const img = new Image();
+                img.src = qData.question_image;
+                img.decode().then(() => { qData._preloadedImg = img; }).catch(() => {});
+            }
+            preloadQueue.push(qData); // Pushes in order: 2, then 3, then 4...
+        }
+    }
 }
+
 
 // ====== HELPERS & AUDIO ======
 async function loadSounds() {
@@ -1948,6 +1964,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
