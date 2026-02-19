@@ -721,8 +721,6 @@ isWeeklyMode = false;
 remainingQuestions = [];
 pendingIds = [];
 usedInThisSession = [];
-weeklySessionPool = [];
-dailySessionPool = [];
 normalSessionPool = [];
 preloadQueue = [];
   
@@ -1936,6 +1934,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
