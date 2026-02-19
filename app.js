@@ -567,6 +567,7 @@ async function handleAuthChange(event, session) {
  
             // UI Update
             if (span) span.textContent = ' ' + username;
+            updateLevelUI();
           }
       }
    } catch (err) {
@@ -976,7 +977,7 @@ async function checkAnswer(choiceId, btn) {
                 localStorage.setItem('cached_xp', currentProfileXp);
                 localStorage.setItem('cached_level', xpData.new_level);
                 // Refresh the UI
-                (); 
+                updateLevelUI();
                 triggerXpDrop(res.xp_gained);
                
                 if (res.bonus_earned) {
@@ -1939,6 +1940,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
