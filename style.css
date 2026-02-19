@@ -1048,7 +1048,7 @@ input.input-field:-webkit-autofill:active {
   font-size: 1.2rem;
 }
 
-/* ====== HIDE ONLY THE MAIN TITLE DURING GAME (MOBILE ONLY) ====== */
+/* ====== HIDE ONLY THE MAIN TITLE DURING GAME (MOBILE ONLY) and end-screen ====== */
 @media (max-width: 480px) {
   /* Hides the big gold title, but leaves #user-controls visible */
   body.game-active h1 {
@@ -1062,7 +1062,7 @@ input.input-field:-webkit-autofill:active {
   
   /* 2. ADD THE GAP: Internal padding at the top of the box */
   body.game-active .container {
-    padding-top: 60px !important; /* This creates the empty room you want */
+    padding-top: 65px !important; /* This creates the empty room you want */
   }
   
 /* Hides the MAIN title only when end-screen is shown */
@@ -1079,7 +1079,7 @@ input.input-field:-webkit-autofill:active {
 
   /* 2. ADD THE GAP: If the container has a visible end-screen, add the top padding */
   .container:has(#end-screen:not(.hidden)) {
-    padding-top: 60px !important;
+    padding-top: 65px !important;
   }
   
 }
@@ -1862,6 +1862,7 @@ input.input-field:-webkit-autofill:active {
     -webkit-text-fill-color: #D7D8D9 !important;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8) !important;
 }
+
 
 
 
