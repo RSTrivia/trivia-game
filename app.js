@@ -641,6 +641,7 @@ function resetGame() {
 
 
 async function preloadNextQuestions(targetCount = 6) {
+    const burstSeed = Math.random(); // Generate ONE seed for this preloading burst
     // Calculate how many we already have/used
     const totalSeen = usedInThisSession.length + preloadQueue.length + (currentQuestion ? 1 : 0);
     // SHORT CIRCUIT: If we've already queued or used everything in the DB, STOP.
@@ -670,7 +671,7 @@ async function preloadNextQuestions(targetCount = 6) {
     // We don't 'await' the loop itself, allowing them to run in parallel
     for (let i = 0; i < needed; i++) {
         // This helper handles the fetch, the image warming, and the queue push
-        fetchAndBufferQuestion();
+        fetchAndBufferQuestion(burstSeed);
       }
   }
 }
@@ -727,7 +728,7 @@ async function fetchDeterministicQuestion(qId) {
     return (!error && data?.[0]) ? data[0] : null;
 }
 
-async function fetchRandomQuestion() {
+async function fetchRandomQuestion(burstSeed = Math.random()) {
     // 1. Check how many workers are ALREADY busy (before adding our own ticket)
     const currentBusyWorkers = pendingIds.filter(id => id.startsWith('lock-')).length;
     // 0. GENERATE A UNIQUE TICKET IMMEDIATELY (STRICTLY SYNCHRONOUS)
@@ -749,7 +750,8 @@ async function fetchRandomQuestion() {
         const { data, error } = await supabase.rpc('get_random_test_question', {
             excluded_ids: allExcludes.filter(id => !id.startsWith('lock-')),
             included_ids: poolFilter,
-            offset_val: currentBusyWorkers // The magic trick// Sends the array if in pool mode, else null
+            offset_val: currentBusyWorkers,
+            seed: burstSeed 
         });
         // 2. REMOVE THE TICKET IMMEDIATELY AFTER DB RESPONDS
             pendingIds = pendingIds.filter(id => id !== ticket);
@@ -1953,6 +1955,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
