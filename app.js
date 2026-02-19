@@ -668,9 +668,19 @@ async function preloadNextQuestions(targetCount = 6) {
         }
     } else {
     // We don't 'await' the loop itself, allowing them to run in parallel
-    for (let i = 0; i < needed; i++) {
+    //for (let i = 0; i < needed; i++) {
         // This helper handles the fetch, the image warming, and the queue push
-        fetchAndBufferQuestion();
+        //await fetchAndBufferQuestion();
+      // 1. Create an array of fetch promises
+    const tasks = [];
+    for (let i = 0; i < needed; i++) {
+        tasks.push(fetchAndBufferQuestion());
+    }
+
+    // 2. Fire them all at once (Parallel speed!)
+    // but we use 'needed' to ensure we don't over-request
+    Promise.all(tasks).catch(err => console.error("Parallel fetch failed", err));
+}
     }
   }
 }
@@ -1940,6 +1950,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
