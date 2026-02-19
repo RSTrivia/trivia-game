@@ -1759,11 +1759,12 @@ async function startWeeklyChallenge() {
         if (gameOverTitle) { gameOverTitle.classList.add('hidden'); gameOverTitle.textContent = ""; }
         if (gzTitle) { gzTitle.classList.add('hidden'); gzTitle.textContent = ""; }
       
-        document.body.classList.add('game-active'); 
-        document.getElementById('start-screen').classList.add('hidden');
+        document.body.classList.add('game-active');
         game.classList.remove('hidden');
-
-        gameStartTime = Date.now();
+        document.getElementById('start-screen').classList.add('hidden');
+        endScreen.classList.add('hidden');
+      
+        gameStartTime = Date.now(); // total weekly run time
         startTimer();
     });
 }
@@ -1935,6 +1936,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
