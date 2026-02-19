@@ -28,11 +28,12 @@ let usedInThisSession = [];
 let achievementNotificationTimeout = null;
 // 1. Create a variable outside the function to track the timer
 let petNotificationTimeout = null;
+let isFetchingBuffer = false; // Global lock to prevent race conditions
 
 const RELEASE_DATE = '2025-12-22';
 const DAILY_LIMIT = 10;
 const WEEKLY_LIMIT = 50; // Change to 50 when ready to go live
-const LITE_LIMIT = 100; // Change to 100 when ready to go live
+const LITE_LIMIT = 10; // Change to 100 when ready to go live
 const number_of_questions = 640; // 640
 
 const shareBtn = document.getElementById('shareBtn');
@@ -695,7 +696,7 @@ async function fetchAndBufferQuestion() {
             if (questionData.question_image) {
                 const img = new Image();
                 img.src = questionData.question_image;
-                img.decode().catch(() => {});
+                await img.decode().catch(() => {});
                 questionData._preloadedImg = img;
             }
             preloadQueue.push(questionData);
@@ -1926,6 +1927,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
