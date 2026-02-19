@@ -197,7 +197,6 @@ let muted = cachedMuted;
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 const todayStr = new Date().toISOString().split('T')[0];
 let score = 0;
-let remainingQuestions = []; // This holds what's left for the CURRENT SESSION
 let currentQuestion = null;
 let currentQuestionIndex = 0;
 let preloadQueue = []; 
@@ -717,28 +716,39 @@ async function startGame() {
 gameEnding = false;
 isDailyMode = false;
 isWeeklyMode = false;
-// 1. CLEAR & PREFETCH #1 (Wait for this!)
-remainingQuestions = [];
+// CLEAR & PREFETCH #1 (Wait for this!)
 pendingIds = [];
 usedInThisSession = [];
 normalSessionPool = [];
-preloadQueue = [];
   
-// 1. Create the full array [1, 2, ..., 640]
-normalSessionPool = Array.from({ length: number_of_questions }, (_, i) => i + 1);
-
-// 2. Shuffle it (Fisher-Yates)
-for (let i = normalSessionPool.length - 1; i > 0; i--) {
+// 1. Identify what is already waiting in the queue so we don't pick them again
+const alreadyBufferedIds = preloadQueue.map(q => Number(q.id));
+// 2. Create the full pool
+let fullPool = Array.from({ length: number_of_questions }, (_, i) => i + 1);  
+// 3. Remove IDs that are already in the preloadQueue
+// This prevents the "duplicate" issue when keeping the queue
+let availableToShuffle = fullPool.filter(id => !alreadyBufferedIds.includes(id));  
+  
+// 4. Shuffle only the available remainder (Fisher-Yates)
+for (let i = availableToShuffle.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [normalSessionPool[i], normalSessionPool[j]] = [normalSessionPool[j], normalSessionPool[i]];
+    [availableToShuffle[i], availableToShuffle[j]] = [availableToShuffle[j], availableToShuffle[i]];
 }
-
-// 3. If Lite Mode is active, truncate the pool to exactly 100 questions
+  
+// 5. Build the final session pool: [Existing Queue IDs] + [Shuffled Others]
+// We add buffered IDs to usedInThisSession so they aren't fetched again
+usedInThisSession = [...alreadyBufferedIds.map(id => String(id))];
+normalSessionPool = availableToShuffle;
+  
+// 6. If Lite Mode is active, truncate the pool to exactly 100 questions
 if (isLiteMode) {
-    normalSessionPool = normalSessionPool.slice(0, 100);
+    // In Lite Mode, we only want 100 total. 
+    // We take (100 - already buffered) from the shuffled pool.
+    const neededForLite = Math.max(0, 100 - alreadyBufferedIds.length);
+    normalSessionPool = normalSessionPool.slice(0, neededForLite);
 }
 
-// 2. INTERNAL STATE RESET
+ // 7. INTERNAL STATE RESET
   clearInterval(timer);
   score = 0;
   streak = 0;
@@ -1940,6 +1950,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
