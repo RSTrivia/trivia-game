@@ -661,7 +661,6 @@ async function preloadNextQuestions(targetCount = 6) {
     // Wait for all of them to finish their background work
     await Promise.all(workers);
     }
-  }
 }
 
 async function fetchAndBufferQuestion() {
@@ -1937,6 +1936,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
