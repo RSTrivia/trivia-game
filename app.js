@@ -28,7 +28,7 @@ let usedInThisSession = [];
 let achievementNotificationTimeout = null;
 // 1. Create a variable outside the function to track the timer
 let petNotificationTimeout = null;
-let isFetchingBuffer = false; // Global lock to prevent race conditions
+let normalSessionPool = [];
 
 const RELEASE_DATE = '2025-12-22';
 const DAILY_LIMIT = 10;
@@ -642,71 +642,62 @@ function resetGame() {
 
 
 async function preloadNextQuestions(targetCount = 6) {
-    // 1. Calculate how many we actually need
     const needed = targetCount - preloadQueue.length;
     if (needed <= 0) return;
 
-    // Safety for Lite Mode
-    if (isLiteMode && (score + preloadQueue.length >= LITE_LIMIT)) return;
+    // Determine which pool we are pulling from
+    let activePool = [];
+    if (isDailyMode) activePool = dailySessionPool;
+    else if (isWeeklyMode) activePool = weeklySessionPool;
+    else activePool = normalSessionPool; // Normal and Lite use the shuffled master list
 
-    if (isDailyMode) {
-        for (let i = 0; i < needed; i++) {
-            await fetchAndBufferQuestion();
-        }
-    } else {
-    // We don't 'await' the loop itself, allowing them to run in parallel
-    // Fire all workers in parallel
-    const workers = Array.from({ length: needed }, () => fetchAndBufferQuestion());
-    
-    // Wait for all of them to finish their background work
+    // Filter out IDs that are already in the queue or being fetched
+    const queuedIds = preloadQueue.map(q => q.id);
+    const availableIds = activePool.filter(id => 
+        !queuedIds.includes(id) && 
+        !usedInThisSession.includes(id) &&
+        !pendingIds.includes(String(id)) &&
+        (currentQuestion ? currentQuestion.id !== id : true)
+    );
+
+    // CRITICAL: Stop if we ran out of questions in the pool
+    if (availableIds.length === 0) return;
+
+    // Only take as many as we need (or as many as are left)
+    const toFetch = availableIds.slice(0, needed);
+
+    // Fire workers in parallel with specific IDs assigned
+    const workers = toFetch.map(id => fetchAndBufferQuestion(id));
     await Promise.all(workers);
-    }
 }
 
-async function fetchAndBufferQuestion() {
-    let questionData = null;
+async function fetchAndBufferQuestion(assignedId) {
+    if (!assignedId) return; // Safety check
     
     try {
-        // 1. Identify if we are in a "Pool" mode
-        const isPoolMode = isWeeklyMode || isDailyMode;
-        const activePool = isWeeklyMode ? weeklySessionPool : dailySessionPool;
+        // Mark as pending immediately to prevent double-fetching
+        pendingIds.push(assignedId.toString());
 
-        // 2. Logic for Pool Modes (Weekly/Daily)
-        if (isPoolMode) {
-            const queuedIds = preloadQueue.map(q => q.id);
-            const availableIds = activePool.filter(id => 
-                !queuedIds.includes(id) && 
-                !usedInThisSession.includes(id) &&
-                !pendingIds.includes(String(id)) &&
-                (currentQuestion ? currentQuestion.id !== id : true)
-            );
+        // We use your existing deterministic helper
+        const questionData = await fetchDeterministicQuestion(assignedId);
 
-            if (availableIds.length > 0) {
-                const pick = availableIds[0]; 
-                usedInThisSession.push(pick); 
-                pendingIds.push(String(pick));
-                questionData = await fetchDeterministicQuestion(pick);
-            } 
-            // If the pool is empty, Pool Mode just ends (no fallback to random)
-        } 
-        // 3. Logic for Normal / Lite Mode
-        else {
-            questionData = await fetchRandomQuestion();
-        }
-
-        // 4. Image Warming & Queue Push
         if (questionData) {
+            // Image Warming
             if (questionData.question_image) {
                 const img = new Image();
                 img.src = questionData.question_image;
                 await img.decode().catch(() => {});
                 questionData._preloadedImg = img;
             }
+            
+            usedInThisSession.push(assignedId); // Mark as used
             preloadQueue.push(questionData);
-            pendingIds = pendingIds.filter(id => id !== questionData.id.toString());
         }
     } catch (err) {
         console.error("Fetch worker failed:", err);
+    } finally {
+        // Remove from pending whether it succeeded or failed
+        pendingIds = pendingIds.filter(id => id !== assignedId.toString());
     }
 }
 
@@ -761,6 +752,16 @@ pendingIds = [];
 usedInThisSession = [];
 weeklySessionPool = [];
 dailySessionPool = [];
+normalSessionPool = [];
+  
+// Create array [1, 2, 3, ..., 640]
+normalSessionPool = Array.from({ length: number_of_questions }, (_, i) => i + 1);
+// Shuffle it (Fisher-Yates)
+for (let i = normalSessionPool.length - 1; i > 0; i--) {
+   const j = Math.floor(Math.random() * (i + 1));
+    [normalSessionPool[i], normalSessionPool[j]] = [normalSessionPool[j], normalSessionPool[i]];
+}
+
 // 2. INTERNAL STATE RESET
   clearInterval(timer);
   score = 0;
@@ -1936,6 +1937,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
