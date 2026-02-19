@@ -716,35 +716,20 @@ async function startGame() {
 gameEnding = false;
 isDailyMode = false;
 isWeeklyMode = false;
-// CLEAR & PREFETCH #1 (Wait for this!)
-  // 1. Check state BEFORE cleanup
-    console.log(`Initial Preload Queue Size: ${preloadQueue.length}`);
+
 pendingIds = [];
 usedInThisSession = [];
 normalSessionPool = [];
   
 // 1. Identify what is already waiting in the queue so we don't pick them again
 const alreadyBufferedIds = preloadQueue.map(q => Number(q.id));
-console.log("IDs already in Queue (Preserved):", alreadyBufferedIds);  
   
 // 2. Create the full pool
 let fullPool = Array.from({ length: number_of_questions }, (_, i) => i + 1);  
 // 3. Remove IDs that are already in the preloadQueue
 // This prevents the "duplicate" issue when keeping the queue
 let availableToShuffle = fullPool.filter(id => !alreadyBufferedIds.includes(id));  
-console.log(`Total Pool: ${fullPool.length} | Available after filtering: ${availableToShuffle.length}`);
-// --- NEW VALIDATION CHECK ---
-const duplicatesFound = alreadyBufferedIds.filter(id => availableToShuffle.includes(id));
 
-if (duplicatesFound.length > 0) {
-    console.error("❌ LOGIC ERROR: The following IDs leaked into the pool:", duplicatesFound);
-} else {
-    console.log("%c✅ VALIDATION PASSED: New pool is 100% unique from the current queue.", "color: #4CAF50; font-weight: bold;");
-}
-
-// Just to see the randomness, let's look at the first 5 of the new pool
-console.log("New Pool Preview (First 5):", availableToShuffle.slice(0, 5));
-// ----------------------------  
 // 4. Shuffle only the available remainder (Fisher-Yates)
 for (let i = availableToShuffle.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -762,7 +747,6 @@ if (isLiteMode) {
     // We take (100 - already buffered) from the shuffled pool.
     const neededForLite = Math.max(0, 100 - alreadyBufferedIds.length);
     normalSessionPool = normalSessionPool.slice(0, neededForLite);
-    console.log(`Lite Mode active. Truncated pool to ${normalSessionPool.length} items.`);
 }
 
  // 7. INTERNAL STATE RESET
@@ -779,14 +763,10 @@ if (isLiteMode) {
   // Only clear if we have nothing. If we have items, the game starts INSTANTLY.
   if (preloadQueue.length === 0) {
       await preloadNextQuestions(1); 
-    console.log("Queue empty, fetching first question...");
-  } else {
-    console.log("⚡ Instant Start: Using preserved queue.");
-  }
+  } 
   
   await loadQuestion(true);
-   console.log("Current Question ID:", currentQuestion?.id);
-    console.log(`Queue size after loadQuestion: ${preloadQueue.length}`);
+  
   // 4. WAIT FOR IMAGE TO BE READY FOR DISPLAY
     if (currentQuestion && currentQuestion.question_image) {
         try {
@@ -1971,6 +1951,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
