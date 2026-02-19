@@ -703,7 +703,7 @@ async function fetchAndBufferQuestion(assignedId) {
 
 // Helper: Fetch a specific ID (Deterministic)
 async function fetchDeterministicQuestion(qId) {
-    const { data, error } = await supabase.rpc('get_question_by_id', { input_id: qId });
+    const { data, error } = await supabase.rpc('get_test_question_by_id', { input_id: qId });
     return (!error && data?.[0]) ? data[0] : null;
 }
 
@@ -1937,6 +1937,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
