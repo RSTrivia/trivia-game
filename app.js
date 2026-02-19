@@ -635,6 +635,7 @@ function resetGame() {
     
     // 6. Reset Score Visual
     if (scoreDisplay) scoreDisplay.textContent = `Score: 0`;
+    if (gzTitle) gzTitle.classList.add('hidden');
 }
 
 
@@ -805,7 +806,8 @@ async function loadQuestion(isFirst = false) {
     // 1. End Game Checks
     if (isWeeklyMode && weeklyQuestionCount >= WEEKLY_LIMIT) { await endGame(); return; }
     if (isLiteMode && score >= LITE_LIMIT) { await endGame(); return; }
-    if (isDailyMode && dailyQuestionCount >= DAILY_LIMIT) { await endGame(); return; }   
+    if (isDailyMode && dailyQuestionCount >= DAILY_LIMIT) { await endGame(); return; }  
+    if (score == number_of_questions) { await endGame(); return; }
 
     // A. CONDITIONAL CLEANUP
     if (!isFirst) {
@@ -1396,26 +1398,35 @@ async function endGame() {
             // We pass the current username, and the score achieved
             isNormalPB = await saveScore(session, 'normal', score, totalMs, username);
         }
-      // We check if the preloader actually FAILED to find content.
-      const isPoolExhausted = preloadQueue.length === 0;
-      // 2. Check for Gz! (Completion) first
-        if (score > 0 && isPoolExhausted && !isLiteMode) {
+      // we check if all questions were answered correctly in normal mode.
+      const isPerfectRun = score === number_of_questions;
+      // Check for Gz! (Completion) first
+        if (isPerfectRun) {
+          // Handle the "Completion" Titles
             if (gzTitle) {
               const gzMessages = ['Gz!', 'Go touch grass', 'See you in Lumbridge'];
               const randomMessage = gzMessages[Math.floor(Math.random() * gzMessages.length)];
                gzTitle.textContent = randomMessage;
                gzTitle.classList.remove('hidden');
             }
-            // Hide the game over title entirely for a Gz
+            // Handle the PB/Status text under the Gz
             if (gameOverTitle) {
-              gameOverTitle.classList.add('hidden');
-              gameOverTitle.textContent = "";
+               if (isNormalPB) {
+                  gameOverTitle.textContent = "New PB achieved!";
+                  gameOverTitle.classList.remove('hidden');
+                } else {
+                    // Hide if it's a perfect run but NOT a PB (keeps UI clean)
+                    gameOverTitle.classList.add('hidden');
+                    gameOverTitle.textContent = "";
+                }
+            // Otherwise, show standard Game Over, or PB achieved if its PB.
+        } else {
+            // Standard Game Over (Failed/Partial run)
+            if (gzTitle) gzTitle.classList.add('hidden'); // Ensure Gz is hidden
+            if (gameOverTitle) {
+              gameOverTitle.textContent = isNormalPB ? "New PB achieved!" : "Game Over!";
+              gameOverTitle.classList.remove('hidden');
             }
-            // 3. Otherwise, show standard Game Over, or PB achieved if its PB.
-        } else if (gameOverTitle) {
-            //if (gzTitle) gzTitle.classList.add('hidden'); // Hide Gz if it was there from before
-            gameOverTitle.textContent = isNormalPB ? "New PB achieved!" : "Game Over!";
-            gameOverTitle.classList.remove('hidden');
         }
       }
     }
@@ -1913,6 +1924,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
