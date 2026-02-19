@@ -32,7 +32,7 @@ let normalSessionPool = [];
 
 const RELEASE_DATE = '2025-12-22';
 const DAILY_LIMIT = 10;
-const WEEKLY_LIMIT = 50; // Change to 50 when ready to go live
+const WEEKLY_LIMIT = 4; // Change to 50 when ready to go live
 const LITE_LIMIT = 10; // Change to 100 when ready to go live
 const number_of_questions = 640; // 640
 
@@ -1964,6 +1964,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
