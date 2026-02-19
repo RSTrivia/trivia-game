@@ -1834,7 +1834,6 @@ input.input-field:-webkit-autofill:active {
 /* End screen titles and score */
 /* 1. Set all general titles/labels to White first */
 /* 1. The Title: Game Over (White) */
-#end-screen h1, 
 #end-screen h2, 
 #game-over-title {
     color: #D7D8D9 !important;
@@ -1858,6 +1857,7 @@ input.input-field:-webkit-autofill:active {
     -webkit-text-fill-color: #D7D8D9 !important;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8) !important;
 }
+
 
 
 
