@@ -15,8 +15,6 @@ let username = 'Guest';
 let gameEnding = false;
 let isShowingNotification = false;
 let notificationQueue = [];
-let weeklySessionPool = [];
-let dailySessionPool = [];
 let gridPattern = "";
 
 let userId = null; 
@@ -728,12 +726,18 @@ dailySessionPool = [];
 normalSessionPool = [];
 preloadQueue = [];
   
-// Create array [1, 2, 3, ..., 640]
+// 1. Create the full array [1, 2, ..., 640]
 normalSessionPool = Array.from({ length: number_of_questions }, (_, i) => i + 1);
-// Shuffle it (Fisher-Yates)
+
+// 2. Shuffle it (Fisher-Yates)
 for (let i = normalSessionPool.length - 1; i > 0; i--) {
-   const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(Math.random() * (i + 1));
     [normalSessionPool[i], normalSessionPool[j]] = [normalSessionPool[j], normalSessionPool[i]];
+}
+
+// 3. If Lite Mode is active, truncate the pool to exactly 100 questions
+if (isLiteMode) {
+    normalSessionPool = normalSessionPool.slice(0, 100);
 }
 
 // 2. INTERNAL STATE RESET
@@ -1931,6 +1935,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
