@@ -654,8 +654,8 @@ async function preloadNextQuestions(targetCount = 6) {
     console.log("Available IDs after filtering:", availableIds.length);
     // Filter out IDs that are already in the queue or being fetched
     const queuedIds = preloadQueue.map(q => String(q.id));
-    const availableIds = activePool.filter(id => 
     const sId = String(id);
+    const availableIds = activePool.filter(id => 
         !queuedIds.includes(sId) && 
         !usedInThisSession.includes(sId) &&
         !pendingIds.includes(sId) &&
@@ -1940,6 +1940,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
