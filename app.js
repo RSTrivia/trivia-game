@@ -675,7 +675,7 @@ async function preloadNextQuestions(targetCount = 6) {
       }
   }
 }
-async function fetchAndBufferQuestion() {
+async function fetchAndBufferQuestion(seed) {
     let questionData = null;
     
     try {
@@ -702,7 +702,7 @@ async function fetchAndBufferQuestion() {
         // 3. Logic for Normal / Lite Mode
         else {
             // THIS CALL NOW USES THE TICKET SYSTEM ABOVE
-            questionData = await fetchRandomQuestion();
+            questionData = await fetchRandomQuestion(seed);
         }
 
         // 4. Image Warming & Queue Push
@@ -728,7 +728,7 @@ async function fetchDeterministicQuestion(qId) {
     return (!error && data?.[0]) ? data[0] : null;
 }
 
-async function fetchRandomQuestion(burstSeed = Math.random()) {
+async function fetchRandomQuestion(seed) {
     // 1. Check how many workers are ALREADY busy (before adding our own ticket)
     const currentBusyWorkers = pendingIds.filter(id => id.startsWith('lock-')).length;
     // 0. GENERATE A UNIQUE TICKET IMMEDIATELY (STRICTLY SYNCHRONOUS)
@@ -751,7 +751,7 @@ async function fetchRandomQuestion(burstSeed = Math.random()) {
             excluded_ids: allExcludes.filter(id => !id.startsWith('lock-')),
             included_ids: poolFilter,
             offset_val: currentBusyWorkers,
-            seed: burstSeed 
+            seed: seed 
         });
         // 2. REMOVE THE TICKET IMMEDIATELY AFTER DB RESPONDS
             pendingIds = pendingIds.filter(id => id !== ticket);
@@ -1955,6 +1955,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
