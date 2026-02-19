@@ -807,7 +807,7 @@ async function loadQuestion(isFirst = false) {
     if (isWeeklyMode && weeklyQuestionCount >= WEEKLY_LIMIT) { await endGame(); return; }
     if (isLiteMode && score >= LITE_LIMIT) { await endGame(); return; }
     if (isDailyMode && dailyQuestionCount >= DAILY_LIMIT) { await endGame(); return; }  
-    if (score == number_of_questions) { await endGame(); return; }
+    if (score === number_of_questions) { await endGame(); return; }
 
     // A. CONDITIONAL CLEANUP
     if (!isFirst) {
@@ -1924,6 +1924,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
