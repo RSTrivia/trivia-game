@@ -717,17 +717,22 @@ gameEnding = false;
 isDailyMode = false;
 isWeeklyMode = false;
 // CLEAR & PREFETCH #1 (Wait for this!)
+  // 1. Check state BEFORE cleanup
+    console.log(`Initial Preload Queue Size: ${preloadQueue.length}`);
 pendingIds = [];
 usedInThisSession = [];
 normalSessionPool = [];
   
 // 1. Identify what is already waiting in the queue so we don't pick them again
 const alreadyBufferedIds = preloadQueue.map(q => Number(q.id));
+console.log("IDs already in Queue (Preserved):", alreadyBufferedIds);  
+  
 // 2. Create the full pool
 let fullPool = Array.from({ length: number_of_questions }, (_, i) => i + 1);  
 // 3. Remove IDs that are already in the preloadQueue
 // This prevents the "duplicate" issue when keeping the queue
 let availableToShuffle = fullPool.filter(id => !alreadyBufferedIds.includes(id));  
+console.log(`Total Pool: ${fullPool.length} | Available after filtering: ${availableToShuffle.length}`);
   
 // 4. Shuffle only the available remainder (Fisher-Yates)
 for (let i = availableToShuffle.length - 1; i > 0; i--) {
@@ -746,6 +751,7 @@ if (isLiteMode) {
     // We take (100 - already buffered) from the shuffled pool.
     const neededForLite = Math.max(0, 100 - alreadyBufferedIds.length);
     normalSessionPool = normalSessionPool.slice(0, neededForLite);
+    console.log(`Lite Mode active. Truncated pool to ${normalSessionPool.length} items.`);
 }
 
  // 7. INTERNAL STATE RESET
@@ -762,10 +768,14 @@ if (isLiteMode) {
   // Only clear if we have nothing. If we have items, the game starts INSTANTLY.
   if (preloadQueue.length === 0) {
       await preloadNextQuestions(1); 
+    console.log("Queue empty, fetching first question...");
+  } else {
+    console.log("⚡ Instant Start: Using preserved queue.");
   }
   
   await loadQuestion(true);
- 
+   console.log("Current Question ID:", currentQuestion?.id);
+    console.log(`Queue size after loadQuestion: ${preloadQueue.length}`);
   // 4. WAIT FOR IMAGE TO BE READY FOR DISPLAY
     if (currentQuestion && currentQuestion.question_image) {
         try {
@@ -1950,6 +1960,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
