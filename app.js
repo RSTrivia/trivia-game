@@ -635,6 +635,7 @@ function resetGame() {
     
     // 6. Reset Score Visual
     if (scoreDisplay) scoreDisplay.textContent = `Score: 0`;
+    const gzTitle = document.getElementById('gz-title');
     if (gzTitle) gzTitle.classList.add('hidden');
 }
 
@@ -1925,6 +1926,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
