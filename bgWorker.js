@@ -1,25 +1,23 @@
-let currentBg;
-let backgrounds;
-let nextChangeTime;
+let timerId = null;
 
 onmessage = (e) => {
-  currentBg = e.data.current;
-  backgrounds = e.data.backgrounds;
-  nextChangeTime = e.data.nextChangeTime;
+  // Clear any existing interval before starting a new one
+  if (timerId) clearInterval(timerId);
 
-  // Check every 1 second for fast testing
-  setInterval(() => {
+  let { current, backgrounds, nextChangeTime } = e.data;
+
+  timerId = setInterval(() => {
     const now = Date.now();
     
     if (now >= nextChangeTime) {
-      const choices = backgrounds.filter(b => b !== currentBg);
+      const choices = backgrounds.filter(b => b !== current);
       if (choices.length === 0) return;
 
       const nextBg = choices[Math.floor(Math.random() * choices.length)];
-      currentBg = nextBg;
       
-      // Update the deadline immediately so we don't spam the main thread
-      nextChangeTime = now + 240000; // 4 mins for
+      // Update local worker state so it doesn't fire again immediately
+      current = nextBg;
+      nextChangeTime = now + 240000; 
       
       postMessage(nextBg);
     }
