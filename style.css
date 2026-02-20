@@ -1071,11 +1071,11 @@ input.input-field:-webkit-autofill:active {
     display: none !important;
   }
 
-  /* Force the "gz" title to stay visible (if you remove the .hidden class from it) */
-  #gz-title {
+  /* Force the "gz" title to stay visible (if you remove the .hidden class from it) check if it works without it*/
+  /*#gz-title {
     display: block !important;
     margin-bottom: 10px;
-  }
+  }*/
 
   /* 2. ADD THE GAP: If the container has a visible end-screen, add the top padding */
   .container:has(#end-screen:not(.hidden)) {
@@ -1285,12 +1285,12 @@ input.input-field:-webkit-autofill:active {
     #game-notifications {
         /* Pushes the notification down. 
            Increase to 10px or 20px if you want it even lower. */
-        top: -3px !important; 
+        top: -6px !important; 
     }
     
     .notif-text {
         /* Slightly smaller font for mobile to keep it tidy */
-        font-size: 14px !important; 
+        font-size: 15px !important; 
     }
 }
 /* ====== MOBILE NOTIFICATION ADJUSTMENT ====== */
@@ -1862,6 +1862,7 @@ input.input-field:-webkit-autofill:active {
     -webkit-text-fill-color: #D7D8D9 !important;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8) !important;
 }
+
 
 
 
