@@ -665,8 +665,14 @@ async function preloadNextQuestions(targetCount = 6) {
     // Only take as many as we need (or as many as are left)
     const toFetch = availableIds.slice(0, needed);
   
-    // LOCK THEM IMMEDIATELY
-    toFetch.forEach(id => pendingIds.push(String(id)));
+    // CRITICAL FIX: Add to usedInThisSession IMMEDIATELY before fetching
+        toFetch.forEach(id => {
+            const sId = String(id);
+            pendingIds.push(sId);
+            if (!usedInThisSession.includes(sId)) {
+                usedInThisSession.push(sId);
+            }
+        });
   
     // Fire workers in parallel with specific IDs assigned
     const workers = toFetch.map(id => fetchAndBufferQuestion(id));
@@ -693,10 +699,10 @@ async function fetchAndBufferQuestion(assignedId) {
                 console.warn("Image decode failed in background", e);
             }
             
-            usedInThisSession.push(assignedId);
+            //usedInThisSession.push(assignedId);
             preloadQueue.push(questionData);
         } else if (questionData) {
-            usedInThisSession.push(assignedId);
+            //usedInThisSession.push(assignedId);
             preloadQueue.push(questionData);
         }
     } catch (err) {
@@ -1962,6 +1968,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
