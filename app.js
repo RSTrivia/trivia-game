@@ -1764,7 +1764,7 @@ async function startWeeklyChallenge() {
     // This prevents any other background logic from "stealing" these IDs
     pendingIds = [...allWeeklyIds];
 
-    // 1. Fire the first 5 immediately for a fast start
+   // 1. Fire the first 5 immediately for a fast start (Indices 0, 1, 2, 3, 4)
     allWeeklyIds.slice(0, 5).forEach(id => fetchAndBufferQuestion(id));
 
     // 6. WAIT FOR QUESTION #1 (The Barrier)
@@ -1773,8 +1773,8 @@ async function startWeeklyChallenge() {
         await new Promise(r => setTimeout(r, 50)); 
     }
 
-    // 3. Fire the remaining 40 in the background while the user plays
-    allWeeklyIds.slice(10).forEach(id => fetchAndBufferQuestion(id));
+    // 3. Fire the remaining 45 in the background (Indices 5 through 49)
+    allWeeklyIds.slice(5).forEach(id => fetchAndBufferQuestion(id));
   
     // 7. UI TRANSITION
     resetGame();
@@ -1968,6 +1968,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
