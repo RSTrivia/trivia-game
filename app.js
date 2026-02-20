@@ -399,11 +399,10 @@ async function init() {
     }
    
     loadSounds();
-    preloadQueue = [];
-    lockDailyButton();
       
     // 4. Start Challenge immediately
     await startDailyChallenge(session); 
+    lockDailyButton();
  };
 }
 
@@ -1971,6 +1970,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
