@@ -15,7 +15,11 @@ document.addEventListener("DOMContentLoaded", () => {
     "images/background8.jpg",
     "images/background9.jpg",
     "images/background10.jpg",
-    "images/background11.png"
+    "images/background11.png",
+    "images/background12.jpg",
+    "images/background13.jpg",
+    "images/background14.jpg",
+    "images/background15.jpg"
   ];
 
   let isNavigating = false;
