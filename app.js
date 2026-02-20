@@ -1747,7 +1747,13 @@ async function startWeeklyChallenge() {
   
     // 3. CONVERT TO STRING IDS
     const allWeeklyIds = data.map(q => String(q.question_id || q.id));
-    
+    // 4. SHUFFLE THE IDS (Fisher-Yates)
+    for (let i = allWeeklyIds.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        // Swap elements
+        [allWeeklyIds[i], allWeeklyIds[j]] = [allWeeklyIds[j], allWeeklyIds[i]];
+    }
+      
     // 4. LOCK ALL 50 IDS IMMEDIATELY
     // This prevents any other background logic from "stealing" these IDs
     pendingIds = [...allWeeklyIds];
@@ -1844,9 +1850,14 @@ async function startDailyChallenge(session) {
     await loadQuestion(true);
 
     requestAnimationFrame(() => {
+        const gameOverTitle = document.getElementById('game-over-title');
+        const gzTitle = document.getElementById('gz-title');
+        if (gameOverTitle) { gameOverTitle.classList.add('hidden'); gameOverTitle.textContent = ""; }
+        if (gzTitle) { gzTitle.classList.add('hidden'); gzTitle.textContent = ""; }
         document.body.classList.add('game-active'); 
         document.getElementById('start-screen').classList.add('hidden');
         game.classList.remove('hidden');
+      
         gameStartTime = Date.now();
         startTimer();
     });
@@ -1951,6 +1962,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
