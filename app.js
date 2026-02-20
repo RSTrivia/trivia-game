@@ -527,6 +527,7 @@ async function handleAuthChange(event, session) {
       
         updateLevelUI()
         lockDailyButton();
+        lockWeeklyButton();
         return; // Stop here for guests
     }
     // 3. Handle LOGGED IN State
@@ -566,6 +567,7 @@ async function handleAuthChange(event, session) {
  
             // UI Update
             if (span) span.textContent = ' ' + username;
+            if (label) label.textContent = 'Log Out';
             updateLevelUI();
           }
       }
@@ -1113,9 +1115,10 @@ function updateLevelUI() {
     }
   
 
-    // Pull with fallback values to avoid 'undefined' appearing as text
-    const level = currentLevel || localStorage.getItem('cached_level') || 1;
-    const xp = currentProfileXp || localStorage.getItem('cached_xp') || 0;
+    // Use a "Source of Truth" hierarchy: 
+    // 1. Current variable -> 2. LocalStorage -> 3. Hardcoded Default
+    const level = currentLevel || parseInt(localStorage.getItem('cached_level')) || 1;
+    const xp = currentProfileXp || parseInt(localStorage.getItem('cached_xp')) || 0;
 
     lvlNum.textContent = level;
     xpBracket.textContent = `(${xp.toLocaleString()} XP)`;
@@ -1968,6 +1971,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
