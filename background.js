@@ -29,10 +29,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // 2. Preload
   backgrounds.forEach(src => { const img = new Image(); img.src = src; });
 
-  // 3. Reset the timer if we just arrived on a new page
-  // This prevents the "instant jump to picture 3"
-  let nextChangeTime = Date.now() + CHANGE_INTERVAL;
-  localStorage.setItem("bg_next_change", nextChangeTime);
+  // 3. ONLY reset the timer if it doesn't exist or is in the past
+  let savedNextChange = localStorage.getItem("bg_next_change");
+  let nextChangeTime = parseInt(savedNextChange);
+
+  if (!nextChangeTime || nextChangeTime < Date.now()) {
+    nextChangeTime = Date.now() + CHANGE_INTERVAL;
+    localStorage.setItem("bg_next_change", nextChangeTime);
+  }
 
   const worker = new Worker("bgWorker.js");
   worker.postMessage({ 
