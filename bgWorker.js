@@ -17,7 +17,7 @@ onmessage = (e) => {
       
       // Update local worker state so it doesn't fire again immediately
       current = nextBg;
-      nextChangeTime = now + 240000; 
+      nextChangeTime = now + 10000; //240000  4 mins
       
       postMessage(nextBg);
     }
