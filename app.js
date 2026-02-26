@@ -205,6 +205,7 @@ let timeLeft = 15;
 let isDailyMode = false;
 let isWeeklyMode = false;
 let weeklyQuestionCount = 0;
+let liteQuestionCount = 0;
 let isLiteMode = false;
 let liteQuestions = []; // To store the shuffled subset
 let gameStartTime = 0;
@@ -625,6 +626,7 @@ function resetGame() {
     currentQuestion = null;
     streak = 0;
     weeklyQuestionCount = 0;
+    liteQuestionCount = 0;
     dailyQuestionCount = 0; 
 
     // 5. Reset Timer Visuals
@@ -763,6 +765,7 @@ if (isLiteMode) {
   // Tell the DB: "This is a new game, start my streak at 0"
   await supabase.rpc('reset_my_streak');
   dailyQuestionCount = 0;
+  liteQuestionCount = 0;
   currentQuestion = null;
   updateScore();
   resetGame();
@@ -811,7 +814,7 @@ async function loadQuestion(isFirst = false) {
 
     // 1. End Game Checks
     if (isWeeklyMode && weeklyQuestionCount >= WEEKLY_LIMIT) { await endGame(); return; }
-    if (isLiteMode && score >= LITE_LIMIT) { await endGame(); return; }
+    if (isLiteMode && liteQuestionCount >= LITE_LIMIT) { await endGame(); return; }
     if (isDailyMode && dailyQuestionCount >= DAILY_LIMIT) { await endGame(); return; }  
     if (score === number_of_questions) { await endGame(); return; }
 
@@ -929,12 +932,13 @@ async function handleTimeout() {
   
    if (isWeeklyMode) weeklyQuestionCount++; 
    if (isDailyMode) dailyQuestionCount++;
+   if (isLiteMode) liteQuestionCount++;
       
    // 2. Corrected Logic & Syntax (Fixed the missing closing parenthesis)
-    if ((isDailyMode && dailyQuestionCount < DAILY_LIMIT) || (isWeeklyMode && weeklyQuestionCount < WEEKLY_LIMIT)) {
+    if ((isDailyMode && dailyQuestionCount < DAILY_LIMIT) || (isWeeklyMode && weeklyQuestionCount < WEEKLY_LIMIT) || (isliteMode && liteQuestionCount < LITE_LIMIT)) {
         setTimeout(loadQuestion, 1300);
     } else {
-        // If it's Normal mode OR we reached the limit for Daily/Weekly
+        // If it's Normal mode OR we reached the limit for Daily/Weekly/Lite
         setTimeout(endGame, 1000);
     }
 }
@@ -947,7 +951,8 @@ async function checkAnswer(choiceId, btn) {
    
     if (isWeeklyMode) weeklyQuestionCount++;
     if (isDailyMode) dailyQuestionCount++;
-
+    if (isLiteMode) liteQuestionCount++;
+  
     // THE ONE CALL TO RULE THEM ALL
     const { data: res, error: rpcErr } = await supabase.rpc('process_answer', {
         input_id: Number(currentQuestion.id), // Ensure it's an integer
@@ -1970,6 +1975,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
