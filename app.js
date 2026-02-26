@@ -935,7 +935,7 @@ async function handleTimeout() {
    if (isLiteMode) liteQuestionCount++;
       
    // 2. Corrected Logic & Syntax (Fixed the missing closing parenthesis)
-    if ((isDailyMode && dailyQuestionCount < DAILY_LIMIT) || (isWeeklyMode && weeklyQuestionCount < WEEKLY_LIMIT) || (isliteMode && liteQuestionCount < LITE_LIMIT)) {
+    if ((isDailyMode && dailyQuestionCount < DAILY_LIMIT) || (isWeeklyMode && weeklyQuestionCount < WEEKLY_LIMIT) || (isLiteMode && liteQuestionCount < LITE_LIMIT)) {
         setTimeout(loadQuestion, 1300);
     } else {
         // If it's Normal mode OR we reached the limit for Daily/Weekly/Lite
@@ -1975,6 +1975,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
