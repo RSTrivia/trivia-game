@@ -1095,7 +1095,7 @@ async function checkAnswer(choiceId, btn) {
         if (btn) btn.classList.add('wrong');
         await highlightCorrectAnswer();
 
-        if (isDailyMode || isWeeklyMode) {
+        if (isDailyMode || isWeeklyMode || isLiteMode) {
             setTimeout(loadQuestion, 1300);
         } else {
             setTimeout(endGame, 1000);
@@ -1970,6 +1970,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
