@@ -796,7 +796,6 @@ if (isLiteMode) {
     if (gzTitle) { gzTitle.classList.add('hidden'); gzTitle.textContent = ""; }
     // 3. NOW update the visuals that shouldn't look "stale"
     if (timeDisplay) timeDisplay.textContent = 15; 
-    if (scoreDisplay) scoreDisplay.textContent = `Score: 0`;
 
   // 4. THE BIG SWAP (User finally sees the game)
     document.body.classList.add('game-active');
@@ -1982,6 +1981,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
