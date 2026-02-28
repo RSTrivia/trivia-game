@@ -754,14 +754,8 @@ if (isLiteMode) {
     // We take (100 - already buffered) from the shuffled pool.
     const neededForLite = Math.max(0, 100 - alreadyBufferedIds.length);
     normalSessionPool = normalSessionPool.slice(0, neededForLite);
-    // 6. Reset Score Visual
-    if (scoreDisplay) scoreDisplay.textContent = `Score:  `;
-} else {
-  // 6. Reset Score Visual
-  if (scoreDisplay) scoreDisplay.textContent = `Score: 0`;
-}
+} 
   
-
  // 7. INTERNAL STATE RESET
   clearInterval(timer);
   score = 0;
@@ -1981,6 +1975,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
