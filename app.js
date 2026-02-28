@@ -1376,23 +1376,12 @@ async function endGame() {
       
       // 1. Lite Mode Specific Logic
         if (isLiteMode) {
+          let isLitePB = session ? await saveScore(session, 'lite', score, totalMs, username) : false;
+          if (gameOverTitle) {
+                  gameOverTitle.textContent = isLitePB ? "New PB achieved!" : "Lite Mode Completed!";
+                  gameOverTitle.classList.remove('hidden');
+              }
           
-            let isLitePB = session ? await saveScore(session, 'lite', score, totalMs, username) : false;
-        
-           // 2. Update UI IMMEDIATELY 
-            if (gameOverTitle) {
-                if (isLitePB) {
-                    // Prioritize the PB message
-                    gameOverTitle.textContent = "New PB achieved!";
-                } else if (score === LITE_LIMIT) {
-                    // If it's not a PB, but they still finished
-                    gameOverTitle.textContent = "Lite Mode Completed!";
-                } else {
-                        // Standard fail
-                        gameOverTitle.textContent = "Game Over!";
-                    }
-                gameOverTitle.classList.remove('hidden');
-            }
         } else {
         // end of Lite Mode
         // --- ACTUAL NORMAL MODE ---
@@ -1985,6 +1974,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
