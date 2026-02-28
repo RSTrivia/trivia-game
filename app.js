@@ -1942,7 +1942,16 @@ function stopTickSound() {
 }
 
 function updateScore() {
-    if (scoreDisplay) {
+    if (!scoreDisplay) return;
+
+    if (isWeeklyMode) {
+        scoreDisplay.textContent = `Score: ${score}/${weeklyQuestionCount}`;
+    } else if (isDailyMode) {
+        scoreDisplay.textContent = `Score: ${score}/${dailyQuestionCount}`;
+    } else if (isLiteMode) {
+        scoreDisplay.textContent = `Score: ${score}/${liteQuestionCount}`;
+    } else {
+        // Keeps the "Normal" mode behavior exactly as it was
         scoreDisplay.textContent = `Score: ${score}`;
     }
 }
@@ -1975,6 +1984,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
