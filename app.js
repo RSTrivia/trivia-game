@@ -634,8 +634,6 @@ function resetGame() {
     if (timeDisplay) timeDisplay.textContent = timeLeft;
     if (timeWrap) timeWrap.classList.remove('red-timer');
     
-    // 6. Reset Score Visual
-    if (scoreDisplay) scoreDisplay.textContent = `Score: 0`;
     const gzTitle = document.getElementById('gz-title');
     if (gzTitle) gzTitle.classList.add('hidden');
 }
@@ -756,7 +754,13 @@ if (isLiteMode) {
     // We take (100 - already buffered) from the shuffled pool.
     const neededForLite = Math.max(0, 100 - alreadyBufferedIds.length);
     normalSessionPool = normalSessionPool.slice(0, neededForLite);
+    // 6. Reset Score Visual
+    if (scoreDisplay) scoreDisplay.textContent = `Score:  `;
+} else {
+  // 6. Reset Score Visual
+  if (scoreDisplay) scoreDisplay.textContent = `Score: 0`;
 }
+  
 
  // 7. INTERNAL STATE RESET
   clearInterval(timer);
@@ -1738,6 +1742,8 @@ async function startWeeklyChallenge() {
     weeklyQuestionCount = 0; 
     score = 0;
     streak = 0;
+    // 6. Reset Score Visual
+    if (scoreDisplay) scoreDisplay.textContent = `Score:  `;
     // Tell the DB: "This is a new game, start my streak at 0"
     await supabase.rpc('reset_my_streak');
   
@@ -1804,6 +1810,8 @@ async function startDailyChallenge(session) {
     preloadQueue = [];
     usedInThisSession = [];
     score = 0;
+    // 6. Reset Score Visual
+    if (scoreDisplay) scoreDisplay.textContent = `Score:  `;
     streak = 0;
     // 1. BURN ATTEMPT & FETCH DAILY IDs FROM RPC
     const [burnRes, questionsRes] = await Promise.all([
@@ -1974,6 +1982,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
