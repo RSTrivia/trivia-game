@@ -1735,11 +1735,8 @@ async function startWeeklyChallenge() {
     weeklyQuestionCount = 0; 
     score = 0;
     streak = 0;
-    // 6. Reset Score Visual
-    // A simple way to initialize the UI without content shift
-    if (scoreDisplay) {
-        scoreDisplay.innerHTML = `Score: <span style="opacity: 0;">0/0</span>`;
-    }
+    updateScore();
+  
     // Tell the DB: "This is a new game, start my streak at 0"
     await supabase.rpc('reset_my_streak');
   
@@ -1807,8 +1804,11 @@ async function startDailyChallenge(session) {
     usedInThisSession = [];
     score = 0;
     // 6. Reset Score Visual
-    if (scoreDisplay) scoreDisplay.textContent = `Score:  `;
     streak = 0;
+    // 7. INTERNAL STATE RESET
+    dailyQuestionCount = 0;
+    updateScore();
+
     // 1. BURN ATTEMPT & FETCH DAILY IDs FROM RPC
     const [burnRes, questionsRes] = await Promise.all([
         supabase.from('daily_attempts').insert({ 
@@ -1978,6 +1978,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
