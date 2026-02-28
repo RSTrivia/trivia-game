@@ -1736,7 +1736,10 @@ async function startWeeklyChallenge() {
     score = 0;
     streak = 0;
     // 6. Reset Score Visual
-    if (scoreDisplay) scoreDisplay.textContent = `Score:`;
+    // A simple way to initialize the UI without content shift
+    if (scoreDisplay) {
+        scoreDisplay.innerHTML = `Score: <span style="opacity: 0;">0/0</span>`;
+    }
     // Tell the DB: "This is a new game, start my streak at 0"
     await supabase.rpc('reset_my_streak');
   
@@ -1975,6 +1978,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
