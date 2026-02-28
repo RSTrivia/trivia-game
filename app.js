@@ -1095,6 +1095,7 @@ async function checkAnswer(choiceId, btn) {
         }
         setTimeout(loadQuestion, 1000);
     } else {
+        updateScore();
         // Wrong answer logic
         playSound(wrongBuffer);
         if (btn) btn.classList.add('wrong');
@@ -1984,6 +1985,7 @@ document.addEventListener('DOMContentLoaded', () => {
     staticButtons.forEach(applyFlash);
 })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
