@@ -1,136 +1,137 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <script>
-  (function () {
+    (function () {
       const bg = localStorage.getItem("bg_current");
       if (bg) {
         document.documentElement.style.setProperty("--bg-image", `url('${bg}')`);
       }
     })();
-  
+
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>  
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>OSRS Trivia</title>
   <script>
-    
-// Define these globally for this script
-  const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
-  const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
-  const cachedMuted = localStorage.getItem('muted') === 'true';
-  const todayStr = new Date().toISOString().split('T')[0];
 
-  document.addEventListener('DOMContentLoaded', () => {
-    const span = document.getElementById('usernameSpan');
-    const authBtn = document.getElementById('authBtn');
-    const authLabel = authBtn?.querySelector('.btn-label');
-    const muteIcon = document.getElementById('muteIcon');
-    const muteBtn = document.getElementById('muteBtn');
-    const dailyBtn = document.getElementById('dailyBtn');
-    const weeklyBtn = document.getElementById('weeklyBtn');
-    const shareBtn = document.getElementById('shareBtn');
-    const logBtn = document.getElementById('logBtn');
-    const lobbyBtn = document.getElementById('lobbyBtn');
-    const helpBtn = document.getElementById('helpBtn');
-    const helpModal = document.getElementById('help-modal');
-    const closeHelpBtn = document.getElementById('closeHelpBtn');
+    // Define these globally for this script
+    const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
+    const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
+    const cachedMuted = localStorage.getItem('muted') === 'true';
+    const todayStr = new Date().toISOString().split('T')[0];
 
-    const hasPlayedToday = localStorage.getItem('dailyPlayedDate') === todayStr;
-    const hasScore = localStorage.getItem('lastDailyScore') !== null;
+    document.addEventListener('DOMContentLoaded', () => {
+      const span = document.getElementById('usernameSpan');
+      const authBtn = document.getElementById('authBtn');
+      const authLabel = authBtn?.querySelector('.btn-label');
+      const muteIcon = document.getElementById('muteIcon');
+      const muteBtn = document.getElementById('muteBtn');
+      const dailyBtn = document.getElementById('dailyBtn');
+      const weeklyBtn = document.getElementById('weeklyBtn');
+      const shareBtn = document.getElementById('shareBtn');
+      const logBtn = document.getElementById('logBtn');
+      const lobbyBtn = document.getElementById('lobbyBtn');
+      const helpBtn = document.getElementById('helpBtn');
+      const helpModal = document.getElementById('help-modal');
+      const closeHelpBtn = document.getElementById('closeHelpBtn');
 
-    // 1. Reset everything to locked first (Safety)
-  [dailyBtn, weeklyBtn, lobbyBtn].forEach(btn => {
-    if (btn) {
-        btn.classList.remove('is-active');
-        btn.classList.add('is-disabled');
-    }
-   }); 
-    // 1. Instant Text/Emoji Sync
-    if (span) span.textContent = ' ' + cachedUsername;
+      const hasPlayedToday = localStorage.getItem('dailyPlayedDate') === todayStr;
+      const hasScore = localStorage.getItem('lastDailyScore') !== null;
 
-    // --- ADD THE PET LOGIC HERE ---
-    const petId = localStorage.getItem('equipped_pet_id'); // We will ensure this is saved in Step 2
-    const petImg = document.getElementById('equipped-pet-display');
-    
-    if (petId && petId !== "null" && petImg) {
-        const fileName = petId.replace('pet_', '') + '.png'; 
+      // 1. Reset everything to locked first (Safety)
+      [dailyBtn, weeklyBtn, lobbyBtn].forEach(btn => {
+        if (btn) {
+          btn.classList.remove('is-active');
+          btn.classList.add('is-disabled');
+        }
+      });
+      // 1. Instant Text/Emoji Sync
+      if (span) span.textContent = ' ' + cachedUsername;
+
+      // --- ADD THE PET LOGIC HERE ---
+      const petId = localStorage.getItem('equipped_pet_id'); // We will ensure this is saved in Step 2
+      const petImg = document.getElementById('equipped-pet-display');
+
+      if (petId && petId !== "null" && petImg) {
+        const fileName = petId.replace('pet_', '') + '.png';
         petImg.src = `pets/${fileName}`;
         // Change visibility, not display. 
         // This keeps the 30px 'hole' reserved so nothing moves.
-        petImg.style.visibility = 'visible'; 
-    } else if (petImg) {
+        petImg.style.visibility = 'visible';
+      } else if (petImg) {
         // If they truly have NO pet, then remove the space.
         petImg.style.display = 'none';
-    }
-    // ------------------------------
-    
-    if (authLabel) authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
+      }
+      // ------------------------------
 
-    if (muteIcon && muteBtn) {
-      muteIcon.textContent = cachedMuted ? '🔇' : '🔊';
-      if (cachedMuted) muteBtn.classList.add('is-muted');
-    }
+      if (authLabel) authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
 
-    // 2. Instant Button State Sync (Anti-Flicker)
-    if (cachedLoggedIn) {
-      // Weekly Mode: Always GOLD if logged in (even if they played)
-      [weeklyBtn, lobbyBtn].forEach(btn => {
+      if (muteIcon && muteBtn) {
+        muteIcon.textContent = cachedMuted ? '🔇' : '🔊';
+        if (cachedMuted) muteBtn.classList.add('is-muted');
+      }
+
+      // 2. Instant Button State Sync (Anti-Flicker)
+      if (cachedLoggedIn) {
+        // Weekly Mode: Always GOLD if logged in (even if they played)
+        [weeklyBtn, lobbyBtn].forEach(btn => {
           if (btn) {
-              btn.classList.add('is-active');
-              btn.classList.remove('is-disabled');
-              btn.style.opacity = '1';            // ADD THIS
-              btn.style.pointerEvents = 'auto';    // ADD THIS
+            btn.classList.add('is-active');
+            btn.classList.remove('is-disabled');
+            btn.style.opacity = '1';            // ADD THIS
+            btn.style.pointerEvents = 'auto';    // ADD THIS
           }
-      });
-      // 2. ONLY unlock if they are logged in AND haven't played
-      if (!hasPlayedToday && dailyBtn) {
+        });
+        // 2. ONLY unlock if they are logged in AND haven't played
+        if (!hasPlayedToday && dailyBtn) {
           dailyBtn.classList.add('is-active');
           dailyBtn.classList.remove('is-disabled');
           dailyBtn.style.opacity = '1';
           dailyBtn.style.pointerEvents = 'auto';
+        }
+        [shareBtn, logBtn].forEach(btn => {
+          if (btn && (btn === logBtn || hasScore)) {
+            btn.classList.remove('is-disabled');
+            btn.style.opacity = '1';
+            btn.style.pointerEvents = 'auto';
+          }
+        });
+      } else {
+        // If not logged in, ensure these stay locked 
+        [dailyBtn, shareBtn, logBtn, weeklyBtn, lobbyBtn].forEach(btn => {
+          if (btn) {
+            btn.classList.remove('is-active'); // Remove Gold state
+            btn.classList.add('is-disabled');  // Add Grey state
+            btn.style.opacity = '0.5';         // Force Grey look
+            btn.style.pointerEvents = 'none';  // Lock it
+          }
+        });
       }
-      [shareBtn, logBtn].forEach(btn => {
-        if (btn && (btn === logBtn || hasScore)) {
-          btn.classList.remove('is-disabled');
-          btn.style.opacity = '1';
-          btn.style.pointerEvents = 'auto';
+
+      // Open Modal
+      helpBtn.onclick = () => {
+        helpModal.classList.remove('hidden');
+      };
+
+      // Close Modal (via button)
+      closeHelpBtn.onclick = () => {
+        helpModal.classList.add('hidden');
+      };
+
+      // Close Modal (clicking outside the box)
+      window.onclick = (event) => {
+        if (event.target == helpModal) {
+          helpModal.classList.add('hidden');
         }
-      });
-    } else {
-      // If not logged in, ensure these stay locked 
-      [dailyBtn, shareBtn, logBtn, weeklyBtn, lobbyBtn].forEach(btn => {
-        if (btn) {
-          btn.classList.remove('is-active'); // Remove Gold state
-          btn.classList.add('is-disabled');  // Add Grey state
-          btn.style.opacity = '0.5';         // Force Grey look
-          btn.style.pointerEvents = 'none';  // Lock it
-        }
-      });
-    }
+      };
 
-  // Open Modal
-  helpBtn.onclick = () => {
-    helpModal.classList.remove('hidden');
-  };
+    });
 
-  // Close Modal (via button)
-  closeHelpBtn.onclick = () => {
-    helpModal.classList.add('hidden');
-  };
-
-  // Close Modal (clicking outside the box)
-  window.onclick = (event) => {
-    if (event.target == helpModal) {
-      helpModal.classList.add('hidden');
-    }
-  };
-    
-  });
-    
-</script>
-  <meta name="darkreader-lock">  
+  </script>
+  <meta name="darkreader-lock">
   <!-- OSRS Title Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -146,357 +147,380 @@
 
   <!-- App wrapper -->
   <div id="app">
-   <div class="container" style="position: relative;">
-<a id="discordBtn" href="https://discord.gg/74vQZwWTJX" target="_blank" rel="noopener noreferrer">
-  <svg class="gold-svg-icon" width="22" height="22" viewBox="0 0 127.14 96.36" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="goldGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" style="stop-color:#d4af37;stop-opacity:1" />
-        <stop offset="50%" style="stop-color:#b8860b;stop-opacity:1" />
-        <stop offset="100%" style="stop-color:#8b6508;stop-opacity:1" />
-      </linearGradient>
-    </defs>
-    <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83,97.68,97.68,0,0,0-29.11,0,72.37,72.37,0,0,0-3.36-6.83A105.15,105.15,0,0,0,19.44,8.07C4.4,30.56-3.26,52.47,2,73.95a106,106,0,0,0,32.19,16.19,77.08,77.08,0,0,0,7.62-12.33,67.39,67.39,0,0,1-11.94-5.69c1,0.75,2,1.53,3,2.25a78.72,78.72,0,0,0,61.41,0c1-.72,2-1.5,3-2.25a67.39,67.39,0,0,1-11.94,5.69,77.08,77.08,0,0,0,7.62,12.33,106,106,0,0,0,32.19-16.19C131.74,48.49,122.3,26.79,107.7,8.07ZM42.45,65.69c-6.39,0-11.66-5.88-11.66-13.11S36,39.47,42.45,39.47s11.66,5.88,11.66,13.11S48.84,65.69,42.45,65.69Zm42.24,0c-6.39,0-11.66-5.88-11.66-13.11S78.29,39.47,84.69,39.47s11.66,5.88,11.66,13.11S91.08,65.69,84.69,65.69Z" 
-          fill="url(#goldGradient)"/>
-  </svg>
-</a>
+    <div class="container" style="position: relative;">
+      <a id="discordBtn" href="https://discord.gg/74vQZwWTJX" target="_blank" rel="noopener noreferrer">
+        <svg class="gold-svg-icon" width="22" height="22" viewBox="0 0 127.14 96.36" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="goldGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style="stop-color:#d4af37;stop-opacity:1" />
+              <stop offset="50%" style="stop-color:#b8860b;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#8b6508;stop-opacity:1" />
+            </linearGradient>
+          </defs>
+          <path
+            d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83,97.68,97.68,0,0,0-29.11,0,72.37,72.37,0,0,0-3.36-6.83A105.15,105.15,0,0,0,19.44,8.07C4.4,30.56-3.26,52.47,2,73.95a106,106,0,0,0,32.19,16.19,77.08,77.08,0,0,0,7.62-12.33,67.39,67.39,0,0,1-11.94-5.69c1,0.75,2,1.53,3,2.25a78.72,78.72,0,0,0,61.41,0c1-.72,2-1.5,3-2.25a67.39,67.39,0,0,1-11.94,5.69,77.08,77.08,0,0,0,7.62,12.33,106,106,0,0,0,32.19-16.19C131.74,48.49,122.3,26.79,107.7,8.07ZM42.45,65.69c-6.39,0-11.66-5.88-11.66-13.11S36,39.47,42.45,39.47s11.66,5.88,11.66,13.11S48.84,65.69,42.45,65.69Zm42.24,0c-6.39,0-11.66-5.88-11.66-13.11S78.29,39.47,84.69,39.47s11.66,5.88,11.66,13.11S91.08,65.69,84.69,65.69Z"
+            fill="url(#goldGradient)" />
+        </svg>
+      </a>
 
-<button id="helpBtn" type="button">
-  <span id="helpIcon" class="gold-text-icon">❔</span>
-</button>
-  <h1 id="main-title">OSRS Trivia</h1>
-      <!-- First row: User + Mute -->
-      <div id="user-controls" class="row">
-        <div class="icon-group">
-        <button id="shareBtn" class="is-disabled" type="button" style="opacity: 0.5; pointer-events: none;">
-          <span id="shareIcon">🔗</span>
-        </button>
-        <a href="coll-log.html" id="logBtn" class="is-disabled" style="opacity: 0.5; pointer-events: none;">
-            <span id="logIcon">🏆</span>
-        </a>
-        <button id="muteBtn" type="button">
-          <span id="muteIcon"></span>
-        </button>
+      <button id="helpBtn" type="button">
+        <span id="helpIcon" class="gold-text-icon">❔</span>
+      </button>
+      <div id="view-home" class="view">
+        <h1 id="main-title">OSRS Trivia</h1>
+        <!-- First row: User + Mute -->
+        <div id="user-controls" class="row">
+          <div class="icon-group">
+            <button id="shareBtn" class="is-disabled" type="button" style="opacity: 0.5; pointer-events: none;">
+              <span id="shareIcon">🔗</span>
+            </button>
+            <button id="logBtn" class="is-disabled"
+              style="opacity: 0.5; pointer-events: none; background: none; border: none; cursor: pointer;">
+              <span id="logIcon">🏆</span>
+            </button>
+            <button id="muteBtn" type="button">
+              <span id="muteIcon"></span>
+            </button>
           </div>
-        <div id="userDisplay" style="display: flex; flex-direction: column; align-items: flex-start;">
-          <div class="user-info-row">
-            Player:<span id="usernameSpan"></span>
-            <img id="equipped-pet-display" draggable="false" />
+          <div id="userDisplay" style="display: flex; flex-direction: column; align-items: flex-start;">
+            <div class="user-info-row">
+              Player:<span id="usernameSpan"></span>
+              <img id="equipped-pet-display" draggable="false" />
+            </div>
+            <div class="user-info-row">
+              Level:&nbsp;<span id="levelNumber"></span> <span id="xpBracket"></span>
+            </div>
           </div>
-          <div class="user-info-row">
-            Level:&nbsp;<span id="levelNumber"></span> <span id="xpBracket"></span>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game" class="hidden">
+          <div id="game-notifications"></div>
+          <div id="score">Score: 0</div>
+          <div id="question">
+            <p id="questionText"></p>
+            <img id="questionImage" alt="Question image">
+          </div>
+          <div id="answers"></div>
+          <div id="timer">
+            Time: <span id="time-wrap"><span id="time">15</span>s</span>
+          </div>
+        </div>
+
+        <!-- Start Screen -->
+        <div id="start-screen">
+          <!-- First row: Start button -->
+          <div class="row">
+            <button id="startBtn" class="btn">Normal Mode</button>
+          </div>
+          <!-- Second row: Lite mode -->
+          <div class="row">
+            <button id="liteBtn" class="btn">Lite Mode</button>
+          </div>
+          <!-- Third row: Daily mode -->
+          <div class="row">
+            <button id="dailyBtn" class="btn is-disabled">Daily Mode</button>
+          </div>
+          <!-- Forth row: Weekly mode -->
+          <div class="row">
+            <button id="weeklyBtn" class="btn is-disabled">Weekly Mode</button>
+          </div>
+          <!-- Fifth row: Login + Leaderboard -->
+          <div class="row">
+            <button id="authBtn" class="btn-small">
+              <span class="btn-label">Log In</span>
+            </button>
+            <button id="btn-leaderboard" class="btn-small">Leaderboard</button>
+          </div>
+        </div>
+
+        <!-- End Screen -->
+        <div id="end-screen" class="hidden">
+          <h1 id="gz-title" class="hidden">gz</h1>
+          <h2 id="game-over-title">Game Over!</h2>
+          <p>Score: <span id="finalScore"></span></p>
+          <div id="weeklyTimeContainer" style="display: none;">
+            <p>Time: <span id="finalTime"></span></p>
+          </div>
+          <div id="dailyStreakContainer" style="display: none; margin-bottom: 10px;">
+            <p style="color:#d4af37; margin: 0;">
+              Current streak: <span id="streakCount">0</span>
+            </p>
+          </div>
+          <div class="row">
+            <button id="playAgainBtn" class="btn">Play Again</button>
+          </div>
+          <div class="row">
+            <button class="btn main-menu-btn">Main Menu</button>
           </div>
         </div>
       </div>
-      
-      <!-- Game Screen -->
-      <div id="game" class="hidden">
-        <div id="game-notifications"></div> 
-        <div id="score">Score: 0</div>
-        <div id="question">
-          <p id="questionText"></p>
-          <img id="questionImage" alt="Question image">
-        </div>
-        <div id="answers"></div>
-        <div id="timer">
-          Time: <span id="time-wrap"><span id="time">15</span>s</span>
-        </div>
-    </div> 
 
-      <!-- Start Screen -->
-      <div id="start-screen">
-        <!-- First row: Start button -->
-       <div class="row">
-        <button id="startBtn" class="btn">Normal Mode</button>
-      </div>
-      <!-- Second row: Lite mode -->
-        <div class="row">
-         <button id="liteBtn" class="btn">Lite Mode</button>
-      </div>
-        <!-- Third row: Daily mode -->
-       <div class="row">
-        <button id="dailyBtn" class="btn is-disabled">Daily Mode</button>
-      </div>
-        <!-- Forth row: Weekly mode -->
-        <div class="row">
-         <button id="weeklyBtn" class="btn is-disabled">Weekly Mode</button>
-      </div>
-        <!-- Fifth row: Login + Leaderboard -->
-        <div class="row">
-         <button id="authBtn" class="btn-small">
-            <span class="btn-label">Log In</span>
-        </button>
-          <a href="leaderboard.html" class="btn-small">Leaderboard</a>
+      <div id="view-collections" class="view hidden">
+        <h1 id="main-title">Collections</h1>
+        <div class="leaderboard-tabs">
+          <button id="petsTab" class="tab-btn active">Pets</button>
+          <button id="achieveTab" class="tab-btn">Achievements</button>
         </div>
+        <div id="logGrid">
+          <div class="pet-slot" id="slot-pet_mole"><img src="pets/mole.png" class="pet-img" width="50" height="50"
+              draggable="false"><span class="pet-name">???</span></div>
+          <div class="pet-slot" id="slot-pet_kraken"><img src="pets/kraken.png" class="pet-img" width="50" height="50"
+              draggable="false"><span class="pet-name">???</span></div>
+          <div class="pet-slot" id="slot-pet_chompy"><img src="pets/chompy.png" class="pet-img" width="50" height="50"
+              draggable="false"><span class="pet-name">???</span></div>
+
+          <div class="pet-slot" id="slot-pet_zilyana"><img src="pets/zilyana.png" class="pet-img" width="50" height="50"
+              draggable="false"><span class="pet-name">???</span></div>
+          <div class="pet-slot" id="slot-pet_vorki"><img src="pets/vorki.png" class="pet-img" width="50" height="50"
+              draggable="false"><span class="pet-name">???</span></div>
+          <div class="pet-slot" id="slot-pet_snakeling"><img src="pets/snakeling.png" class="pet-img" width="50"
+              height="50" draggable="false"><span class="pet-name">???</span></div>
+
+          <div class="pet-slot" id="slot-pet_yami"><img src="pets/yami.png" class="pet-img" width="50" height="50"
+              draggable="false"><span class="pet-name">???</span></div>
+          <div class="pet-slot" id="slot-pet_bloodhound"><img src="pets/bloodhound.png" class="pet-img" width="50"
+              height="50" draggable="false"><span class="pet-name">???</span></div>
+          <div class="pet-slot" id="slot-pet_rocky"><img src="pets/rocky.png" class="pet-img" width="50" height="50"
+              draggable="false"><span class="pet-name">???</span></div>
+
+          <div class="pet-slot" id="slot-pet_jad"><img src="pets/jad.png" class="pet-img" width="50" height="50"
+              draggable="false"><span class="pet-name">???</span></div>
+          <div class="pet-slot" id="slot-pet_olmlet"><img src="pets/olmlet.png" class="pet-img" width="50" height="50"
+              draggable="false"><span class="pet-name">???</span></div>
+          <div class="pet-slot" id="slot-pet_corporeal_beast"><img src="pets/corporeal_beast.png" class="pet-img"
+              width="50" height="50" draggable="false"><span class="pet-name">???</span></div>
+
+          <div class="pet-slot" id="slot-pet_zuk"><img src="pets/zuk.png" class="pet-img" width="50" height="50"
+              draggable="false"><span class="pet-name">???</span></div>
+          <div class="pet-slot" id="slot-pet_lil_zik"><img src="pets/lil_zik.png" class="pet-img" width="50" height="50"
+              draggable="false"><span class="pet-name">???</span></div>
+          <div class="pet-slot" id="slot-pet_tumekens_guardian"><img src="pets/tumekens_guardian.png" class="pet-img"
+              width="50" height="50" draggable="false"><span class="pet-name">???</span></div>
+
+        </div>
+        <div id="achievementsView" class="hidden" style="width: 100%;">
+          <ul id="achievementList">
+          </ul>
+        </div>
+        <button class="btn main-menu-btn">Main Menu</button>
       </div>
 
-      <!-- End Screen -->
-      <div id="end-screen" class="hidden">
-        <h1 id="gz-title" class="hidden">gz</h1>
-        <h2 id="game-over-title">Game Over!</h2>
-        <p>Score: <span id="finalScore"></span></p>
-        <div id="weeklyTimeContainer" style="display: none;">
-          <p>Time: <span id="finalTime"></span></p>
-        </div>
-       <div id="dailyStreakContainer" style="display: none; margin-bottom: 10px;">
-        <p style="color:#d4af37; margin: 0;">
-          Current streak: <span id="streakCount">0</span>
-        </p>
-      </div>
-        <div class="row">
-          <button id="playAgainBtn" class="btn">Play Again</button>
-        </div>
-        <div class="row">
-          <button id="mainMenuBtn" class="btn">Main Menu</button>
-        </div>
-    </div>
- </div>
+      <div id="view-login" class="view hidden">
+        <h1>OSRS Trivia</h1>
+        <form id="loginForm">
+          <div class="row">
+            <input id="username" placeholder="Username" autocomplete="username" class="input-field" maxlength="7"
+              oninput="this.value = this.value.replace(/[^a-zA-Z0-9]/g, '')" />
+          </div>
 
+          <div class="row">
+            <input id="password" type="password" placeholder="Password" autocomplete="current-password"
+              class="input-field" />
+          </div>
+        </form>
+        <div class="row">
+          <button id="signupBtn" class="btn-small">Sign Up</button>
+          <button id="loginBtn" class="btn-small">Log In</button>
+        </div>
+
+        <div class="row">
+          <button class="btn main-menu-btn">Main Menu</button>
+        </div>
+        </div>
+  
+<div id="view-leaderboard" class="view hidden">
+        <h1 id="leaderboard-title">Leaderboard</h1>
+        <div class="leaderboard-tabs">
+          <button id="scoreTab" class="tab-btn active">Normal</button>
+          <button id="liteTab" class="tab-btn">Lite</button>
+          <button id="dailyTab" class="tab-btn">Daily</button>
+          <button id="weeklyTab" class="tab-btn">Weekly</button>
+          <button id="xpTab" class="tab-btn">XP</button>
+        </div>
+        <ul id="leaderboard">
+          <li class="first"><span class="name-part"><span class="rank-slot">🥇</span><span
+                class="user-txt"></span></span><span class="score-part"></span></li>
+          <li class="second"><span class="name-part"><span class="rank-slot">🥈</span><span
+                class="user-txt"></span></span><span class="score-part"></span></li>
+          <li class="third"><span class="name-part"><span class="rank-slot">🥉</span><span
+                class="user-txt"></span></span><span class="score-part"></span></li>
+          <li><span class="name-part"><span class="rank-slot"><span class="number-nudge">4.</span></span><span
+                class="user-txt"></span></span><span class="score-part"></span></li>
+          <li><span class="name-part"><span class="rank-slot"><span class="number-nudge">5.</span></span><span
+                class="user-txt"></span></span><span class="score-part"></span></li>
+          <li><span class="name-part"><span class="rank-slot"><span class="number-nudge">6.</span></span><span
+                class="user-txt"></span></span><span class="score-part"></span></li>
+          <li><span class="name-part"><span class="rank-slot"><span class="number-nudge">7.</span></span><span
+                class="user-txt"></span></span><span class="score-part"></span></li>
+          <li><span class="name-part"><span class="rank-slot"><span class="number-nudge">8.</span></span><span
+                class="user-txt"></span></span><span class="score-part"></span></li>
+          <li><span class="name-part"><span class="rank-slot"><span class="number-nudge">9.</span></span><span
+                class="user-txt"></span></span><span class="score-part"></span></li>
+          <li><span class="name-part"><span class="rank-slot"><span class="number-nudge">10.</span></span><span
+                class="user-txt"></span></span><span class="score-part"></span></li>
+        </ul>
+        <button class="btn main-menu-btn">Main Menu</button>
+      </div>
+
+  </div>
+</div>
   <!-- Scripts #f5f5f5 #e3d7c1-->
   <script type="module" src="supabase.js"></script>
   <script type="module" src="app.js"></script>
+  <script type="module" src="login.js"></script>
   <script src="background.js" defer></script>
 
-    <div id="help-modal" class="modal-overlay hidden">
-  <div class="container modal-content">
-    <h2 style="font-family: 'Cinzel', serif; color: #d4af37; margin-top: 0; text-align: center;">How to Play</h2>
-    <hr style="border: 0; border-top: 1px solid #d4af37; margin-bottom: 20px;">
-    
-    <div class="instructions-text" style="color: #D7D8D9; text-align: left; font-size: 1rem; line-height: 1.6;">
-      <p>⚔️ <b>The Goal:</b> Answer OSRS trivia questions to gain XP and level up your character. Unlock pets & achievements on your way! </p>
-      <p>👤 <b>Accounts:</b> Create an account to access Daily and Weekly Modes, earn XP, climb the leaderboards, and claim your achievements.</p>
-      <p>🛡️ <b>Normal Mode:</b> Build your score through a continuous streak of randomized questions; a single incorrect answer ends the game.</p>
-      <p>⚡ <b>Lite Mode:</b> A 100-question challenge for a quick session.</p>
-      <p>📅 <b>Daily Mode:</b> Play the daily challenge once per day to earn bonus xp. Tackle 10 random questions that are the same for everyone. </p>
-      <p>🏃‍♂️ <b>Weekly Mode:</b> Play the weekly challenge as many times as you want and improve your weekly score. Tackle 50 random questions that are the same for everyone that week.</p>
-      <p>🥇 <b>Leaderboard:</b> View global rankings for the highest score in all game modes and total XP earned.</p>
-      <p>🔗 <b>Share:</b> Share your daily challenge score with your friends!</p>
-      <p>🏆 <b>Collections:</b> View your pets and achievements.</p>
-    </div>
+  <div id="help-modal" class="modal-overlay hidden">
+    <div class="container modal-content">
+      <h2 style="font-family: 'Cinzel', serif; color: #d4af37; margin-top: 0; text-align: center;">How to Play</h2>
+      <hr style="border: 0; border-top: 1px solid #d4af37; margin-bottom: 20px;">
 
-    <button id="closeHelpBtn" class="btn" style="margin-top: 25px;">Close</button>
+      <div class="instructions-text" style="color: #D7D8D9; text-align: left; font-size: 1rem; line-height: 1.6;">
+        <p>⚔️ <b>The Goal:</b> Answer OSRS trivia questions to gain XP and level up your character. Unlock pets &
+          achievements on your way! </p>
+        <p>👤 <b>Accounts:</b> Create an account to access Daily and Weekly Modes, earn XP, climb the leaderboards, and
+          claim your achievements.</p>
+        <p>🛡️ <b>Normal Mode:</b> Build your score through a continuous streak of randomized questions; a single
+          incorrect answer ends the game.</p>
+        <p>⚡ <b>Lite Mode:</b> A 100-question challenge for a quick session.</p>
+        <p>📅 <b>Daily Mode:</b> Play the daily challenge once per day to earn bonus xp. Tackle 10 random questions that
+          are the same for everyone. </p>
+        <p>🏃‍♂️ <b>Weekly Mode:</b> Play the weekly challenge as many times as you want and improve your weekly score.
+          Tackle 50 random questions that are the same for everyone that week.</p>
+        <p>🥇 <b>Leaderboard:</b> View global rankings for the highest score in all game modes and total XP earned.</p>
+        <p>🔗 <b>Share:</b> Share your daily challenge score with your friends!</p>
+        <p>🏆 <b>Collections:</b> View your pets and achievements.</p>
+      </div>
+
+      <button id="closeHelpBtn" class="btn" style="margin-top: 25px;">Close</button>
+    </div>
   </div>
-</div>
-    <script type="module">
+  <script type="module">
     import { supabase } from './supabase.js';
 
-// 1️⃣ Synchronous updater: instantly updates menu pet from localStorage
-function updateMenuPet(petId) {
-    const petImg = document.getElementById('equipped-pet-display');
-    if (!petImg) return;
+    // 1️⃣ Synchronous updater: instantly updates menu pet from localStorage
+    function updateMenuPet(petId) {
+      const petImg = document.getElementById('equipped-pet-display');
+      if (!petImg) return;
 
-    if (petId && petId !== "null") {
+      if (petId && petId !== "null") {
         const fileName = petId.replace('pet_', '') + '.png';
         petImg.src = `pets/${fileName}`;
         petImg.style.display = 'inline-block';
         petImg.style.marginLeft = '5px';
         petImg.style.verticalAlign = 'middle';
-    } else {
+      } else {
         petImg.style.display = 'none';
+      }
     }
-}
 
-// 2️⃣ Single function to sync with Supabase
-async function syncMenuPet() {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
+    // 2️⃣ Single function to sync with Supabase
+    async function syncMenuPet() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
         // Logged out → clear pet
         localStorage.removeItem('equipped_pet_id');
         updateMenuPet(null);
         return;
-    }
+      }
 
-    // Fetch equipped pet from Supabase once
-    const { data, error } = await supabase
+      // Fetch equipped pet from Supabase once
+      const { data, error } = await supabase
         .from('profiles')
         .select('equipped_pet')
         .eq('id', session.user.id)
         .single();
 
-    if (!error && data) {
+      if (!error && data) {
         localStorage.setItem('equipped_pet_id', data.equipped_pet);
         updateMenuPet(data.equipped_pet);
+      }
     }
-}
 
-// 3️⃣ Setup a single real-time listener for changes
-async function setupMenuPetRealtime() {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
+    // 3️⃣ Setup a single real-time listener for changes
+    async function setupMenuPetRealtime() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
 
-    // Only one channel, one listener
-    supabase
+      // Only one channel, one listener
+      supabase
         .channel('public:profiles')
         .on('postgres_changes', {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'profiles',
-            filter: `id=eq.${session.user.id}`
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${session.user.id}`
         }, payload => {
-            const newPet = payload.new.equipped_pet;
-            localStorage.setItem('equipped_pet_id', newPet);
-            updateMenuPet(newPet);
+          const newPet = payload.new.equipped_pet;
+          localStorage.setItem('equipped_pet_id', newPet);
+          updateMenuPet(newPet);
         })
         .subscribe();
-}
+    }
 
-// 4️⃣ Listen for logout directly to clear UI instantly
-supabase.auth.onAuthStateChange((event) => {
-    if (event === 'SIGNED_OUT') {
+    // 4️⃣ Listen for logout directly to clear UI instantly
+    supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') {
         localStorage.removeItem('equipped_pet_id');
         updateMenuPet(null);
-    }
-});
+      }
+    });
 
-// 5️⃣ Initialize on page load
-document.addEventListener('DOMContentLoaded', () => {
-    // Instant render from localStorage to avoid flicker
-    const currentPet = localStorage.getItem('equipped_pet_id');
-    updateMenuPet(currentPet);
+    // 5️⃣ Initialize on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      // Instant render from localStorage to avoid flicker
+      const currentPet = localStorage.getItem('equipped_pet_id');
+      updateMenuPet(currentPet);
 
-    // Fetch fresh state from Supabase
-    syncMenuPet();
+      // Fetch fresh state from Supabase
+      syncMenuPet();
 
-    // Setup real-time listener
-    setupMenuPetRealtime();
-});
+      // Setup real-time listener
+      setupMenuPetRealtime();
+    });
 
-// This looks for buttons AND the specific top-right icons
-const allButtons = document.querySelectorAll('.btn, .btn-small, .tab-btn, #helpBtn, #discordBtn');
+    // This looks for buttons AND the specific top-right icons
+    const allButtons = document.querySelectorAll('.btn, .btn-small, .tab-btn, #helpBtn, #discordBtn');
 
-allButtons.forEach(button => {
-  button.addEventListener('touchstart', () => {
-    button.classList.add('tapped');
-  }, { passive: true });
+    allButtons.forEach(button => {
+      button.addEventListener('touchstart', () => {
+        button.classList.add('tapped');
+      }, { passive: true });
 
-  button.addEventListener('touchend', () => {
-    setTimeout(() => {
-      button.classList.remove('tapped');
-    }, 100); 
-  });
+      button.addEventListener('touchend', () => {
+        setTimeout(() => {
+          button.classList.remove('tapped');
+        }, 100);
+      });
 
-  button.addEventListener('touchcancel', () => {
-    button.classList.remove('tapped');
-  });
-});
-      
-</script>
+      button.addEventListener('touchcancel', () => {
+        button.classList.remove('tapped');
+      });
+    });
+  </script>
+  <script>
+    // This runs after everything else is parsed
+    document.addEventListener('DOMContentLoaded', () => {
+      // Select all buttons by class
+      const menuButtons = document.querySelectorAll('.main-menu-btn');
+
+      menuButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          // Since app.js is a module, we ensure it's loaded 
+          // and then call our navigation logic
+          if (typeof window.navigateTo === 'function') {
+            window.navigateTo('view-home');
+          } else {
+            // Fallback: manually force the UI reset if app.js isn't ready
+            document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+            document.getElementById('view-home').classList.remove('hidden');
+            window.location.hash = 'home';
+          }
+        });
+      });
+    });
+  </script>
 </body>
+
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
