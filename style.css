@@ -1,8 +1,11 @@
 /* ====== GLOBAL RESET ====== */
 html {
-  background-color: #0e0e0e; /* The 'Flash' protection */
+  background-color: #0e0e0e;
+  /* The 'Flash' protection */
 }
-html, body {
+
+html,
+body {
   margin: 0;
   padding: 0;
   height: 100%;
@@ -12,13 +15,15 @@ html, body {
 }
 
 :root {
-  --bg-image: url('images/background.jpg'); /* default background */
+  --bg-image: url('images/background.jpg');
+  /* default background */
 }
 
 #background-root {
   position: fixed;
   inset: 0;
-  z-index: -2; /*0*/
+  z-index: -2;
+  /*0*/
   background-image: var(--bg-image);
   background-size: cover;
   background-position: center;
@@ -45,59 +50,84 @@ html, body {
 }
 
 #bg-fade-layer {
-  position: fixed;        /* cover entire viewport */
-  inset: 0;               /* top:0; right:0; bottom:0; left:0 */
-  pointer-events: none;   /* allow clicks through */
-  opacity: 0;             /* start fully transparent */
-  will-change: opacity;   /* optimize fade animations */
+  position: fixed;
+  /* cover entire viewport */
+  inset: 0;
+  /* top:0; right:0; bottom:0; left:0 */
+  pointer-events: none;
+  /* allow clicks through */
+  opacity: 0;
+  /* start fully transparent */
+  will-change: opacity;
+  /* optimize fade animations */
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  z-index: -1;            /* above #background-root but below #app */
+  z-index: -1;
+  /* above #background-root but below #app */
 }
 
 
 
 @keyframes fadeLoop {
-  0%, 90% { opacity: 0; }
-  100% { opacity: 1; }
+
+  0%,
+  90% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }
 
-a, button {
-    -webkit-tap-highlight-color: transparent; /* Removes the system "box" animation */
-    outline: none;
+a,
+button {
+  -webkit-tap-highlight-color: transparent;
+  /* Removes the system "box" animation */
+  outline: none;
 }
 
 /* ====== APP WRAPPER ===== */
 #app {
-  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: 20px; /*40px;*/
+  padding: 20px;
+  /*40px;*/
   position: relative;
-  z-index: 10; /* above the background */
+  z-index: 10;
+  /* above the background */
 }
 
 /* App visibility control */
-.app-hidden { opacity: 0; }
-.app-ready { opacity: 1; transition: opacity 0.15s ease; }
+.app-hidden {
+  opacity: 0;
+}
+
+.app-ready {
+  opacity: 1;
+  transition: opacity 0.15s ease;
+}
 
 /* ====== CONTAINER ====== */
 .container {
-  position: relative; /* THIS IS THE FIX */
+  position: relative;
+  /* THIS IS THE FIX */
   width: 440px;
   max-width: 95%;
-  min-height: 500px;        /* ensures it never shrinks too small */
+  min-height: 500px;
+  /* ensures it never shrinks too small */
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  align-items: stretch;     /* make children fill width */
+  align-items: stretch;
+  /* make children fill width */
   padding: 25px;
   box-sizing: border-box;
-  background: rgba(0,0,0,0.85);
+  background: rgba(0, 0, 0, 0.85);
   border-radius: 10px;
-  box-shadow: 0 0 30px rgba(0,0,0,0.5);
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
 }
 
 
@@ -105,11 +135,12 @@ a, button {
 /* The actual thin fields */
 .input-field {
   width: 100%;
-  height: 36px;         /* Much thinner height */
+  height: 36px;
+  /* Much thinner height */
   padding: 0 12px;
   border-radius: 6px;
   border: 2px solid #d4af37;
-  background: rgba(22,22,22,0.9) !important;
+  background: rgba(22, 22, 22, 0.9) !important;
   color: #fff !important;
   font-size: 0.95rem;
   box-sizing: border-box;
@@ -122,7 +153,7 @@ a, button {
 }
 
 .input-field:focus {
-  background: rgba(0,0,0,0.95) !important;
+  background: rgba(0, 0, 0, 0.95) !important;
   border-color: #ffea8a;
   color: #fff !important;
 }
@@ -135,26 +166,35 @@ a {
 /* ====== BIG GOLD BUTTONS ====== */
 .btn {
   /* Forces the <a> to act like a <button> */
-  box-sizing: border-box; /* CRITICAL: ensures padding doesn't stretch links differently */
-  display: inline-flex;  /*block*/
-  align-items: center;        /* vertical centering */
-  justify-content: center;    /* horizontal centering */
-  text-align: center;         /* fallback */
+  box-sizing: border-box;
+  /* CRITICAL: ensures padding doesn't stretch links differently */
+  display: inline-flex;
+  /*block*/
+  align-items: center;
+  /* vertical centering */
+  justify-content: center;
+  /* horizontal centering */
+  text-align: center;
+  /* fallback */
   background: rgba(0, 0, 0, 0.6);
-  color: #d4af37; /*#ffd700;*/
+  color: #d4af37;
+  /*#ffd700;*/
   padding: 14px 22px;
-  border: 2px solid #d4af37; /*#ffd700;*/
+  border: 2px solid #d4af37;
+  /*#ffd700;*/
   border-radius: 8px;
   font-size: 1.1rem;
   width: 100%;
   margin: 0;
   transition: 0.2s;
   cursor: pointer;
-  text-decoration: none; /* Removes link underline */
-  appearance: none; /* Removes default browser link styling */
+  text-decoration: none;
+  /* Removes link underline */
+  appearance: none;
+  /* Removes default browser link styling */
   user-select: none;
   /* 1. Stops the "dragging" ghost image from following your finger */
-  -webkit-user-drag: none; 
+  -webkit-user-drag: none;
   /* 2. Stops the browser from trying to select the text */
   user-select: none;
   -webkit-user-select: none;
@@ -171,30 +211,31 @@ a {
 }
 
 .btn.is-disabled {
-    background: rgba(0, 0, 0, 0.4) !important; 
-    border: 2px solid #444 !important;
-    color: #666 !important;
-    opacity: 0.5 !important;
-    pointer-events: none !important;
-    filter: grayscale(1);
+  background: rgba(0, 0, 0, 0.4) !important;
+  border: 2px solid #444 !important;
+  color: #666 !important;
+  opacity: 0.5 !important;
+  pointer-events: none !important;
+  filter: grayscale(1);
 }
 
 .btn.is-active {
-    background: rgba(0, 0, 0, 0.6) !important;
-    border: 2px solid #d4af37 !important;
-    color: #d4af37 !important;
-    opacity: 1 !important;
-    pointer-events: auto !important;
-    cursor: pointer !important;
+  background: rgba(0, 0, 0, 0.6) !important;
+  border: 2px solid #d4af37 !important;
+  color: #d4af37 !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
 }
 
 /* ====== SMALL BUTTONS ====== */
 .btn-small {
-  background: rgba(0,0,0,0.6);
+  background: rgba(0, 0, 0, 0.6);
   color: #d4af37;
   padding: 10px 16px;
   font-size: 1rem;
-  border-color: #d4af37;   /* color only */
+  border-color: #d4af37;
+  /* color only */
   border-radius: 8px;
   display: inline-flex;
   align-items: center;
@@ -202,13 +243,15 @@ a {
   flex: 1;
   text-align: center;
   text-decoration: none;
-  transition: all 0.2s ease; /* This ensures color, border, and bg all flash together */
+  transition: all 0.2s ease;
+  /* This ensures color, border, and bg all flash together */
   cursor: pointer;
   user-select: none;
-  appearance: none; /* Removes default browser link styling */
+  appearance: none;
+  /* Removes default browser link styling */
   user-select: none;
   /* 1. Stops the "dragging" ghost image from following your finger */
-  -webkit-user-drag: none; 
+  -webkit-user-drag: none;
   /* 2. Stops the browser from trying to select the text */
   user-select: none;
   -webkit-user-select: none;
@@ -220,15 +263,19 @@ a {
 
 
 .btn-small:hover {
-  background: rgba(0,0,0,0.85);
+  background: rgba(0, 0, 0, 0.85);
   border-color: #ffea8a;
   color: #ffea8a;
 }
 
-.btn, .btn-small {
-  position: relative; /* ensures click area is on top */
-  user-select: none;   /* optional: prevent text selection when clicking */
-  z-index: 2;          /* ensure above all background layers */
+.btn,
+.btn-small {
+  position: relative;
+  /* ensures click area is on top */
+  user-select: none;
+  /* optional: prevent text selection when clicking */
+  z-index: 2;
+  /* ensure above all background layers */
 }
 
 
@@ -247,14 +294,18 @@ a {
   color: #D7D8D9;
   padding: 12px;
   margin: 6px 0;
-  width: 100%;             /* Occupy full container width */
-  min-width: 100%;         /* Double-down to prevent shrinking */
-  flex-shrink: 0;          /* CRITICAL: Tells flexbox "Do not shrink me" */
+  width: 100%;
+  /* Occupy full container width */
+  min-width: 100%;
+  /* Double-down to prevent shrinking */
+  flex-shrink: 0;
+  /* CRITICAL: Tells flexbox "Do not shrink me" */
   border-radius: 6px;
   font-size: 1rem;
   transition: background-color 0.15s ease;
   cursor: pointer;
-  box-sizing: border-box; /* Ensures padding doesn't add to width */
+  box-sizing: border-box;
+  /* Ensures padding doesn't add to width */
 }
 
 .answer-btn:hover {
@@ -266,19 +317,31 @@ a {
   cursor: pointer;
 }
 
-.correct { background-color: #3d8c40 !important; } /*#4caf50*/
-.wrong { background-color: #a63232 !important; } /*#f44336*/
+.correct {
+  background-color: #3d8c40 !important;
+}
+
+/*#4caf50*/
+.wrong {
+  background-color: #a63232 !important;
+}
+
+/*#f44336*/
 
 /* ====== GAME SCREEN ===== */
-#game {
-  position: relative !important; 
-  overflow: visible !important; /* Required for XP drops to float out */
-  display: none;                /* Hidden by default */
+#game { 
+  position: relative !important;
+  overflow: visible !important;
+  /* Required for XP drops to float out */
+  display: none;
+  /* Hidden by default */
   flex-direction: column;
-  align-items: center;          /* Centers everything horizontally */
+  align-items: center;
+  /* Centers everything horizontally */
   padding: 20px;
   border-radius: 10px;
-  width: 100%;                  /* Ensure it fills the container */
+  width: 100%;
+  /* Ensure it fills the container */
   box-sizing: border-box;
 }
 
@@ -287,12 +350,15 @@ a {
 }
 
 /* Ensure children inside #game stay white and correctly layered */
-#game > * {
+#game>* {
   color: #ffffff;
   position: relative;
   z-index: 1;
-  width: 100%; /* Force question text and buttons to span width */
+  width: 100%;
+  /* Force question text and buttons to span width */
 }
+
+
 
 /* ====== QUESTION AREA ===== */
 #question {
@@ -307,7 +373,7 @@ a {
   margin: 10px 0;
   text-align: center;
   width: 100%;
- 
+
 }
 
 #questionImage {
@@ -326,29 +392,35 @@ h1 {
   margin-bottom: 25px;
   text-align: center;
   letter-spacing: 2px;
-  
-/* 1. YOUR ORIGINAL GRADIENT (Untouched) */
+
+  /* 1. YOUR ORIGINAL GRADIENT (Untouched) */
   background: linear-gradient(145deg, #fff8dc 0%, #ffdd44 25%, #f2b705 50%, #c28f0c 75%, #a77b0a 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 
   /* 2. THE CUSTOM BALANCED GLOW */
   /* This is stronger than the 35px "Sweet Spot" but cleaner than the 80px "Fog" */
-  text-shadow: 
-    0 0 4px rgba(0,0,0,0.8),             /* Original depth */
-    1px 1px 0 #000,                      /* Original sharp edge */
-    2px 2px 2px rgba(0,0,0,0.6),         /* Original shadow shadow */
-    0 0 12px rgba(212, 175, 55, 0.95),   /* Layer 1: Strong Core (Button Gold) */
-    0 0 30px rgba(212, 175, 55, 0.75),   /* Layer 2: Deep Bloom (Thicker than before) */
-    0 0 55px rgba(212, 175, 55, 0.45);   /* Layer 3: Wide Radiance (Increased presence) */
+  text-shadow:
+    0 0 4px rgba(0, 0, 0, 0.8),
+    /* Original depth */
+    1px 1px 0 #000,
+    /* Original sharp edge */
+    2px 2px 2px rgba(0, 0, 0, 0.6),
+    /* Original shadow shadow */
+    0 0 12px rgba(212, 175, 55, 0.95),
+    /* Layer 1: Strong Core (Button Gold) */
+    0 0 30px rgba(212, 175, 55, 0.75),
+    /* Layer 2: Deep Bloom (Thicker than before) */
+    0 0 55px rgba(212, 175, 55, 0.45);
+  /* Layer 3: Wide Radiance (Increased presence) */
 
   /* 3. FINAL VIBRANCE */
   filter: saturate(1.15);
 }
 
 /* ====== UTIL ===== */
-.hidden { 
-  display: none !important; 
+.hidden {
+  display: none !important;
 }
 
 /* ====== DARK READER WARNING ===== */
@@ -356,7 +428,7 @@ h1 {
   position: fixed;
   bottom: 12px;
   right: 12px;
-  background: rgba(0,0,0,0.75);
+  background: rgba(0, 0, 0, 0.75);
   color: #ffd700;
   padding: 8px 12px;
   border-radius: 6px;
@@ -369,10 +441,11 @@ h1 {
   display: flex;
   align-items: center;
   /* This is the secret: space-between + 3 equal parts */
-  justify-content: space-between; 
+  justify-content: space-between;
   width: 100%;
   margin-bottom: 30px;
-  padding: 0 10px; /* Keeps icons from touching the very edge */
+  padding: 0 10px;
+  /* Keeps icons from touching the very edge */
   box-sizing: border-box;
   height: 40px;
 }
@@ -381,8 +454,10 @@ h1 {
 .icon-group {
   display: flex;
   gap: 8px;
-  flex: 1; /* Takes up 1/3 of the space */
-  justify-content: flex-start; /* Aligns icons to the left */
+  flex: 1;
+  /* Takes up 1/3 of the space */
+  justify-content: flex-start;
+  /* Aligns icons to the left */
 }
 
 /* 2. The Center Side (Name) */
@@ -391,29 +466,35 @@ h1 {
   text-align: left;
   display: flex;
   flex-direction: column;
-  justify-content: center; /* Center vertically */
+  justify-content: center;
+  /* Center vertically */
   margin: 0 !important;
   font-size: 1.2rem;
   color: #d4af37;
   /* LOCK THE HEIGHT: This prevents jumping when text appears */
-  height: 44px; 
+  height: 44px;
   min-height: 44px;
   /* Prevent horizontal shifting */
-  min-width: 120px; 
+  min-width: 120px;
 }
 
 /* 3. The "Ghost" Right Side (To balance the center) */
 #user-controls::after {
   content: "";
-  flex: 1; /* Takes up 1/3 of the space on the right */
-  pointer-events: none; /* Add this! */
+  flex: 1;
+  /* Takes up 1/3 of the space on the right */
+  pointer-events: none;
+  /* Add this! */
 }
 
 
 /* ====== USER CONTROLS (FIXED PLACEMENT & COLORS) ====== */
 /* 3. The Icons: Clean up the individual buttons */
-#shareBtn, #muteBtn, #logBtn {
-  position: relative; /* Add this! This anchors the tooltip to the button, not the group */
+#shareBtn,
+#muteBtn,
+#logBtn {
+  position: relative;
+  /* Add this! This anchors the tooltip to the button, not the group */
   width: 32px;
   height: 32px;
   display: flex;
@@ -430,27 +511,38 @@ h1 {
   filter: grayscale(1) brightness(0.5);
   opacity: 0.5;
 }
+
 /* Space between the icons themselves */
-#shareBtn { margin-right: 4px; transition: filter 0.2s ease, opacity 0.2s ease, transform 0.2s ease; }
+#shareBtn {
+  margin-right: 4px;
+  transition: filter 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
+}
+
 /* This triggers only WHILE the finger is touching the screen */
 #shareBtn:active {
   filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.3) drop-shadow(0 0 5px #ffea8a) !important;
-  transform: scale(0.9); /* Slight shrink makes it feel physical */
+  transform: scale(0.9);
+  /* Slight shrink makes it feel physical */
   opacity: 1 !important;
 }
-#logBtn { margin-right: 4px; }
+
+#logBtn {
+  margin-right: 4px;
+}
 
 /* 2. Standard State: Your Original Gold */
-#shareBtn:not(.is-disabled), 
-#logBtn:not(.is-disabled), 
+#shareBtn:not(.is-disabled),
+#logBtn:not(.is-disabled),
 #muteBtn:not(.is-muted) {
   filter: sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85);
   opacity: 0.9;
 }
 
 /* The Shine/Linger Effect (Click & Tapped) */
-#shareBtn.tapped, #shareBtn:active,
-#logBtn.tapped, #logBtn:active {
+#shareBtn.tapped,
+#shareBtn:active,
+#logBtn.tapped,
+#logBtn:active {
   filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.3) drop-shadow(0 0 8px #ffea8a) !important;
   transform: scale(0.9);
   opacity: 1 !important;
@@ -459,7 +551,7 @@ h1 {
 
 /* 4. Muted/Disabled State: Grey */
 #muteBtn.is-muted,
-#shareBtn.is-disabled, 
+#shareBtn.is-disabled,
 #logBtn.is-disabled {
   filter: grayscale(1) brightness(0.5) !important;
   opacity: 0.5 !important;
@@ -467,6 +559,7 @@ h1 {
 
 /* 5. Hover Logic: ONLY for Desktop/Mouse users */
 @media (hover: hover) {
+
   #shareBtn:not(.is-disabled):hover,
   #logBtn:not(.is-disabled):hover,
   #muteBtn:not(.is-muted):hover {
@@ -474,42 +567,58 @@ h1 {
     filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.2) drop-shadow(0 0 5px #ffea8a) !important;
     /* filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.1);*/
   }
+
   /* This targets the mic ONLY when it has the .is-muted class */
   #muteBtn.is-muted:hover {
-    opacity: 0.8 !important; /* Slightly clearer than 0.5 */
+    opacity: 0.8 !important;
+    /* Slightly clearer than 0.5 */
     /* Brightens the grey without adding color/sepia */
-    filter: grayscale(1) brightness(0.8) !important; 
+    filter: grayscale(1) brightness(0.8) !important;
     cursor: pointer;
   }
 }
 
 .copy-tooltip {
-    position: fixed;
-    transform: translateX(-50%);
-    background: rgba(10, 10, 10, 0.95);
-    border: 1px solid #d4af37;
-    border-radius: 3px;
-    z-index: 10000;
-    pointer-events: none;
-    white-space: nowrap;
-    
-    /* Small but matching button style */
-    color: #d4af37;          /* Button Gold */
-    font-size: 0.75rem;      /* Scaled down from 1rem */
-    padding: 3px 8px;        /* Very tight box */
-    font-family: Arial, sans-serif;
-    
-    /* Quality of life */
-    -webkit-font-smoothing: antialiased;
-    filter: none !important;
-    animation: tooltip-fade-only 0.5s ease-out forwards;
+  position: fixed;
+  transform: translateX(-50%);
+  background: rgba(10, 10, 10, 0.95);
+  border: 1px solid #d4af37;
+  border-radius: 3px;
+  z-index: 10000;
+  pointer-events: none;
+  white-space: nowrap;
+
+  /* Small but matching button style */
+  color: #d4af37;
+  /* Button Gold */
+  font-size: 0.75rem;
+  /* Scaled down from 1rem */
+  padding: 3px 8px;
+  /* Very tight box */
+  font-family: Arial, sans-serif;
+
+  /* Quality of life */
+  -webkit-font-smoothing: antialiased;
+  filter: none !important;
+  animation: tooltip-fade-only 0.5s ease-out forwards;
 }
 
 @keyframes tooltip-fade-only {
-    0% { opacity: 0; }
-    20% { opacity: 1; }
-    80% { opacity: 1; }
-    100% { opacity: 0; }
+  0% {
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  80% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
 }
 
 
@@ -526,9 +635,9 @@ h1 {
     flex: 0 0 auto !important;
     display: flex !important;
     /* NEGATIVE MARGIN: Pulls buttons toward the container edge */
-    margin-left: -12px !important; 
+    margin-left: -12px !important;
     /* CRUSH GAPS: Overlap buttons slightly to remove dead space */
-    gap: 1px !important; 
+    gap: 1px !important;
   }
 
   #userDisplay {
@@ -536,19 +645,23 @@ h1 {
     text-align: left !important;
     align-items: flex-start !important;
     /* ULTRA-TIGHT: Pulls text much closer to the mic icon */
-    margin-left: 3px !important; 
+    margin-left: 3px !important;
     padding: 0 !important;
   }
 
- #shareBtn, #muteBtn, #logBtn {
+  #shareBtn,
+  #muteBtn,
+  #logBtn {
     /* CRITICAL: Buttons often have default padding that creates space */
     padding: 0 !important;
     margin: 0 !important;
-    width: 30px !important;  /* Slightly smaller width helps them sit closer */
+    width: 30px !important;
+    /* Slightly smaller width helps them sit closer */
     display: flex !important;
     justify-content: center;
     align-items: center;
-    border: none !important; /* If they have borders, they add 2px of gap */
+    border: none !important;
+    /* If they have borders, they add 2px of gap */
     background: none !important;
   }
 
@@ -562,15 +675,18 @@ h1 {
 /* Score */
 #score {
   margin-bottom: 5px;
-  color: #f5f5f5; /* explicit white */
+  color: #f5f5f5;
+  /* explicit white */
   text-align: center;
-  width: 100%; /* make sure it spans the container */
+  width: 100%;
+  /* make sure it spans the container */
 }
 
 /* Question text */
 #questionText {
   margin: 10px 0;
-  color: #f5f5f5; /* white text */
+  color: #f5f5f5;
+  /* white text */
 }
 
 /* Timer */
@@ -578,7 +694,8 @@ h1 {
   margin-top: 15px;
   color: #f5f5f5;
   text-align: center;
-  width: 100%; /* make sure it spans the container */
+  width: 100%;
+  /* make sure it spans the container */
 }
 
 #time-wrap.red-timer {
@@ -593,7 +710,8 @@ h1 {
 .input-field,
 .btn,
 .btn-small {
-  box-sizing: border-box; /* include padding/border in width */
+  box-sizing: border-box;
+  /* include padding/border in width */
 }
 
 /* Ensure input fields never overflow the container */
@@ -609,13 +727,14 @@ h1 {
 }
 
 .btn-small {
-  background: rgba(0,0,0,0.6);
+  background: rgba(0, 0, 0, 0.6);
   color: #d4af37;
 
   padding: 10px 16px;
   font-size: 1rem;
 
-  border: 2px solid #d4af37;   /* fixed border width */
+  border: 2px solid #d4af37;
+  /* fixed border width */
   border-radius: 8px;
 
   display: inline-flex;
@@ -633,44 +752,30 @@ h1 {
 }
 
 .btn-small:hover {
-  background: rgba(0,0,0,0.85);
+  background: rgba(0, 0, 0, 0.85);
   border-color: #ffea8a;
 }
 
 /* Text can change freely */
 .btn-label {
-    display: flex !important;           /* use flex instead of inline-block */
-    align-items: center !important;     /* vertical centering */
-    justify-content: center !important; /* horizontal centering */
-    width: 100% !important;             /* fill the button width */
-    text-align: center !important;      /* fallback */
-    white-space: nowrap !important;     /* prevent wrapping */
+  display: flex !important;
+  /* use flex instead of inline-block */
+  align-items: center !important;
+  /* vertical centering */
+  justify-content: center !important;
+  /* horizontal centering */
+  width: 100% !important;
+  /* fill the button width */
+  text-align: center !important;
+  /* fallback */
+  white-space: nowrap !important;
+  /* prevent wrapping */
 }
 
 
 /* ====== LOGIN PAGE SPECIFIC (CLEAN FONTS & MENU MATCHED) ====== */
-
-/* Force the login app wrapper to align like the start screen */
-#app.login-page {
-    align-items: flex-start; 
-    padding-top: 20px;
-}
-
-#app.login-page .login-container {
-    width: 440px;
-    background: rgba(0, 0, 0, 0.85);     
-    border-radius: 10px;
-    display: flex;
-    flex-direction: column;
-    padding: 25px; /* gap between container to the title in login page */
-    gap: 20px !important;            
-    height: auto !important;
-    min-height: 0 !important;
-}
-
-
 /* Sharp, thin login fields */
-#app.login-page .input-field {
+#view-login .input-field {
   height: 28px !important;
   padding: 10px 10px !important;
   font-size: 0.85rem !important;
@@ -679,74 +784,79 @@ h1 {
 
   /* Thinner Border */
   border: 1px solid #d4af37 !important;
-  background: rgba(15, 15, 15, 0.95) !important; /* Slightly darker to pop the gold */ 
+  background: rgba(15, 15, 15, 0.95) !important;
+  /* Slightly darker to pop the gold */
 }
 
 /* NEW: Input Hover State */
-#app.login-page .input-field:hover {
-    border-color: #ffea8a !important;
+#view-login .input-field:hover {
+  border-color: #ffea8a !important;
 }
 
 /* Update focus state to match */
-#app.login-page .input-field:focus {
+#view-login .input-field:focus {
   border-color: #ffea8a !important;
-  box-shadow: 0 0 5px rgba(212, 175, 55, 0.2); /* Optional: subtle glow */
+  box-shadow: 0 0 5px rgba(212, 175, 55, 0.2);
+  /* Optional: subtle glow */
 
 }
 
 /* Buttons: Side-by-Side row */
 /* Buttons: Side-by-Side row - UPDATED TO MATCH MAIN MENU */
-#app.login-page .menu-row {
-    display: flex !important;
-    gap: 20px !important; /* Matches the new button row gap */
-    width: 100%;
-    margin-top: 10px !important;
+#view-login .menu-row {
+  display: flex !important;
+  gap: 20px !important;
+  /* Matches the new button row gap */
+  width: 100%;
+  margin-top: 10px !important;
 }
 
-#app.login-page .btn-small {
-    flex: 1;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    
-    /* Exact match to your new button specs */
-    height: auto !important; 
-    min-height: 10px !important; 
-    padding: 10px 10px !important;
-    
-    font-size: 1.1rem !important; 
-    font-family: Arial, sans-serif;
-    font-weight: normal;
-    
-    border: 2px solid #d4af37 !important;
-    border-radius: 8px !important;
-    background: rgba(0, 0, 0, 0.6) !important;
-    color: #d4af37 !important;
-    box-sizing: border-box;
+#view-login .btn-small {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  /* Exact match to your new button specs */
+  height: auto !important;
+  min-height: 10px !important;
+  padding: 10px 10px !important;
+
+  font-size: 1.1rem !important;
+  font-family: Arial, sans-serif;
+  font-weight: normal;
+
+  border: 2px solid #d4af37 !important;
+  border-radius: 8px !important;
+  background: rgba(0, 0, 0, 0.6) !important;
+  color: #d4af37 !important;
+  box-sizing: border-box;
 }
 
 /* Ensure hover state matches too */
-#app.login-page .btn-small:hover {
-    background: rgba(0, 0, 0, 0.85) !important;
-    border-color: #ffea8a !important;
-    color: #ffea8a !important;
+#view-login .btn-small:hover {
+  background: rgba(0, 0, 0, 0.85) !important;
+  border-color: #ffea8a !important;
+  color: #ffea8a !important;
 }
 
 /* Back to Menu Button */
-#app.login-page .btn {
-    width: 100%;
-    padding: 14px 0;
-    text-decoration: none;
+#view-login .btn {
+  width: 100%;
+  padding: 14px 0;
+  text-decoration: none;
+  margin-top: 20px !important;
 }
 
 /* Removes the specific negative margins to let the 20px gap do the work */
-#app.login-page .login-container .row:has(.input-field) {
-    margin-bottom: 0 !important; 
+#view-login .row:has(#username) {
+  margin-bottom: 10px !important;
 }
 
 /* Target the specific container for the inputs to push the buttons down */
-#app.login-page .login-container div:has(> #password) {
-    margin-bottom: 1px !important; /* Increase this number to increase the gap */
+#view-login .row:has(#password) {
+  margin-bottom: 20px !important;
+  /* Increase this number to increase the gap */
 }
 
 
@@ -756,7 +866,7 @@ input.input-field:-webkit-autofill,
 input.input-field:-webkit-autofill:hover,
 input.input-field:-webkit-autofill:focus,
 input.input-field:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0px 1000px rgba(22,22,22,0.9) inset !important;
+  -webkit-box-shadow: 0 0 0px 1000px rgba(22, 22, 22, 0.9) inset !important;
   -webkit-text-fill-color: #fff !important;
   transition: background-color 5000s ease-in-out 0s;
 }
@@ -765,8 +875,10 @@ input.input-field:-webkit-autofill:active {
   font-size: 1.2rem;
   color: #d4af37;
   min-height: 24px;
-  display: flex;            /* make it inline-flex to center text vertically */
-  align-items: flex-start; /*center;*/
+  display: flex;
+  /* make it inline-flex to center text vertically */
+  align-items: flex-start;
+  /*center;*/
   /*justify-content: center;  center the text horizontally */
   flex-direction: column;
   /*margin-left: -70px;*/
@@ -775,27 +887,37 @@ input.input-field:-webkit-autofill:active {
 /* ====== ROW LAYOUT FIX ===== */
 .row {
   display: flex;
-  align-items: center;       /* vertically center content */
-  justify-content: center;   /* horizontally center content by default */
-  gap: 20px;                 /* space between elements */
-  margin: 5px 0;            /* spacing between rows */
+  align-items: center;
+  /* vertically center content */
+  justify-content: center;
+  /* horizontally center content by default */
+  gap: 20px;
+  /* space between elements */
+  margin: 5px 0;
+  /* spacing between rows */
 }
 
 /* Ensure user + mute icon row aligns left inside container */
 #user-controls {
-  display: flex;            /* horizontal layout */
-  align-items: center;      /* vertically center icon & text */
-  justify-content: center;  /* horizontally center the whole row */
-  gap: 10px;                /* space between mute icon and name */
+  display: flex;
+  /* horizontal layout */
+  align-items: center;
+  /* vertically center icon & text */
+  justify-content: center;
+  /* horizontally center the whole row */
+  gap: 10px;
+  /* space between mute icon and name */
   /* margin-bottom: 15px;      /* optional spacing below */
-   /*text-align: center;*/
+  /*text-align: center;*/
 }
 
 #usernameSpan {
   display: inline-block;
-  min-width: 10ch;  /*width: 10ch; reserve space for ~10 characters */
+  min-width: 10ch;
+  /*width: 10ch; reserve space for ~10 characters */
   text-align: left;
-  margin-left: 0.4ch;   /* small space between Player: and username */
+  margin-left: 0.4ch;
+  /* small space between Player: and username */
   white-space: nowrap;
   /* overflow: hidden;*/
 }
@@ -818,16 +940,16 @@ input.input-field:-webkit-autofill:active {
 /*#start-screen .row:nth-child(3) button,
 /*#start-screen .row:nth-child(3) a {
   flex: 1;                   /* take equal space */
-  /*display: flex;
+/*display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
   box-sizing: border-box;    /* include padding & border in width/height */
-  /*padding: 12px;
+/*padding: 12px;
   font-size: 1rem;
   line-height: 1;
   height: 60px;          /* equal height */
-  /*overflow: hidden;
+/*overflow: hidden;
   min-width: 120px;          /* stable width for Log In / Log Out */
 /*}*/
 
@@ -838,7 +960,8 @@ input.input-field:-webkit-autofill:active {
 #start-screen {
   display: flex;
   flex-direction: column;
-  gap: 20px;          /* This creates the 20px gap vertically between rows */
+  gap: 20px;
+  /* This creates the 20px gap vertically between rows */
   width: 100%;
   margin-top: 10px;
 }
@@ -846,7 +969,7 @@ input.input-field:-webkit-autofill:active {
 /* Ensure rows don't have their own margins stealing space */
 #start-screen .row {
   display: flex;
-  margin: 0 !important; 
+  margin: 0 !important;
   padding: 0;
   width: 100%;
 }
@@ -857,56 +980,58 @@ input.input-field:-webkit-autofill:active {
 /* Target both the top row (Normal/Lite) and the bottom row (Auth/Leaderboard) */
 #start-screen .button-row,
 #start-screen .row:has(#authBtn) {
-    display: flex !important;
-    gap: 20px !important; /* Uniform gap for both rows */
-    width: 100%;
-    margin: 0 !important;
-    align-items: stretch;
+  display: flex !important;
+  gap: 20px !important;
+  /* Uniform gap for both rows */
+  width: 100%;
+  margin: 0 !important;
+  align-items: stretch;
 }
 
 /* Force all buttons in these specific rows to match exactly */
 #start-screen .button-row .btn,
 #start-screen #authBtn,
 #start-screen a.btn-small[href="leaderboard.html"] {
-    flex: 1;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    
-    /* Identical Sizing */
-    height: auto !important;
-    min-height: 10px; 
-    padding: 10px 16px !important; /* Balanced padding for mobile/desktop */
-    
-    /* Identical Typography */
-    font-size: 1.1rem !important; 
-    font-family: Arial, sans-serif;
-    text-decoration: none;
-    white-space: nowrap;
-    
-    /* Identical Borders/Background */
-    border: 2px solid #d4af37 !important;
-    border-radius: 8px !important;
-    background: rgba(0, 0, 0, 0.6) !important;
-    color: #d4af37 !important;
-    box-sizing: border-box;
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  /* Identical Sizing */
+  height: auto !important;
+  min-height: 10px;
+  padding: 10px 16px !important;
+  /* Balanced padding for mobile/desktop */
+
+  /* Identical Typography */
+  font-size: 1.1rem !important;
+  font-family: Arial, sans-serif;
+  text-decoration: none;
+  white-space: nowrap;
+
+  /* Identical Borders/Background */
+  border: 2px solid #d4af37 !important;
+  border-radius: 8px !important;
+  background: rgba(0, 0, 0, 0.6) !important;
+  color: #d4af37 !important;
+  box-sizing: border-box;
 }
 
 /* Ensure the Login label stays centered and sized */
 #authBtn .btn-label {
-    font-size: 1.1rem !important;
-    display: flex;
-    justify-content: center;
-    width: 100%;
+  font-size: 1.1rem !important;
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }
 
 /* Uniform Hover Effect for all buttons in these rows */
 #start-screen .button-row .btn:hover,
 #start-screen #authBtn:hover,
 #start-screen a.btn-small[href="leaderboard.html"]:hover {
-    background: rgba(0, 0, 0, 0.85) !important;
-    border-color: #ffea8a !important;
-    color: #ffea8a !important;
+  background: rgba(0, 0, 0, 0.85) !important;
+  border-color: #ffea8a !important;
+  color: #ffea8a !important;
 }
 
 
@@ -919,7 +1044,7 @@ input.input-field:-webkit-autofill:active {
 
 
 
- /*@media (max-width: 480px) {
+/*@media (max-width: 480px) {
   .container {
     height: 650px;                 
     display: flex;
@@ -930,14 +1055,14 @@ input.input-field:-webkit-autofill:active {
   }
 
   /* Leaderboard adapts inside fixed container */
- /* #leaderboard {
+/* #leaderboard {
     flex: 1 1 auto;             
     margin-bottom: 5px;         
     overflow-y: auto;           
   }
 
   /* Main Menu button: same width as PC */
-  /*.container a.btn-small {
+/*.container a.btn-small {
     margin-top: 5px;
     width: auto;                 
     max-width: 240px;              
@@ -948,51 +1073,66 @@ input.input-field:-webkit-autofill:active {
 
 /* ====== MOBILE NO-FLICKER BUTTONS ====== */
 @media (hover: none) and (pointer: coarse) {
+
   /* 1. Reset all hover/active for the big .btn and .btn-small */
- .btn:not(.is-disabled):hover, 
+  .btn:not(.is-disabled):hover,
   .btn-small:not(.is-disabled):hover {
-  /*#dailyBtn.is-active:not(.is-disabled):hover,
+    /*#dailyBtn.is-active:not(.is-disabled):hover,
   #weeklyBtn.is-active:hover,   /* ADDED THIS */
-  /*#lobbyBtn.is-active:hover     /* ADDED THIS */
-   /*background: rgba(0, 0, 0, 0.6) !important;*/
+    /*#lobbyBtn.is-active:hover     /* ADDED THIS */
+    /*background: rgba(0, 0, 0, 0.6) !important;*/
     border-color: #d4af37 !important;
     color: #d4af37 !important;
   }
 
   /* 2. THE PRESS (Finger Down) */
-  .btn:not(.is-disabled):active, 
+  .btn:not(.is-disabled):active,
   .btn-small:not(.is-disabled):active,
-  .btn.tapped:not(.is-disabled), 
+  .btn.tapped:not(.is-disabled),
   .btn-small.tapped:not(.is-disabled),
   #dailyBtn.tapped,
-  #weeklyBtn.tapped,  /* ADDED THIS */
+  #weeklyBtn.tapped,
+  /* ADDED THIS */
   #lobbyBtn.tapped,
-  #helpBtn:active {/* ADDED THIS */
+  #helpBtn:active {
+    /* ADDED THIS */
     background-color: #000000 !important;
     border-color: #ffea8a !important;
     color: #ffea8a !important;
-    transition: 0s !important; /* Force instant highlight */
-    transform: scale(0.97) !important;   /* Physical "click" feel */
+    transition: 0s !important;
+    /* Force instant highlight */
+    transform: scale(0.97) !important;
+    /* Physical "click" feel */
   }
-  
-/* Ensure disabled buttons on mobile stay flat and grey */
+
+  /* Ensure disabled buttons on mobile stay flat and grey */
   .is-disabled {
     transform: none !important;
     background: rgba(20, 20, 20, 0.5) !important;
     border-color: #555 !important;
   }
-  
+
   /* 3. THE RELEASE (Finger Up - The "Slow Glow" Return) */
-  .btn, .btn-small, #dailyBtn.is-active, #weeklyBtn, #lobbyBtn, #helpBtn {
+  .btn,
+  .btn-small,
+  #dailyBtn.is-active,
+  #weeklyBtn,
+  #lobbyBtn,
+  #helpBtn {
     /* We use 0.5s here so you can actually see the gold highlight fade away */
     transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.1s ease !important;
   }
 
   /* 1. Prevent icons from flickering between gold and grey on touch */
-  #shareBtn, #muteBtn, #logBtn, #weeklyBtn, #lobbyBtn, #helpBtn {
+  #shareBtn,
+  #muteBtn,
+  #logBtn,
+  #weeklyBtn,
+  #lobbyBtn,
+  #helpBtn {
     -webkit-tap-highlight-color: transparent;
     /* Disable transitions for filters on mobile to stop the "flash" */
-    transition: transform 0.1s ease !important; 
+    transition: transform 0.1s ease !important;
   }
 
   /* 2. Force consistent filter behavior */
@@ -1009,8 +1149,10 @@ input.input-field:-webkit-autofill:active {
   }
 
   /* 4. Fix the positioning logic that was shifting icons left */
-  #shareBtn, #muteBtn, #logBtn {
-    left: 0 !important; 
+  #shareBtn,
+  #muteBtn,
+  #logBtn {
+    left: 0 !important;
     margin-right: 8px !important;
   }
 
@@ -1022,9 +1164,12 @@ input.input-field:-webkit-autofill:active {
 
 
 #authBtn .btn-label {
-  display: flex;          /* instead of inline-block */
-  align-items: center;    /* vertical center */
-  justify-content: center; /* horizontal center */
+  display: flex;
+  /* instead of inline-block */
+  align-items: center;
+  /* vertical center */
+  justify-content: center;
+  /* horizontal center */
   width: 100%;
 }
 
@@ -1033,13 +1178,15 @@ input.input-field:-webkit-autofill:active {
 #end-screen {
   display: flex;
   flex-direction: column;
-  gap: 20px; /* Match the Start Screen vertical spacing */
+  gap: 20px;
+  /* Match the Start Screen vertical spacing */
   align-items: center;
 }
 
 #end-screen .row {
   width: 100%;
-  margin: 0 !important; /* Let the flex gap handle it */
+  margin: 0 !important;
+  /* Let the flex gap handle it */
 }
 
 /* Ensure the GZ or Game Over text doesn't have huge default margins */
@@ -1050,24 +1197,26 @@ input.input-field:-webkit-autofill:active {
 
 /* ====== HIDE ONLY THE MAIN TITLE DURING GAME (MOBILE ONLY) and end-screen ====== */
 @media (max-width: 480px) {
-  /* Hides the big gold title, but leaves #user-controls visible */
-  body.game-active h1 {
+
+  /* 1. Hide the main title when the game is active 
+     (Only if #game is inside #view-home and not hidden) */
+  #view-home:has(#game:not(.hidden), #end-screen:not(.hidden)) > h1:not(#gz-title) {
     display: none !important;
   }
-  
-  /* This controls the gap between the very top of the phone screen and your UI check here*/
-  body.game-active #app {
+
+  /* 3. Global App Padding adjustment when active */
+  #view-home:has(#game:not(.hidden), #end-screen:not(.hidden)) #app {
     padding-top: 20px !important;
   }
-  
-  /* 2. ADD THE GAP: Internal padding at the top of the box */
-  body.game-active .container {
-    padding-top: 65px !important; /* This creates the empty room you want */
+
+  /* 2. ADD THE GAP: When either game or end-screen are active */
+  #view-home:has(#game:not(.hidden), #end-screen:not(.hidden)) .container {
+    padding-top: 65px !important;
   }
-  
-/* Hides the MAIN title only when end-screen is shown */
-  #end-screen:not(.hidden) ~ h1:not(#gz-title),
-  .container:has(#end-screen:not(.hidden)) > h1:not(#gz-title) {
+
+  /* Hides the MAIN title only when end-screen is shown */
+  #end-screen:not(.hidden)~h1:not(#gz-title),
+  .container:has(#end-screen:not(.hidden))>h1:not(#gz-title) {
     display: none !important;
   }
 
@@ -1081,39 +1230,37 @@ input.input-field:-webkit-autofill:active {
   .container:has(#end-screen:not(.hidden)) {
     padding-top: 65px !important;
   }
-  
+
+  /* 2. ADD THE GAP: If the container has a visible end-screen, add the top padding */
+.container:has(#game:not(.hidden)) {
+  padding-top: 65px !important;
 }
 
-/* Keep the inputs snug (overriding the 20px gap for just the inputs) */
-#app.login-page .login-container .row:has(.input-field) {
-  margin-bottom: -16px !important; /* This cancels the 20px gap for the username row */
 }
-
-#app.login-page .input-field {
-  margin-bottom: 4px !important; /* This is the tiny gap between user and pass */
-}
-
-
 
 /* ====== MOBILE NO-FLASH & FIXED BORDERS ====== */
 @media (pointer: coarse) {
+
   /* 1. Remove all hover/active highlights (The "Flash") */
-  .answer-btn:hover, 
+  .answer-btn:hover,
   .answer-btn:active {
     background-color: #181A1B !important;
-    border-color: #8C8273 !important; /* Keep original border */
+    border-color: #8C8273 !important;
+    /* Keep original border */
     transition: none !important;
   }
 
   /* 2. Success/Failure colors - NO border change */
-  .answer-btn.correct { 
-    background-color: #3d8c40 !important; 
-    border-color: #8C8273 !important; /* Force original border even when correct */
+  .answer-btn.correct {
+    background-color: #3d8c40 !important;
+    border-color: #8C8273 !important;
+    /* Force original border even when correct */
   }
-  
-  .answer-btn.wrong { 
-    background-color: #a63232 !important; 
-    border-color: #8C8273 !important; /* Force original border even when wrong */
+
+  .answer-btn.wrong {
+    background-color: #a63232 !important;
+    border-color: #8C8273 !important;
+    /* Force original border even when wrong */
   }
 
   /* 3. Disable the browser's default grey tap highlight */
@@ -1129,55 +1276,62 @@ input.input-field:-webkit-autofill:active {
 /* Ensure the game div is the absolute anchor */
 /* Ensure the game div is the absolute anchor */
 .xp-drop {
-    position: absolute !important;
-    top: 0 !important;
-    right: 10px !important;
-    /* FIX: Force browser to ignore the left side and not stretch the width */
-    left: auto !important;
-    width: auto !important;
-    
-    /* Look & Feel */
-    color: #ffffff;    
-    font-weight: 900 !important;
-    font-size: 22px !important;
-    font-style: normal !important;
-    font-family: 'Verdana', Geneva, sans-serif !important;
-    letter-spacing: -1px;
-    text-shadow: 2px 2px 0px #000;
-    pointer-events: none;
-    z-index: 99999 !important; 
-    
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    
-    /* Animation */
-    animation: xp-float-ne 1.3s ease-out forwards;
+  position: absolute !important;
+  top: 0 !important;
+  right: 10px !important;
+  /* FIX: Force browser to ignore the left side and not stretch the width */
+  left: auto !important;
+  width: auto !important;
+
+  /* Look & Feel */
+  color: #ffffff;
+  font-weight: 900 !important;
+  font-size: 22px !important;
+  font-style: normal !important;
+  font-family: 'Verdana', Geneva, sans-serif !important;
+  letter-spacing: -1px;
+  text-shadow: 2px 2px 0px #000;
+  pointer-events: none;
+  z-index: 99999 !important;
+
+  display: flex;
+  align-items: center;
+  gap: 2px;
+
+  /* Animation */
+  animation: xp-float-ne 1.3s ease-out forwards;
 }
 
 /* The White Plus Sign */
 .xp-drop span:first-child {
-    color: #f5f5f5 !important;
+  color: #f5f5f5 !important;
 }
 
 .xp-number {
-    color: #00ff00 !important; /* OSRS Green */
+  color: #00ff00 !important;
+  /* OSRS Green */
 }
 
 @keyframes xp-float-ne {
-    0% {
-        opacity: 0;
-        transform: translateY(20px); /* Starts slightly below */
-    }
-    20% {
-        opacity: 1;
-        transform: translateY(0); /* Hits the center */
-    }
-    100% {
-        opacity: 0;
-        transform: translateY(-20px); /* Floats straight up */
-    }
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+    /* Starts slightly below */
+  }
+
+  20% {
+    opacity: 1;
+    transform: translateY(0);
+    /* Hits the center */
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-20px);
+    /* Floats straight up */
+  }
 }
+
 /*                                                                                     */
 
 
@@ -1185,21 +1339,27 @@ input.input-field:-webkit-autofill:active {
 /*                               user info, level                                         */
 
 .user-info-row {
-  font-size: 1.2rem;       /* Matches your #userDisplay font-size */
-  color: #d4af37;           /* The exact gold from your Player:Shir style */
-  min-height: 30px; /* fixed level from jumping */
+  font-size: 1.2rem;
+  /* Matches your #userDisplay font-size */
+  color: #d4af37;
+  /* The exact gold from your Player:Shir style */
+  min-height: 30px;
+  /* fixed level from jumping */
   display: flex;
   align-items: center;
   white-space: nowrap;
-  font-family: Arial, sans-serif; /* Ensuring consistency with your script */
+  font-family: Arial, sans-serif;
+  /* Ensuring consistency with your script */
 }
 
 /* Optional: Slight adjustment to make the XP look clean in brackets */
 #xpBracket {
   font-weight: normal;
-  color: #888; /* This keeps the (XP) part grey while Level: 7 stays gold */
+  color: #888;
+  /* This keeps the (XP) part grey while Level: 7 stays gold */
   margin-left: 5px;
-  font-size: 0.85em; /* Makes the XP slightly smaller than the Level text */
+  font-size: 0.85em;
+  /* Makes the XP slightly smaller than the Level text */
 }
 
 /*                               user info, level                                         */
@@ -1210,30 +1370,40 @@ input.input-field:-webkit-autofill:active {
 
 /* Update your particle block */
 .firework-particle {
-    position: fixed !important; /* Stay relative to screen */
-    top: 0;
-    left: 0;
-    width: 0;
-    height: 0;
-    z-index: 100000 !important; /* Top-most layer */
-    pointer-events: none;
+  position: fixed !important;
+  /* Stay relative to screen */
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  z-index: 100000 !important;
+  /* Top-most layer */
+  pointer-events: none;
 }
 
 .firework-particle::after {
-    content: '';
-    position: absolute;
-    width: 6px; 
-    height: 6px;
-    border-radius: 50%;
-    background-color: var(--p-color, #d4af37); 
-    box-shadow: 0 0 4px var(--p-color);
-    animation: explode 1s ease-out forwards;
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--p-color, #d4af37);
+  box-shadow: 0 0 4px var(--p-color);
+  animation: explode 1s ease-out forwards;
 }
 
 @keyframes explode {
-    0% { transform: translate(var(--startX), var(--startY)) scale(1); opacity: 1; }
-    100% { transform: translate(calc(var(--startX) + var(--x)), calc(var(--startY) + var(--y))) scale(0); opacity: 0; }
+  0% {
+    transform: translate(var(--startX), var(--startY)) scale(1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(calc(var(--startX) + var(--x)), calc(var(--startY) + var(--y))) scale(0);
+    opacity: 0;
+  }
 }
+
 /*                               fireworks for level up                                       */
 
 
@@ -1242,85 +1412,96 @@ input.input-field:-webkit-autofill:active {
 
 /* ====== LEVEL UP NOTIFICATION (STATIC FADE) ====== */
 #game-notifications {
-    position: absolute; 
-    top: -15px; 
-    left: 0;
-    right: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    pointer-events: none;
-    z-index: 999;
+  position: absolute;
+  top: -15px;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  pointer-events: none;
+  z-index: 999;
 }
 
 .notif-text {
-    font-family: 'Verdana', sans-serif;
-    font-weight: 900;
-    font-size: 16px;
-    color: #ffde00;
-    white-space: nowrap;
-    text-shadow: 2px 2px 0px #000, 0 0 5px currentColor;
-    /* We use a simple fade animation now */
-    animation: notif-fade-only 1.2s ease-in-out forwards;
+  font-family: 'Verdana', sans-serif;
+  font-weight: 900;
+  font-size: 16px;
+  color: #ffde00;
+  white-space: nowrap;
+  text-shadow: 2px 2px 0px #000, 0 0 5px currentColor;
+  /* We use a simple fade animation now */
+  animation: notif-fade-only 1.2s ease-in-out forwards;
 }
 
 @keyframes notif-fade-only {
-    0% { 
-        opacity: 0; 
-    }
-    15% { 
-        opacity: 1; /* Quickly appears */
-    }
-    70% {
-        opacity: 1; /* Stays fully visible for a while */
-    }
-    100% { 
-        opacity: 0; /* Smoothly fades out without moving */
-    }
+  0% {
+    opacity: 0;
+  }
+
+  15% {
+    opacity: 1;
+    /* Quickly appears */
+  }
+
+  70% {
+    opacity: 1;
+    /* Stays fully visible for a while */
+  }
+
+  100% {
+    opacity: 0;
+    /* Smoothly fades out without moving */
+  }
 }
+
 /*                             for notifications in text                                       */
 /* ====== MOBILE NOTIFICATION ADJUSTMENT ====== */
 @media (max-width: 480px) {
-    #game-notifications {
-        /* Pushes the notification down. 
+  #game-notifications {
+    /* Pushes the notification down. 
            Increase to 10px or 20px if you want it even lower. */
-        top: -11px !important; 
-    }
-    
-    .notif-text {
-        /* Slightly smaller font for mobile to keep it tidy */
-        font-size: 15px !important; 
-    }
+    top: -11px !important;
+  }
+
+  .notif-text {
+    /* Slightly smaller font for mobile to keep it tidy */
+    font-size: 15px !important;
+  }
 }
+
 /* ====== MOBILE NOTIFICATION ADJUSTMENT ====== */
 
 /* ====== MOBILE XP DROP ADJUSTMENT ====== */
 @media (max-width: 480px) {
-    .xp-drop {
-        /* Reduce font size slightly for mobile if desired, or keep at 22px */
-        font-size: 18px !important; 
-        animation: xp-float-mobile 0.9s ease-out forwards !important;
+  .xp-drop {
+    /* Reduce font size slightly for mobile if desired, or keep at 22px */
+    font-size: 18px !important;
+    animation: xp-float-mobile 0.9s ease-out forwards !important;
+  }
+
+  @keyframes xp-float-mobile {
+    0% {
+      opacity: 0;
+      /* 1. START LOWER: Increase this number to start further down */
+      transform: translateY(30px);
     }
 
-    @keyframes xp-float-mobile {
-        0% {
-            opacity: 0;
-          /* 1. START LOWER: Increase this number to start further down */
-            transform: translateY(30px); 
-        }
-        20% {
-            opacity: 1;
-          /* 2. THE PEAK: This is the 'resting' point during the fade */
-            transform: translateY(0);
-        }
-        100% {
-            opacity: 0;
-             /* 3. FINISH POINT: Where it disappears */
-            transform: translateY(-20px); 
-        }
+    20% {
+      opacity: 1;
+      /* 2. THE PEAK: This is the 'resting' point during the fade */
+      transform: translateY(0);
     }
+
+    100% {
+      opacity: 0;
+      /* 3. FINISH POINT: Where it disappears */
+      transform: translateY(-20px);
+    }
+  }
 }
+
 /* ====== MOBILE XP DROP ADJUSTMENT ====== */
 
 
@@ -1331,9 +1512,12 @@ input.input-field:-webkit-autofill:active {
 .leaderboard-tabs {
   display: flex;
   width: 100%;
-  gap: 0; /* Removed gap for a tighter look */
-  margin-bottom: 10px; /* Less space between tabs and list */
-  margin-top: 20px; /* <--- Adjust this value to move the table down */
+  gap: 0;
+  /* Removed gap for a tighter look */
+  margin-bottom: 10px;
+  /* Less space between tabs and list */
+  margin-top: 20px;
+  /* <--- Adjust this value to move the table down */
 }
 
 .tab-btn {
@@ -1341,16 +1525,17 @@ input.input-field:-webkit-autofill:active {
   background: rgba(20, 20, 20, 0.9);
   border: 1px solid rgba(212, 175, 55, 0.4);
   color: #777;
-  
+
   /* Thinner padding and smaller font */
-  padding: 6px 0; 
-  font-size: 0.75rem; 
-  
+  padding: 6px 0;
+  font-size: 0.75rem;
+
   font-family: 'Cinzel', serif;
   cursor: pointer;
   transition: all 0.2s ease;
   border-radius: 4px 4px 0 0;
-  text-transform: uppercase; /* Makes small text easier to read */
+  text-transform: uppercase;
+  /* Makes small text easier to read */
   letter-spacing: 1px;
 }
 
@@ -1358,9 +1543,11 @@ input.input-field:-webkit-autofill:active {
   background: rgba(212, 175, 55, 0.15);
   color: #ffdd44;
   border-color: #ffdd44;
-  border-bottom: 1px solid transparent; /* Blends into the top of the list */
+  border-bottom: 1px solid transparent;
+  /* Blends into the top of the list */
   font-weight: bold;
 }
+
 /* ====== tab for leaderboards xp====== */
 
 
@@ -1369,69 +1556,76 @@ input.input-field:-webkit-autofill:active {
 /* ====== PET UNLOCK WINDOW (TRANSPARENT) ====== */
 /* ====== COMPACT PET MODAL ====== */
 #pet-modal {
-    position: fixed !important;
-    left: 50% !important;
-    top: 20px !important; /* Desktop remains at top */
-    transform: translateX(-50%) scale(0.8);
-    
-    background: rgba(15, 15, 15, 0.9) !important; 
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 2px solid #d4af37 !important;
-    border-radius: 8px;
-    
-    padding: 12px 15px; /* Compact padding */
-    width: 260px; /* Smaller width */
-    text-align: center;
-    z-index: 999999 !important; 
-    opacity: 0;
-    pointer-events: none;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: fixed !important;
+  left: 50% !important;
+  top: 20px !important;
+  /* Desktop remains at top */
+  transform: translateX(-50%) scale(0.8);
+
+  background: rgba(15, 15, 15, 0.9) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 2px solid #d4af37 !important;
+  border-radius: 8px;
+
+  padding: 12px 15px;
+  /* Compact padding */
+  width: 260px;
+  /* Smaller width */
+  text-align: center;
+  z-index: 999999 !important;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 #pet-modal.active {
-    opacity: 1 !important;
-    transform: translateX(-50%) scale(1) !important;
-    pointer-events: auto !important;
+  opacity: 1 !important;
+  transform: translateX(-50%) scale(1) !important;
+  pointer-events: auto !important;
 }
 
 .pet-modal-close {
-    position: absolute;
-    top: 4px;
-    right: 8px;
-    color: #d4af37;
-    font-size: 18px;
-    cursor: pointer;
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  color: #d4af37;
+  font-size: 18px;
+  cursor: pointer;
 }
 
 .pet-unlock-title {
-    font-family: 'Cinzel', serif;
-    color: #ffde00;
-    font-size: 0.9rem; /* Small & sharp */
-    margin: 0 0 5px 0;
+  font-family: 'Cinzel', serif;
+  color: #ffde00;
+  font-size: 0.9rem;
+  /* Small & sharp */
+  margin: 0 0 5px 0;
 }
 
 .pet-unlock-icon {
-    width: 40px; /* Small icon */
-    height: 40px;
-    image-rendering: pixelated;
-    margin: 5px auto;
-    display: block;
+  width: 40px;
+  /* Small icon */
+  height: 40px;
+  image-rendering: pixelated;
+  margin: 5px auto;
+  display: block;
 }
 
 .pet-unlock-name {
-    color: #ffffff;
-    font-weight: bold;
-    font-size: 0.95rem;
-    margin-top: 2px;
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 0.95rem;
+  margin-top: 2px;
 }
 
 .pet-unlock-msg {
-    color: #d4af37;
-    font-size: 0.7rem; /* Tiny flavor text */
-    font-style: italic;
-    margin-top: 2px;
+  color: #d4af37;
+  font-size: 0.7rem;
+  /* Tiny flavor text */
+  font-style: italic;
+  margin-top: 2px;
 }
+
 /* ====== PET UNLOCK MODAL ====== */
 
 
@@ -1452,30 +1646,43 @@ input.input-field:-webkit-autofill:active {
   animation: modalSlideIn 0.3s ease-out;
   max-height: 80vh;
   overflow-y: auto;
-  
+
   /* REDUCED TOP PADDING */
-  padding: 10px 25px 25px 25px !important; 
+  padding: 10px 25px 25px 25px !important;
   display: flex;
   flex-direction: column;
 }
 
 /* TARGET THE TITLE SPECIFICALLY */
-.modal-content h2, 
+.modal-content h2,
 .modal-content h1 {
-  margin-top: 0;         /* Removes gap between top of modal and title */
-  margin-bottom: 5px;    /* Minimizes gap between title and the text below */
-  line-height: 1.2;      /* Optional: tightens the text height */
+  margin-top: 0;
+  /* Removes gap between top of modal and title */
+  margin-bottom: 5px;
+  /* Minimizes gap between title and the text below */
+  line-height: 1.2;
+  /* Optional: tightens the text height */
 }
 
 @keyframes modalSlideIn {
-  from { transform: translateY(-20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .instructions-text p {
-  margin-top: 0;         /* Ensures the first paragraph doesn't push away from title */
-  margin-bottom: 10px;   /* Slightly reduced from 15px */
+  margin-top: 0;
+  /* Ensures the first paragraph doesn't push away from title */
+  margin-bottom: 10px;
+  /* Slightly reduced from 15px */
 }
+
 /* ====== HELP MODAL STYLES ====== */
 
 
@@ -1485,38 +1692,42 @@ input.input-field:-webkit-autofill:active {
 #achievementList::-webkit-scrollbar,
 .modal-content::-webkit-scrollbar,
 #chat-messages::-webkit-scrollbar {
-    width: 8px;
+  width: 8px;
 }
 
 /* The Track - Deep charcoal brown */
 #achievementList::-webkit-scrollbar-track,
 .modal-content::-webkit-scrollbar-track,
 #chat-messages::-webkit-scrollbar-track {
-    background: #120d09; 
-    border-radius: 10px;
+  background: #120d09;
+  border-radius: 10px;
 }
 
 /* The Thumb (Idle State) - Muted Bronze/Brass */
 #achievementList::-webkit-scrollbar-thumb,
 .modal-content::-webkit-scrollbar-thumb,
 #chat-messages::-webkit-scrollbar-thumb {
-    /* Changed from #d4af37 to a more "matte" brownish-gold */
-    background: #8c7332; 
-    border: 1px solid #2a1d15; /* Darker border to kill the shine */
-    border-radius: 10px;
+  /* Changed from #d4af37 to a more "matte" brownish-gold */
+  background: #8c7332;
+  border: 1px solid #2a1d15;
+  /* Darker border to kill the shine */
+  border-radius: 10px;
 }
 
 /* Handle on hover - This is where the "Live Lobby" Gold kicks in */
 #achievementList::-webkit-scrollbar-thumb:hover,
 .modal-content::-webkit-scrollbar-thumb:hover,
 #chat-messages::-webkit-scrollbar-thumb:hover {
-    background: #d4af37; /* The lobby gold only appears on hover now */
+  background: #d4af37;
+  /* The lobby gold only appears on hover now */
 }
 
 /* Firefox Support - Matching the matte look */
-#achievementList, .modal-content, #chat-messages {
-    scrollbar-width: thin;
-    scrollbar-color: #8c7332 #120d09;
+#achievementList,
+.modal-content,
+#chat-messages {
+  scrollbar-width: thin;
+  scrollbar-color: #8c7332 #120d09;
 }
 
 /* ------------------ scroll bar ------------------ */
@@ -1525,69 +1736,75 @@ input.input-field:-webkit-autofill:active {
 
 /* Achievement Modal Base */
 #achievement-modal {
-    position: fixed !important;
-    left: 50% !important;
-    top: 20px !important; 
-    transform: translateX(-50%) scale(0.8);
-    
-    background: rgba(25, 15, 10, 0.95) !important; 
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 2px solid #cd7f32 !important; /* Bronze */
-    border-radius: 8px;
-    
-    padding: 15px 20px; /* Adjusted for single-line balance */
-    min-width: 220px; 
-    text-align: center;
-    z-index: 999999 !important; 
-    opacity: 0;
-    pointer-events: none;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: fixed !important;
+  left: 50% !important;
+  top: 20px !important;
+  transform: translateX(-50%) scale(0.8);
+
+  background: rgba(25, 15, 10, 0.95) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 2px solid #cd7f32 !important;
+  /* Bronze */
+  border-radius: 8px;
+
+  padding: 15px 20px;
+  /* Adjusted for single-line balance */
+  min-width: 220px;
+  text-align: center;
+  z-index: 999999 !important;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 #achievement-modal.active {
-    opacity: 1 !important;
-    transform: translateX(-50%) scale(1) !important;
-    pointer-events: auto !important;
+  opacity: 1 !important;
+  transform: translateX(-50%) scale(1) !important;
+  pointer-events: auto !important;
 }
 
 /* Mobile top of the screen*/
 @media screen and (max-width: 480px) {
-    #achievement-modal {
-        /* Anchor to top, override the 50% you had before */
-        top: 20px !important;
-        left: 50% !important;
-        /* Only translate X to center horizontally, keep scale at 0.8 for the pop-in */
-        transform: translateX(-50%) scale(0.8) !important;
-    }
-    
-    #achievement-modal.active {
-        /* Maintain horizontal center while scaling to 1 */
-        transform: translateX(-50%) scale(1) !important;
-    }
+  #achievement-modal {
+    /* Anchor to top, override the 50% you had before */
+    top: 20px !important;
+    left: 50% !important;
+    /* Only translate X to center horizontally, keep scale at 0.8 for the pop-in */
+    transform: translateX(-50%) scale(0.8) !important;
+  }
+
+  #achievement-modal.active {
+    /* Maintain horizontal center while scaling to 1 */
+    transform: translateX(-50%) scale(1) !important;
+  }
 }
 
 .achieve-unlock-title {
-    font-family: 'Cinzel', serif;
-    color: #cd7f32; /* Bronze "Achievement Unlocked!" */
-    font-size: 0.75rem;
-    letter-spacing: 1px;
-    margin: 0 0 4px 0;
-    text-transform: uppercase;
+  font-family: 'Cinzel', serif;
+  color: #cd7f32;
+  /* Bronze "Achievement Unlocked!" */
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  margin: 0 0 4px 0;
+  text-transform: uppercase;
 }
 
 .achieve-unlock-name {
-    color: #ffde00; /* Your Golden Yellow for the Achievement Name */
-    font-family: 'Cinzel', serif;
-    font-weight: bold;
-    font-size: 1.1rem;
-    text-shadow: 2px 2px 0px #000;
+  color: #ffde00;
+  /* Your Golden Yellow for the Achievement Name */
+  font-family: 'Cinzel', serif;
+  font-weight: bold;
+  font-size: 1.1rem;
+  text-shadow: 2px 2px 0px #000;
 }
+
 /* Achievement Modal Base */
 
 
 /* PC HOVER FIX */
 @media (hover: hover) {
+
   /* Targets Normal/Lite buttons OR Active Weekly/Daily/Lobby buttons */
   .btn:not(.is-disabled):hover,
   .btn.is-active:hover,
@@ -1598,7 +1815,7 @@ input.input-field:-webkit-autofill:active {
     cursor: pointer !important;
     /*box-shadow: 0 0 10px rgba(212, 175, 55, 0.5) !important;*/
   }
-} 
+}
 
 /* Ensure disabled buttons NEVER trigger hover */
 .is-disabled {
@@ -1609,25 +1826,28 @@ input.input-field:-webkit-autofill:active {
 
 
 #equipped-pet-display {
-    width: 30px;
-    height: 30px;
-    object-fit: contain;
-    image-rendering: auto;
-    vertical-align: middle;
-    /* This stops the mouse from interacting with it at all */
-    pointer-events: none;
-    -webkit-user-drag: none;
-    user-select: none;
-    margin-left: 5px;
-    /* CHANGE: Instead of display:none, use visibility:hidden or reserve space */
-    display: inline-block; /* Always takes up space */
-    visibility: hidden; /* It takes up 30px of space even before it loads */
-    flex-shrink: 0;     /* Prevents the image from being crushed */
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  image-rendering: auto;
+  vertical-align: middle;
+  /* This stops the mouse from interacting with it at all */
+  pointer-events: none;
+  -webkit-user-drag: none;
+  user-select: none;
+  margin-left: 5px;
+  /* CHANGE: Instead of display:none, use visibility:hidden or reserve space */
+  display: inline-block;
+  /* Always takes up space */
+  visibility: hidden;
+  /* It takes up 30px of space even before it loads */
+  flex-shrink: 0;
+  /* Prevents the image from being crushed */
 }
 
 /* Add this: When the script finds a pet, just make it visible */
 #equipped-pet-display[src] {
-    visibility: visible;
+  visibility: visible;
 }
 
 
@@ -1635,56 +1855,73 @@ input.input-field:-webkit-autofill:active {
 /*-------------- gold alert on login-------------- */
 /*-------------- Updated Gold Alert (Button Match) -------------- */
 #toast-container {
-    position: fixed;
-    top: 30px; /* Moved down slightly from the very top */
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 999999 !important;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    pointer-events: none;
-    width: 90%; /* Ensures it doesn't overflow on small screens */
-    max-width: 400px; 
+  position: fixed;
+  top: 30px;
+  /* Moved down slightly from the very top */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 999999 !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  width: 90%;
+  /* Ensures it doesn't overflow on small screens */
+  max-width: 400px;
 }
 
 .gold-toast {
-    /* Matching .btn properties */
-    background: rgba(0, 0, 0, 0.85); /* Slightly darker than btn for readability */
-    color: #d4af37;
-    border: 2px solid #d4af37;
-    border-radius: 8px; /* Matches your .btn */
-    padding: 14px 22px; /* Matches your .btn */
-    font-family: Arial, sans-serif; /* Per your request */
-    font-size: 1.1rem; /* Matches your .btn */
-    text-align: center;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
-    
-    margin-top: 10px;
-    width: 100%;
-    box-sizing: border-box;
-    white-space: pre-line; /* Allows the \n in your JS to create new lines */
-    
-    /* Animation */
-    animation: toast-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  /* Matching .btn properties */
+  background: rgba(0, 0, 0, 0.85);
+  /* Slightly darker than btn for readability */
+  color: #d4af37;
+  border: 2px solid #d4af37;
+  border-radius: 8px;
+  /* Matches your .btn */
+  padding: 14px 22px;
+  /* Matches your .btn */
+  font-family: Arial, sans-serif;
+  /* Per your request */
+  font-size: 1.1rem;
+  /* Matches your .btn */
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+
+  margin-top: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  white-space: pre-line;
+  /* Allows the \n in your JS to create new lines */
+
+  /* Animation */
+  animation: toast-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
 @keyframes toast-pop {
-    0% { 
-        opacity: 0; 
-        transform: translateY(-20px) scale(0.9); 
-    }
-    100% { 
-        opacity: 1; 
-        transform: translateY(0) scale(1); 
-    }
+  0% {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.9);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* Add this to your existing fadeOut animation if you haven't already */
 @keyframes fadeOut {
-    from { opacity: 1; transform: scale(1); }
-    to { opacity: 0; transform: scale(0.9); }
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(0.9);
+  }
 }
+
 /*   -------------------------------------- */
 
 
@@ -1702,24 +1939,24 @@ input.input-field:-webkit-autofill:active {
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  
+
   /* Kill the box */
   background: transparent !important;
   border: none !important;
-  filter: none !important; 
+  filter: none !important;
   outline: none !important;
   -webkit-tap-highlight-color: transparent !important;
-  
+
   /* CRITICAL: Allow the glow to spill outside the 26px box */
-  overflow: visible !important; 
+  overflow: visible !important;
 }
 
 .gold-svg-icon {
   /* SHRINK THE ICON: This gives 4px of "safe space" for the glow */
-  width: 18px !important; 
+  width: 18px !important;
   height: 18px !important;
-  
-  filter: drop-shadow(0px 1px 1px rgba(0,0,0,0.8)) !important;
+
+  filter: drop-shadow(0px 1px 1px rgba(0, 0, 0, 0.8)) !important;
   transition: filter 0.2s ease, opacity 0.2s ease;
   opacity: 0.9;
   pointer-events: none;
@@ -1739,8 +1976,10 @@ input.input-field:-webkit-autofill:active {
 #discordBtn.tapped {
   transform: scale(0.9) !important;
   transition: 0s !important;
-  filter: none !important; /* Ensure the container never glows */
+  filter: none !important;
+  /* Ensure the container never glows */
 }
+
 /* ------------ discord icon ------------ */
 
 
@@ -1760,10 +1999,12 @@ input.input-field:-webkit-autofill:active {
   background: transparent !important;
   border: none !important;
   outline: none !important;
-  
+
   /* CRITICAL FIXES */
-  overflow: visible !important; /* Let the glow escape the box */
-  filter: none !important;     /* Keep the square container clear */
+  overflow: visible !important;
+  /* Let the glow escape the box */
+  filter: none !important;
+  /* Keep the square container clear */
   -webkit-tap-highlight-color: transparent !important;
 
   /* ANTI-DRAG */
@@ -1782,7 +2023,7 @@ input.input-field:-webkit-autofill:active {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   display: inline-block;
-  filter: drop-shadow(0px 1px 1px rgba(0,0,0,0.8)) !important;
+  filter: drop-shadow(0px 1px 1px rgba(0, 0, 0, 0.8)) !important;
   transition: filter 0.2s ease;
 }
 
@@ -1805,9 +2046,10 @@ input.input-field:-webkit-autofill:active {
 #helpBtn:active,
 #helpBtn.tapped {
   transform: scale(0.9) !important;
-  filter: none !important; 
+  filter: none !important;
   transition: 0s !important;
 }
+
 /* ------------ help icon ------------ */
 
 
@@ -1815,37 +2057,41 @@ input.input-field:-webkit-autofill:active {
 #end-screen #game-over-title {
   background: none !important;
   /*text-shadow: 0 0 4px rgba(0,0,0,0.8) !important;   subtle shadow like final score */
-  font-size: 1.4rem;                 /* bigger than final score */
+  font-size: 1.4rem;
+  /* bigger than final score */
   text-align: center;
-  font-family: Arial, sans-serif;       /* match final score */
+  font-family: Arial, sans-serif;
+  /* match final score */
   white-space: pre-line;
   line-height: 1.4;
 }
+
 /* End screen titles and score */
 /* 1. Set all general titles/labels to White first */
 /* 1. The Title: Game Over (White) */
-#end-screen h2, 
+#end-screen h2,
 #game-over-title {
-    color: #D7D8D9 !important;
-    -webkit-text-fill-color: #D7D8D9 !important;
+  color: #D7D8D9 !important;
+  -webkit-text-fill-color: #D7D8D9 !important;
 }
 
 /* 2. The Labels: Score, Time, Streak (Gold) */
 /* This targets the <p> tags but NOT the spans inside them */
 #end-screen p,
 #finalScore {
-    color: #D7D8D9 !important;
-    -webkit-text-fill-color: #D7D8D9 !important;
+  color: #D7D8D9 !important;
+  -webkit-text-fill-color: #D7D8D9 !important;
 }
 
 /* 3. The Numbers: 50, 01:30, etc. (White) */
 /* This pierces the gold to make the values stand out */
 #end-screen p span,
-#finalScore span, 
+#finalScore span,
 #streakCount {
-    color: #D7D8D9 !important;  /* #f5f5f5 */
-    -webkit-text-fill-color: #D7D8D9 !important;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8) !important;
+  color: #D7D8D9 !important;
+  /* #f5f5f5 */
+  -webkit-text-fill-color: #D7D8D9 !important;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8) !important;
 }
 
 
@@ -1854,26 +2100,487 @@ input.input-field:-webkit-autofill:active {
 
 
 
+#leaderboard {
+width: 100%;
+    list-style: none;
+    padding: 0;
+    margin: 0 0 20px 0;
+    
+    /* Change this: */
+    min-height: auto !important; 
+    
+    /* Let the list grow naturally */
+    flex-grow: 1; 
+    overflow-y: auto;
+}
+
+#leaderboard li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  border-radius: 5px;
+  font-weight: 700;
+  box-sizing: border-box;
+  transition: background-color 0.3s ease, color 0.3s ease, color: #D7D8D9;
+}
+
+#leaderboard li:nth-child(odd) {
+  background: rgba(80, 80, 80, 0.9);
+  color: #D7D8D9;
+}
+
+#leaderboard li:nth-child(even) {
+  background: rgba(60, 60, 60, 0.9);
+  color: #D7D8D9;
+}
+
+#leaderboard li.first {
+  background: rgba(255, 215, 0, 0.3);
+  color: #d4af37;
+  font-weight: 700;
+}
+
+#leaderboard li.second {
+  background: linear-gradient(135deg, rgba(220, 220, 220, 0.3) 0%, rgba(192, 192, 192, 0.3) 100%);
+  color: #C0C0C0;
+  font-weight: 700;
+}
+
+#leaderboard li.third {
+  background: rgba(205, 127, 50, 0.3);
+  color: #CD7F32;
+  font-weight: 700;
+}
+
+/* ALIGNMENT CLASSES */
+.rank-slot {
+  display: inline-block;
+  width: 38px;
+  text-align: left;
+}
+
+.number-nudge {
+  position: relative;
+  left: 6px;
+}
+
+.name-part {
+  display: flex;
+  align-items: center;
+}
+
+.mini-pet-icon {
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+  margin-right: 8px;
+  image-rendering: pixelated;
+  /* Keeps it sharp like your collection page */
+  object-fit: contain;
+}
+
+@media (max-width: 480px) {
+  #view-leaderboard .container {
+        height: auto !important;
+        min-height: auto !important;
+        
+        /* Match the Login padding exactly */
+        padding: 25px !important; 
+        padding-top: 65px !important;
+        
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+  h1#leaderboard-title {
+    font-size: 2.3rem !important;
+  }
+
+  #leaderboard li {
+    height: 38px !important;
+    font-size: 0.9rem !important;
+  }
+
+  /* 3. Ensure the button doesn't force stretching */
+    #view-leaderboard .btn {
+        width: 100%;
+        margin-top: auto !important;
+        flex-shrink: 0; /* Important: prevents the button from squishing */
+    }
+}
 
 
+/* 1. from col-log page */
+/* 4x2 Grid Layout */
+#logGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+  gap: 8px;
+  width: 100%;
+  /* Reduced bottom margin because margin-top: auto will do the heavy lifting */
+  margin-bottom: 15px;
+  opacity: 0;
+  transition: opacity 0.2s ease-in;
+}
 
+#achievementsView {
+  width: 100%;
+  margin-bottom: 15px;
+  /* <--- Add this to match the grid gap */
+}
 
+/* Show the grid once the JS has applied the classes */
+#logGrid.ready {
+  opacity: 1;
+}
 
+.pet-slot {
+  background: rgba(40, 40, 40, 0.9);
+  border: 2px solid transparent;
+  border-radius: 8px;
+  padding: 8px 5px;
+  /* Thinner padding */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  height: 95px;
+  /* Reduced from 120px */
+}
 
+/* Add this to allow the gold reveal to animate ONLY when actually unlocking, not refreshing */
+.container.loaded .pet-slot {
+  transition: all 0.5s ease;
+}
 
+.pet-img {
+  object-fit: contain;
+  filter: brightness(0) contrast(0.5);
+  margin-bottom: 2px;
+  image-rendering: auto;
+  display: block;
+  user-select: none;
+  pointer-events: none;
+}
 
+.pet-name {
+  font-size: 0.7rem;
+  /* Slightly smaller text */
+  color: #888;
+  line-height: 1.1;
+  word-break: break-word;
+  /* Prevents long names from breaking the box */
+}
 
+/* Styling for the equipped pet slot */
 
+/* --- EQUIPPED STATE (Multi-Tier Final Fix) --- */
 
+/* 1. Base Green State for ALL Rows */
+/* --- EQUIPPED STATE (Perfect Achievement Green Match) --- */
 
+/* --- EQUIPPED STATE (Muted OSRS Green) --- */
 
+/* 1. Base Green State for ALL Rows */
+#logGrid .pet-slot.unlocked.equipped,
+#logGrid .pet-slot:nth-child(-n+3).unlocked.equipped,
+#logGrid .pet-slot:nth-child(n+4):nth-child(-n+6).unlocked.equipped,
+#logGrid .pet-slot:nth-child(n+7):nth-child(-n+9).unlocked.equipped,
+#logGrid .pet-slot:nth-child(n+10):nth-child(-n+12).unlocked.equipped,
+#logGrid .pet-slot:nth-child(n+13):nth-child(-n+15).unlocked.equipped {
+  border: 2px solid #44bb44 !important;
+  /* Muted Sage Green - no neon glow */
+  background: rgba(0, 150, 0, 0.15) !important;
+  /* Keep Background as requested */
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5) !important;
+  /* Darker inner shadow for depth */
+}
 
+/* 2. Hover Green State (Slightly brighter but still soft) */
+#logGrid .pet-slot.unlocked.equipped:hover,
+#logGrid .pet-slot:nth-child(-n+3).unlocked.equipped:hover,
+#logGrid .pet-slot:nth-child(n+4):nth-child(-n+6).unlocked.equipped:hover,
+#logGrid .pet-slot:nth-child(n+7):nth-child(-n+9).unlocked.equipped:hover,
+#logGrid .pet-slot:nth-child(n+10):nth-child(-n+12).unlocked.equipped:hover,
+#logGrid .pet-slot:nth-child(n+13):nth-child(-n+15).unlocked.equipped:hover {
+  border-color: #66cc66 !important;
+  background: rgba(0, 150, 0, 0.2) !important;
+  box-shadow: 0 0 10px rgba(68, 187, 68, 0.2) !important;
+}
 
+/* 3. Text and Image Styling (Muted Green) */
+#logGrid .pet-slot.equipped .pet-name {
+  color: #44bb44 !important;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
 
+#logGrid .pet-slot.equipped .pet-img {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6)) !important;
+  /* Standard shadow, no green glow */
+}
 
+/* 4. Tiered Gold Hover (Only triggers if NOT equipped) */
+#logGrid .pet-slot.unlocked:not(.equipped):hover,
+#logGrid .pet-slot:nth-child(-n+3).unlocked:not(.equipped):hover,
+#logGrid .pet-slot:nth-child(n+4):nth-child(-n+6).unlocked:not(.equipped):hover,
+#logGrid .pet-slot:nth-child(n+7):nth-child(-n+9).unlocked:not(.equipped):hover,
+#logGrid .pet-slot:nth-child(n+10):nth-child(-n+12).unlocked:not(.equipped):hover,
+#logGrid .pet-slot:nth-child(n+13):nth-child(-n+15).unlocked:not(.equipped):hover {
+  border-color: #ffea8a !important;
+}
 
+/* Styling for the equipped pet slot */
 
+/* --- 1. BASE UNLOCKED STATE (Common Tier - Row 1) --- */
+.unlocked {
+  /* Very subtle gold tint */
+  background: rgba(212, 175, 55, 0.1) !important;
+  border: 2px solid rgba(212, 175, 55, 0.4) !important;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5) !important;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+  /* Smooth border-only transition */
+  cursor: pointer !important;
+  /* This adds the hand icon */
+}
 
+.unlocked .pet-img {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5)) !important;
+  opacity: 1 !important;
+}
 
+.unlocked .pet-name {
+  color: #d4af37 !important;
+  /* Standard App Gold */
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
 
+/* --- 2. TIERED ROW EFFECTS (Subtle Border/Fill Increases) --- */
 
+/* --- 2. TIERED ROW EFFECTS --- */
+
+/* Row 1 (Handled by base .unlocked) */
+#logGrid .pet-slot.unlocked:hover {
+  border-color: #ffea8a !important;
+}
+
+/* Row 2 (Uncommon) */
+#logGrid .pet-slot:nth-child(n+4):nth-child(-n+6).unlocked {
+  background: rgba(212, 175, 55, 0.15) !important;
+  border-color: rgba(212, 175, 55, 0.6) !important;
+}
+
+#logGrid .pet-slot:nth-child(n+4):nth-child(-n+6).unlocked:hover {
+  border-color: #ffea8a !important;
+}
+
+/* Row 3 (Rare) */
+#logGrid .pet-slot:nth-child(n+7):nth-child(-n+9).unlocked {
+  background: rgba(212, 175, 55, 0.2) !important;
+  border-color: rgba(212, 175, 55, 0.8) !important;
+}
+
+#logGrid .pet-slot:nth-child(n+7):nth-child(-n+9).unlocked:hover {
+  border-color: #ffea8a !important;
+}
+
+/* Row 4 (Legendary) */
+#logGrid .pet-slot:nth-child(n+10):nth-child(-n+12).unlocked {
+  background: rgba(212, 175, 55, 0.25) !important;
+  border-color: rgba(212, 175, 55, 1.0) !important;
+}
+
+#logGrid .pet-slot:nth-child(n+10):nth-child(-n+12).unlocked:hover {
+  border-color: #ffea8a !important;
+}
+
+/* Row 5 (Mythic/Extra: 13-15) */
+#logGrid .pet-slot:nth-child(n+13):nth-child(-n+15).unlocked {
+  background: rgba(212, 175, 55, 0.3) !important;
+  /* change here */
+  border-color: #d4af37 !important;
+  /* Lighter, shining gold border */
+  box-shadow: inset 0 0 15px rgba(212, 175, 55, 0.4) !important;
+}
+
+#logGrid .pet-slot:nth-child(n+13):nth-child(-n+15).unlocked:hover {
+  border-color: #ffea8a !important;
+}
+
+/* --- 4. MYSTERY (LOCKED) STATES --- */
+.pet-slot:not(.unlocked) {
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px dashed #2a2a2a;
+}
+
+.pet-slot:not(.unlocked) .pet-img {
+  filter: brightness(0) contrast(0.5) blur(2px);
+  opacity: 0.3;
+}
+
+.pet-slot:not(.unlocked) .pet-name {
+  letter-spacing: 2px;
+  opacity: 0.4;
+  font-family: 'Courier New', monospace;
+  color: #555;
+}
+
+/* Hover effect for locked slots */
+.pet-slot:not(.unlocked):hover {
+  background: rgba(30, 30, 30, 0.9);
+  border-color: #555;
+}
+
+/*                 achievements                     */
+/* --- Updated Achievements CSS --- */
+#achievementList {
+  width: 100%;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  /* Increase height to match the 4-row Pet Grid (~525px) */
+  height: 525px;
+  max-height: 525px;
+  overflow-y: auto;
+  /* Custom Scrollbar to keep it looking clean */
+  scrollbar-width: thin;
+  scrollbar-color: #d4af37 transparent;
+}
+
+/* Chrome/Safari Scrollbar Styling */
+#achievementList::-webkit-scrollbar {
+  width: 6px;
+}
+
+#achievementList::-webkit-scrollbar-thumb {
+  background-color: #d4af37;
+  border-radius: 10px;
+}
+
+.achieve-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 15px;
+  /* Slightly more padding to match pet slot "heft" */
+  margin-bottom: 8px;
+  /* Gap similar to the pet grid gap */
+  border-radius: 8px;
+  /* Match pet-slot radius */
+  background: rgba(40, 40, 40, 0.7);
+  color: #888;
+  font-size: 0.95rem;
+  text-align: left;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.achieve-category {
+  color: #d4af37;
+  font-family: 'Cinzel', serif;
+  text-align: left;
+  padding: 15px 5px 5px 5px;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+  margin-bottom: 10px;
+  font-size: 1.1rem;
+}
+
+.achieve-item.completed {
+  background: rgba(0, 150, 0, 0.15);
+  color: #e3d7c1;
+  /* Parchment white for completed */
+  border-left: 3px solid #44bb44;
+  /*#00ff00;*/
+}
+
+.achieve-item.completed .status-icon::after {
+  content: '✅';
+  margin-left: 8px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/*                 achievements                     */
+
+@media (max-width: 480px) {
+  #view-collections container {
+    width: 100% !important;
+    /*  440px   */
+    max-width: 95% !important;
+    min-height: 640px !important;
+    padding: 10px 15px 15px 20px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+  }
+
+  #view-collections h1 {
+    font-size: 2.4rem !important;
+    margin: 20px 0 5px 0 !important;
+    letter-spacing: 1px !important;
+  }
+
+  /* This ensures the button stays the small size and goes to the bottom */
+  #view-collections .btn {
+    margin-top: 10px !important;
+    /* Pushes it to bottom of the 640px box */
+  }
+
+  #logGrid {
+    /* Reduce gap slightly on mobile to make room */
+    gap: 7px !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    /* Keep 3 columns on mobile */
+    margin-bottom: 0 !important;
+  }
+
+  /* Shrink the boxes themselves */
+  .pet-slot {
+    padding: 5px !important;
+    /* Smaller inner spacing */
+    height: 82px !important;
+    /* Force a smaller height than PC */
+    min-height: 82px !important;
+  }
+
+  /* Shrink the images and text for mobile */
+  .pet-img {
+    width: 28px !important;
+    height: 28px !important;
+    margin-bottom: 4px !important;
+  }
+
+  .pet-name {
+    font-size: 0.6rem !important;
+    /* Smaller text to prevent overflow */
+    line-height: 0.9 !important;
+  }
+
+  /* --- MOBILE ACHIEVEMENT FIXES --- */
+  #achievementList {
+    height: 420px !important;
+    /* Shorter than PC to fit the 640px container */
+    max-height: 420px !important;
+  }
+
+  .achieve-item {
+    padding: 8px 12px !important;
+    /* Slimmer items for mobile */
+    margin-bottom: 6px !important;
+    font-size: 0.85rem !important;
+  }
+
+  .achieve-category {
+    padding: 10px 5px 5px 5px !important;
+    font-size: 1rem !important;
+  }
+}
