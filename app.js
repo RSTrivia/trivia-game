@@ -756,6 +756,8 @@ async function loadCollection() {
     }
 }
 
+loadCollection();
+
 // main app
 window.navigateTo = function (viewId) {
     // 1. SHIELD: Immediately block all taps during the transition
@@ -1070,7 +1072,7 @@ async function init() {
             navigateTo('view-leaderboard');
         });
     }
-    await loadCollection();
+ 
     // Initial Run (Immediately pull from Score cache)
     (async () => {
         const cachedString = localStorage.getItem(`leaderboard_${currentMode}`);
@@ -1082,6 +1084,7 @@ async function init() {
     })();
     // This will check if a user has played daily mode already and will unlock it if they did
     await syncDailySystem();
+    await loadCollection();
 }
 
 // Replace your existing handleAuthChange with this:
@@ -2587,6 +2590,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
