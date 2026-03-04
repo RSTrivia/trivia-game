@@ -2102,7 +2102,12 @@ input.input-field:-webkit-autofill:active {
 
 
 
-/* new */
+/* new leaderboard */
+/* Simply hide them when the app is in "leaderboard" mode */
+.hide-controls #helpBtn,
+.hide-controls #discordBtn {
+  display: none !important;
+}
 
 #leaderboard {
 width: 100%;
@@ -2588,4 +2593,5 @@ width: 100%;
     font-size: 1rem !important;
   }
 }
+
 
