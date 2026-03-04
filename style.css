@@ -2755,7 +2755,7 @@ input.input-field:-webkit-autofill:active {
 @media (max-width: 480px) {
     /* 1. Reduce the gap between the two capes */
     .cape-grid {
-        gap: 20px; 
+        gap: 15px; 
     }
 
     /* 2. Shrink the boxes */
@@ -2766,8 +2766,13 @@ input.input-field:-webkit-autofill:active {
     }
     /* 2. Compact the grid inside the header */
     #statsProfileHeader div[style*="grid"] {
-        gap: 5px 20px !important; /* Extremely tight gap */
+        gap: 3px 20px !important; /* Extremely tight gap */
         font-size: 0.85rem;
+    }
+    /* 3. Reduce H2 margins */
+    .stats-title {
+        margin: 10px 0 5px 0 !important;
+        font-size: 1rem !important;
     }
 
     /* 3. Shrink the text */
@@ -2786,6 +2791,8 @@ input.input-field:-webkit-autofill:active {
         height: 40px;
     }
 }
+
+
 
 
 
