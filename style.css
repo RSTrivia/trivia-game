@@ -123,6 +123,7 @@ button {
   justify-content: flex-start;
   align-items: stretch;
   /* make children fill width */
+  height: auto;
   padding: 25px;
   box-sizing: border-box;
   background: rgba(0, 0, 0, 0.85);
@@ -1037,13 +1038,13 @@ input.input-field:-webkit-autofill:active {
 
 @media (max-width: 480px) {
   .container {
-    /* Change min-height to a lower value or auto */
-    min-height: auto;
-    max-height: 90dvh;
-    padding: 15px;
-  }
+      min-height: auto;   /* Don't force 500px on mobile */
+      height: auto;       /* Let it expand naturally */
+      max-height: 95dvh;  /* Stay within screen but don't cut off */
+      overflow-y: auto;   /* Scroll only if it gets too long */
+      padding: 15px;      /* Tighter padding for phones */
+    }
 }
-
 
 
 /*@media (max-width: 480px) {
@@ -2587,3 +2588,4 @@ width: 100%;
     font-size: 1rem !important;
   }
 }
+
