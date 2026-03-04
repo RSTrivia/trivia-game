@@ -757,6 +757,7 @@ async function loadCollection() {
 }
 
 // main app
+// main app
 window.navigateTo = function (viewId) {
     // 1. Hide all views
     document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
@@ -766,7 +767,12 @@ window.navigateTo = function (viewId) {
     if (target) {
         target.classList.remove('hidden');
     }
-
+    // --- ADD THIS LOGIC ---
+    if (viewId === 'view-leaderboard') {
+        app.classList.add('hide-controls');
+    } else {
+        app.classList.remove('hide-controls');
+    }
     // 3. Update URL with hash ONLY (avoids 404)
     const path = viewId.replace('view-', '');
     window.location.hash = path; // This is the safest way to update the URL without triggering a GET request
@@ -2565,4 +2571,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
     })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
