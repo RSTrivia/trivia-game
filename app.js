@@ -944,6 +944,7 @@ window.navigateTo = function (viewId) {
         const petsTab = document.getElementById('petsTab');
         if (petsTab) {
         petsTab.click(); // Programmatically trigger the click
+        }
     }
     // 6. Update URL
     const path = viewId.replace('view-', '');
@@ -954,7 +955,6 @@ window.navigateTo = function (viewId) {
     setTimeout(() => {
         document.body.style.pointerEvents = 'auto';
     }, 300); 
-};
 };
 
 async function syncDailySystem() {
@@ -2754,6 +2754,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
