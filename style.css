@@ -330,7 +330,7 @@ a {
 /*#f44336*/
 
 /* ====== GAME SCREEN ===== */
-#game { 
+#game {
   position: relative !important;
   overflow: visible !important;
   /* Required for XP drops to float out */
@@ -1038,13 +1038,19 @@ input.input-field:-webkit-autofill:active {
 
 @media (max-width: 480px) {
   .container {
-      min-height: auto;   /* Don't force 500px on mobile */
-      height: auto;       /* Let it expand naturally */
-      max-height: 95dvh;  /* Stay within screen but don't cut off */
-      overflow-y: auto;   /* Scroll only if it gets too long */
-      padding: 15px;      /* Tighter padding for phones */
-    }
+    min-height: auto;
+    /* Don't force 500px on mobile */
+    height: auto;
+    /* Let it expand naturally */
+    max-height: 95dvh;
+    /* Stay within screen but don't cut off */
+    overflow-y: auto;
+    /* Scroll only if it gets too long */
+    padding: 15px;
+    /* Tighter padding for phones */
+  }
 }
+
 
 
 /*@media (max-width: 480px) {
@@ -1203,7 +1209,7 @@ input.input-field:-webkit-autofill:active {
 
   /* 1. Hide the main title when the game is active 
      (Only if #game is inside #view-home and not hidden) */
-  #view-home:has(#game:not(.hidden), #end-screen:not(.hidden)) > h1:not(#gz-title) {
+  #view-home:has(#game:not(.hidden), #end-screen:not(.hidden))>h1:not(#gz-title) {
     display: none !important;
   }
 
@@ -1235,9 +1241,9 @@ input.input-field:-webkit-autofill:active {
   }
 
   /* 2. ADD THE GAP: If the container has a visible end-screen, add the top padding */
-.container:has(#game:not(.hidden)) {
-  padding-top: 65px !important;
-}
+  .container:has(#game:not(.hidden)) {
+    padding-top: 65px !important;
+  }
 
 }
 
@@ -2102,25 +2108,20 @@ input.input-field:-webkit-autofill:active {
 
 
 
-/* new leaderboard */
-/* Simply hide them when the app is in "leaderboard" mode */
-.hide-controls #helpBtn,
-.hide-controls #discordBtn {
-  display: none !important;
-}
+/* new */
 
 #leaderboard {
-width: 100%;
-    list-style: none;
-    padding: 0;
-    margin: 0 0 20px 0;
-    
-    /* Change this: */
-    min-height: auto !important; 
-    
-    /* Let the list grow naturally */
-    flex-grow: 1; 
-    overflow-y: auto;
+  width: 100%;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px 0;
+
+  /* Change this: */
+  min-height: auto !important;
+
+  /* Let the list grow naturally */
+  flex-grow: 1;
+  overflow-y: auto;
 }
 
 #leaderboard li {
@@ -2192,16 +2193,16 @@ width: 100%;
 
 @media (max-width: 480px) {
   #view-leaderboard .container {
-        height: auto !important;
-        min-height: auto !important;
-        
-        /* Match the Login padding exactly */
-        padding: 25px !important; 
-        padding-top: 65px !important;
-        
-        display: flex !important;
-        flex-direction: column !important;
-    }
+    height: auto !important;
+    min-height: auto !important;
+
+    /* Match the Login padding exactly */
+    padding: 25px !important;
+    padding-top: 65px !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+  }
 
   h1#leaderboard-title {
     font-size: 2.3rem !important;
@@ -2213,11 +2214,18 @@ width: 100%;
   }
 
   /* 3. Ensure the button doesn't force stretching */
-    #view-leaderboard .btn {
-        width: 100%;
-        margin-top: auto !important;
-        flex-shrink: 0; /* Important: prevents the button from squishing */
-    }
+  #view-leaderboard .btn {
+    width: 100%;
+    margin-top: auto !important;
+    flex-shrink: 0;
+    /* Important: prevents the button from squishing */
+  }
+
+  /* Simply hide them when the app is in "leaderboard" mode */
+  .hide-controls #helpBtn,
+  .hide-controls #discordBtn {
+    display: none !important;
+  }
 }
 
 
@@ -2593,5 +2601,3 @@ width: 100%;
     font-size: 1rem !important;
   }
 }
-
-
