@@ -758,30 +758,40 @@ async function loadCollection() {
 
 // main app
 window.navigateTo = function (viewId) {
-    // 1. Hide all views
+    // 1. SHIELD: Immediately block all taps during the transition
+    document.body.style.pointerEvents = 'none';
+
+    // 2. Hide all views
     document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
-    // Before switching views, clear all active button states
-    // 1. Force remove 'tapped' from everything before leaving
-    const allTapped = document.querySelectorAll('.tapped');
-        allTapped.forEach(el => {
-            el.classList.remove('tapped');
-            el.blur(); // Ensure focus is lost
-        });
-    
-    // 2. Show the target view
+
+    // 3. Force clean every single 'tapped' element on the screen
+    document.querySelectorAll('.tapped').forEach(el => {
+        el.classList.remove('tapped');
+        el.blur();
+    });
+
+    // 4. Show the target view
     const target = document.getElementById(viewId);
     if (target) {
         target.classList.remove('hidden');
     }
-    // --- ADD THIS LOGIC ---
+
+    // 5. App controls logic
     if (viewId === 'view-leaderboard') {
         app.classList.add('hide-controls');
     } else {
         app.classList.remove('hide-controls');
     }
-    // 3. Update URL with hash ONLY (avoids 404)
+
+    // 6. Update URL
     const path = viewId.replace('view-', '');
-    window.location.hash = path; // This is the safest way to update the URL without triggering a GET request
+    window.location.hash = path;
+
+    // 7. UN-SHIELD: Re-enable interaction after a short delay
+    // The delay ensures the transition is finished before the user can tap again
+    setTimeout(() => {
+        document.body.style.pointerEvents = 'auto';
+    }, 300); 
 };
 
 async function syncDailySystem() {
@@ -2577,6 +2587,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
