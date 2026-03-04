@@ -495,6 +495,11 @@
 
     allButtons.forEach(button => {
       button.addEventListener('touchstart', () => {
+        // Only apply the tapped effect if it's a pet-slot that is actually unlocked
+        // Or remove the check if you want locked slots to 'tap' too
+        if (button.classList.contains('pet-slot') && !button.classList.contains('unlocked')) {
+            return; // Don't tap locked pets
+        }
         button.classList.add('tapped');
       }, { passive: true });
 
@@ -537,6 +542,7 @@
 </body>
 
 </html>
+
 
 
 
