@@ -400,8 +400,8 @@ a {
 /* ====== OSRS TITLE ===== */
 h1 {
   font-family: 'Cinzel', serif;
-  font-size: 3.2rem;
-  margin-bottom: 25px;
+  font-size: 2.85rem;
+  margin-bottom: 30px;
   text-align: center;
   letter-spacing: 2px;
 
@@ -2612,3 +2612,4 @@ input.input-field:-webkit-autofill:active {
     font-size: 1rem !important;
   }
 }
+
