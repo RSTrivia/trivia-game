@@ -2765,6 +2765,16 @@ input.input-field:-webkit-autofill:active {
         height: 60px; /* Down from 100px */
         padding: 5px;
     }
+    /* 2. Compact the grid inside the header */
+    #statsProfileHeader div[style*="grid"] {
+        gap: 5px 20px !important; /* Extremely tight gap */
+        font-size: 0.85rem;
+    }
+    /* 3. Reduce H2 margins */
+    .stats-title {
+        margin: 10px 0 5px 0 !important;
+        font-size: 1rem !important;
+    }
 
     /* 3. Shrink the text */
     .cape-slot span {
