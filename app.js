@@ -756,8 +756,6 @@ async function loadCollection() {
     }
 }
 
-loadCollection();
-
 // main app
 window.navigateTo = function (viewId) {
     // 1. SHIELD: Immediately block all taps during the transition
@@ -1148,7 +1146,8 @@ async function handleAuthChange(event, session) {
     if (span) span.textContent = ' ' + username;
     if (label) label.textContent = 'Log Out';
     updateLevelUI();
-
+    loadCollection();
+    
     // 2. Logged In State
     // Fetch profile
     try {
@@ -2590,6 +2589,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
