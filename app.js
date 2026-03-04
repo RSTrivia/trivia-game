@@ -955,6 +955,7 @@ window.navigateTo = function (viewId) {
         document.body.style.pointerEvents = 'auto';
     }, 300); 
 };
+};
 
 async function syncDailySystem() {
     try {
@@ -2753,6 +2754,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
