@@ -400,8 +400,8 @@ a {
 /* ====== OSRS TITLE ===== */
 h1 {
   font-family: 'Cinzel', serif;
-  font-size: 2.85rem;
-  margin-bottom: 30px;
+  font-size: 2.75rem;
+  margin-bottom: 35px;
   text-align: center;
   letter-spacing: 2px;
 
@@ -1261,36 +1261,35 @@ input.input-field:-webkit-autofill:active {
 
 /* ====== MOBILE NO-FLASH & FIXED BORDERS ====== */
 @media (pointer: coarse) {
-
-  /* Specifically for your buttons */
-  .btn, .btn-small, .answer-btn {
-    transition: none !important; /* Transitions cause the 'lingering' feel */
-  }
-  /* 1. Remove all hover/active highlights (The "Flash") */
-  .answer-btn:hover,
-  .answer-btn:active {
+  /* 1. Remove ALL native pseudo-states */
+  .answer-btn:hover, 
+  .answer-btn:active,
+  .answer-btn:focus {
     background-color: #181A1B !important;
     border-color: #8C8273 !important;
-    /* Keep original border */
     transition: none !important;
   }
 
-  /* 2. Success/Failure colors - NO border change */
+  /* 2. Define the "Pressed" state strictly using your JS class */
+  .answer-btn.tapped {
+    background-color: #1F2223 !important; /* Your hover color becomes the pressed color */
+    border-color: #ffea8a !important;     /* Optional: add a pop of color for feedback */
+    transition: none !important;
+  }
+
+  /* 3. Keep your success/failure states clean */
   .answer-btn.correct {
     background-color: #3d8c40 !important;
     border-color: #8C8273 !important;
-    /* Force original border even when correct */
   }
 
   .answer-btn.wrong {
     background-color: #a63232 !important;
     border-color: #8C8273 !important;
-    /* Force original border even when wrong */
   }
 
-  /* 3. Disable the browser's default grey tap highlight */
   * {
-    -webkit-tap-highlight-color: transparent;
+    -webkit-tap-highlight-color: transparent !important;
   }
 }
 
@@ -2792,3 +2791,6 @@ input.input-field:-webkit-autofill:active {
         height: 40px;
     }
 }
+
+
+
