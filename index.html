@@ -164,7 +164,7 @@
       <button id="helpBtn" type="button">
         <span id="helpIcon" class="gold-text-icon">❔</span>
       </button>
-      <div id="view-home" class="view">
+      <div id="view-home" class="main-view">
         <h1 id="main-title">OSRS Trivia</h1>
         <!-- First row: User + Mute -->
         <div id="user-controls" class="row">
@@ -266,11 +266,12 @@
         </div>
       </div>
 
-      <div id="view-collections" class="view hidden">
+      <div id="view-collections" class="main-view hidden">
         <h1 id="main-title">Collections</h1>
         <div class="leaderboard-tabs">
           <button id="petsTab" class="tab-btn active">Pets</button>
           <button id="achieveTab" class="tab-btn">Achievements</button>
+          <button id="statsTab" class="tab-btn">Statistics</button>
         </div>
         <div id="logGrid">
           <div class="pet-slot" id="slot-pet_mole"><img src="pets/mole.png" class="pet-img" width="50" height="50"
@@ -313,10 +314,40 @@
           <ul id="achievementList">
           </ul>
         </div>
+    <div id="statsView" class="view hidden" style="width: 100%;">
+  <div id="statsProfileHeader" class="achieve-item" style="display: flex; flex-direction: column; align-items: center; gap: 15px;">
+      <div id="statsName" style="font-size: 1.2rem; color: #d4af37;"></div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px 30px; width: 100%; max-width: 400px;">
+        <div style="text-align: right;"><span id="statsLevel">0</span></div>
+        <div style="text-align: left;">Pets: <span id="stat-pet-count">0</span>/15</div>
+        <div style="text-align: right;"><span id="statsXP">0</span></div>
+        <div style="text-align: left;">Achievements: <span id="stat-achieve-count">0</span>/24</div>
+    </div>  
+  </div>
+   <h2 class="stats-title">Current PBs</h2>
+      <div id="statsList">
+      <div class="achieve-item" data-mode="Normal"><span class="stat-label">Normal Mode:</span> <span class="stat-value">0</span></div>
+      <div class="achieve-item" data-mode="Lite"><span class="stat-label">Lite Mode:</span> <span class="stat-value">0</span></div>
+      <div class="achieve-item" data-mode="Weekly"><span class="stat-label">Weekly Mode:</span> <span class="stat-value">0</span></div>
+      <div class="achieve-item" data-mode="Daily"><span class="stat-label">Daily Mode:</span> <span class="stat-value">0</span></div>
+  </div>
+      <div class="capes-section">
+        <h2 class="stats-title">Capes</h2>
+    <div class="cape-grid">
+          <div class="cape-slot" id="cape-max">
+            <img src="capes/max_cape.png" alt="Max Cape">
+            <span>Max Cape</span>
+          </div>
+          <div class="cape-slot" id="cape-achieve">
+            <img src="capes/achievement_cape.png" alt="Comp Cape">
+            <span>Achievement Cape</span>
+          </div>
+        </div>
+      </div>
+       </div>
         <button class="btn main-menu-btn">Main Menu</button>
       </div>
-
-      <div id="view-login" class="view hidden">
+      <div id="view-login" class="main-view hidden">
         <h1>OSRS Trivia</h1>
         <form id="loginForm">
           <div class="row">
@@ -339,7 +370,7 @@
         </div>
         </div>
   
-<div id="view-leaderboard" class="view hidden">
+<div id="view-leaderboard" class="main-view hidden">
         <h1 id="leaderboard-title">Leaderboard</h1>
         <div class="leaderboard-tabs">
           <button id="scoreTab" class="tab-btn active">Normal</button>
@@ -415,8 +446,12 @@
       if (!petImg) return;
 
       if (petId && petId !== "null") {
-        const fileName = petId.replace('pet_', '') + '.png';
-        petImg.src = `pets/${fileName}`;
+        const isCape = ['max_cape', 'achievement_cape'].includes(petId);
+        const folder = isCape ? 'capes/' : 'pets/';
+        const fileName = isCape ? `${petId}.png` : `${petId.replace('pet_', '')}.png`;
+    
+        petImg.src = `${folder}${fileName}`;
+        
         petImg.style.display = 'inline-block';
         petImg.style.marginLeft = '5px';
         petImg.style.verticalAlign = 'middle';
@@ -491,7 +526,7 @@
     });
 
     // This looks for buttons AND the specific top-right icons
-    const allButtons = document.querySelectorAll('.btn, .btn-small, .answer-btn, .tab-btn, #helpBtn, #discordBtn');
+    const allButtons = document.querySelectorAll('.btn, .btn-small, .tab-btn, #helpBtn, #discordBtn');
 
     allButtons.forEach(button => {
       button.addEventListener('touchstart', () => {
@@ -499,9 +534,8 @@
       }, { passive: true });
 
       button.addEventListener('touchend', () => {
-        // Force the element to lose focus immediately
+        // 1. Force the element to lose focus immediately
         button.blur();
-        
         setTimeout(() => {
           button.classList.remove('tapped');
         }, 100);
@@ -526,7 +560,7 @@
             window.navigateTo('view-home');
           } else {
             // Fallback: manually force the UI reset if app.js isn't ready
-            document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+            document.querySelectorAll('.main-view').forEach(v => v.classList.add('hidden'));
             document.getElementById('view-home').classList.remove('hidden');
             window.location.hash = 'home';
           }
@@ -537,9 +571,3 @@
 </body>
 
 </html>
-
-
-
-
-
-
