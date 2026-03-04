@@ -67,8 +67,6 @@
       }
       // ------------------------------
 
-      if (authLabel) authLabel.textContent = cachedLoggedIn ? 'Log Out' : 'Log In';
-
       if (muteIcon && muteBtn) {
         muteIcon.textContent = cachedMuted ? '🔇' : '🔊';
         if (cachedMuted) muteBtn.classList.add('is-muted');
@@ -228,7 +226,7 @@
           <!-- Fifth row: Login + Leaderboard -->
           <div class="row">
             <button id="authBtn" class="btn-small">
-              <span class="btn-label">Log In</span>
+              <span class="btn-label">Log In / Sign Up</span>
             </button>
             <button id="btn-leaderboard" class="btn-small">Leaderboard</button>
           </div>
@@ -524,3 +522,4 @@
 </body>
 
 </html>
+
