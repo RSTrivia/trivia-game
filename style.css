@@ -205,6 +205,16 @@ a {
   touch-action: manipulation;
 }
 
+/* Fix the class name to match your HTML */
+.btn-main {
+  font-size: 1rem;
+}
+
+.btn-sub {
+  font-size: 0.7rem; /* Smaller text */
+  color: #a0a0a0!important;     /* Grey color */
+}
+
 .btn:hover {
   background: rgba(0, 0, 0, 0.85);
   border-color: #ffea8a;
@@ -2601,4 +2611,5 @@ input.input-field:-webkit-autofill:active {
     font-size: 1rem !important;
   }
 }
+
 
