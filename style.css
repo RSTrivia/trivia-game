@@ -400,8 +400,8 @@ a {
 /* ====== OSRS TITLE ===== */
 h1 {
   font-family: 'Cinzel', serif;
-  font-size: 2.75rem;
-  margin-bottom: 35px;
+  font-size: 2.85rem;
+  margin-bottom: 30px;
   text-align: center;
   letter-spacing: 2px;
 
@@ -1261,35 +1261,36 @@ input.input-field:-webkit-autofill:active {
 
 /* ====== MOBILE NO-FLASH & FIXED BORDERS ====== */
 @media (pointer: coarse) {
-  /* 1. Remove ALL native pseudo-states */
-  .answer-btn:hover, 
-  .answer-btn:active,
-  .answer-btn:focus {
+
+  /* Specifically for your buttons */
+  .btn, .btn-small, .answer-btn {
+    transition: none !important; /* Transitions cause the 'lingering' feel */
+  }
+  /* 1. Remove all hover/active highlights (The "Flash") */
+  .answer-btn:hover,
+  .answer-btn:active {
     background-color: #181A1B !important;
     border-color: #8C8273 !important;
+    /* Keep original border */
     transition: none !important;
   }
 
-  /* 2. Define the "Pressed" state strictly using your JS class */
-  .answer-btn.tapped {
-    background-color: #1F2223 !important; /* Your hover color becomes the pressed color */
-    border-color: #ffea8a !important;     /* Optional: add a pop of color for feedback */
-    transition: none !important;
-  }
-
-  /* 3. Keep your success/failure states clean */
+  /* 2. Success/Failure colors - NO border change */
   .answer-btn.correct {
     background-color: #3d8c40 !important;
     border-color: #8C8273 !important;
+    /* Force original border even when correct */
   }
 
   .answer-btn.wrong {
     background-color: #a63232 !important;
     border-color: #8C8273 !important;
+    /* Force original border even when wrong */
   }
 
+  /* 3. Disable the browser's default grey tap highlight */
   * {
-    -webkit-tap-highlight-color: transparent !important;
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
@@ -2618,7 +2619,166 @@ input.input-field:-webkit-autofill:active {
 
 
 
+/* statistics tab */
+/* Ensure the grid container is a row and centers the items */
+.cape-grid {
+    display: flex;
+    justify-content: center; /* Centers the slots side-by-side */
+    gap: 60px;              /* Spacing between the two slots */
+    margin-top: 15px;
+}
+
+.cape-slot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    width: 110px; 
+    height: 100px;
+    background:  rgba(0, 0, 0, 0.5);
+    border: 2px dashed #2a2a2a;
+    position: relative;
+    border-radius: 8px;
+}
+
+/* Move text above the image */
+.cape-slot span {
+    order: 1;
+    font-size: 0.75rem; /* Slightly smaller to fit the square */
+    color: #d4af37;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    text-align: center;
+    min-height: 1.2rem;
+    margin-top: 2px;
+}
+
+/* Ensure Cape images follow the same filter/visibility logic as pets */
+.cape-slot img {
+    object-fit: contain;
+    margin-bottom: 5px;
+    pointer-events: none;
+    user-select: none;
+    transition: filter 0.3s ease;
+}
+/* NEW: The Locked State */
+.cape-slot.locked img {
+    filter: brightness(0) invert(0.5); /* Makes the image look dark/mysterious */
+}
+
+/* The "???" style: Smaller, at the bottom */
+.cape-slot:not(.unlocked)::after {
+    content: "???";
+    font-size: 0.6rem; /* Smaller size */
+    letter-spacing: 2px;
+    opacity: 0.4;
+    font-family: 'Courier New', monospace;
+    color: #555;
+    font-size: 0.7rem; /* Matches the pet size */
+    display: block;    /* Ensures it sits correctly */
+}
+
+/* Locked State: Greyed out & Blurred */
+.cape-slot:not(.unlocked) img {
+    filter:  brightness(0) contrast(0.5) blur(2px);
+    opacity: 0.3;
+    z-index: 1;
+    margin-bottom: auto;
+}
+
+/* Unlocked State: Normal appearance */
+.cape-slot.unlocked img {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+    opacity: 1;
+}
+
+/* Text visibility: fade if locked */
+.cape-slot:not(.unlocked) span {
+    color: #555 !important;
+    letter-spacing: 2px;
+    opacity: 0.4;
+    display: none !important;
+    font-family: 'Courier New', monospace;
+}
+
+/* Hover effect for locked slots */
+.cape-slot:not(.unlocked):hover {
+  background: rgba(30, 30, 30, 0.9);
+  border-color: #555;
+}
+
+.cape-slot.unlocked:hover {
+  border-color: #ffea8a !important;
+}
+
+/* --- EQUIPPED STATE FOR CAPES (Matches Pet Green) --- */
+
+.cape-slot.unlocked.equipped {
+    border: 2px solid #44bb44 !important; /* Muted Sage Green */
+    background: rgba(0, 150, 0, 0.15) !important;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Optional: Hover effect for the equipped cape to match pets */
+.cape-slot.unlocked.equipped:hover {
+    border-color: #66cc66 !important;
+    background: rgba(0, 150, 0, 0.2) !important;
+}
+
+/* Ensure the text and image look 'active' */
+.cape-slot.equipped span {
+    color: #44bb44 !important;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.cape-slot.equipped img {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6)) !important;
+}
 
 
+/* Syncing the Titles */
+.stats-title {
+    font-family: 'Cinzel', serif; /* Matching your Achievement/Main titles */
+    color: #d4af37;             /* Matches your Gold/Yellow theme */
+    text-align: center;
+    font-size: 1.1rem !important; /* Matches your leaderboard/main titles */
+    margin: 20px 0 15px 0;
+    text-shadow: 2px 2px 0px #000;
+}
 
+#statsView {
+  width: 100%;
+  margin-bottom: 15px;
+  /* <--- Add this to match the grid gap */
+}
 
+@media (max-width: 480px) {
+    /* 1. Reduce the gap between the two capes */
+    .cape-grid {
+        gap: 20px; 
+    }
+
+    /* 2. Shrink the boxes */
+    .cape-slot {
+        width: 95px;  /* Down from 110px */
+        height: 60px; /* Down from 100px */
+        padding: 5px;
+    }
+
+    /* 3. Shrink the text */
+    .cape-slot span {
+        font-size: 0.6rem !important; /* Smaller text */
+    }
+
+    /* 4. Shrink the "???" placeholder */
+    .cape-slot:not(.unlocked)::after {
+        font-size: 0.6rem !important;
+    }
+
+    /* 5. Shrink the images to fit inside the smaller boxes */
+    .cape-slot img {
+        width: 40px;  /* Adjust based on your specific cape images */
+        height: 40px;
+    }
+}
