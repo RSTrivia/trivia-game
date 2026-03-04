@@ -760,7 +760,10 @@ async function loadCollection() {
 window.navigateTo = function (viewId) {
     // 1. Hide all views
     document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
-
+    // Before switching views, clear all active button states
+    document.querySelectorAll('.tapped').forEach(el => el.classList.remove('tapped'));
+    document.activeElement.blur(); // Force remove focus from whatever is currently focused
+    
     // 2. Show the target view
     const target = document.getElementById(viewId);
     if (target) {
@@ -2570,6 +2573,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
