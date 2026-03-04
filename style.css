@@ -2769,11 +2769,6 @@ input.input-field:-webkit-autofill:active {
         gap: 5px 20px !important; /* Extremely tight gap */
         font-size: 0.85rem;
     }
-    /* 3. Reduce H2 margins */
-    .stats-title {
-        margin: 10px 0 5px 0 !important;
-        font-size: 1rem !important;
-    }
 
     /* 3. Shrink the text */
     .cape-slot span {
@@ -2791,6 +2786,7 @@ input.input-field:-webkit-autofill:active {
         height: 40px;
     }
 }
+
 
 
 
