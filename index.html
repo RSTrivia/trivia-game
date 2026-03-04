@@ -164,7 +164,7 @@
       <button id="helpBtn" type="button">
         <span id="helpIcon" class="gold-text-icon">❔</span>
       </button>
-      <div id="view-home" class="main-view">
+      <div id="view-home" class="view">
         <h1 id="main-title">OSRS Trivia</h1>
         <!-- First row: User + Mute -->
         <div id="user-controls" class="row">
@@ -266,7 +266,7 @@
         </div>
       </div>
 
-      <div id="view-collections" class="main-view hidden">
+      <div id="view-collections" class="view hidden">
         <h1 id="main-title">Collections</h1>
         <div class="leaderboard-tabs">
           <button id="petsTab" class="tab-btn active">Pets</button>
@@ -347,7 +347,7 @@
        </div>
         <button class="btn main-menu-btn">Main Menu</button>
       </div>
-      <div id="view-login" class="main-view hidden">
+      <div id="view-login" class="view hidden">
         <h1>OSRS Trivia</h1>
         <form id="loginForm">
           <div class="row">
@@ -370,7 +370,7 @@
         </div>
         </div>
   
-<div id="view-leaderboard" class="main-view hidden">
+<div id="view-leaderboard" class="view hidden">
         <h1 id="leaderboard-title">Leaderboard</h1>
         <div class="leaderboard-tabs">
           <button id="scoreTab" class="tab-btn active">Normal</button>
@@ -560,7 +560,7 @@
             window.navigateTo('view-home');
           } else {
             // Fallback: manually force the UI reset if app.js isn't ready
-            document.querySelectorAll('.main-view').forEach(v => v.classList.add('hidden'));
+            document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
             document.getElementById('view-home').classList.remove('hidden');
             window.location.hash = 'home';
           }
@@ -571,6 +571,5 @@
 </body>
 
 </html>
-
 
 
