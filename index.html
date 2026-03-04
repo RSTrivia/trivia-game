@@ -499,6 +499,9 @@
       }, { passive: true });
 
       button.addEventListener('touchend', () => {
+        // Force the element to lose focus immediately
+        button.blur();
+        
         setTimeout(() => {
           button.classList.remove('tapped');
         }, 100);
@@ -534,4 +537,5 @@
 </body>
 
 </html>
+
 
