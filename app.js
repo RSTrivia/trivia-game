@@ -15,6 +15,8 @@ let gameEnding = false;
 let isShowingNotification = false;
 let notificationQueue = [];
 let gridPattern = "";
+// Add this to your script variables
+let currentEquippedPet = localStorage.getItem('equipped_pet_id') || null;
 
 let userId = null;
 let syncChannel;
@@ -26,6 +28,8 @@ let achievementNotificationTimeout = null;
 // 1. Create a variable outside the function to track the timer
 let petNotificationTimeout = null;
 let normalSessionPool = [];
+const TOTAL_ACHIEVEMENTS = 24;
+const MAX_LEVEL = 99;
 
 const RELEASE_DATE = '2025-12-22';
 const DAILY_LIMIT = 10;
@@ -272,14 +276,9 @@ function updateLeaderboard(data) {
             return;
         }
 
-        // Since we manually attached it in fetchLeaderboard, it's always entry.equipped_pet
-        let petImgHtml = "";
-        if (entry.equipped_pet) {
-            const petFileName = entry.equipped_pet.replace('pet_', '') + '.png';
-            petImgHtml = `<img src="pets/${petFileName}" class="mini-pet-icon" draggable="false">`;
-        }
-
-        const fullNameHtml = `${petImgHtml}${entry.username}`;
+        // ONLY attempt to get the icon if equipped_pet exists
+        const itemImgHtml = getEquippedItemIcon(entry.equipped_pet);
+        const fullNameHtml = `${itemImgHtml}${entry.username}`;
         if (userTxt.innerHTML !== fullNameHtml) {
             userTxt.innerHTML = fullNameHtml;
         }
@@ -319,6 +318,19 @@ function updateLeaderboard(data) {
     });
 }
 
+function getEquippedItemIcon(itemId) {
+    if (!itemId) return "";
+    const isCape = ['max_cape', 'achievement_cape'].includes(itemId);
+    
+    // Use a forward slash to make the path relative to the PROJECT ROOT
+    // This tells the browser: "Start from the base folder, then look in capes/ or pets/"
+    const folder = isCape ? 'capes/' : 'pets/';
+    const fileName = isCape ? `${itemId}.png` : `${itemId.replace('pet_', '')}.png`;
+
+    return `<img src="${folder}${fileName}" class="mini-pet-icon" draggable="false">`;
+}
+
+window.getEquippedItemIcon = getEquippedItemIcon;
 async function fetchLeaderboard() {
     let query;
     if (currentMode === 'score') {
@@ -426,8 +438,16 @@ async function subscribeToLeaderboard() {
         { event: '*', schema: 'public', table: 'profiles' },
         (payload) => {
             // Refresh if pet changed OR if we are in XP mode and XP changed
+            // 1. Leaderboard refresh
             if (currentMode === 'xp' || (payload.new && payload.new.equipped_pet !== undefined)) {
                 fetchLeaderboard();
+            }
+            // 2. Refresh Achievements/Stats if active
+            if (document.getElementById('achieveTab').classList.contains('active')) {
+                loadCollection(); // This triggers renderAchievements()
+            }
+            if (document.getElementById('statsTab').classList.contains('active')) {
+                loadCollection(); // This triggers renderStats()
             }
         }
     );
@@ -489,7 +509,9 @@ const PET_DATA = [
 
     { id: 'pet_zuk', name: 'TzRek-Zuk', rarity: 'mythic', file: 'zuk.png' },
     { id: 'pet_lil_zik', name: 'Lil\' Zik', rarity: 'mythic', file: 'lil_zik.png' },
-    { id: 'pet_tumekens_guardian', name: 'Tumeken\'s guardian', rarity: 'mythic', file: 'tumekens_guardian.png' }
+    { id: 'pet_tumekens_guardian', name: 'Tumeken\'s guardian', rarity: 'mythic', file: 'tumekens_guardian.png' },
+    { id: 'max_cape', name: 'Max Cape',  file: 'max_cape.png' },
+    { id: 'achievement_cape', name: 'Achievement Cape', file: 'achievement_cape.png' }
 ];
 
 function resetCollectionUI() {
@@ -569,17 +591,136 @@ const ACHIEVEMENT_SCHEMA = [
 document.getElementById('petsTab').onclick = () => {
     document.getElementById('petsTab').classList.add('active');
     document.getElementById('achieveTab').classList.remove('active');
+    document.getElementById('statsTab').classList.remove('active');
     document.getElementById('logGrid').classList.remove('hidden');
+    document.getElementById('statsView').classList.add('hidden');
     document.getElementById('achievementsView').classList.add('hidden');
 };
 
 document.getElementById('achieveTab').onclick = () => {
     document.getElementById('achieveTab').classList.add('active');
     document.getElementById('petsTab').classList.remove('active');
+    document.getElementById('statsTab').classList.remove('active');
     document.getElementById('logGrid').classList.add('hidden');
+    document.getElementById('statsView').classList.add('hidden');
     document.getElementById('achievementsView').classList.remove('hidden');
     renderAchievements();
 };
+document.getElementById('statsTab').onclick = () => {
+    document.getElementById('statsTab').classList.add('active');
+    document.getElementById('petsTab').classList.remove('active');
+    document.getElementById('achieveTab').classList.remove('active');
+    document.getElementById('logGrid').classList.add('hidden');
+    document.getElementById('achievementsView').classList.add('hidden');
+    document.getElementById('statsView').classList.remove('hidden');
+    renderStats();
+};
+
+async function renderStats() {
+    const statsList = document.getElementById('statsList');
+    const maxCape = document.getElementById('cape-max');
+    const achieveCape = document.getElementById('cape-achieve');
+
+    const stats = getStatsObject();
+
+    // 1. Update Header
+    document.getElementById('statsName').textContent = `Player: ${localStorage.getItem('cachedUsername') || 'Guest'}`;
+    document.getElementById('statsLevel').textContent = `Level: ${document.getElementById('levelNumber').textContent}`;
+    const rawXPValue = document.getElementById('xpBracket').textContent.replace(/[^0-9]/g, '');
+    document.getElementById('statsXP').textContent = `XP: ${rawXPValue}`;
+
+    // Define the mapping based on your HTML data-mode attributes
+    const dataMap = {
+            'Normal': { s: localStorage.getItem('cached_score') || 0, t: localStorage.getItem('cached_time_ms') || 0 },
+            'Lite': JSON.parse(localStorage.getItem('cached_lite_data') || '{"score":0, "time":0}'),
+            'Weekly': JSON.parse(localStorage.getItem('cached_weekly_data') || '{"score":0, "time":0}'),
+            'Daily': JSON.parse(localStorage.getItem('cached_daily_data') || '{"score":0, "time":0}')
+        };
+
+        Object.keys(dataMap).forEach(mode => {
+            const row = statsList.querySelector(`[data-mode="${mode}"]`);
+            if (!row) return; // Guard clause is cleaner
+
+            const val = dataMap[mode];
+            // This handles both the structure from your fetch and the structure from your cache
+            const score = val.s ?? val.score ?? 0;
+            const time = val.t ?? val.time ?? 0;
+
+            const valueSpan = row.querySelector('.stat-value');
+            const newContent = `${parseInt(score).toLocaleString()} <span style="opacity: 0.6;">${formatLeaderboardTime(time)}</span>`;
+
+            // Keep the DOM update optimization
+            if (valueSpan.innerHTML !== newContent) {
+                valueSpan.innerHTML = newContent;
+            }
+        });
+
+    // 5. Update UI Counters
+    document.getElementById('stat-pet-count').textContent = stats.petsUnlocked;
+    const allAchievements = ACHIEVEMENT_SCHEMA.flatMap(c => c.tasks);
+    const completedCount = allAchievements.filter(t => t.check(stats)).length;
+    document.getElementById('stat-achieve-count').textContent = completedCount;
+
+    // 6. Cape Logic
+    maxCape.classList.toggle('unlocked', stats.level >= MAX_LEVEL);
+    achieveCape.classList.toggle('unlocked', completedCount >= TOTAL_ACHIEVEMENTS);
+
+    // Apply visual state (does not need to be a function, just direct assignment)
+    maxCape.classList.toggle('equipped', currentEquippedPet === 'max_cape');
+    achieveCape.classList.toggle('equipped', currentEquippedPet === 'achievement_cape');
+
+    // Attach listeners ONCE outside of data-heavy renders if possible, 
+    // but for simplicity here, we only attach if they aren't already set.
+    if (!maxCape.dataset.listener) {
+        maxCape.addEventListener('click', () => handleCapeClick('max_cape', maxCape));
+        maxCape.dataset.listener = "true";
+    }
+    if (!achieveCape.dataset.listener) {
+        achieveCape.addEventListener('click', () => handleCapeClick('achievement_cape', achieveCape));
+        achieveCape.dataset.listener = "true";
+    }
+}
+
+// Separate helper to avoid re-defining functions
+async function handleCapeClick(id, element) {
+    if (!element.classList.contains('unlocked')) return;
+
+    const newEquipped = (currentEquippedPet === id) ? null : id;
+    
+    currentEquippedPet = newEquipped;
+    if (newEquipped) localStorage.setItem('equipped_pet_id', newEquipped);
+    else localStorage.removeItem('equipped_pet_id');
+
+    await supabase.rpc('equip_pet_secure', { pet_id_to_equip: newEquipped });
+    
+    // Refresh stats to trigger classList updates
+    renderStats();
+}
+
+// Helper to provide the same stat object used in achievements
+function getStatsObject() {
+    return {
+        level: parseInt(localStorage.getItem('cached_level')) || 1,
+        maxScore: parseInt(localStorage.getItem('cached_max_score')) || 0,
+        dailyTotal: parseInt(localStorage.getItem('cached_daily_total')) || 0,
+        dailyStreak: parseInt(localStorage.getItem('stat_max_streak')) || 0,
+        petsUnlocked: JSON.parse(localStorage.getItem('cached_pets') || '[]').length,
+        fastestGuess: localStorage.getItem('stat_fastest') === 'true',
+        justInTime: localStorage.getItem('stat_just_in_time') === 'true',
+        dailyPerfect: localStorage.getItem('stat_daily_perfect') === 'true',
+        // --- FIXED: Weekly Booleans from LocalStorage ---
+        weekly25: localStorage.getItem('ach_stat_weekly_25') === 'true',
+        weekly50: localStorage.getItem('ach_stat_weekly_50') === 'true',
+        weeklySub3: localStorage.getItem('ach_stat_weekly_sub_3') === 'true',
+        weeklySub2: localStorage.getItem('ach_stat_weekly_sub_2') === 'true',
+        // --- FIXED: Lite Booleans from LocalStorage ---
+        lite50: localStorage.getItem('ach_stat_lite_50') === 'true',
+        lite100: localStorage.getItem('ach_stat_lite_100') === 'true',
+        liteSub8: localStorage.getItem('ach_stat_lite_sub_8') === 'true',
+        liteSub6: localStorage.getItem('ach_stat_lite_sub_6') === 'true'
+    };
+}
+
 
 async function renderAchievements(calculatedLevel) {
     const list = document.getElementById('achievementList');
@@ -622,8 +763,7 @@ async function renderAchievements(calculatedLevel) {
         });
     });
 }
-// Add this to your script variables
-let currentEquippedPet = localStorage.getItem('equipped_pet_id') || null;
+
 
 function applyUnlocks(unlockedList) {
     PET_DATA.forEach(pet => {
@@ -637,7 +777,12 @@ function applyUnlocks(unlockedList) {
 
         // Force the correct image file based on the PET_DATA array
         if (img) {
-            img.src = `pets/${pet.file}`;
+            // Check if it's a cape based on the ID or a property in your PET_DATA
+            const isCape = pet.id === 'max_cape' || pet.id === 'achievement_cape';
+            const folder = isCape ? 'capes/' : 'pets/';
+            
+            // Use the file property from PET_DATA, but point to the correct folder
+            img.src = `${folder}${pet.file}`;
         }
         // Update Classes
         slot.className = `pet-slot ${isUnlocked ? 'unlocked' : ''} ${isEquipped ? 'equipped' : ''}`;
@@ -689,7 +834,7 @@ async function loadCollection() {
     // --- UPDATED: Now fetching the highest score from daily_attempts as well ---
     const [profileRes, scoreRes, attemptsRes] = await Promise.all([
         supabase.from('profiles').select('collection_log, achievements, xp, equipped_pet, level').eq('id', session.user.id).single(),
-        supabase.from('scores').select('score').eq('user_id', session.user.id).maybeSingle(),
+        supabase.from('scores').select('score, time_ms, lite_data, weekly_data, daily_data').eq('user_id', session.user.id).maybeSingle(),
         // Get the count AND check if a score of 10 exists
         supabase.from('daily_attempts').select('score').eq('user_id', session.user.id)
     ]);
@@ -710,6 +855,7 @@ async function loadCollection() {
 
     if (profileData) {
         const a = profileData.achievements || {}; // Define 'a' here so it's available below
+        const s = scoreRes.data || {}; // Get the whole score object
 
         localStorage.setItem('cached_xp', profileData.xp || 0);
         localStorage.setItem('cached_level', officialLevel);
@@ -724,6 +870,12 @@ async function loadCollection() {
         localStorage.setItem('ach_stat_lite_100', (a.lite_100 || false).toString());
         localStorage.setItem('ach_stat_lite_sub_8', (a.lite_sub_8 || false).toString());
         localStorage.setItem('ach_stat_lite_sub_6', (a.lite_sub_6 || false).toString());
+        // Save to LocalStorage so renderStats() can find them
+        localStorage.setItem('cached_score', s.score || 0);
+        localStorage.setItem('cached_time_ms', s.time_ms || 9999);
+        localStorage.setItem('cached_lite_data', JSON.stringify(s.lite_data || {}));
+        localStorage.setItem('cached_weekly_data', JSON.stringify(s.weekly_data || {}));
+        localStorage.setItem('cached_daily_data', JSON.stringify(s.daily_data || {}));
 
         // --- SOURCE OF TRUTH OVERRIDES ---
         localStorage.setItem('cached_daily_total', realTotalGames);
@@ -753,45 +905,35 @@ async function loadCollection() {
         if (achieveTab && achieveTab.classList.contains('active')) {
             renderAchievements(officialLevel);
         }
+        // ADD THIS: If Stats tab is active, refresh it too
+        const statsTab = document.getElementById('statsTab');
+        if (statsTab && statsTab.classList.contains('active')) {
+            renderStats();
+        }
     }
 }
 
 // main app
 window.navigateTo = function (viewId) {
-    // 1. SHIELD: Immediately block all taps during the transition
-    document.body.style.pointerEvents = 'none';
-
-    // 2. Hide all views
-    document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
-
-    // 3. Force clean every single 'tapped' element on the screen
-    document.querySelectorAll('.tapped').forEach(el => {
-        el.classList.remove('tapped');
-        el.blur();
-    });
-
-    // 4. Show the target view
+    // 1. Hide all views
+    document.querySelectorAll('.main-view').forEach(v => v.classList.add('hidden'));
+    // Before switching views, clear all active button states
+    document.querySelectorAll('.tapped').forEach(el => el.classList.remove('tapped'));
+    document.activeElement.blur(); // Force remove focus from whatever is currently focused
+    // 2. Show the target view
     const target = document.getElementById(viewId);
     if (target) {
         target.classList.remove('hidden');
     }
-
-    // 5. App controls logic
+    // --- ADD THIS LOGIC ---
     if (viewId === 'view-leaderboard') {
         app.classList.add('hide-controls');
     } else {
         app.classList.remove('hide-controls');
     }
-
-    // 6. Update URL
+    // 3. Update URL with hash ONLY (avoids 404)
     const path = viewId.replace('view-', '');
-    window.location.hash = path;
-
-    // 7. UN-SHIELD: Re-enable interaction after a short delay
-    // The delay ensures the transition is finished before the user can tap again
-    setTimeout(() => {
-        document.body.style.pointerEvents = 'auto';
-    }, 300); 
+    window.location.hash = path; // This is the safest way to update the URL without triggering a GET request
 };
 
 async function syncDailySystem() {
@@ -1070,7 +1212,7 @@ async function init() {
             navigateTo('view-leaderboard');
         });
     }
- 
+    
     // Initial Run (Immediately pull from Score cache)
     (async () => {
         const cachedString = localStorage.getItem(`leaderboard_${currentMode}`);
@@ -1147,7 +1289,7 @@ async function handleAuthChange(event, session) {
     if (label) label.textContent = 'Log Out';
     updateLevelUI();
     loadCollection();
-    
+
     // 2. Logged In State
     // Fetch profile
     try {
@@ -2325,12 +2467,14 @@ function showAchievementNotification(achievementName) {
     if (typeof triggerFireworks === "function") triggerFireworks();
 
     const isMobile = window.innerWidth <= 480;
-    const displayTime = isMobile ? 3000 : 5000;
+    const displayTime = isMobile ? 4000 : 7000;
 
     achievementNotificationTimeout = setTimeout(() => {
         modal.classList.remove('active');
         achievementNotificationTimeout = null;
     }, displayTime);
+    
+    loadCollection();
 }
 
 async function startWeeklyChallenge() {
@@ -2589,11 +2733,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
-
-
-
-
-
 
 
 
