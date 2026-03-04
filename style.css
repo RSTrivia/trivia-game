@@ -116,7 +116,7 @@ button {
   /* THIS IS THE FIX */
   width: 440px;
   max-width: 95%;
-  min-height: 500px;
+  min-height: 300px;
   /* ensures it never shrinks too small */
   display: flex;
   flex-direction: column;
@@ -2601,3 +2601,4 @@ input.input-field:-webkit-autofill:active {
     font-size: 1rem !important;
   }
 }
+
