@@ -1715,14 +1715,16 @@ input.input-field:-webkit-autofill:active {
 /* Target the scrollbar area */
 #achievementList::-webkit-scrollbar,
 .modal-content::-webkit-scrollbar,
-#chat-messages::-webkit-scrollbar {
+#chat-messages::-webkit-scrollbar,
+#statsView::-webkit-scrollbar {
   width: 8px;
 }
 
 /* The Track - Deep charcoal brown */
 #achievementList::-webkit-scrollbar-track,
 .modal-content::-webkit-scrollbar-track,
-#chat-messages::-webkit-scrollbar-track {
+#chat-messages::-webkit-scrollbar-track,
+#statsView::-webkit-scrollbar-track {
   background: #120d09;
   border-radius: 10px;
 }
@@ -1730,7 +1732,8 @@ input.input-field:-webkit-autofill:active {
 /* The Thumb (Idle State) - Muted Bronze/Brass */
 #achievementList::-webkit-scrollbar-thumb,
 .modal-content::-webkit-scrollbar-thumb,
-#chat-messages::-webkit-scrollbar-thumb {
+#chat-messages::-webkit-scrollbar-thumb,
+#statsView::-webkit-scrollbar-thumb{
   /* Changed from #d4af37 to a more "matte" brownish-gold */
   background: #8c7332;
   border: 1px solid #2a1d15;
@@ -1741,7 +1744,8 @@ input.input-field:-webkit-autofill:active {
 /* Handle on hover - This is where the "Live Lobby" Gold kicks in */
 #achievementList::-webkit-scrollbar-thumb:hover,
 .modal-content::-webkit-scrollbar-thumb:hover,
-#chat-messages::-webkit-scrollbar-thumb:hover {
+#chat-messages::-webkit-scrollbar-thumb:hover,
+#statsView::-webkit-scrollbar-thumb:hover {
   background: #d4af37;
   /* The lobby gold only appears on hover now */
 }
@@ -1753,7 +1757,11 @@ input.input-field:-webkit-autofill:active {
   scrollbar-width: thin;
   scrollbar-color: #8c7332 #120d09;
 }
-
+/* Firefox Support */
+#statsView {
+  scrollbar-width: thin;
+  scrollbar-color: #8c7332 #120d09;
+}
 /* ------------------ scroll bar ------------------ */
 
 
@@ -2785,9 +2793,6 @@ input.input-field:-webkit-autofill:active {
         width: 40px;  /* Adjust based on your specific cape images */
         height: 40px;
     }
-    .text-white {
-      padding: 5px 3px !important;
-    }
 }
 
 .text-all {
@@ -2808,7 +2813,7 @@ input.input-field:-webkit-autofill:active {
   /* Gap similar to the pet grid gap */
   border-radius: 8px;
   color: #a4a4a4;
-
+  padding: 5px 3px;
 }
 
 .time-stamp {
