@@ -2803,7 +2803,24 @@ input.input-field:-webkit-autofill:active {
     /* 5. Shrink the images to fit inside the smaller boxes */
     .cape-slot img {
         width: 40px;  /* Adjust based on your specific cape images */
-        height: 40px;
+        height: 50px;
+    }
+    /* Make PB items more compact */
+    #statsList .achieve-item {
+      padding: 6px 8px !important; /* Reduced from 12px 15px */
+      margin-bottom: 2px !important; /* Reduced from 8px */
+      font-size: 0.75rem !important;
+    }
+    
+    .text-white {
+      padding: 2px 2px !important;
+      font-size: 0.75rem;
+    }
+    #statsName {
+      font-size: 1rem !important;
+    }
+    .stats-title {
+      font-size: 0.85rem !important;
     }
 }
 
@@ -2836,9 +2853,9 @@ input.input-field:-webkit-autofill:active {
 
 /* Make PB items more compact */
 #statsList .achieve-item {
-  padding: 10px 12px !important; /* Reduced from 12px 15px */
-  margin-bottom: 4px !important; /* Reduced from 8px */
-  font-size: 1rem !important;
+  padding: 10px 12px; /* Reduced from 12px 15px */
+  margin-bottom: 4px; /* Reduced from 8px */
+  font-size: 1rem;
 }
 
 .time-stamp {
