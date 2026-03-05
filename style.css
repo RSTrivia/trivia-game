@@ -1709,79 +1709,60 @@ input.input-field:-webkit-autofill:active {
 
 /* ====== HELP MODAL STYLES ====== */
 
-
-/* ------------------ scroll bar ------------------ */
-
-/* Target the scrollbar area */
-#achievementList::-webkit-scrollbar,
-.modal-content::-webkit-scrollbar,
-#chat-messages::-webkit-scrollbar {
-  width: 8px;
-}
-
-/* The Track - Deep charcoal brown */
-#achievementList::-webkit-scrollbar-track,
-.modal-content::-webkit-scrollbar-track,
-#chat-messages::-webkit-scrollbar-track {
-  background: #120d09;
-  border-radius: 10px;
-}
-
-/* The Thumb (Idle State) - Muted Bronze/Brass */
-#achievementList::-webkit-scrollbar-thumb,
-.modal-content::-webkit-scrollbar-thumb,
-#chat-messages::-webkit-scrollbar-thumb {
-  /* Changed from #d4af37 to a more "matte" brownish-gold */
-  background: #8c7332;
-  border: 1px solid #2a1d15;
-  /* Darker border to kill the shine */
-  border-radius: 10px;
-}
-
-/* Handle on hover - This is where the "Live Lobby" Gold kicks in */
-#achievementList::-webkit-scrollbar-thumb:hover,
-.modal-content::-webkit-scrollbar-thumb:hover,
-#chat-messages::-webkit-scrollbar-thumb:hover {
-  background: #d4af37;
-  /* The lobby gold only appears on hover now */
-}
-
-/* Firefox Support - Matching the matte look */
-#achievementList,
-.modal-content,
-#chat-messages {
-  scrollbar-width: thin;
-  scrollbar-color: #8c7332 #120d09;
-}
-/* ------------------ scroll bar ------===========------------ */
-
 /* ------------------ Statistics Scrollbar ------------------ */
 
 /* Only apply these scrollbar styles on mobile screens */
 @media (max-width: 480px) {
-  #statsView::-webkit-scrollbar {
-    width: 8px;
+  #statsView::-webkit-scrollbar,
+  #logGrid::-webkit-scrollbar,
+  #achievementList::-webkit-scrollbar,
+  .modal-content::-webkit-scrollbar {
+    width: 8px !important;
   }
 
-  #statsView::-webkit-scrollbar-track {
-    background: #120d09;
+  #statsView::-webkit-scrollbar-track,
+  #logGrid::-webkit-scrollbar-track,
+  #achievementList::-webkit-scrollbar-track,
+  .modal-content::-webkit-scrollbar-track {
+    background: #120d09 !important;
+    border-radius: 10px ;
+  }
+
+  #statsView::-webkit-scrollbar-thumb,
+  #logGrid::-webkit-scrollbar-thumb,
+  #achievementList::-webkit-scrollbar-thumb,
+  .modal-content::-webkit-scrollbar-thumb {
+    background: #8c7332 !important;
+    border: 1px solid #2a1d15 !important;
     border-radius: 10px;
   }
 
-  #statsView::-webkit-scrollbar-thumb {
-    background: #8c7332;
-    border: 1px solid #2a1d15;
-    border-radius: 10px;
-  }
-
-  #statsView::-webkit-scrollbar-thumb:hover {
+  #statsView::-webkit-scrollbar-thumb:hover,
+  #logGrid::-webkit-scrollbar-thumb:hover,
+  #achievementList::-webkit-scrollbar-thumb:hover,
+  .modal-content::-webkit-scrollbar-thumb:hover {
     background: #d4af37 !important;
   }
 
-  #statsView {
+  #statsView,
+  #logGrid,
+  #achievementList,
+  .modal-content {
     scrollbar-width: thin;
-    scrollbar-color: #8c7332 #120d09;
+    scrollbar-color: #8c7332 #120d09 !important;
   }
+}
+
+#statsView, #achievementList, #logGrid {
+  width: 100%;
+  /* Restrict the container height so it doesn't push the page */
+  max-height: 70vh;
+  /* This is the magic: it creates a scrollbar inside the div */
+  overflow-y: auto; 
+  /* Ensure it has space to breathe */
+  padding-right: 10px;
+  /* Ensure it doesn't overflow horizontally */
+  overflow-x: hidden;
 }
 /* ----------------------------------------------------------- */
 
@@ -2511,15 +2492,26 @@ input.input-field:-webkit-autofill:active {
   overflow-y: auto;
   /* Custom Scrollbar to keep it looking clean */
   scrollbar-width: thin;
-  scrollbar-color: #d4af37 transparent;
+  scrollbar-color: #8c7332 transparent;
 }
-
+#statsView, #logGrid, .modal-content {
+  list-style: none;
+  /* Custom Scrollbar to keep it looking clean */
+  scrollbar-width: thin;
+  scrollbar-color: #8c7332 transparent;
+}
 /* Chrome/Safari Scrollbar Styling */
-#achievementList::-webkit-scrollbar {
+#achievementList::-webkit-scrollbar,
+#statsView::-webkit-scrollbar,
+#logGrid::-webkit-scrollbar,
+.modal-content::-webkit-scrollbar {
   width: 6px;
 }
 
-#achievementList::-webkit-scrollbar-thumb {
+#achievementList::-webkit-scrollbar-thumb,
+#statsView::-webkit-scrollbar-thumb,
+#logGrid::-webkit-scrollbar-thumb,
+.modal-content::-webkit-scrollbar-thumb {
   background-color: #d4af37;
   border-radius: 10px;
 }
@@ -2659,7 +2651,7 @@ input.input-field:-webkit-autofill:active {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 10px;
+    padding: 5px;
     width: 110px; 
     height: 100px;
     background:  rgba(0, 0, 0, 0.5);
@@ -2826,6 +2818,12 @@ input.input-field:-webkit-autofill:active {
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+/* Reduce overall vertical bulk in the stats header */
+#statsProfileHeader {
+  padding: 5px 5px !important; /* Reduced from 8px 5px */
+  gap: 5px !important;         /* Reduced from 15px */
+}
+
 .text-white {
   display: flex;
   margin-left: 4px;
@@ -2836,10 +2834,17 @@ input.input-field:-webkit-autofill:active {
   padding: 5px 3px;
 }
 
+/* Make PB items more compact */
+#statsList .achieve-item {
+  padding: 10px 12px !important; /* Reduced from 12px 15px */
+  margin-bottom: 4px !important; /* Reduced from 8px */
+  font-size: 1rem !important;
+}
+
 .time-stamp {
     opacity: 0.9;             /* You can adjust this to make it less transparent */
 }
 
 .stat-label {
-    margin-right: 3px; /* Adjust this value to get exactly the space you want */
+    margin-right: 5px; /* Adjust this value to get exactly the space you want */
 }
