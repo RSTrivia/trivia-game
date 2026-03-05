@@ -2227,8 +2227,10 @@ input.input-field:-webkit-autofill:active {
     flex-direction: column !important;
   }
 
-  h1#leaderboard-title {
+  #view-leaderboard h1#leaderboard-title {
     font-size: 2.3rem !important;
+     /* Adjust this value to move the title down on mobile */
+    margin: 5px 0 5px 0 !important; /* Reduced from 20px 0 5px 0 */
   }
 
   #leaderboard li {
