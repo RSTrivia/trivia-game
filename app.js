@@ -948,6 +948,9 @@ window.navigateTo = function (viewId) {
         petsTab.click(); // Programmatically trigger the click
         }
     }
+    
+    document.body.classList.remove('game-active');
+    game.classList.add('hidden');
     // 6. Update URL
     const path = viewId.replace('view-', '');
     window.location.hash = path;
@@ -2756,6 +2759,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
