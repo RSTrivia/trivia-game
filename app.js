@@ -627,7 +627,9 @@ async function renderStats() {
     document.getElementById('statsName').textContent = `${localStorage.getItem('cachedUsername') || 'Guest'}`;
     document.getElementById('statsLevel').textContent = `${document.getElementById('levelNumber').textContent}`;
     const rawXPValue = document.getElementById('xpBracket').textContent.replace(/[^0-9]/g, '');
-    document.getElementById('statsXP').textContent = `${rawXPValue}`;
+    // Convert the string to a number and format it
+    const formattedXP = parseInt(rawXPValue, 10).toLocaleString();
+    document.getElementById('statsXP').textContent = formattedXP;
 
     // Define the mapping based on your HTML data-mode attributes
     const dataMap = {
