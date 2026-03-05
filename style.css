@@ -2790,16 +2790,31 @@ input.input-field:-webkit-autofill:active {
     }
 }
 
-.text-white {
+.text-all {
   display: flex;
   padding: 8px 5px;
   /* Slightly more padding to match pet slot "heft" */
   /* Gap similar to the pet grid gap */
   border-radius: 8px;
-  border: 2px solid rgba(255, 255, 255, 0.05);
-  background: rgba(30, 30, 30, 0.9);
   color: #a4a4a4;
+  background: rgba(40, 40, 40, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
+
+.text-white {
+  display: flex;
+  margin-left: 4px;
+  /* Slightly more padding to match pet slot "heft" */
+  /* Gap similar to the pet grid gap */
+  border-radius: 8px;
+  color: #a4a4a4;
+
+}
+
 .time-stamp {
     opacity: 0.9;             /* You can adjust this to make it less transparent */
+}
+
+.stat-label {
+    margin-right: 3px; /* Adjust this value to get exactly the space you want */
 }
