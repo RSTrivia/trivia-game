@@ -625,9 +625,9 @@ async function renderStats() {
 
     // 1. Update Header
     document.getElementById('statsName').textContent = `${localStorage.getItem('cachedUsername') || 'Guest'}`;
-    document.getElementById('statsLevel').textContent = `Level: ${document.getElementById('levelNumber').textContent}`;
+    document.getElementById('statsLevel').textContent = `${document.getElementById('levelNumber').textContent}`;
     const rawXPValue = document.getElementById('xpBracket').textContent.replace(/[^0-9]/g, '');
-    document.getElementById('statsXP').textContent = `XP: ${rawXPValue}`;
+    document.getElementById('statsXP').textContent = `${rawXPValue}`;
 
     // Define the mapping based on your HTML data-mode attributes
     const dataMap = {
@@ -656,10 +656,10 @@ async function renderStats() {
         });
 
     // 5. Update UI Counters
-    document.getElementById('stat-pet-count').textContent = `Pets: ${stats.petsUnlocked}`;
+    document.getElementById('stat-pet-count').textContent = `${stats.petsUnlocked}/${15}`;
     const allAchievements = ACHIEVEMENT_SCHEMA.flatMap(c => c.tasks);
     const completedCount = allAchievements.filter(t => t.check(stats)).length;
-    document.getElementById('stat-achieve-count').textContent = `Achievements: ${completedCount}`;
+    document.getElementById('stat-achieve-count').textContent = `${completedCount}/${24}`;
 
     // 6. Cape Logic
     maxCape.classList.toggle('unlocked', stats.level >= MAX_LEVEL);
