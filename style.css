@@ -1715,16 +1715,14 @@ input.input-field:-webkit-autofill:active {
 /* Target the scrollbar area */
 #achievementList::-webkit-scrollbar,
 .modal-content::-webkit-scrollbar,
-#chat-messages::-webkit-scrollbar,
-#statsView::-webkit-scrollbar {
+#chat-messages::-webkit-scrollbar {
   width: 8px;
 }
 
 /* The Track - Deep charcoal brown */
 #achievementList::-webkit-scrollbar-track,
 .modal-content::-webkit-scrollbar-track,
-#chat-messages::-webkit-scrollbar-track,
-#statsView::-webkit-scrollbar-track {
+#chat-messages::-webkit-scrollbar-track {
   background: #120d09;
   border-radius: 10px;
 }
@@ -1732,8 +1730,7 @@ input.input-field:-webkit-autofill:active {
 /* The Thumb (Idle State) - Muted Bronze/Brass */
 #achievementList::-webkit-scrollbar-thumb,
 .modal-content::-webkit-scrollbar-thumb,
-#chat-messages::-webkit-scrollbar-thumb,
-#statsView::-webkit-scrollbar-thumb{
+#chat-messages::-webkit-scrollbar-thumb {
   /* Changed from #d4af37 to a more "matte" brownish-gold */
   background: #8c7332;
   border: 1px solid #2a1d15;
@@ -1744,8 +1741,7 @@ input.input-field:-webkit-autofill:active {
 /* Handle on hover - This is where the "Live Lobby" Gold kicks in */
 #achievementList::-webkit-scrollbar-thumb:hover,
 .modal-content::-webkit-scrollbar-thumb:hover,
-#chat-messages::-webkit-scrollbar-thumb:hover,
-#statsView::-webkit-scrollbar-thumb:hover {
+#chat-messages::-webkit-scrollbar-thumb:hover {
   background: #d4af37;
   /* The lobby gold only appears on hover now */
 }
@@ -1757,13 +1753,40 @@ input.input-field:-webkit-autofill:active {
   scrollbar-width: thin;
   scrollbar-color: #8c7332 #120d09;
 }
-/* Firefox Support */
-#statsView {
-  scrollbar-width: thin;
-  scrollbar-color: #8c7332 #120d09;
-}
-/* ------------------ scroll bar ------------------ */
+/* ------------------ scroll bar ------===========------------ */
 
+/* ------------------ Statistics Scrollbar ------------------ */
+
+/* 1. Ensure the container has height and overflow to trigger the scrollbar */
+#statsView {
+  width: 100%;
+  max-height: 400px; /* Adjust this to fit your modal/view */
+  overflow-y: auto;
+  scrollbar-width: thin; /* Firefox support */
+  scrollbar-color: #8c7332 #120d09; /* Firefox support */
+}
+
+/* 2. Target the scrollbar specifically for statsView */
+#statsView::-webkit-scrollbar {
+  width: 8px;
+}
+
+#statsView::-webkit-scrollbar-track {
+  background: #120d09;
+  border-radius: 10px;
+}
+
+#statsView::-webkit-scrollbar-thumb {
+  background: #8c7332;
+  border: 1px solid #2a1d15;
+  border-radius: 10px;
+}
+
+#statsView::-webkit-scrollbar-thumb:hover {
+  background: #d4af37 !important;
+}
+
+/* ----------------------------------------------------------- */
 
 
 /* Achievement Modal Base */
