@@ -624,7 +624,7 @@ async function renderStats() {
     const stats = getStatsObject();
 
     // 1. Update Header
-    document.getElementById('statsName').textContent = `Player: ${localStorage.getItem('cachedUsername') || 'Guest'}`;
+    document.getElementById('statsName').textContent = `${localStorage.getItem('cachedUsername') || 'Guest'}`;
     document.getElementById('statsLevel').textContent = `Level: ${document.getElementById('levelNumber').textContent}`;
     const rawXPValue = document.getElementById('xpBracket').textContent.replace(/[^0-9]/g, '');
     document.getElementById('statsXP').textContent = `XP: ${rawXPValue}`;
@@ -647,7 +647,7 @@ async function renderStats() {
             const time = val.t ?? val.time ?? 0;
 
             const valueSpan = row.querySelector('.stat-value');
-            const newContent = `${parseInt(score).toLocaleString()} <span style="opacity: 0.6;">${formatLeaderboardTime(time)}</span>`;
+            const newContent = `${parseInt(score).toLocaleString()} <span class="time-stamp">${formatLeaderboardTime(time)}</span>`;
 
             // Keep the DOM update optimization
             if (valueSpan.innerHTML !== newContent) {
@@ -656,10 +656,10 @@ async function renderStats() {
         });
 
     // 5. Update UI Counters
-    document.getElementById('stat-pet-count').textContent = stats.petsUnlocked;
+    document.getElementById('stat-pet-count').textContent = `Pets: ${stats.petsUnlocked}`;
     const allAchievements = ACHIEVEMENT_SCHEMA.flatMap(c => c.tasks);
     const completedCount = allAchievements.filter(t => t.check(stats)).length;
-    document.getElementById('stat-achieve-count').textContent = completedCount;
+    document.getElementById('stat-achieve-count').textContent = `Achievements: ${completedCount}`;
 
     // 6. Cape Logic
     maxCape.classList.toggle('unlocked', stats.level >= MAX_LEVEL);
@@ -2754,7 +2754,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
-
 
 
 
