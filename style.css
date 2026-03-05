@@ -1757,35 +1757,32 @@ input.input-field:-webkit-autofill:active {
 
 /* ------------------ Statistics Scrollbar ------------------ */
 
-/* 1. Ensure the container has height and overflow to trigger the scrollbar */
-#statsView {
-  width: 100%;
-  max-height: 400px; /* Adjust this to fit your modal/view */
-  overflow-y: auto;
-  scrollbar-width: thin; /* Firefox support */
-  scrollbar-color: #8c7332 #120d09; /* Firefox support */
-}
+/* Only apply these scrollbar styles on mobile screens */
+@media (max-width: 480px) {
+  #statsView::-webkit-scrollbar {
+    width: 8px;
+  }
 
-/* 2. Target the scrollbar specifically for statsView */
-#statsView::-webkit-scrollbar {
-  width: 8px;
-}
+  #statsView::-webkit-scrollbar-track {
+    background: #120d09;
+    border-radius: 10px;
+  }
 
-#statsView::-webkit-scrollbar-track {
-  background: #120d09;
-  border-radius: 10px;
-}
+  #statsView::-webkit-scrollbar-thumb {
+    background: #8c7332;
+    border: 1px solid #2a1d15;
+    border-radius: 10px;
+  }
 
-#statsView::-webkit-scrollbar-thumb {
-  background: #8c7332;
-  border: 1px solid #2a1d15;
-  border-radius: 10px;
-}
+  #statsView::-webkit-scrollbar-thumb:hover {
+    background: #d4af37 !important;
+  }
 
-#statsView::-webkit-scrollbar-thumb:hover {
-  background: #d4af37 !important;
+  #statsView {
+    scrollbar-width: thin;
+    scrollbar-color: #8c7332 #120d09;
+  }
 }
-
 /* ----------------------------------------------------------- */
 
 
