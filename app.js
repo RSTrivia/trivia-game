@@ -2454,7 +2454,7 @@ function showCollectionLogNotification(petName) {
 
     // 2. Dynamic Display Time (Mobile: 2s, PC: 6s)
     const isMobile = window.innerWidth <= 480;
-    const displayTime = isMobile ? 2000 : 6000;
+    const displayTime = isMobile ? 6000 : 8000;
 
     petNotificationTimeout = setTimeout(() => {
         modal.classList.remove('active');
@@ -2759,6 +2759,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
