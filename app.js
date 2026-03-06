@@ -1368,8 +1368,15 @@ async function handleAuthChange(event, session) {
     }
 
     await syncDailySystem();
+    unlockweeklyButton();
 }
-
+function unlockweeklyButton() {
+    if (!weeklyBtn) return;
+        weeklyBtn.classList.add('is-active');
+        weeklyBtn.classList.remove('is-disabled');
+        weeklyBtn.style.opacity = '1'; 
+        weeklyBtn.style.pointerEvents = 'auto';
+}
 function lockDailyButton() {
     if (!dailyBtn) return;
     // Add visual classes
@@ -2759,7 +2766,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
-
 
 
 
