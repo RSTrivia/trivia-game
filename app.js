@@ -902,6 +902,7 @@ async function loadCollection() {
         const freshPets = profileData.collection_log || [];
         localStorage.setItem('cached_pets', JSON.stringify(freshPets));
         applyUnlocks(freshPets);
+        syncDailySystem();
 
         const achieveTab = document.getElementById('achieveTab');
         if (achieveTab && achieveTab.classList.contains('active')) {
@@ -2766,6 +2767,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
