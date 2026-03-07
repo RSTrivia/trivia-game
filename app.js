@@ -825,13 +825,13 @@ async function equipPet(petId) {
 }
 
 async function loadCollection() {
-    // 1. Initial UI from LocalStorage
-    const cachedPets = JSON.parse(localStorage.getItem('cached_pets') || '[]');
-    if (cachedPets.length > 0) applyUnlocks(cachedPets);
-
-    // 2. Fetch fresh data
+    // 1. Fetch fresh data
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
+
+    // 2. Initial UI from LocalStorage
+    const cachedPets = JSON.parse(localStorage.getItem('cached_pets') || '[]');
+    if (cachedPets.length > 0) applyUnlocks(cachedPets);
 
     // --- UPDATED: Now fetching the highest score from daily_attempts as well ---
     const [profileRes, scoreRes, attemptsRes] = await Promise.all([
@@ -902,7 +902,6 @@ async function loadCollection() {
         const freshPets = profileData.collection_log || [];
         localStorage.setItem('cached_pets', JSON.stringify(freshPets));
         applyUnlocks(freshPets);
-        syncDailySystem();
 
         const achieveTab = document.getElementById('achieveTab');
         if (achieveTab && achieveTab.classList.contains('active')) {
@@ -1283,11 +1282,16 @@ async function handleAuthChange(event, session) {
             localStorage.removeItem('lastDailyMessage');
             localStorage.removeItem('cached_level');
         }
-
+        if (event === 'SIGNED_OUT') {
+            localStorage.removeItem('cached_xp');
+            localStorage.removeItem('cachedUsername');
+            localStorage.removeItem('cached_level');
+        }
+        
         username = 'Guest'; // Force 'Guest' instead of cached username
         currentProfileXp = 0; // Force 0 XP for guests
         currentLevel = 1;
-
+    
         if (span) span.textContent = 'Guest';
         if (label) label.textContent = 'Log In / Sign Up';
 
@@ -1302,6 +1306,7 @@ async function handleAuthChange(event, session) {
         updateLevelUI()
         lockDailyButton();
         lockWeeklyButton();
+        loadCollection();
         return; // Stop here for guests
     }
     // 3. Handle LOGGED IN State
@@ -2767,20 +2772,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
