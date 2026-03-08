@@ -2770,7 +2770,7 @@ input.input-field:-webkit-autofill:active {
 
 #statsView {
   width: 100%;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
   /* <--- Add this to match the grid gap */
 }
 
@@ -2824,9 +2824,13 @@ input.input-field:-webkit-autofill:active {
       font-size: 1rem !important;
     }
     .stats-title {
-      font-size: 0.85rem !important;
+      font-size: 0.9rem !important;
+      margin: 12px 0 !important;
     }
 }
+#statsName {
+    font-size: 1.3rem !important;
+  }
 
 .text-all {
   display: flex;
@@ -2842,24 +2846,25 @@ input.input-field:-webkit-autofill:active {
 /* Reduce overall vertical bulk in the stats header */
 #statsProfileHeader {
   padding: 5px 5px !important; /* Reduced from 8px 5px */
-  gap: 5px !important;         /* Reduced from 15px */
+  gap: 2px !important;         /* Reduced from 15px */
 }
 
 .text-white {
+  font-size: 0.9rem;
   display: flex;
   margin-left: 4px;
   /* Slightly more padding to match pet slot "heft" */
   /* Gap similar to the pet grid gap */
   border-radius: 8px;
   color: #a4a4a4;
-  padding: 5px 3px;
+  padding: 3px 3px;
 }
 
 /* Make PB items more compact */
 #statsList .achieve-item {
-  padding: 10px 12px; /* Reduced from 12px 15px */
+  padding: 6px 10px; /* Reduced from 12px 15px */
   margin-bottom: 4px; /* Reduced from 8px */
-  font-size: 1rem;
+  font-size: 0.9rem;
 }
 
 .time-stamp {
@@ -2869,4 +2874,3 @@ input.input-field:-webkit-autofill:active {
 .stat-label {
     margin-right: 5px; /* Adjust this value to get exactly the space you want */
 }
-
