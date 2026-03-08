@@ -33,7 +33,6 @@
       const weeklyBtn = document.getElementById('weeklyBtn');
       const shareBtn = document.getElementById('shareBtn');
       const logBtn = document.getElementById('logBtn');
-      const lobbyBtn = document.getElementById('lobbyBtn');
       const helpBtn = document.getElementById('helpBtn');
       const helpModal = document.getElementById('help-modal');
       const closeHelpBtn = document.getElementById('closeHelpBtn');
@@ -42,7 +41,7 @@
       const hasScore = localStorage.getItem('lastDailyScore') !== null;
 
       // 1. Reset everything to locked first (Safety)
-      [dailyBtn, weeklyBtn, lobbyBtn].forEach(btn => {
+      [dailyBtn, weeklyBtn].forEach(btn => {
         if (btn) {
           btn.classList.remove('is-active');
           btn.classList.add('is-disabled');
@@ -74,15 +73,6 @@
 
       // 2. Instant Button State Sync (Anti-Flicker)
       if (cachedLoggedIn) {
-        // Weekly Mode: Always GOLD if logged in (even if they played)
-        [weeklyBtn, lobbyBtn].forEach(btn => {
-          if (btn) {
-            btn.classList.add('is-active');
-            btn.classList.remove('is-disabled');
-            btn.style.opacity = '1';            // ADD THIS
-            btn.style.pointerEvents = 'auto';    // ADD THIS
-          }
-        });
         // 2. ONLY unlock if they are logged in AND haven't played
         if (!hasPlayedToday && dailyBtn) {
           dailyBtn.classList.add('is-active');
@@ -99,7 +89,7 @@
         });
       } else {
         // If not logged in, ensure these stay locked 
-        [dailyBtn, shareBtn, logBtn, weeklyBtn, lobbyBtn].forEach(btn => {
+        [dailyBtn, shareBtn, logBtn, weeklyBtn].forEach(btn => {
           if (btn) {
             btn.classList.remove('is-active'); // Remove Gold state
             btn.classList.add('is-disabled');  // Add Grey state
@@ -330,7 +320,9 @@
       <div class="achieve-item" data-mode="Lite"><span class="stat-label" style="color: #d4af37;">Lite Mode:</span> <span class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
       <div class="achieve-item" data-mode="Weekly"><span class="stat-label" style="color: #d4af37;">Weekly Mode:</span> <span class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
       <div class="achieve-item" data-mode="Daily"><span class="stat-label" style="color: #d4af37;">Daily Mode:</span> <span class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
-  </div>
+      <div class="achieve-item"><span class="stat-label" style="color: #d4af37;">Best Daily Streak:</span> <span id="statsMaxStreak" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
+    <div class="achieve-item"><span class="stat-label" style="color: #d4af37;">Total Daily Games:</span> <span id="statsTotalDaily" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
+   </div>
       <div class="capes-section">
         <h2 class="stats-title">Capes</h2>
     <div class="cape-grid">
