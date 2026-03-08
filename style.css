@@ -2856,7 +2856,7 @@ input.input-field:-webkit-autofill:active {
     }
     .stats-title {
       font-size: 0.9rem !important;
-      margin: 12px 0 !important;
+      margin: 10px 0 !important;
     }
 }
 #statsName {
