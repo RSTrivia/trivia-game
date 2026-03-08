@@ -1127,7 +1127,9 @@ async function init() {
                 navigateTo('view-login');
                 return;
             }
-
+            
+            location.reload();
+            
             // 2. Play Status Check via get_daily_summary
             // Using the existing get_daily_summary RPC
             const { data: summary, error: rpcError } = await supabase.rpc('get_daily_summary');
@@ -2772,6 +2774,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
