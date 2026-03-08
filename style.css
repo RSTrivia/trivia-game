@@ -2788,17 +2788,48 @@ input.input-field:-webkit-autofill:active {
     }
     /* 2. Compact the grid inside the header */
     #statsProfileHeader div[style*="grid"] {
+        margin-top: 10px !important;
         grid-template-columns: 1fr 1fr !important; 
         gap: 2px 10px !important;
          /*gap: 3px 20px !important; Extremely tight gap */
         font-size: 0.85rem;
+    }
+    /* Target the grid container inside the header */
+    #statsProfileHeader div[style*="grid"] {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+    }
+    /* placements of XP, Level, Achievements, Pets in the grid */
+    /* Level: Top Left */
+    #statsProfileHeader div[style*="grid"] div:nth-child(1) {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    /* XP: Bottom Left (Under Level) */
+    #statsProfileHeader div[style*="grid"] div:nth-child(2) {
+        grid-column: 1;
+        grid-row: 2;
+    }
+
+    /* Achievements: Top Right */
+    #statsProfileHeader div[style*="grid"] div:nth-child(3) {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    /* Pets: Bottom Right */
+    #statsProfileHeader div[style*="grid"] div:nth-child(4) {
+        grid-column: 2;
+        grid-row: 2;
     }
 
     /* 3. Shrink the text */
     .cape-slot span {
         font-size: 0.6rem !important; /* Smaller text */
     }
-
+    /* -------------------------------------------------------- */
+    
     /* 4. Shrink the "???" placeholder */
     .cape-slot:not(.unlocked)::after {
         font-size: 0.6rem !important;
