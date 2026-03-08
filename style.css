@@ -2788,7 +2788,7 @@ input.input-field:-webkit-autofill:active {
     }
     /* 2. Compact the grid inside the header */
     #statsProfileHeader div[style*="grid"] {
-        margin-top: 8px !important;
+        margin-top: 6px !important;
         grid-template-columns: 1fr 1fr !important; 
         gap: 2px 10px !important;
          /*gap: 3px 20px !important; Extremely tight gap */
@@ -2905,4 +2905,5 @@ input.input-field:-webkit-autofill:active {
 .stat-label {
     margin-right: 5px; /* Adjust this value to get exactly the space you want */
 }
+
 
