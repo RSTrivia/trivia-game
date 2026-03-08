@@ -631,6 +631,16 @@ async function renderStats() {
     const formattedXP = parseInt(rawXPValue, 10).toLocaleString();
     document.getElementById('statsXP').textContent = formattedXP;
 
+    // Daily streak and total
+    const bestStreak = localStorage.getItem('stat_max_streak') || 0;
+    const totalDaily = localStorage.getItem('cached_daily_total') || 0;
+
+    const streakElem = document.getElementById('statsMaxStreak');
+    const totalElem = document.getElementById('statsTotalDaily');
+
+    if (streakElem) streakElem.textContent = parseInt(bestStreak).toLocaleString();
+    if (totalElem) totalElem.textContent = parseInt(totalDaily).toLocaleString();
+
     // Define the mapping based on your HTML data-mode attributes
     const dataMap = {
             'Normal': { s: localStorage.getItem('cached_score') || 0, t: localStorage.getItem('cached_time_ms') || 0 },
@@ -879,14 +889,14 @@ async function loadCollection() {
         localStorage.setItem('cached_weekly_data', JSON.stringify(s.weekly_data || {}));
         localStorage.setItem('cached_daily_data', JSON.stringify(s.daily_data || {}));
 
-        // --- SOURCE OF TRUTH OVERRIDES ---
+        // Total Daily Games (from achievements object 'a')
         localStorage.setItem('cached_daily_total', realTotalGames);
 
         // If hasPerfectGame is true from the table, use 'true', otherwise fallback to the JSON column
         const isPerfect = hasPerfectGame || a.daily_perfect || false;
         localStorage.setItem('stat_daily_perfect', isPerfect.toString());
 
-        // --- STANDARD SYNC ---
+        // Best Daily Streak (from achievements object 'a')
         localStorage.setItem('cached_daily_streak', a.daily_streak || 0);
         localStorage.setItem('stat_max_streak', a.max_streak || 0);
         localStorage.setItem('stat_fastest', (a.fastest_guess || false).toString());
@@ -1087,6 +1097,19 @@ async function init() {
             navigateTo('view-login');
         }
     });
+  
+    document.addEventListener('visibilitychange', async () => {
+        if (document.visibilityState === 'visible') {
+            const lastCheck = localStorage.getItem('last_date_check');
+            const today = new Date().toDateString();
+
+            if (lastCheck !== today) {
+                //console.log("New day detected, refreshing daily status...");
+                await syncDailySystem(); // Refresh UI based on server
+                localStorage.setItem('last_date_check', today);
+            }
+        }
+    });
 
     // 3. Game Buttons
     if (startBtn) {
@@ -1127,9 +1150,9 @@ async function init() {
                 navigateTo('view-login');
                 return;
             }
-            
+
             location.reload();
-            
+
             // 2. Play Status Check via get_daily_summary
             // Using the existing get_daily_summary RPC
             const { data: summary, error: rpcError } = await supabase.rpc('get_daily_summary');
@@ -2774,6 +2797,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
