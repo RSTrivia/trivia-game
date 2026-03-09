@@ -1097,19 +1097,6 @@ async function init() {
             navigateTo('view-login');
         }
     });
-  
-    document.addEventListener('visibilitychange', async () => {
-        if (document.visibilityState === 'visible') {
-            const lastCheck = localStorage.getItem('last_date_check');
-            const today = new Date().toDateString();
-
-            if (lastCheck !== today) {
-                //console.log("New day detected, refreshing daily status...");
-                await syncDailySystem(); // Refresh UI based on server
-                localStorage.setItem('last_date_check', today);
-            }
-        }
-    });
 
     // 3. Game Buttons
     if (startBtn) {
@@ -2795,6 +2782,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
 
 
 
