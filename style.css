@@ -1239,7 +1239,7 @@ input.input-field:-webkit-autofill:active {
 /* Ensure the GZ or Game Over text doesn't have huge default margins */
 #end-screen p {
   margin: 0;
-  font-size: 1.2rem;
+  font-size: 1.6rem;
 }
 
 /* ====== HIDE ONLY THE MAIN TITLE DURING GAME (MOBILE ONLY) and end-screen ====== */
