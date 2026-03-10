@@ -20,7 +20,8 @@ body {
   height: 100dvh;
   overflow: hidden;
   background: transparent;
-  font-family: Arial, sans-serif;
+   /*font-family: Arial, sans-serif;*/
+  font-family: 'RSFont';
 }
 
 :root {
@@ -175,6 +176,7 @@ a {
 
 /* ====== BIG GOLD BUTTONS ====== */
 .btn {
+  font-family: 'RSFont';
   /* Forces the <a> to act like a <button> */
   box-sizing: border-box;
   /* CRITICAL: ensures padding doesn't stretch links differently */
@@ -192,9 +194,9 @@ a {
   /*#ffd700;*/
   padding: 14px 22px;
   border: 2px solid #d4af37;
+  font-size: 1.4rem;
   /*#ffd700;*/
   border-radius: 8px;
-  font-size: 1.1rem;
   width: 100%;
   margin: 0;
   transition: 0.2s;
@@ -217,11 +219,11 @@ a {
 
 /* Fix the class name to match your HTML */
 .btn-main {
-  font-size: 1rem;
+  font-size: 1.3rem;
 }
 
 .btn-sub {
-  font-size: 0.7rem; /* Smaller text */
+  font-size: 0.8rem; /* Smaller text */
   color: #a0a0a0!important;     /* Grey color */
 }
 
@@ -410,8 +412,8 @@ a {
 
 /* ====== OSRS TITLE ===== */
 h1 {
-  font-family: 'Cinzel', serif;
-  font-size: 2.75rem;
+  font-family:'RSFont'; /* 'Cinzel', serif;*/
+  font-size: 3.8rem;
   margin-bottom: 35px;
   text-align: center;
   letter-spacing: 2px;
@@ -614,11 +616,12 @@ h1 {
   /* Small but matching button style */
   color: #d4af37;
   /* Button Gold */
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   /* Scaled down from 1rem */
   padding: 3px 8px;
   /* Very tight box */
-  font-family: Arial, sans-serif;
+  /*font-family: Arial, sans-serif;*/
+  font-family: 'RSFont';
 
   /* Quality of life */
   -webkit-font-smoothing: antialiased;
@@ -697,11 +700,13 @@ h1 {
 
 /* Score */
 #score {
-  margin-bottom: 5px;
+  margin-bottom: 10px;
   color: #f5f5f5;
   /* explicit white */
   text-align: center;
   width: 100%;
+  font-size: 1.3rem;
+  font-weight: bold;
   /* make sure it spans the container */
 }
 
@@ -714,10 +719,12 @@ h1 {
 
 /* Timer */
 #timer {
+  font-size: 1.3rem;
   margin-top: 15px;
   color: #f5f5f5;
   text-align: center;
   width: 100%;
+    font-weight: bold;
   /* make sure it spans the container */
 }
 
@@ -754,7 +761,8 @@ h1 {
   color: #d4af37;
 
   padding: 10px 16px;
-  font-size: 1rem;
+  font-size: 1.4rem;
+  font-family: 'RSFont';
 
   border: 2px solid #d4af37;
   /* fixed border width */
@@ -895,6 +903,7 @@ input.input-field:-webkit-autofill:active {
 }
 
 #userDisplay {
+  font-family: 'RSFont';
   font-size: 1.2rem;
   color: #d4af37;
   min-height: 24px;
@@ -935,6 +944,8 @@ input.input-field:-webkit-autofill:active {
 }
 
 #usernameSpan {
+  font-family: 'RSFont' !important;
+  font-size: 1.5rem;
   display: inline-block;
   min-width: 10ch;
   /*width: 10ch; reserve space for ~10 characters */
@@ -944,7 +955,10 @@ input.input-field:-webkit-autofill:active {
   white-space: nowrap;
   /* overflow: hidden;*/
 }
-
+#levelNumber {
+  font-family: 'RSFont' !important;
+  font-size: 1.4rem;
+}
 
 /* ===========================
    STABLE LOGIN / LEADERBOARD
@@ -1027,8 +1041,8 @@ input.input-field:-webkit-autofill:active {
   /* Balanced padding for mobile/desktop */
 
   /* Identical Typography */
-  font-size: 1.1rem !important;
-  font-family: Arial, sans-serif;
+  font-size: 1.4rem !important;
+  font-family: 'RsFont';/*Arial, sans-serif;*/
   text-decoration: none;
   white-space: nowrap;
 
@@ -1042,7 +1056,7 @@ input.input-field:-webkit-autofill:active {
 
 /* Ensure the Login label stays centered and sized */
 #authBtn .btn-label {
-  font-size: 1.1rem !important;
+  font-size: 1.4rem !important;
   display: flex;
   justify-content: center;
   width: 100%;
@@ -1374,7 +1388,8 @@ input.input-field:-webkit-autofill:active {
 /*                               user info, level                                         */
 
 .user-info-row {
-  font-size: 1.2rem;
+  font-family: 'RSFont';
+  font-size: 1.5rem;
   /* Matches your #userDisplay font-size */
   color: #d4af37;
   /* The exact gold from your Player:Shir style */
@@ -1383,7 +1398,6 @@ input.input-field:-webkit-autofill:active {
   display: flex;
   align-items: center;
   white-space: nowrap;
-  font-family: Arial, sans-serif;
   /* Ensuring consistency with your script */
 }
 
@@ -1460,9 +1474,9 @@ input.input-field:-webkit-autofill:active {
 }
 
 .notif-text {
-  font-family: 'Verdana', sans-serif;
+  font-family: 'RSFont';
   font-weight: 900;
-  font-size: 16px;
+  font-size: 25px;
   color: #ffde00;
   white-space: nowrap;
   text-shadow: 2px 2px 0px #000, 0 0 5px currentColor;
@@ -1502,7 +1516,7 @@ input.input-field:-webkit-autofill:active {
 
   .notif-text {
     /* Slightly smaller font for mobile to keep it tidy */
-    font-size: 15px !important;
+    font-size: 20px !important;
   }
 }
 
@@ -1563,9 +1577,9 @@ input.input-field:-webkit-autofill:active {
 
   /* Thinner padding and smaller font */
   padding: 6px 0;
-  font-size: 0.75rem;
+  font-size: 1.2rem;
 
-  font-family: 'Cinzel', serif;
+  font-family:'RsFont'; /*'Cinzel', serif;*/
   cursor: pointer;
   transition: all 0.2s ease;
   border-radius: 4px 4px 0 0;
@@ -1630,9 +1644,9 @@ input.input-field:-webkit-autofill:active {
 }
 
 .pet-unlock-title {
-  font-family: 'Cinzel', serif;
+  font-family: 'RSFont';
   color: #ffde00;
-  font-size: 0.9rem;
+  font-size: 1.2rem;
   /* Small & sharp */
   margin: 0 0 5px 0;
 }
@@ -1649,13 +1663,13 @@ input.input-field:-webkit-autofill:active {
 .pet-unlock-name {
   color: #ffffff;
   font-weight: bold;
-  font-size: 0.95rem;
+  font-size: 1rem;
   margin-top: 2px;
 }
 
 .pet-unlock-msg {
   color: #d4af37;
-  font-size: 0.7rem;
+  font-size: 0.85rem;
   /* Tiny flavor text */
   font-style: italic;
   margin-top: 2px;
@@ -1825,10 +1839,10 @@ input.input-field:-webkit-autofill:active {
 }
 
 .achieve-unlock-title {
-  font-family: 'Cinzel', serif;
+  font-family: 'RSFont';
   color: #cd7f32;
   /* Bronze "Achievement Unlocked!" */
-  font-size: 0.75rem;
+  font-size: 1.7rem;
   letter-spacing: 1px;
   margin: 0 0 4px 0;
   text-transform: uppercase;
@@ -1837,9 +1851,9 @@ input.input-field:-webkit-autofill:active {
 .achieve-unlock-name {
   color: #ffde00;
   /* Your Golden Yellow for the Achievement Name */
-  font-family: 'Cinzel', serif;
+  font-family: 'RSFont';
   font-weight: bold;
-  font-size: 1.1rem;
+  font-size: 1.5rem;
   text-shadow: 2px 2px 0px #000;
 }
 
@@ -1924,7 +1938,7 @@ input.input-field:-webkit-autofill:active {
   /* Matches your .btn */
   padding: 14px 22px;
   /* Matches your .btn */
-  font-family: Arial, sans-serif;
+  font-family: 'RSFont';
   /* Per your request */
   font-size: 1.1rem;
   /* Matches your .btn */
@@ -2101,10 +2115,10 @@ input.input-field:-webkit-autofill:active {
 #end-screen #game-over-title {
   background: none !important;
   /*text-shadow: 0 0 4px rgba(0,0,0,0.8) !important;   subtle shadow like final score */
-  font-size: 1.4rem;
   /* bigger than final score */
   text-align: center;
-  font-family: Arial, sans-serif;
+  font-family: 'RSFont';
+  font-size: 1.8rem;
   /* match final score */
   white-space: pre-line;
   line-height: 1.4;
@@ -2168,6 +2182,7 @@ input.input-field:-webkit-autofill:active {
   font-weight: 700;
   box-sizing: border-box;
   transition: background-color 0.3s ease, color 0.3s ease, color: #D7D8D9;
+  font-size: 1.3rem;
 }
 
 #leaderboard li:nth-child(odd) {
@@ -2322,7 +2337,7 @@ input.input-field:-webkit-autofill:active {
 }
 
 .pet-name {
-  font-size: 0.7rem;
+  font-size: 1rem;
   /* Slightly smaller text */
   color: #888;
   line-height: 1.1;
@@ -2482,7 +2497,7 @@ input.input-field:-webkit-autofill:active {
 .pet-slot:not(.unlocked) .pet-name {
   letter-spacing: 2px;
   opacity: 0.4;
-  font-family: 'Courier New', monospace;
+  font-family: 'RSFont';
   color: #555;
 }
 
@@ -2530,6 +2545,7 @@ input.input-field:-webkit-autofill:active {
 }
 
 .achieve-item {
+  font-family: 'RSFont';
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -2541,19 +2557,20 @@ input.input-field:-webkit-autofill:active {
   /* Match pet-slot radius */
   background: rgba(40, 40, 40, 0.7);
   color: #888;
-  font-size: 0.95rem;
+  font-size: 1.3rem;
   text-align: left;
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .achieve-category {
+  font-family: 'RSFont';
+  font-weight: bold;
   color: #d4af37;
-  font-family: 'Cinzel', serif;
   text-align: left;
   padding: 15px 5px 5px 5px;
   border-bottom: 1px solid rgba(212, 175, 55, 0.3);
   margin-bottom: 10px;
-  font-size: 1.1rem;
+  font-size: 1.5rem;
 }
 
 .achieve-item.completed {
@@ -2624,7 +2641,7 @@ input.input-field:-webkit-autofill:active {
   }
 
   .pet-name {
-    font-size: 0.6rem !important;
+    font-size: 0.7rem !important;
     /* Smaller text to prevent overflow */
     line-height: 0.9 !important;
   }
@@ -2640,7 +2657,7 @@ input.input-field:-webkit-autofill:active {
     padding: 8px 12px !important;
     /* Slimmer items for mobile */
     margin-bottom: 6px !important;
-    font-size: 0.85rem !important;
+    font-size: 1rem !important;
   }
 
   .achieve-category {
@@ -2704,7 +2721,7 @@ input.input-field:-webkit-autofill:active {
     font-size: 0.6rem; /* Smaller size */
     letter-spacing: 2px;
     opacity: 0.4;
-    font-family: 'Courier New', monospace;
+    font-family: 'RSFont';
     color: #555;
     font-size: 0.7rem; /* Matches the pet size */
     display: block;    /* Ensures it sits correctly */
@@ -2730,7 +2747,7 @@ input.input-field:-webkit-autofill:active {
     letter-spacing: 2px;
     opacity: 0.4;
     display: none !important;
-    font-family: 'Courier New', monospace;
+    font-family: 'RSFont';
 }
 
 /* Hover effect for locked slots */
@@ -2771,12 +2788,13 @@ input.input-field:-webkit-autofill:active {
 
 /* Syncing the Titles */
 .stats-title {
-    font-family: 'Cinzel', serif; /* Matching your Achievement/Main titles */
+    font-family: 'RSFont'; /* Matching your Achievement/Main titles */
     color: #d4af37;             /* Matches your Gold/Yellow theme */
     text-align: center;
-    font-size: 1.1rem !important; /* Matches your leaderboard/main titles */
+    font-size: 1.3rem !important; /* Matches your leaderboard/main titles */
     margin: 20px 0 15px 0;
     text-shadow: 2px 2px 0px #000;
+   
 }
 
 #statsView {
@@ -2855,12 +2873,12 @@ input.input-field:-webkit-autofill:active {
     #statsList .achieve-item {
       padding: 6px 8px !important; /* Reduced from 12px 15px */
       margin-bottom: 2px !important; /* Reduced from 8px */
-      font-size: 0.75rem !important;
+      font-size: 0.85rem !important;
     }
     
     .text-white {
       padding: 2px 2px !important;
-      font-size: 0.75rem;
+      font-size: 0.85rem !important;
     }
     #statsName {
       font-size: 1rem !important;
@@ -2871,7 +2889,8 @@ input.input-field:-webkit-autofill:active {
     }
 }
 #statsName {
-    font-size: 1.3rem !important;
+    font-size: 1.5rem !important;
+    font-weight: bold;
   }
 
 .text-all {
@@ -2892,7 +2911,7 @@ input.input-field:-webkit-autofill:active {
 }
 
 .text-white {
-  font-size: 0.9rem;
+  font-size: 1.2rem;
   display: flex;
   margin-left: 4px;
   /* Slightly more padding to match pet slot "heft" */
@@ -2906,7 +2925,7 @@ input.input-field:-webkit-autofill:active {
 #statsList .achieve-item {
   padding: 6px 10px; /* Reduced from 12px 15px */
   margin-bottom: 4px; /* Reduced from 8px */
-  font-size: 0.9rem;
+  font-size: 1.2rem;
 }
 
 .time-stamp {
