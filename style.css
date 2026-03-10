@@ -4,6 +4,15 @@ html {
   /* The 'Flash' protection */
 }
 
+@font-face {
+    font-family: 'RSFont';
+    src: url('/fonts/RuneScape-UF.woff2') format('woff2'),
+        url('/fonts/RuneScape-UF.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
 html,
 body {
   margin: 0;
@@ -301,6 +310,7 @@ a {
 
 /* ====== ANSWER BUTTONS ===== */
 .answer-btn {
+  font-family: 'RSFont';
   background-color: #181A1B;
   border: 2px solid #8C8273;
   color: #D7D8D9;
@@ -313,7 +323,7 @@ a {
   flex-shrink: 0;
   /* CRITICAL: Tells flexbox "Do not shrink me" */
   border-radius: 6px;
-  font-size: 1rem;
+  font-size: 1.3rem;
   transition: background-color 0.15s ease;
   cursor: pointer;
   box-sizing: border-box;
@@ -380,8 +390,9 @@ a {
 }
 
 #questionText {
+  font-family: 'RSFont';
   color: #D7D8D9;
-  font-size: 1.2rem;
+  font-size: 1.5rem;
   margin: 10px 0;
   text-align: center;
   width: 100%;
@@ -2905,5 +2916,4 @@ input.input-field:-webkit-autofill:active {
 .stat-label {
     margin-right: 5px; /* Adjust this value to get exactly the space you want */
 }
-
 
