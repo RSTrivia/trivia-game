@@ -1895,7 +1895,6 @@ input.input-field:-webkit-autofill:active {
   pointer-events: none;
   -webkit-user-drag: none;
   user-select: none;
-  margin-left: 5px;
   /* CHANGE: Instead of display:none, use visibility:hidden or reserve space */
   display: inline-block;
   /* Always takes up space */
@@ -2937,4 +2936,5 @@ input.input-field:-webkit-autofill:active {
 .stat-label {
     margin-right: 5px; /* Adjust this value to get exactly the space you want */
 }
+
 
