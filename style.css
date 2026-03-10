@@ -621,7 +621,7 @@ h1 {
   padding: 3px 8px;
   /* Very tight box */
   /*font-family: Arial, sans-serif;*/
-  font-family: 'RSFont';
+  font-family: Arial, sans-serif;
 
   /* Quality of life */
   -webkit-font-smoothing: antialiased;
