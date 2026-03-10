@@ -413,7 +413,7 @@ a {
 /* ====== OSRS TITLE ===== */
 h1 {
   font-family:'RSFont'; /* 'Cinzel', serif;*/
-  font-size: 3.8rem;
+  font-size: 3rem;
   margin-bottom: 35px;
   text-align: center;
   letter-spacing: 2px;
@@ -531,7 +531,7 @@ h1 {
   cursor: pointer;
   padding: 0;
   transition: opacity 0.2s ease;
-
+ 
   /* DEFAULT TO GREY: This ensures they start grey */
   filter: grayscale(1) brightness(0.5);
   opacity: 0.5;
@@ -807,9 +807,10 @@ h1 {
 /* ====== LOGIN PAGE SPECIFIC (CLEAN FONTS & MENU MATCHED) ====== */
 /* Sharp, thin login fields */
 #view-login .input-field {
+  font-family: 'RSFont';
   height: 28px !important;
   padding: 10px 10px !important;
-  font-size: 0.85rem !important;
+  font-size: 1.1rem !important;
   margin-bottom: 4px !important;
   line-height: 28px !important;
 
@@ -844,6 +845,7 @@ h1 {
 
 #view-login .btn-small {
   flex: 1;
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -853,8 +855,8 @@ h1 {
   min-height: 10px !important;
   padding: 10px 10px !important;
 
-  font-size: 1.1rem !important;
-  font-family: Arial, sans-serif;
+  font-size: 1.4rem !important;
+  font-family: 'RSFont';
   font-weight: normal;
 
   border: 2px solid #d4af37 !important;
