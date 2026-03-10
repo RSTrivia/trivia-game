@@ -1791,6 +1791,10 @@ input.input-field:-webkit-autofill:active {
     scrollbar-width: thin;
     scrollbar-color: #8c7332 #120d09 !important;
   }
+
+  .tab-btn {
+    font-size: 1rem;
+  }
 }
 
 #statsView, #achievementList, #logGrid {
