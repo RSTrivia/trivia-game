@@ -1520,6 +1520,19 @@ input.input-field:-webkit-autofill:active {
     /* Slightly smaller font for mobile to keep it tidy */
     font-size: 20px !important;
   }
+
+  #xpBracket {
+    font-size: 0.75em;
+  }
+  .user-info-row {
+    font-size: 1.3rem;
+  }
+  #usernameSpan {
+    font-size: 1.3rem;
+  }
+  #levelNumber {
+    font-size: 1.3rem;
+  }
 }
 
 /* ====== MOBILE NOTIFICATION ADJUSTMENT ====== */
@@ -1895,6 +1908,7 @@ input.input-field:-webkit-autofill:active {
   pointer-events: none;
   -webkit-user-drag: none;
   user-select: none;
+  margin-left: 5px;
   /* CHANGE: Instead of display:none, use visibility:hidden or reserve space */
   display: inline-block;
   /* Always takes up space */
@@ -2936,5 +2950,4 @@ input.input-field:-webkit-autofill:active {
 .stat-label {
     margin-right: 5px; /* Adjust this value to get exactly the space you want */
 }
-
 
