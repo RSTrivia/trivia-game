@@ -15,6 +15,7 @@ let gameEnding = false;
 let isShowingNotification = false;
 let notificationQueue = [];
 let gridPattern = "";
+let gameStarting = false;
 // Add this to your script variables
 let currentEquippedPet = localStorage.getItem('equipped_pet_id') || null;
 
@@ -1154,7 +1155,7 @@ async function init() {
                 return;
             }
 
-            // 3. Broadcast and Lock UI
+            // 4. Broadcast and Lock UI
             if (syncChannel) {
                 syncChannel.send({
                     type: 'broadcast',
@@ -1519,6 +1520,8 @@ async function fetchDeterministicQuestion(qId) {
 }
 
 async function startGame() {
+    if (gameStarting) return;
+    gameStarting = true;
     gameEnding = false;
     isDailyMode = false;
     isWeeklyMode = false;
@@ -1602,6 +1605,7 @@ async function startGame() {
         // 6. FILL THE REST IN THE BACKGROUND
         // We don't 'await' this; it runs while the user is looking at question 1
         preloadNextQuestions(8);
+        gameStarting = false;
     });
 }
 
@@ -1823,7 +1827,7 @@ async function checkAnswer(choiceId, btn) {
             if (res.milestone) {
                 showAchievementNotification(res.milestone);
             }
-
+    
             // --- 2. INTEGRATED PET LOGIC ---
             const petData = res.pet_info;
             if (petData && petData.unlocked) {
@@ -1848,7 +1852,7 @@ async function checkAnswer(choiceId, btn) {
                 // UI Feedback
                 showCollectionLogNotification(petData.pet_name);
             }
-
+         
             let instantID = null;
             if (timeLeft >= 14) instantID = 777; // Lucky Guess
             else if (timeLeft <= 1 && timeLeft > 0) instantID = 999; // Just in Time
@@ -2527,6 +2531,8 @@ function showAchievementNotification(achievementName) {
 }
 
 async function startWeeklyChallenge() {
+    if (gameStarting) return;
+    gameStarting = true;
     gameEnding = false;
     isWeeklyMode = true;
     isDailyMode = false;
@@ -2591,13 +2597,16 @@ async function startWeeklyChallenge() {
 
         gameStartTime = Date.now(); // total weekly run time
         startTimer();
+        gameStarting = false;
     });
 }
 
 
 async function startDailyChallenge(session) {
-    gridPattern = "0000000000";
+    if (gameStarting) return;
+    gameStarting = true;
     gameEnding = false;
+    gridPattern = "0000000000";
     isDailyMode = true;
     isWeeklyMode = false;
     isLiteMode = false;
@@ -2669,6 +2678,7 @@ async function startDailyChallenge(session) {
 
         gameStartTime = Date.now();
         startTimer();
+        gameStarting = false;
     });
 
     // 7. BACKGROUND: Fill the rest of the queue in the CORRECT order
@@ -2782,8 +2792,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
-
-
 
 
 
