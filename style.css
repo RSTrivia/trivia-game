@@ -398,7 +398,6 @@ a {
   margin: 10px 0;
   text-align: center;
   width: 100%;
-
 }
 
 #questionImage {
@@ -409,6 +408,25 @@ a {
   display: none;
   /*background-color: transparent;*/
 }
+
+
+@media (max-width: 480px) {
+  #questionText {
+    font-size: 1.3rem;
+  }
+  .answer-btn {
+    font-size: 1rem;
+  }
+
+}
+
+
+
+
+
+
+
+
 
 /* ====== OSRS TITLE ===== */
 h1 {
