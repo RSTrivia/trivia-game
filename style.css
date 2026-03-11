@@ -412,10 +412,10 @@ a {
 
 @media (max-width: 480px) {
   #questionText {
-    font-size: 1.3rem;
+    font-size: 1.35rem;
   }
   .answer-btn {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
   }
 
 }
@@ -2972,5 +2972,6 @@ input.input-field:-webkit-autofill:active {
 .stat-label {
     margin-right: 5px; /* Adjust this value to get exactly the space you want */
 }
+
 
 
