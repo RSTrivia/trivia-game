@@ -619,6 +619,7 @@ document.getElementById('statsTab').onclick = () => {
 
 async function renderStats() {
     const statsList = document.getElementById('statsList');
+    const pbList = document.getElementById('pbList');
     const maxCape = document.getElementById('cape-max');
     const achieveCape = document.getElementById('cape-achieve');
 
@@ -631,6 +632,25 @@ async function renderStats() {
     // Convert the string to a number and format it
     const formattedXP = parseInt(rawXPValue, 10).toLocaleString();
     document.getElementById('statsXP').textContent = formattedXP;
+
+    // --- Correct & Wrong Answers ---
+    const totalCorrect = parseInt(localStorage.getItem('cached_total_correct') || 0);
+    const totalWrong = parseInt(localStorage.getItem('cached_total_wrong') || 0);
+    const totalAnswers = totalCorrect + totalWrong;
+
+    // Calculate Accuracy
+    const accuracy = totalAnswers > 0 
+        ? Math.round((totalCorrect / totalAnswers) * 100) 
+        : 0;
+
+    // Update the UI elements
+    const correctElem = document.getElementById('statsTotalCorrect');
+    const wrongElem = document.getElementById('statsTotalWrong');
+    const accuracyElem = document.getElementById('statsAccuracy');
+
+    if (correctElem) correctElem.textContent = totalCorrect.toLocaleString();
+    if (wrongElem) wrongElem.textContent = totalWrong.toLocaleString();
+    if (accuracyElem) accuracyElem.textContent = `${accuracy}%`;
 
     // Daily streak and total
     const bestStreak = localStorage.getItem('stat_max_streak') || 0;
@@ -651,7 +671,7 @@ async function renderStats() {
         };
 
         Object.keys(dataMap).forEach(mode => {
-            const row = statsList.querySelector(`[data-mode="${mode}"]`);
+            const row = pbList.querySelector(`[data-mode="${mode}"]`);
             if (!row) return; // Guard clause is cleaner
 
             const val = dataMap[mode];
@@ -846,7 +866,7 @@ async function loadCollection() {
 
     // --- UPDATED: Now fetching the highest score from daily_attempts as well ---
     const [profileRes, scoreRes, attemptsRes] = await Promise.all([
-        supabase.from('profiles').select('collection_log, achievements, xp, equipped_pet, level').eq('id', session.user.id).single(),
+        supabase.from('profiles').select('collection_log, achievements, xp, equipped_pet, level, total_correct, total_wrong').eq('id', session.user.id).single(),
         supabase.from('scores').select('score, time_ms, lite_data, weekly_data, daily_data').eq('user_id', session.user.id).maybeSingle(),
         // Get the count AND check if a score of 10 exists
         supabase.from('daily_attempts').select('score').eq('user_id', session.user.id)
@@ -869,6 +889,9 @@ async function loadCollection() {
     if (profileData) {
         const a = profileData.achievements || {}; // Define 'a' here so it's available below
         const s = scoreRes.data || {}; // Get the whole score object
+        // Save the counters to Cache
+        localStorage.setItem('cached_total_correct', profileData.total_correct || 0);
+        localStorage.setItem('cached_total_wrong', profileData.total_wrong || 0);
 
         localStorage.setItem('cached_xp', profileData.xp || 0);
         localStorage.setItem('cached_level', officialLevel);
@@ -2792,7 +2815,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
-
 
 
 
