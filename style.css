@@ -1725,6 +1725,10 @@ input.input-field:-webkit-autofill:active {
 }
 
 .modal-content {
+  width: 90%; /* Leaves a small margin on the sides of mobile screens */
+  max-width: 440px; /* Prevents it from getting too wide on desktop */
+  margin: auto;
+
   animation: modalSlideIn 0.3s ease-out;
   max-height: 80vh;
   overflow-y: auto;
@@ -2828,8 +2832,8 @@ input.input-field:-webkit-autofill:active {
     font-family: 'RSFont'; /* Matching your Achievement/Main titles */
     color: #d4af37;             /* Matches your Gold/Yellow theme */
     text-align: center;
-    font-size: 1.3rem !important; /* Matches your leaderboard/main titles */
-    margin: 20px 0 15px 0;
+    font-size: 1.2rem !important; /* Matches your leaderboard/main titles */
+    margin: 10px 0 5px 0;
     text-shadow: 2px 2px 0px #000;
    
 }
@@ -2907,7 +2911,8 @@ input.input-field:-webkit-autofill:active {
         height: 50px;
     }
     /* Make PB items more compact */
-    #statsList .achieve-item {
+    #statsList .achieve-item,
+    #pbList .achieve-item {
       padding: 6px 8px !important; /* Reduced from 12px 15px */
       margin-bottom: 2px !important; /* Reduced from 8px */
       font-size: 0.85rem !important;
@@ -2924,15 +2929,34 @@ input.input-field:-webkit-autofill:active {
       font-size: 0.9rem !important;
       margin: 10px 0 !important;
     }
+
+  #statsList, #pbList {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr; /* Two equal columns */
+        gap: 4px; /* Small gap between items */
+    }
+
+    /* Reordering the Stats List */
+    .stat-correct     { order: 1; } /* Top Left */
+    .stat-streak      { order: 2; } /* Middle Left */
+    .stat-wrong       { order: 3; } /* Top Right */
+    .stat-total-daily { order: 4; } /* Middle Right */
+    .stat-accuracy    { order: 5; } /* Bottom (Wide) */
+    /* Reordering the PB List */
+    .pb-normal    { order: 1; } /* Top Left */
+    .pb-lite      { order: 3; } /* Middle Left */
+    .pb-weekly    { order: 2; } /* Top Right */
+    .pb-daily     { order: 4; } /* Middle Right */
 }
+
 #statsName {
-    font-size: 1.5rem !important;
+    font-size: 1.4rem !important;
     font-weight: bold;
   }
 
 .text-all {
   display: flex;
-  padding: 8px 5px;
+  padding: 5px 5px;
   /* Slightly more padding to match pet slot "heft" */
   /* Gap similar to the pet grid gap */
   border-radius: 8px;
@@ -2943,7 +2967,7 @@ input.input-field:-webkit-autofill:active {
 
 /* Reduce overall vertical bulk in the stats header */
 #statsProfileHeader {
-  padding: 5px 5px !important; /* Reduced from 8px 5px */
+  padding: 2px 5px !important; /* Reduced from 8px 5px */
   gap: 2px !important;         /* Reduced from 15px */
 }
 
@@ -2955,12 +2979,13 @@ input.input-field:-webkit-autofill:active {
   /* Gap similar to the pet grid gap */
   border-radius: 8px;
   color: #a4a4a4;
-  padding: 3px 3px;
+  padding: 2px 1px;
 }
 
 /* Make PB items more compact */
-#statsList .achieve-item {
-  padding: 6px 10px; /* Reduced from 12px 15px */
+#statsList .achieve-item,
+#pbList .achieve-item {
+  padding: 3px 10px; /* Reduced from 12px 15px */
   margin-bottom: 4px; /* Reduced from 8px */
   font-size: 1.2rem;
 }
@@ -2972,6 +2997,5 @@ input.input-field:-webkit-autofill:active {
 .stat-label {
     margin-right: 5px; /* Adjust this value to get exactly the space you want */
 }
-
 
 
