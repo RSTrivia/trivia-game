@@ -1121,15 +1121,28 @@ async function startNewRound() {
 }
 
 // Helper to handle the UI swap consistently
-function finalizeEndScreen() {
+function finalizeEndScreen(rounds = null) {
     requestAnimationFrame(() => {
+        const scoreRow = document.getElementById('end-score-container');
+        const multiRow = document.getElementById('multiplayer-stats-container');
+        const roundsCount = document.getElementById('multi-rounds-count');
+
+        if (rounds !== null) {
+            if (scoreRow) scoreRow.classList.add('hidden');
+            if (multiRow) {
+                multiRow.classList.remove('hidden');
+                if (roundsCount) roundsCount.textContent = rounds;
+            }
+        } else {
+            if (scoreRow) scoreRow.classList.remove('hidden');
+            if (multiRow) multiRow.classList.add('hidden');
+        }
+
         document.body.classList.remove('game-active');
         const gameDiv = document.getElementById('game');
         const endScreen = document.getElementById('end-screen');
-        
         if (gameDiv) gameDiv.classList.add('hidden');
         if (endScreen) endScreen.classList.remove('hidden');
-
         gameEnding = false;
     });
 }
@@ -1388,7 +1401,7 @@ lobbyChannel.on('broadcast', { event: 'start-game' }, async () => { // Added asy
             // UI Polish: Change the button text so the Host knows the Guest is waiting
             const pBtn = document.getElementById('playAgainBtn');
             if (pBtn && !iAmReadyForRematch) {
-                pBtn.innerHTML = `${opponentName || 'Opponent'} is Ready! Play Again?`;
+                pBtn.innerHTML = `${opponentName || 'Opponent'} is ready! Play Again?`;
                 //pBtn.classList.add('glow-gold'); // Optional CSS class for flair
             }
         }
@@ -2129,8 +2142,12 @@ document.getElementById('btn-start-multiplayer').addEventListener('click', async
                 sessionStorage.removeItem('current_lobby_questions'); 
 
                 // 3. UI Feedback
-                playAgainBtn.disabled = true;
-                playAgainBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Waiting for Opponent...';
+                const pBtn = document.getElementById('playAgainBtn');
+                if (pBtn) {
+                    pBtn.disabled = true; // Disable so they don't spam it while waiting
+                    // Use backticks ` and the || 'Opponent' fallback for safety
+                    pBtn.innerHTML = `<i class="fa fa-spinner fa-spin"></i> Waiting for ${opponentName || 'Opponent'}...`;
+                }
 
                 // 4. Tell the other player
                 if (lobbyChannel) {
@@ -2513,10 +2530,10 @@ function resetGame() {
         scoreEl.innerHTML = 'Score: 0';
         scoreEl.style.color = ''; // Reset any custom colors
     }
-
-    const scoreContainer = document.getElementById('finalScore').parentElement;
-    // Put the original HTML structure back
-    scoreContainer.innerHTML = 'Score: <span id="finalScore">0</span>';
+    const scoreRow = document.getElementById('end-score-container');
+    const multiRow = document.getElementById('multiplayer-stats-container');
+    if (scoreRow) scoreRow.classList.remove('hidden');
+    if (multiRow) multiRow.classList.add('hidden');
 }
 
 
@@ -3163,7 +3180,6 @@ function updateLevelUI() {
         return;
     }
 
-
     // Use a "Source of Truth" hierarchy: 
     // 1. Current variable -> 2. LocalStorage -> 3. Hardcoded Default
     const level = currentLevel || parseInt(localStorage.getItem('cached_level')) || 1;
@@ -3307,7 +3323,7 @@ async function endGame(result = null) {
     if (isMultiplayerMode && result) {
         const gameOverTitle = document.getElementById('game-over-title');
         const gzTitle = document.getElementById('gz-title');
-        
+
         // 1. Set the big "Gz!" or "Game Over" message
         if (gzTitle) {
             gzTitle.classList.remove('hidden');
@@ -3320,48 +3336,20 @@ async function endGame(result = null) {
             }
         }
 
-        // 2. Show "Questions Survived" instead of standard score
-        if (finalScore) {
-            // 2. Target the <p> tag (the parent) to delete "Score:"
-            const scoreContainer = finalScore.parentElement;
-
-            // 3. Rewrite the entire block
-            scoreContainer.innerHTML = `
-                <div style="margin-top: 15px;">
-                    <span style="color: #a0a0a0; font-size: 0.9rem; font-family: 'RSFont';">Combat Duration:</span><br>
-                    <span style="color: #fff; font-size: 1.4rem; font-family: 'RSFont';">
-                        Survived <span style="color: #4CAF50;">${window.currentLobbyIndex}</span> Rounds
-                    </span>
-                </div>
-            `;
-        }
-
         displayFinalTime(totalMs);
 
         if (gameOverTitle) {
             gameOverTitle.classList.remove('hidden');
 
-            // 1. Victory Message
             if (result === 'win') {
-                gameOverTitle.innerHTML = `
-                    <span style="color: #4CAF50;">Victory!</span><br>
-                    <span style="color: #d4af37; font-size: 0.9em;">
-                        You defeated <span style="color: #fff;">${opponentName || 'your opponent'}</span> with ${myHP} HP left!
-                    </span>
-                `;
+                // Keep everything between the backticks on one line
+                gameOverTitle.innerHTML = `<span style="font-size: 0.9em;">You defeated <span style="color: #D7D8D9;">${opponentName || 'your opponent'}</span> with ${myHP} HP left!</span>`;
             } 
-            // 2. Defeat Message
             else if (result === 'lose') {
-                gameOverTitle.innerHTML = `
-                    <span style="color: #ff3b3b;">Defeat!</span><br>
-                    <span style="color: #d4af37; font-size: 0.9em;">
-                        <span style="color: #fff;">${opponentName || 'Opponent'}</span> survived with ${opponentHP} HP.
-                    </span>
-                `;
+                gameOverTitle.innerHTML = `<span style="font-size: 0.9em;"><span style="color: #D7D8D9;">${opponentName || 'Opponent'}</span> survived with ${opponentHP} HP.</span>`;
             }
-            // 3. Draw Message (Just in case both hit 0 at once)
             else {
-                gameOverTitle.textContent = "A double knockout! It's a draw.";
+                gameOverTitle.textContent = "A double knockout!";
             }
         }
         const endScreen = document.getElementById('end-screen');
@@ -3373,7 +3361,7 @@ async function endGame(result = null) {
         if (mpHeader) mpHeader.classList.add('hidden');
    
         // This is the "Kill Switch"
-        finalizeEndScreen();
+        finalizeEndScreen(window.currentLobbyIndex || 0);
              
         // Clean up Lobby specific flags
         iAmReadyForRematch = false;
@@ -3388,7 +3376,6 @@ async function endGame(result = null) {
 
         return;
     }
-
 
     // 1. PREPARE DATA FIRST (Quietly in background)
     const { data: { session } } = await supabase.auth.getSession();
@@ -3438,6 +3425,8 @@ async function endGame(result = null) {
     // RESET WEEKLY UI (Crucial Fix)
     // We hide this immediately so it doesn't leak into Normal/Daily modes
     if (weeklyTimeContainer) weeklyTimeContainer.style.display = 'none';
+
+    const finalScore = document.getElementById('finalScore');
 
     // 3. POPULATE END SCREEN BEFORE SHOWING IT
     if (finalScore) {
@@ -3568,6 +3557,7 @@ async function endGame(result = null) {
             }
         }
     }
+    
     // 4. THE BIG SWAP (Final step)
     // Use a tiny timeout or requestAnimationFrame to ensure DOM updates are ready
     requestAnimationFrame(() => {
