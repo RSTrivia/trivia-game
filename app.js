@@ -1535,6 +1535,13 @@ async function startMultiplayerGame() {
         const mpHeader = document.getElementById('multiplayer-header');
         if (mpHeader) mpHeader.classList.remove('hidden');
 
+        document.getElementById('score').classList.add('hidden');
+        document.getElementById('rounds-display').classList.remove('hidden');
+        document.getElementById('rounds-display').textContent = "Round: 1";
+
+        const roundsDisplay = document.getElementById('rounds-display');
+        roundsDisplay.textContent = "Round: 1";
+
         // Reset HP Bars
         document.getElementById('my-hp-fill').style.width = '100%';
         document.getElementById('opponent-hp-fill').style.width = '100%';
@@ -1725,7 +1732,10 @@ async function syncAndProceed(force = false) {
     // 6. THE SYNCED TRANSITION
     console.log("Sync Complete. Transitioning to next question...");
     window.currentLobbyIndex++; 
-
+    const roundsDisplay = document.getElementById('rounds-display');
+    if (roundsDisplay) {
+        roundsDisplay.textContent = `Round: ${window.currentLobbyIndex + 1}`;
+    }
     await loadQuestion();
 
     // 7. REFILL & RELEASE
@@ -2524,16 +2534,12 @@ function resetGame() {
     if (gzTitle) gzTitle.classList.add('hidden');
     document.getElementById('multiplayer-header').classList.add('hidden');
 
-    const scoreEl = document.getElementById('score');
-    if (scoreEl) {
-        // Put the original label back for the new game
-        scoreEl.innerHTML = 'Score: 0';
-        scoreEl.style.color = ''; // Reset any custom colors
-    }
     const scoreRow = document.getElementById('end-score-container');
     const multiRow = document.getElementById('multiplayer-stats-container');
     if (scoreRow) scoreRow.classList.remove('hidden');
     if (multiRow) multiRow.classList.add('hidden');
+    document.getElementById('score').classList.remove('hidden');
+    document.getElementById('rounds-display').classList.add('hidden');
 }
 
 
@@ -3321,6 +3327,18 @@ async function endGame(result = null) {
 
     // --- MULTIPLAYER RESULT HANDLING ---
     if (isMultiplayerMode && result) {
+        // RECORD THE STAT IN THE DATABASE
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+        const { error } = await supabase.rpc('record_match_result', {
+            p_user_id: session.user.id,
+            p_result: result // 'win', 'lose', or 'draw'
+        });
+
+        if (error) console.error("Error saving match stat:", error);
+        else console.log(`Match stat (${result}) recorded!`);
+    }
+
         const gameOverTitle = document.getElementById('game-over-title');
         const gzTitle = document.getElementById('gz-title');
 
