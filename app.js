@@ -693,6 +693,16 @@ async function renderStats() {
     if (wrongElem) wrongElem.textContent = totalWrong.toLocaleString();
     if (accuracyElem) accuracyElem.textContent = `${accuracy}%`;
 
+    // multiplayer wins/losses/draws
+
+    const winsEl = document.getElementById('statsWins');
+    const lossesEl = document.getElementById('statsLosses');
+    const drawsEl = document.getElementById('statsDraws');
+
+    if (winsEl) winsEl.textContent = parseInt(localStorage.getItem('multiplayer_wins') || 0);
+    if (lossesEl) lossesEl.textContent = parseInt(localStorage.getItem('multiplayer_losses') || 0);
+    if (drawsEl) drawsEl.textContent = parseInt(localStorage.getItem('multiplayer_draws') || 0);
+
     // Daily streak and total
     const bestStreak = localStorage.getItem('stat_max_streak') || 0;
     const totalDaily = localStorage.getItem('cached_daily_total') || 0;
@@ -907,7 +917,7 @@ async function loadCollection() {
 
     // --- UPDATED: Now fetching the highest score from daily_attempts as well ---
     const [profileRes, scoreRes, attemptsRes] = await Promise.all([
-        supabase.from('profiles').select('collection_log, achievements, xp, equipped_pet, level, total_correct, total_wrong').eq('id', session.user.id).single(),
+        supabase.from('profiles').select('collection_log, achievements, xp, equipped_pet, level, total_correct, total_wrong, wins, losses, draws').eq('id', session.user.id).single(),
         supabase.from('scores').select('score, time_ms, lite_data, weekly_data, daily_data').eq('user_id', session.user.id).maybeSingle(),
         // Get the count AND check if a score of 10 exists
         supabase.from('daily_attempts').select('score').eq('user_id', session.user.id)
@@ -930,10 +940,15 @@ async function loadCollection() {
     if (profileData) {
         const a = profileData.achievements || {}; // Define 'a' here so it's available below
         const s = scoreRes.data || {}; // Get the whole score object
+        // save multiplayer wins / losses / draws
+        localStorage.setItem('multiplayer_wins', profileData.wins || 0);
+        localStorage.setItem('multiplayer_losses', profileData.losses || 0);
+        localStorage.setItem('multiplayer_draws', profileData.draws || 0);
+
         // Save the counters to Cache
         localStorage.setItem('cached_total_correct', profileData.total_correct || 0);
         localStorage.setItem('cached_total_wrong', profileData.total_wrong || 0);
-
+       
         localStorage.setItem('cached_xp', profileData.xp || 0);
         localStorage.setItem('cached_level', officialLevel);
         localStorage.setItem('cached_max_score', maxScore);
