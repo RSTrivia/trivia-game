@@ -3281,3 +3281,22 @@ input.input-field:-webkit-autofill:active {
         gap: 6px;
     }
 }
+
+
+@media (max-width: 480px) {
+  /* 1. Target the container ONLY when the multiplayer header is visible */
+  .container:has(#multiplayer-header:not(.hidden)) {
+    padding-top: 15px !important;
+  }
+
+  /* 2. Optional: If the Duel UI feels too close to the top edge, 
+     you can also adjust the #app wrapper at the same time */
+  #view-home:has(#multiplayer-header:not(.hidden)) #app {
+    padding-top: 10px !important;
+  }
+
+  /* 3. Keep your original 65px for the normal game */
+  .container:has(#game:not(.hidden)):not(:has(#multiplayer-header:not(.hidden))) {
+    padding-top: 65px;
+  }
+}
