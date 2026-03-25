@@ -2976,7 +2976,8 @@ input.input-field:-webkit-autofill:active {
     .stat-streak      { order: 2; } /* Middle Left */
     .stat-wrong       { order: 3; } /* Top Right */
     .stat-total-daily { order: 4; } /* Middle Right */
-    .stat-accuracy    { order: 5; } /* Bottom (Wide) */
+    .stat-accuracy    { order: 5; } /* Bottom (Left) */
+    .stat-multiplayer { order: 6; } /* Bottom (Right) */
     /* Reordering the PB List */
     .pb-normal    { order: 1; } /* Top Left */
     .pb-lite      { order: 3; } /* Middle Left */
