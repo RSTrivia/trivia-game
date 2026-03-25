@@ -15,10 +15,10 @@ let gameEnding = false;
 let isShowingNotification = false;
 let notificationQueue = [];
 let gridPattern = "";
+
 let gameStarting = false;
 // Add this to your script variables
 let currentEquippedPet = localStorage.getItem('equipped_pet_id') || null;
-
 let userId = null;
 let syncChannel;
 // Add this at the top of your script with your other global variables
@@ -79,6 +79,7 @@ let isSyncingNextRound = false;        // The "Lock"
 let iAmReadyForRematch = false;
 let opponentReadyForRematch = false;
 let currentLobbyCode = null;
+let opponentName = null;
 
 // Do this for all your navigation buttons
 const leaderBtn = document.getElementById('btn-leaderboard');
@@ -1076,6 +1077,10 @@ function resetGameEngine() {
     if (typeof timerInterval !== 'undefined') clearInterval(timerInterval);
     const answersBox = document.getElementById('answers-box');
     if (answersBox) answersBox.innerHTML = '';
+
+    const scoreContainer = document.getElementById('finalScore').parentElement;
+    // Put the original HTML structure back
+    scoreContainer.innerHTML = 'Score: <span id="finalScore">0</span>';
 }
 
 async function startNewRound() {
@@ -1133,7 +1138,7 @@ async function handleMultiplayerTimeout() {
     // 1. Prevent double-triggering if the player clicks right as it expires
     if (iHaveAnswered || gameEnding) return;
     iHaveAnswered = true;
-
+    clearInterval(timer); // Stop the visual clock now that we've hit 0
     // 2. UI & Sound Feedback
     stopTickSound();
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
@@ -1160,20 +1165,15 @@ async function handleMultiplayerTimeout() {
                 user_id: userId,
                 correct: false,
                 hp_remaining: myHP,
+                damage_taken: 20,
                 timed_out: true // Inform opponent it was a timeout
             }
         });
     }
 
-    // 5. Game Flow Logic
-    if (myHP <= 0) {
-        // You died! 
-        setTimeout(() => endGame(), 1000);
-    } else {
-        // This helper handles either the "Waiting" message 
-        // OR the "Sync and Proceed" if the opponent is already done.
-        handleMultiplayerTransition();
-    }
+    // Clear any existing sync locks and move to transition
+    isSyncing = false;
+    handleMultiplayerTransition();
 }
 
 async function fetchNextLobbyQuestion() {
@@ -1251,20 +1251,30 @@ function subscribeToLobby(lobbyCode, lobbyId) {
     });
 
     // --- 1. Database Listener (The "Truth") ---
-lobbyChannel.on('postgres_changes', { 
-    event: 'UPDATE', 
-    schema: 'public', 
-    table: 'live_lobbies', 
-    filter: `id=eq.${lobbyId}` 
-}, (payload) => {
+    lobbyChannel.on('postgres_changes', { 
+        event: 'UPDATE', 
+        schema: 'public', 
+        table: 'live_lobbies', 
+        filter: `id=eq.${lobbyId}` 
+    }, (payload) => {
     const newStatus = payload.new.status;
     console.log("DB Change Detected. New Status:", newStatus);
+    const lobbyData = payload.new;
+    // --- NEW: SYNC NAMES ---
+    // If I am host, opponent is guest. If I am guest, opponent is host.
+    opponentName = (myRole === 'host') ? lobbyData.guest_name : lobbyData.host_name;
     
+    if (opponentName) {
+        const oppLabel = document.getElementById('opponent-name-display');
+        if (oppLabel) oppLabel.textContent = opponentName;
+    }
+
     // --- HOST LOGIC: Opponent joined ---
     if (newStatus === 'ready' && myRole === 'host') {
         document.getElementById('host-controls').classList.remove('hidden');
+        // Use the actual name here too!
         document.getElementById('lobbyStatus').innerHTML = 
-            '<span style="color: #4CAF50; font-weight: bold;">Opponent Ready!</span>';
+            `<span style="color: #4CAF50; font-weight: bold;">${opponentName || 'Opponent'} Ready!</span>`;
         
         if (typeof playSound === 'function' && window.notificationBuffer) {
             playSound(notificationBuffer);
@@ -1378,7 +1388,7 @@ lobbyChannel.on('broadcast', { event: 'start-game' }, async () => { // Added asy
             // UI Polish: Change the button text so the Host knows the Guest is waiting
             const pBtn = document.getElementById('playAgainBtn');
             if (pBtn && !iAmReadyForRematch) {
-                pBtn.innerHTML = 'Opponent Ready! Play Again?';
+                pBtn.innerHTML = `${opponentName || 'Opponent'} is Ready! Play Again?`;
                 //pBtn.classList.add('glow-gold'); // Optional CSS class for flair
             }
         }
@@ -1626,85 +1636,86 @@ function triggerHitsplat(target, damage = 20) {
 }
 
 function handleMultiplayerTransition() {
-    const statusEl = document.getElementById('lobbyStatus');
-
-    // 1. Check if the match is technically over (someone hit 0 HP)
-    const isGameOver = (myHP <= 0 || opponentHP <= 0);
-
-    // 2. If it's Game Over, we wait a fixed 'Grace Period' for the final sync
-    if (isGameOver) {
-        clearTimeout(window.multiplayerSyncTimer);
-        window.multiplayerSyncTimer = setTimeout(() => {
-            // We force syncAndProceed even if the opponent hasn't answered yet
-            // (They likely timed out too or disconnected)
-            syncAndProceed(true); // Pass 'true' to indicate a forced final sync
-        }, 1500); // 1.5s is plenty for a final broadcast to arrive
-        return;
-    }
-
-    // 3. Normal Round Logic (Both still have HP)
-    if (!iHaveAnswered || !opponentHasAnswered) {
-        if (statusEl && iHaveAnswered) {
-            statusEl.innerHTML = '<span class="loading-dots" style="color: #ff9800;">Waiting for opponent</span>';
-        }
+    // If I've answered but the opponent hasn't, and the timer is still running...
+    // WAIT. Don't trigger syncAndProceed yet.
+    if (iHaveAnswered && !opponentHasAnswered && timeLeft > 0) {
+        console.log("Waiting for opponent's final move... Safety timer active.");
         return; 
     }
 
-    // Both answered and both are alive
+    // If we reach here, it means either:
+    // 1. Both have answered.
+    // 2. The timer hit 0 (someone timed out).
+    // 3. Someone died (HP <= 0).
+
     clearTimeout(window.multiplayerSyncTimer);
     window.multiplayerSyncTimer = setTimeout(() => {
         syncAndProceed();
-    }, 1000);
+    }, 1000); // 1 second buffer for visual splats to play
 }
 
 // Add a parameter 'force' that defaults to false
 async function syncAndProceed(force = false) {
-    // Determine if the game is over locally
-    const isGameOver = (myHP <= 0 || opponentHP <= 0);
-
-    // 1. THE GATE: 
-    // We only block if: 
-    // It's NOT a force-end AND it's NOT a game-over AND someone hasn't answered.
-    if (!force && !isGameOver && (!iHaveAnswered || !opponentHasAnswered)) {
-        console.log("Waiting for both players to finish...");
-        return;
+    clearTimeout(window.forceEndTimeout);
+    // 1. THE MANDATORY SYNC GATE
+    // We only proceed if:
+    // - force is true (emergency/timeout)
+    // - OR BOTH players have answered. 
+    // We NO LONGER check isGameOver here because we want to wait for the final outcome.
+    if (!force && (!iHaveAnswered || !opponentHasAnswered)) {
+        console.log("Waiting for both players to finish the current question...");
+        
+        const statusEl = document.getElementById('lobbyStatus');
+        if (statusEl && iHaveAnswered) {
+            // Use backticks ` to allow the ${variable} syntax
+            statusEl.innerHTML = `
+                <span class="loading-dots" style="color: #ff9800;">
+                    Waiting for <span style="color: #fff;">${opponentName || 'Opponent'}</span>...
+                </span>
+            `;
+        }
+        return; 
     }
 
     // 2. THE LOCK: Prevent double-execution
     if (isSyncing) return; 
     isSyncing = true;
 
-    // 3. HP CHECK: Determine if the game is OVER
+    // 3. STATE RESET: Clear flags for the NEW question
+    opponentHasAnswered = false;
+    iHaveAnswered = false;
+
+    // 4. STOP THE TIMER: Ensure the old clock is DEAD before Q2 starts
+    clearInterval(timer);
+
+    // 5. HP CHECK: Determine if the game is OVER
+    const isGameOver = (myHP <= 0 || opponentHP <= 0);
     if (isGameOver) {
         console.log("Match concluded. Final HP - Me:", myHP, "Opponent:", opponentHP);
-        
-        // Correctly identify a Draw, Win, or Loss
-        const result = myHP <= 0 ? (opponentHP <= 0 ? 'draw' : 'lose') : 'win';
 
-        // Reset lock and release the UI
-        isSyncing = false; // Release lock
+        // Final Result Logic (Prioritizing the Draw)
+        let result = 'win';
+        if (myHP <= 0 && opponentHP <= 0) {
+            result = 'draw';
+        } else if (myHP <= 0) {
+            result = 'lose';
+        }
+
         // Give the user 500ms to actually see the "Wrong" splat and highlight
         setTimeout(async () => {
-            isSyncing = false;
+            isSyncing = false;  // Release lock
             await endGame(result);
-        }, 500); 
+        }, 800); 
         return;
     }
 
-    // 4. STATE RESET: Clear flags for the NEW question
-    opponentHasAnswered = false;
-    iHaveAnswered = false;
-    
-    const statusEl = document.getElementById('lobbyStatus');
-    if (statusEl) statusEl.innerHTML = '';
-
-    // 5. THE SYNCED TRANSITION
+    // 6. THE SYNCED TRANSITION
     console.log("Sync Complete. Transitioning to next question...");
     window.currentLobbyIndex++; 
 
     await loadQuestion();
 
-    // 6. REFILL & RELEASE
+    // 7. REFILL & RELEASE
     setTimeout(() => { 
         isSyncing = false; 
         if (isMultiplayerMode) {
@@ -1966,7 +1977,10 @@ async function init() {
             // 1. Create the lobby
             const { data, error } = await supabase
                 .from('live_lobbies')
-                .insert([{ status: 'waiting' }])
+                .insert([{ status: 'waiting',
+                    host_id: userId,        // From your auth/session
+                    host_name: username   // Your local username variable
+                 }])
                 .select('*') // Get everything (id, code, question_ids)
                 .maybeSingle();
 
@@ -1975,6 +1989,11 @@ async function init() {
             if (data) {
                 // 2. Setup Role and Storage
                 myRole = 'host'; // Global variable to identify player
+                // At this exact moment, there is no guest yet.
+                // So we set the label to a "Waiting..." placeholder.
+                const label = document.getElementById('opponent-name-display');
+                if (label) label.textContent = "Waiting for Guest...";
+
                 sessionStorage.setItem('is_host', 'true');
                 sessionStorage.setItem('current_lobby_id', data.id);
                 sessionStorage.setItem('current_lobby_questions', JSON.stringify(data.question_ids));
@@ -2180,14 +2199,23 @@ document.getElementById('btn-start-multiplayer').addEventListener('click', async
         sessionStorage.setItem('current_lobby_id', data.id);
         sessionStorage.setItem('current_lobby_questions', JSON.stringify(data.question_ids));
 
-        // 4. Start listening for the "Start Game" signal from the Host
-        subscribeToLobby(data.code, data.id);
+        // 2. Set the Host's name on YOUR screen immediately
+        const oppLabel = document.getElementById('opponent-name-display');
+        if (oppLabel) oppLabel.textContent = data.host_name || "Host";
+
 
         // 2. Update the DB so the Host's "Start" button appears
         await supabase
             .from('live_lobbies')
-            .update({ status: 'ready' })
+            .update({ 
+                status: 'ready',
+                guest_id: userId, 
+                guest_name: username, // The Guest's name
+            })
             .eq('id', data.id);
+        
+        // 4. Start listening for the "Start Game" signal from the Host
+        subscribeToLobby(data.code, data.id);
 
         // 4. THE MAGIC PILL: Broadcast the arrival
         // We wrap this in a tiny timeout to ensure the subscription is active
@@ -2478,6 +2506,17 @@ function resetGame() {
     const gzTitle = document.getElementById('gz-title');
     if (gzTitle) gzTitle.classList.add('hidden');
     document.getElementById('multiplayer-header').classList.add('hidden');
+
+    const scoreEl = document.getElementById('score');
+    if (scoreEl) {
+        // Put the original label back for the new game
+        scoreEl.innerHTML = 'Score: 0';
+        scoreEl.style.color = ''; // Reset any custom colors
+    }
+
+    const scoreContainer = document.getElementById('finalScore').parentElement;
+    // Put the original HTML structure back
+    scoreContainer.innerHTML = 'Score: <span id="finalScore">0</span>';
 }
 
 
@@ -2810,12 +2849,16 @@ function startTimer() {
 
         // --- ROUND END LOGIC ---
         if (timeLeft <= 0) {
+            clearInterval(timer); // Stop the interval immediately
             if (isMultiplayerMode) {
-                clearInterval(timer);
-                // Custom logic for MP timeout (e.g., take damage)
-                handleMultiplayerTimeout();
+                if (iHaveAnswered) {
+                console.log("Timer hit 0, but I already answered. Waiting for sync...");
+                // Do nothing here! syncAndProceed is already handling the transition.
+                return;
+            }
+            // Only trigger the damage/timeout if I HAVEN'T answered
+            handleMultiplayerTimeout();
             } else {
-                clearInterval(timer);
                 // SOLO / DAILY / WEEKLY
                 handleTimeout();
             }
@@ -2887,7 +2930,11 @@ async function handleTimeout() {
 async function checkAnswer(choiceId, btn) {
     stopTickSound();
     if (timeLeft <= 0) return;
-    clearInterval(timer);
+    // Only stop the timer if we are NOT in multiplayer.
+    // In Multiplayer, we want to see it run down to 0 for the opponent.
+    if (!isMultiplayerMode) {
+        clearInterval(timer);
+    }
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
 
     // Track state for the sync
@@ -2937,7 +2984,24 @@ async function checkAnswer(choiceId, btn) {
                 damage_taken: res.correct ? 0 : 20
             }
         });
+        // --- NEW: SAFETY TIMEOUT ---
+        // If I've answered but the opponent hasn't, start a 20s fallback
+        if (iHaveAnswered && !opponentHasAnswered) {
+            console.log("Waiting for opponent's final move... Safety timer active.");
+            clearTimeout(window.forceEndTimeout);
+            window.forceEndTimeout = setTimeout(() => {
+                // Double check they still haven't answered before forcing
+                if (!opponentHasAnswered) {
+                    console.warn("Opponent AFK. Forcing sync...");
+                    syncAndProceed(true); // 'true' bypasses the wait
+                }
+            }, 20000); 
+        }
+        // Trigger the sync check
+        handleMultiplayerTransition();
     }
+
+  
 
     if (res.correct) {
         playSound(correctBuffer);
@@ -3258,19 +3322,46 @@ async function endGame(result = null) {
 
         // 2. Show "Questions Survived" instead of standard score
         if (finalScore) {
-            // currentLobbyIndex tells us how many rounds they played
-            finalScore.textContent = `Survived ${window.currentLobbyIndex} Rounds`;
+            // 2. Target the <p> tag (the parent) to delete "Score:"
+            const scoreContainer = finalScore.parentElement;
+
+            // 3. Rewrite the entire block
+            scoreContainer.innerHTML = `
+                <div style="margin-top: 15px;">
+                    <span style="color: #a0a0a0; font-size: 0.9rem; font-family: 'RSFont';">Combat Duration:</span><br>
+                    <span style="color: #fff; font-size: 1.4rem; font-family: 'RSFont';">
+                        Survived <span style="color: #4CAF50;">${window.currentLobbyIndex}</span> Rounds
+                    </span>
+                </div>
+            `;
         }
 
         displayFinalTime(totalMs);
 
-        // 3. Set the subtitle text
         if (gameOverTitle) {
             gameOverTitle.classList.remove('hidden');
+
+            // 1. Victory Message
             if (result === 'win') {
-                gameOverTitle.textContent = `You finished with ${myHP} HP remaining!`;
-            } else {
-                gameOverTitle.textContent = `Opponent had ${opponentHP} HP left.`;
+                gameOverTitle.innerHTML = `
+                    <span style="color: #4CAF50;">Victory!</span><br>
+                    <span style="color: #d4af37; font-size: 0.9em;">
+                        You defeated <span style="color: #fff;">${opponentName || 'your opponent'}</span> with ${myHP} HP left!
+                    </span>
+                `;
+            } 
+            // 2. Defeat Message
+            else if (result === 'lose') {
+                gameOverTitle.innerHTML = `
+                    <span style="color: #ff3b3b;">Defeat!</span><br>
+                    <span style="color: #d4af37; font-size: 0.9em;">
+                        <span style="color: #fff;">${opponentName || 'Opponent'}</span> survived with ${opponentHP} HP.
+                    </span>
+                `;
+            }
+            // 3. Draw Message (Just in case both hit 0 at once)
+            else {
+                gameOverTitle.textContent = "A double knockout! It's a draw.";
             }
         }
         const endScreen = document.getElementById('end-screen');
@@ -3287,6 +3378,7 @@ async function endGame(result = null) {
         // Clean up Lobby specific flags
         iAmReadyForRematch = false;
         opponentReadyForRematch = false;
+
         // 3. UI Cleanup
         const pBtn = document.getElementById('playAgainBtn');
         if (pBtn) {
@@ -3521,8 +3613,8 @@ function triggerXpDrop(amount) {
 
     // IF MULTIPLAYER: Push it down so it doesn't hit the HP bars
     if (isMultiplayerMode) {
-        // This overrides the 'top: 0' in your CSS
-        xpDrop.style.top = '140px'; 
+        // Using setProperty ensures we override the CSS !important
+        xpDrop.style.setProperty('top', '110px', 'important');
     }
 
     // This ensures that as soon as the 1.2s animation is done, it is GONE from the DOM
@@ -3669,15 +3761,45 @@ if (shareBtn) {
                 //console.log("Share cancelled"); 
             }
         } else {
-            try {
-                await navigator.clipboard.writeText(shareText);
-            } catch (clipErr) {
-                console.error("Clipboard failed:", clipErr);
+            // Check if modern Clipboard API exists
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                try {
+                    await navigator.clipboard.writeText(shareText);
+                } catch (clipErr) {
+                    console.error("Modern Clipboard failed:", clipErr);
+                    fallbackCopyTextToClipboard(shareText);
+                }
+            } else {
+                // Use the old-school textarea method for insecure/old contexts
+                fallbackCopyTextToClipboard(shareText);
             }
         }
     };
 }
 
+// Helper function for the "Legacy" way
+function fallbackCopyTextToClipboard(text) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    
+    // Ensure it's not visible but still part of the DOM
+    textArea.style.position = "fixed";
+    textArea.style.left = "-9999px";
+    textArea.style.top = "0";
+    document.body.appendChild(textArea);
+    
+    textArea.focus();
+    textArea.select();
+
+    try {
+        const successful = document.execCommand('copy');
+        if (!successful) console.error("Fallback copy failed");
+    } catch (err) {
+        console.error('Fallback: Unable to copy', err);
+    }
+
+    document.body.removeChild(textArea);
+}
 
 function showCollectionLogNotification(petName) {
     let modal = document.getElementById('pet-modal');
@@ -4058,6 +4180,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     })(); // closes the async function AND invokes it
 });   // closes DOMContentLoaded listener
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
