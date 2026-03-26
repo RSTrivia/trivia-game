@@ -33,7 +33,6 @@ let normalSessionPool = [];
 const TOTAL_ACHIEVEMENTS = 24;
 const MAX_LEVEL = 99;
 
-const RELEASE_DATE = '2025-12-22';
 const DAILY_LIMIT = 10;
 const WEEKLY_LIMIT = 50; // Change to 50 when ready to go live
 const LITE_LIMIT = 100; // Change to 100 when ready to go live
@@ -74,12 +73,11 @@ const MAX_HP = 60;
 const multiHeader = document.getElementById('multiplayer-header');
 let isFetchingLobbyQuestion = false; // Global flag to prevent race conditions
 let isSyncing = false; // Add this global variable at the top of your script
-let multiplayerTransitionTimer = null; // Add this at the top of your script
-let isSyncingNextRound = false;        // The "Lock"
 let iAmReadyForRematch = false;
 let opponentReadyForRematch = false;
 let currentLobbyCode = null;
 let opponentName = null;
+
 
 // Do this for all your navigation buttons
 const leaderBtn = document.getElementById('btn-leaderboard');
@@ -249,6 +247,7 @@ let isLiteMode = false;
 let liteQuestions = []; // To store the shuffled subset
 let gameStartTime = 0;
 
+
 // This intercepts and silences the "WebSocket is closed before established" error
 (function () {
     const originalError = console.error;
@@ -363,7 +362,7 @@ function updateLeaderboard(data) {
 function getEquippedItemIcon(itemId) {
     if (!itemId) return "";
     const isCape = ['max_cape', 'achievement_cape'].includes(itemId);
-    
+
     // Use a forward slash to make the path relative to the PROJECT ROOT
     // This tells the browser: "Start from the base folder, then look in capes/ or pets/"
     const folder = isCape ? 'capes/' : 'pets/';
@@ -552,7 +551,7 @@ const PET_DATA = [
     { id: 'pet_zuk', name: 'TzRek-Zuk', rarity: 'mythic', file: 'zuk.png' },
     { id: 'pet_lil_zik', name: 'Lil\' Zik', rarity: 'mythic', file: 'lil_zik.png' },
     { id: 'pet_tumekens_guardian', name: 'Tumeken\'s guardian', rarity: 'mythic', file: 'tumekens_guardian.png' },
-    { id: 'max_cape', name: 'Max Cape',  file: 'max_cape.png' },
+    { id: 'max_cape', name: 'Max Cape', file: 'max_cape.png' },
     { id: 'achievement_cape', name: 'Achievement Cape', file: 'achievement_cape.png' }
 ];
 
@@ -680,8 +679,8 @@ async function renderStats() {
     const totalAnswers = totalCorrect + totalWrong;
 
     // Calculate Accuracy
-    const accuracy = totalAnswers > 0 
-        ? Math.round((totalCorrect / totalAnswers) * 100) 
+    const accuracy = totalAnswers > 0
+        ? Math.round((totalCorrect / totalAnswers) * 100)
         : 0;
 
     // Update the UI elements
@@ -715,29 +714,29 @@ async function renderStats() {
 
     // Define the mapping based on your HTML data-mode attributes
     const dataMap = {
-            'Normal': { s: localStorage.getItem('cached_score') || 0, t: localStorage.getItem('cached_time_ms') || 0 },
-            'Lite': JSON.parse(localStorage.getItem('cached_lite_data') || '{"score":0, "time":0}'),
-            'Weekly': JSON.parse(localStorage.getItem('cached_weekly_data') || '{"score":0, "time":0}'),
-            'Daily': JSON.parse(localStorage.getItem('cached_daily_data') || '{"score":0, "time":0}')
-        };
+        'Normal': { s: localStorage.getItem('cached_score') || 0, t: localStorage.getItem('cached_time_ms') || 0 },
+        'Lite': JSON.parse(localStorage.getItem('cached_lite_data') || '{"score":0, "time":0}'),
+        'Weekly': JSON.parse(localStorage.getItem('cached_weekly_data') || '{"score":0, "time":0}'),
+        'Daily': JSON.parse(localStorage.getItem('cached_daily_data') || '{"score":0, "time":0}')
+    };
 
-        Object.keys(dataMap).forEach(mode => {
-            const row = pbList.querySelector(`[data-mode="${mode}"]`);
-            if (!row) return; // Guard clause is cleaner
+    Object.keys(dataMap).forEach(mode => {
+        const row = pbList.querySelector(`[data-mode="${mode}"]`);
+        if (!row) return; // Guard clause is cleaner
 
-            const val = dataMap[mode];
-            // This handles both the structure from your fetch and the structure from your cache
-            const score = val.s ?? val.score ?? 0;
-            const time = val.t ?? val.time ?? 0;
+        const val = dataMap[mode];
+        // This handles both the structure from your fetch and the structure from your cache
+        const score = val.s ?? val.score ?? 0;
+        const time = val.t ?? val.time ?? 0;
 
-            const valueSpan = row.querySelector('.stat-value');
-            const newContent = `${parseInt(score).toLocaleString()} <span class="time-stamp">${formatLeaderboardTime(time)}</span>`;
+        const valueSpan = row.querySelector('.stat-value');
+        const newContent = `${parseInt(score).toLocaleString()} <span class="time-stamp">${formatLeaderboardTime(time)}</span>`;
 
-            // Keep the DOM update optimization
-            if (valueSpan.innerHTML !== newContent) {
-                valueSpan.innerHTML = newContent;
-            }
-        });
+        // Keep the DOM update optimization
+        if (valueSpan.innerHTML !== newContent) {
+            valueSpan.innerHTML = newContent;
+        }
+    });
 
     // 5. Update UI Counters
     document.getElementById('stat-pet-count').textContent = `${stats.petsUnlocked}/${15}`;
@@ -770,13 +769,13 @@ async function handleCapeClick(id, element) {
     if (!element.classList.contains('unlocked')) return;
 
     const newEquipped = (currentEquippedPet === id) ? null : id;
-    
+
     currentEquippedPet = newEquipped;
     if (newEquipped) localStorage.setItem('equipped_pet_id', newEquipped);
     else localStorage.removeItem('equipped_pet_id');
 
     await supabase.rpc('equip_pet_secure', { pet_id_to_equip: newEquipped });
-    
+
     // Refresh stats to trigger classList updates
     renderStats();
 }
@@ -864,7 +863,7 @@ function applyUnlocks(unlockedList) {
             // Check if it's a cape based on the ID or a property in your PET_DATA
             const isCape = pet.id === 'max_cape' || pet.id === 'achievement_cape';
             const folder = isCape ? 'capes/' : 'pets/';
-            
+
             // Use the file property from PET_DATA, but point to the correct folder
             img.src = `${folder}${pet.file}`;
         }
@@ -948,7 +947,7 @@ async function loadCollection() {
         // Save the counters to Cache
         localStorage.setItem('cached_total_correct', profileData.total_correct || 0);
         localStorage.setItem('cached_total_wrong', profileData.total_wrong || 0);
-       
+
         localStorage.setItem('cached_xp', profileData.xp || 0);
         localStorage.setItem('cached_level', officialLevel);
         localStorage.setItem('cached_max_score', maxScore);
@@ -1037,7 +1036,7 @@ window.navigateTo = function (viewId) {
         });
         // Also ensure the home view itself isn't stuck with an inline flex height
         const home = document.getElementById('view-home');
-        if (home) home.style.display = ''; 
+        if (home) home.style.display = '';
     }
 
     // 5. App controls logic
@@ -1050,10 +1049,10 @@ window.navigateTo = function (viewId) {
         // 2. Force the Pets tab to be the active one
         const petsTab = document.getElementById('petsTab');
         if (petsTab) {
-        petsTab.click(); // Programmatically trigger the click
+            petsTab.click(); // Programmatically trigger the click
         }
     }
-    
+
     document.body.classList.remove('game-active');
     game.classList.add('hidden');
     // 6. Update URL
@@ -1064,7 +1063,7 @@ window.navigateTo = function (viewId) {
     // The delay ensures the transition is finished before the user can tap again
     setTimeout(() => {
         document.body.style.pointerEvents = 'auto';
-    }, 300); 
+    }, 300);
 };
 
 // 1v1 MODE
@@ -1076,15 +1075,23 @@ function resetGameEngine() {
     preloadQueue = [];
     window.nextFetchIndex = 0;
     window.currentLobbyIndex = 0;
+    gameStartTime = null;
 
     // 2. Clear the storage so the next lobby MUST fetch from DB
     sessionStorage.removeItem('current_lobby_questions');
     sessionStorage.removeItem('current_lobby_id');
+    sessionStorage.removeItem('game_start_time');
 
     // 3. Reset Game State Flags
     gameStarting = false;
     gameEnding = false;
     isMultiplayerMode = false;
+    isSyncing = false
+
+    iHaveAnswered = false; 
+    opponentHasAnswered = false;
+    if (window.forceEndTimeout) clearTimeout(window.forceEndTimeout);
+
     myHP = 60; // Or your MAX_HP
     opponentHP = 60;
 
@@ -1112,17 +1119,21 @@ async function startNewRound() {
     const cleanIDs = allIDs.map(id => Number(id));
     // CRITICAL: Save the new IDs locally so the Host's engine sees them
     sessionStorage.setItem('current_lobby_questions', JSON.stringify(allIDs));
-    preloadQueue = []; 
+    preloadQueue = [];
     window.nextFetchIndex = 0;
     iAmReadyForRematch = false;
     opponentReadyForRematch = false;
 
+    const startTime = Date.now();
+    sessionStorage.setItem('game_start_time', startTime.toString());
+
     // 2. Update Database AND WAIT FOR IT
     const { error } = await supabase
         .from('live_lobbies')
-        .update({ 
-            question_ids: cleanIDs, 
-            status: 'playing' // Changing status helps trigger listeners
+        .update({
+            question_ids: cleanIDs,
+            status: 'playing',
+            game_start_time: startTime // Changing status helps trigger listeners
         })
         .eq('id', lobbyId)
         .select();
@@ -1131,7 +1142,7 @@ async function startNewRound() {
         console.error("DB Update Failed - Stopping Rematch:", error);
         return; // STOP HERE so we don't send a fake broadcast
     }
-
+    
     console.log("Host: Database updated. Waiting for listener to trigger engine...");
 }
 
@@ -1171,13 +1182,13 @@ async function handleMultiplayerTimeout() {
     stopTickSound();
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
     playSound(wrongBuffer);
-    
+
     // Show them what they missed
-    await highlightCorrectAnswer();
+    highlightCorrectAnswer();
 
     // 3. OSRS Style Damage
     // A timeout is a "missed flick" - take significant damage
-    const timeoutDamage = 20; 
+    const timeoutDamage = 20;
     myHP = Math.max(0, myHP - timeoutDamage);
     triggerHitsplat('my', 20);
 
@@ -1194,7 +1205,7 @@ async function handleMultiplayerTimeout() {
                 correct: false,
                 hp_remaining: myHP,
                 damage_taken: 20,
-                timed_out: true // Inform opponent it was a timeout
+                timed_out: true
             }
         });
     }
@@ -1206,7 +1217,7 @@ async function handleMultiplayerTimeout() {
 
 async function fetchNextLobbyQuestion() {
     if (isFetchingLobbyQuestion) return;
-    
+
     try {
         isFetchingLobbyQuestion = true;
 
@@ -1218,7 +1229,7 @@ async function fetchNextLobbyQuestion() {
         if (!storedIds || storedIds.length === 0) {
             console.log("Fetcher: Storage empty, performing emergency DB sync...");
             const lobbyId = sessionStorage.getItem('current_lobby_id');
-            
+
             const { data, error } = await supabase
                 .from('live_lobbies')
                 .select('question_ids')
@@ -1238,7 +1249,7 @@ async function fetchNextLobbyQuestion() {
 
         // 3. Pointer Logic
         if (window.nextFetchIndex === undefined) window.nextFetchIndex = 0;
-        
+
         const currentToFetch = window.nextFetchIndex;
         const nextId = storedIds[currentToFetch];
 
@@ -1260,7 +1271,7 @@ async function fetchNextLobbyQuestion() {
     } catch (err) {
         console.error("RPC Fetch Error:", err.message);
     } finally {
-        isFetchingLobbyQuestion = false; 
+        isFetchingLobbyQuestion = false;
     }
 }
 
@@ -1272,127 +1283,97 @@ function subscribeToLobby(lobbyCode, lobbyId) {
 
     // We use the lobbyCode for the channel name, but the lobbyId for the DB filter
     lobbyChannel = supabase.channel(`lobby_${lobbyCode}`, {
-        config: { 
+        config: {
             broadcast: { self: true },
-            presence: { key: myRole } 
+            presence: { key: myRole }
         }
     });
 
     // --- 1. Database Listener (The "Truth") ---
-    lobbyChannel.on('postgres_changes', { 
-        event: 'UPDATE', 
-        schema: 'public', 
-        table: 'live_lobbies', 
-        filter: `id=eq.${lobbyId}` 
+    lobbyChannel.on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'live_lobbies',
+        filter: `id=eq.${lobbyId}`
     }, (payload) => {
-    const newStatus = payload.new.status;
-    console.log("DB Change Detected. New Status:", newStatus);
-    const lobbyData = payload.new;
-    // --- NEW: SYNC NAMES ---
-    // If I am host, opponent is guest. If I am guest, opponent is host.
-    opponentName = (myRole === 'host') ? lobbyData.guest_name : lobbyData.host_name;
-    
-    if (opponentName) {
-        const oppLabel = document.getElementById('opponent-name-display');
-        if (oppLabel) oppLabel.textContent = opponentName;
-    }
+        const newStatus = payload.new.status;
+        console.log("DB Change Detected. New Status:", newStatus);
+        const lobbyData = payload.new;
 
-    // --- HOST LOGIC: Opponent joined ---
-    if (newStatus === 'ready' && myRole === 'host') {
-        document.getElementById('host-controls').classList.remove('hidden');
-        // Use the actual name here too!
-        document.getElementById('lobbyStatus').innerHTML = 
-            `<span style="color: #4CAF50; font-weight: bold;">${opponentName || 'Opponent'} Ready!</span>`;
-        
-        if (typeof playSound === 'function' && window.notificationBuffer) {
-            playSound(notificationBuffer);
+        // --- SYNC START TIME (CRITICAL FOR TIMER ACCURACY) ---
+        // This ensures Guest and Host use the same "Start Line" timestamp
+        if (lobbyData.game_start_time) {
+            const serverTime = Number(lobbyData.game_start_time);
+            gameStartTime = serverTime; // Update the global variable
+            sessionStorage.setItem('game_start_time', serverTime.toString());
+            console.log("Sync: Shared Start Time Saved:", serverTime);
         }
-    }
 
-    // --- FIRST START LOGIC ---
-    if (newStatus === 'active') {
-        // CRITICAL: Only the Guest reacts to 'active'. 
-        // The Host already started via the button click 'setTimeout'.
-        if (myRole === 'guest') {
-            console.log("Guest: First game ACTIVE. Launching...");
+        // --- NEW: SYNC NAMES ---
+        // If I am host, opponent is guest. If I am guest, opponent is host.
+        opponentName = (myRole === 'host') ? lobbyData.guest_name : lobbyData.host_name;
+
+        if (opponentName) {
+            const oppLabel = document.getElementById('opponent-name-display');
+            if (oppLabel) oppLabel.textContent = opponentName;
+        }
+
+        // --- HOST LOGIC: Opponent joined ---
+        if (newStatus === 'ready' && myRole === 'host') {
+            document.getElementById('host-controls').classList.remove('hidden');
+            // Use the actual name here too!
+            document.getElementById('lobbyStatus').innerHTML =
+                `<span style="color: #4CAF50; font-weight: bold;">${opponentName || 'Opponent'} is ready!</span>`;
+
+            if (typeof playSound === 'function' && window.notificationBuffer) {
+                playSound(notificationBuffer);
+            }
+        }
+
+        // --- FIRST START LOGIC ---
+        if (newStatus === 'active') {
+            // CRITICAL: Only the Guest reacts to 'active'. 
+            // The Host already started via the button click 'setTimeout'.
+            //if (myRole === 'guest') {
+                //console.log("Guest: First game ACTIVE. Launching...");
+                //startMultiplayerGame();
+            //}
+            console.log(`${myRole.toUpperCase()}: First game ACTIVE. Launching...`);
+            // Both Host and Guest now start only when the DB confirms the lobby is active
             startMultiplayerGame();
         }
-    }
 
-    // --- REMATCH START LOGIC (Round 2+) ---
-    if (newStatus === 'playing') {
-        console.log(`${myRole.toUpperCase()}: Starting Game from DB Signal...`);
-        
-        // 1. Everyone resets memory
-        sessionStorage.removeItem('current_lobby_questions');
-        preloadQueue = [];
-        window.nextFetchIndex = 0;
-        window.currentLobbyIndex = 0;
+        // --- REMATCH START LOGIC (Round 2+) ---
+        if (newStatus === 'playing') {
+            console.log(`${myRole.toUpperCase()}: Starting Game from DB Signal...`);
 
-        // 2. Everyone saves the new IDs from the database payload
-        if (payload.new.question_ids) {
-            sessionStorage.setItem('current_lobby_questions', JSON.stringify(payload.new.question_ids));
-            console.log(`${myRole.toUpperCase()}: IDs Synced. First ID:`, payload.new.question_ids[0]);
+            // 1. Everyone resets memory
+            sessionStorage.removeItem('current_lobby_questions');
+            preloadQueue = [];
+            window.nextFetchIndex = 0;
+            window.currentLobbyIndex = 0;
+
+            // 2. Everyone saves the new IDs from the database payload
+            if (payload.new.question_ids) {
+                sessionStorage.setItem('current_lobby_questions', JSON.stringify(payload.new.question_ids));
+                console.log(`${myRole.toUpperCase()}: IDs Synced. First ID:`, payload.new.question_ids[0]);
+            }
+
+            // 3. Everyone launches at the exact same time
+            startMultiplayerGame();
         }
-
-        // 3. Everyone launches at the exact same time
-        startMultiplayerGame();
-    }
-});
+    });
 
     // --- 2. Broadcast Listeners (The "Speed") ---
     lobbyChannel.on('broadcast', { event: 'guest-joined' }, () => {
         if (myRole === 'host') {
             // Backup in case Postgres change is slow
             document.getElementById('host-controls').classList.remove('hidden');
-            document.getElementById('lobbyStatus').innerHTML = 
-                '<span style="color: #4CAF50; font-weight: bold;">Opponent Connected!</span>';
+           document.getElementById('lobbyStatus').innerHTML =
+            `<span style="color: #4CAF50; font-weight: bold;">${opponentName || 'Opponent'} connected!</span>`;
         }
     });
-/*
-lobbyChannel.on('broadcast', { event: 'start-game' }, async () => { // Added async
-    if (myRole === 'guest') {
-        console.log("Rematch signal received! Resetting for Guest start...");
-    
-        // 1. Clear old data immediately
-        sessionStorage.removeItem('current_lobby_questions');
-        preloadQueue = []; 
-        window.nextFetchIndex = 0;
-        
-        // 2. Reset flags
-        isFetchingLobbyQuestion = false; 
-        iAmReadyForRematch = false;
-        opponentReadyForRematch = false;
-        
-        // 3. UI Cleanup - NUCLEAR OPTION (Fixes the "small to the left" bug)
-        const endScreen = document.getElementById('end-screen');
-        if (endScreen) {
-            endScreen.classList.add('hidden');
-        }
 
-        // 4. SYNC FRESH IDs FROM DB (Fixes repeating questions)
-        // We do this BEFORE startMultiplayerGame so the engine has the right list
-        const lobbyId = sessionStorage.getItem('current_lobby_id');
-        const { data, error } = await supabase
-            .from('live_lobbies')
-            .select('question_ids')
-            .eq('id', lobbyId)
-            .single();
-
-        if (data && data.question_ids) {
-            console.log("Guest: New IDs synced. First ID:", data.question_ids[0]);
-            sessionStorage.setItem('current_lobby_questions', JSON.stringify(data.question_ids));
-            
-            // 5. Start the engine ONLY after we have the new data
-            startMultiplayerGame();
-        } else {
-            console.error("Guest: Failed to sync new shuffle!", error);
-            // Optional: fallback to the engine's loop if DB is slow
-            startMultiplayerGame(); 
-        }
-    }
-});
-*/
     lobbyChannel.on('broadcast', { event: 'player-acted' }, (payload) => {
         if (payload.playerRole !== myRole) {
             // Show a "Thinking..." or "Selected an answer" message
@@ -1400,7 +1381,12 @@ lobbyChannel.on('broadcast', { event: 'start-game' }, async () => { // Added asy
             if (statusText) statusText.innerHTML = "Opponent is deciding...";
         }
     });
-
+    lobbyChannel.on('broadcast', { event: 'next_question_trigger' }, (envelope) => {
+        if (myRole === 'guest') {
+            console.log("Guest: Signal received. Moving to next question", envelope.payload.nextIndex);
+            executeTransition(envelope.payload.nextIndex);
+        }
+    });
     lobbyChannel.on('broadcast', { event: 'rematch_ready' }, (envelope) => {
         const data = envelope.payload;
         if (data.user_id === userId) return; // Ignore my own broadcast
@@ -1411,7 +1397,7 @@ lobbyChannel.on('broadcast', { event: 'start-game' }, async () => { // Added asy
         // IF I am the Host AND I have already clicked my own Play Again button
         if (myRole === 'host' && iAmReadyForRematch) {
             console.log("Both ready (Listener trigger): Host starting...");
-            startNewRound(); 
+            startNewRound();
         } else {
             // UI Polish: Change the button text so the Host knows the Guest is waiting
             const pBtn = document.getElementById('playAgainBtn');
@@ -1424,15 +1410,14 @@ lobbyChannel.on('broadcast', { event: 'start-game' }, async () => { // Added asy
 
     // Change the event name to match what your answer/timeout functions send
     lobbyChannel.on('broadcast', { event: 'player_answered' }, (envelope) => {
-    // Supabase wraps your data: envelope.payload is the object you sent
-    const actualData = envelope.payload; 
-
-    // Safety check: ensure we only process the OTHER player's data
-    if (actualData && actualData.user_id !== userId) {
-        console.log("Opponent answered! Syncing HP to:", actualData.hp_remaining);
-        handleOpponentAction(actualData);
-    }
-});
+        // Supabase wraps your data: envelope.payload is the object you sent
+        const actualData = envelope.payload;
+        // Safety check: ensure we only process the OTHER player's data
+        if (actualData && actualData.user_id !== userId) {
+            console.log("Opponent answered! Syncing HP to:", actualData.hp_remaining);
+            handleOpponentAction(actualData);
+        }
+    });
 
     // Subscribe and Log Connection
     lobbyChannel.subscribe((status) => {
@@ -1448,11 +1433,23 @@ async function startMultiplayerGame() {
     gameEnding = false;
     isSyncing = false;  // Reset the sync lock
     iHaveAnswered = false;
-    isMultiplayerMode = true; 
+    isMultiplayerMode = true;
     myHP = MAX_HP;
     opponentHP = MAX_HP;
     opponentHasAnswered = false;
-    
+    window.currentLobbyIndex = 0;
+    window.nextFetchIndex = 0;
+    preloadQueue = [];
+
+    // ONLY set a new time if one doesn't already exist in sessionStorage
+    // (This allows the Listener's synced time to stay "Locked In")
+    if (!sessionStorage.getItem('game_start_time')) {
+        gameStartTime = Date.now();
+        sessionStorage.setItem('game_start_time', gameStartTime.toString());
+    } else {
+        gameStartTime = Number(sessionStorage.getItem('game_start_time'));
+    }
+
     if (gameStarting) return;
     gameStarting = true;
 
@@ -1467,7 +1464,7 @@ async function startMultiplayerGame() {
         // --- THE DATABASE FETCH ---
         // We force a fetch because the broadcast didn't give us IDs
         console.log("Guest: Syncing with Lobby Database...");
-        
+
         // --- THE CRITICAL WAIT ---
         // If the Guest starts with an empty queue, we MUST wait for the DB
         // --- THE CRITICAL WAIT (FIXED) ---
@@ -1478,23 +1475,22 @@ async function startMultiplayerGame() {
 
             while (retryCount < 10) { // Try for 5 seconds total
                 await fetchNextLobbyQuestion(); // This needs to update sessionStorage/preloadQueue
-                
+
                 if (preloadQueue.length > 0) {
                     success = true;
-                    break; 
+                    break;
                 }
-                
+
                 console.warn(`Guest: Questions not ready yet. Retrying... (${retryCount + 1})`);
-                await new Promise(r => setTimeout(r, 500)); // Wait 500ms
+                await new Promise(r => setTimeout(r, 300)); // Wait 500ms
                 retryCount++;
             }
 
             if (!success) throw new Error("Sync failed: Questions didn't load in time.");
+
         } else {
             // Host logic: Just fetch once, since Host created the IDs locally
-            if (preloadQueue.length === 0) {
-                await fetchNextLobbyQuestion();
-            }
+            await fetchNextLobbyQuestion();
         }
 
         // Now that we have IDs from the DB, load the first one
@@ -1511,70 +1507,68 @@ async function startMultiplayerGame() {
         }
 
 
-    requestAnimationFrame(() => {
-        // --- STEP A: HIDE ALL VIEWS ---
-        // This ensures no other screen (Lobby, Leaderboard, etc.) is blocking the view
-        document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+        requestAnimationFrame(() => {
+            // --- STEP A: HIDE ALL VIEWS ---
+            // This ensures no other screen (Lobby, Leaderboard, etc.) is blocking the view
+            document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
 
-        // --- STEP B: SHOW THE HOME VIEW (Parent) ---
-        const homeView = document.getElementById('view-home');
-        if (homeView) {
-            homeView.classList.remove('hidden');
-            homeView.style.display = 'flex'; // Force layout
-        }
-        // Replace 'view-lobby' with the actual ID of your lobby div
-        const lobbyView = document.getElementById('view-lobby');
-        if (lobbyView) {
-            lobbyView.classList.add('hidden');
-        }
-        // --- STEP C: CLEAN UP HOME SCREEN UI ---
-        // Hide the menu specific items so only the game shows
-        const startScreen = document.getElementById('start-screen');
-        const userControls = document.getElementById('user-controls');
-        const mainTitle = document.getElementById('main-title');
-        const endScreen = document.getElementById('end-screen');
-        if (endScreen) {
-            endScreen.classList.add('hidden');
-        }
+            // --- STEP B: SHOW THE HOME VIEW (Parent) ---
+            const homeView = document.getElementById('view-home');
+            if (homeView) {
+                homeView.classList.remove('hidden');
+                homeView.style.display = 'flex'; // Force layout
+            }
+            // Replace 'view-lobby' with the actual ID of your lobby div
+            const lobbyView = document.getElementById('view-lobby');
+            if (lobbyView) {
+                lobbyView.classList.add('hidden');
+            }
+            // --- STEP C: CLEAN UP HOME SCREEN UI ---
+            // Hide the menu specific items so only the game shows
+            const startScreen = document.getElementById('start-screen');
+            const userControls = document.getElementById('user-controls');
+            const mainTitle = document.getElementById('main-title');
+            const endScreen = document.getElementById('end-screen');
+            if (endScreen) {
+                endScreen.classList.add('hidden');
+            }
 
-        if (startScreen) startScreen.classList.add('hidden');
-        if (userControls) userControls.classList.add('hidden');
-        if (mainTitle) mainTitle.classList.add('hidden');
+            if (startScreen) startScreen.classList.add('hidden');
+            if (userControls) userControls.classList.add('hidden');
+            if (mainTitle) mainTitle.classList.add('hidden');
 
-        // --- STEP D: SHOW THE GAME ---
-        document.body.classList.add('game-active');
-        game.classList.remove('hidden');
-        game.style.display = 'flex';
+            // --- STEP D: SHOW THE GAME ---
+            document.body.classList.add('game-active');
+            game.classList.remove('hidden');
+            game.style.display = 'flex';
 
-        // Show Multiplayer Header
-        const mpHeader = document.getElementById('multiplayer-header');
-        if (mpHeader) mpHeader.classList.remove('hidden');
+            // Show Multiplayer Header
+            const mpHeader = document.getElementById('multiplayer-header');
+            if (mpHeader) mpHeader.classList.remove('hidden');
 
-        document.getElementById('score').classList.add('hidden');
-        document.getElementById('rounds-display').classList.remove('hidden');
-        document.getElementById('rounds-display').textContent = "Round: 1";
+            document.getElementById('score').classList.add('hidden');
+            document.getElementById('rounds-display').classList.remove('hidden');
+            document.getElementById('rounds-display').textContent = "Round: 1";
 
-        const roundsDisplay = document.getElementById('rounds-display');
-        roundsDisplay.textContent = "Round: 1";
+            const roundsDisplay = document.getElementById('rounds-display');
+            roundsDisplay.textContent = "Round: 1";
 
-        // Reset HP Bars
-        document.getElementById('my-hp-fill').style.width = '100%';
-        document.getElementById('opponent-hp-fill').style.width = '100%';
-        document.getElementById('my-hp-text').textContent = `${MAX_HP}/${MAX_HP}`;
-        document.getElementById('opponent-hp-text').textContent = `${MAX_HP}/${MAX_HP}`;
+            // Reset HP Bars
+            document.getElementById('my-hp-fill').style.width = '100%';
+            document.getElementById('opponent-hp-fill').style.width = '100%';
+            document.getElementById('my-hp-text').textContent = `${MAX_HP}/${MAX_HP}`;
+            document.getElementById('opponent-hp-text').textContent = `${MAX_HP}/${MAX_HP}`;
 
-        // 5. START THE CLOCK
-        gameStartTime = Date.now();
-        startTimer(); 
+            startTimer();
 
-        // 6. BACKGROUND FILL
-        // While they answer Q1, fetch the next 5 from the lobby list
-        preloadNextQuestions(5); 
+            // 6. BACKGROUND FILL
+            // While they answer Q1, fetch the next 5 from the lobby list
+            preloadNextQuestions(5);
 
-        gameStarting = false;
-        console.log("Multiplayer Game Started Successfully!");
-    });
-        
+            gameStarting = false;
+            console.log("Multiplayer Game Started Successfully!");
+        });
+
     } catch (err) {
         gameStarting = false;
         console.error("CRITICAL ERROR during game start:", err);
@@ -1611,7 +1605,7 @@ function updateHPUI() {
     bars.forEach(bar => {
         // Remove old classes
         bar.el.classList.remove('hp-low', 'hp-med', 'hp-high');
-        
+
         if (bar.pct <= 20) {
             bar.el.classList.add('hp-low');   // Red
         } else if (bar.pct <= 40) {
@@ -1625,7 +1619,7 @@ function updateHPUI() {
 
 function handleOpponentAction(payload) {
     opponentHasAnswered = true;
-    
+
     // 1. Sync their HP (Force your screen to match their actual HP)
     if (payload.hp_remaining !== undefined) {
         opponentHP = payload.hp_remaining;
@@ -1640,7 +1634,11 @@ function handleOpponentAction(payload) {
     }
 
     updateHPUI();
-    handleMultiplayerTransition();
+    // Instead of handleMultiplayerTransition, check if we can sync NOW
+    if (iHaveAnswered) {
+        console.log("Both answered! Proceeding to sync...");
+        syncAndProceed();
+    }
 }
 
 function triggerHitsplat(target, damage = 20) {
@@ -1652,7 +1650,7 @@ function triggerHitsplat(target, damage = 20) {
     // 2. Create a NEW hitsplat element
     const splat = document.createElement('div');
     splat.textContent = damage;
-    
+
     // 3. Apply classes based on damage
     splat.className = 'hitsplat show-splat';
     if (damage === 0) {
@@ -1673,9 +1671,12 @@ function triggerHitsplat(target, damage = 20) {
 function handleMultiplayerTransition() {
     // If I've answered but the opponent hasn't, and the timer is still running...
     // WAIT. Don't trigger syncAndProceed yet.
+    // If a timestamp was provided (meaning someone died), save it globally 
+    // so syncAndProceed can find it later.
+
     if (iHaveAnswered && !opponentHasAnswered && timeLeft > 0) {
         console.log("Waiting for opponent's final move... Safety timer active.");
-        return; 
+        return;
     }
 
     // If we reach here, it means either:
@@ -1685,13 +1686,16 @@ function handleMultiplayerTransition() {
 
     clearTimeout(window.multiplayerSyncTimer);
     window.multiplayerSyncTimer = setTimeout(() => {
-        syncAndProceed();
+        syncAndProceed(false);
     }, 1000); // 1 second buffer for visual splats to play
 }
 
 // Add a parameter 'force' that defaults to false
 async function syncAndProceed(force = false) {
     clearTimeout(window.forceEndTimeout);
+    // DEBUG: This is your best friend for fixing this
+    console.log(`[Gate Check] Me: ${iHaveAnswered} | Opponent: ${opponentHasAnswered} | Force: ${force}`);
+
     // 1. THE MANDATORY SYNC GATE
     // We only proceed if:
     // - force is true (emergency/timeout)
@@ -1699,7 +1703,8 @@ async function syncAndProceed(force = false) {
     // We NO LONGER check isGameOver here because we want to wait for the final outcome.
     if (!force && (!iHaveAnswered || !opponentHasAnswered)) {
         console.log("Waiting for both players to finish the current question...");
-        
+        console.log(`Sync Blocked: Me(${iHaveAnswered}) Opponent(${opponentHasAnswered})`);
+
         const statusEl = document.getElementById('lobbyStatus');
         if (statusEl && iHaveAnswered) {
             // Use backticks ` to allow the ${variable} syntax
@@ -1709,16 +1714,12 @@ async function syncAndProceed(force = false) {
                 </span>
             `;
         }
-        return; 
+        return;
     }
 
     // 2. THE LOCK: Prevent double-execution
-    if (isSyncing) return; 
+    if (isSyncing) return;
     isSyncing = true;
-
-    // 3. STATE RESET: Clear flags for the NEW question
-    opponentHasAnswered = false;
-    iHaveAnswered = false;
 
     // 4. STOP THE TIMER: Ensure the old clock is DEAD before Q2 starts
     clearInterval(timer);
@@ -1736,34 +1737,59 @@ async function syncAndProceed(force = false) {
             result = 'lose';
         }
 
-        // Give the user 500ms to actually see the "Wrong" splat and highlight
+        // Give the user 800ms to actually see the "Wrong" splat and highlight
         setTimeout(async () => {
-            isSyncing = false;  // Release lock
-            await endGame(result);
-        }, 800); 
-        return;
+                    isSyncing = false;
+                    // Pass the accurate timestamp into endGame
+                    await endGame(result);
+                }, 800);
+                return;
     }
 
     // 6. THE SYNCED TRANSITION
+    if (myRole === 'host') {
+        const nextIndex = window.currentLobbyIndex + 1;
+        
+    // The "Quick Fix" Delay:
+        // Wait 1.2 seconds before telling the Guest to move.
+        // This gives the Guest time to see their hitsplat if they were last.
+        setTimeout(() => {
+            if (lobbyChannel) {
+                lobbyChannel.send({
+                    type: 'broadcast',
+                    event: 'next_question_trigger',
+                    payload: { nextIndex: nextIndex }
+                });
+            }
+            executeTransition(nextIndex);
+        }, 1200);
+    } else {
+        console.log("Guest: Ready and waiting for Host trigger...");
+        // Guest does NOTHING here. They wait for the 'next_question_trigger' broadcast.
+    }
+}
+async function executeTransition(newIndex) {
+    clearInterval(timer); // Kill the old timer immediately
+    // STATE RESET: Clear flags for the NEW question
+    opponentHasAnswered = false;
+    iHaveAnswered = false;
+    window.currentLobbyIndex = newIndex;
+
     console.log("Sync Complete. Transitioning to next question...");
-    window.currentLobbyIndex++; 
+
     const roundsDisplay = document.getElementById('rounds-display');
     if (roundsDisplay) {
         roundsDisplay.textContent = `Round: ${window.currentLobbyIndex + 1}`;
     }
+
     await loadQuestion();
 
-    // 7. REFILL & RELEASE
-    setTimeout(() => { 
-        isSyncing = false; 
-        if (isMultiplayerMode) {
-            preloadNextQuestions(5); 
-        }
+    // REFILL & RELEASE
+    setTimeout(() => {
+        isSyncing = false;
+        if (isMultiplayerMode) preloadNextQuestions(5);
     }, 500);
 }
-
-
-
 
 
 
@@ -1991,180 +2017,171 @@ async function init() {
 
     if (multiplayerBtn) {
         multiplayerBtn.onclick = async () => {
-        // Check if the user is logged in
-        // Note: Use your global variable (userId) or supabase.auth.getSession()
-        if (!userId) {
-            showGoldAlert("You must be logged in to access Multiplayer Duels.");
-            return;
-        }
-        // 4. Navigate to the main lobby menu view
-        if (typeof window.navigateTo === 'function') {
-            if (audioCtx.state === 'suspended') await audioCtx.resume();
-            loadSounds();
-            window.navigateTo('view-multiplayer-menu');
-        } else {
-            document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
-            document.getElementById('view-multiplayer-menu').classList.remove('hidden');
-        }
+            // Check if the user is logged in
+            // Note: Use your global variable (userId) or supabase.auth.getSession()
+            if (!userId) {
+                showGoldAlert("You must be logged in to access Multiplayer Duels.");
+                return;
+            }
+            // 4. Navigate to the main lobby menu view
+            if (typeof window.navigateTo === 'function') {
+                if (audioCtx.state === 'suspended') await audioCtx.resume();
+                loadSounds();
+                window.navigateTo('view-multiplayer-menu');
+            } else {
+                document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+                document.getElementById('view-multiplayer-menu').classList.remove('hidden');
+            }
         };
     }
 
     if (lobbyBtn) {
-    lobbyBtn.addEventListener('click', async () => {
+        lobbyBtn.addEventListener('click', async () => {
+            try {
+                // 1. Create the lobby
+                const { data, error } = await supabase
+                    .from('live_lobbies')
+                    .insert([{
+                        status: 'waiting',
+                        host_id: userId,        // From your auth/session
+                        host_name: username   // Your local username variable
+                    }])
+                    .select('*') // Get everything (id, code, question_ids)
+                    .maybeSingle();
+
+                if (error) throw error;
+
+                if (data) {
+                    // 2. Setup Role and Storage
+                    myRole = 'host'; // Global variable to identify player
+                    // At this exact moment, there is no guest yet.
+                    // So we set the label to a "Waiting..." placeholder.
+                    const label = document.getElementById('opponent-name-display');
+                    if (label) label.textContent = "Waiting for Guest...";
+
+                    sessionStorage.setItem('is_host', 'true');
+                    sessionStorage.setItem('current_lobby_id', data.id);
+                    sessionStorage.setItem('current_lobby_questions', JSON.stringify(data.question_ids));
+
+                    // 3. Update UI
+                    document.getElementById('lobbyCodeDisplay').textContent = data.code;
+
+                    // Reset UI state (ensure start button is hidden until someone joins)
+                    document.getElementById('host-controls').classList.add('hidden');
+                    document.getElementById('lobbyStatus').innerHTML = '<span class="loading-dots">Waiting for opponent to join</span>';
+
+                    // This opens the "Broadcast" channel for the Start signal
+                    subscribeToLobby(data.code, data.id);
+                }
+
+                // 5. Navigate
+                window.navigateTo('view-lobby');
+
+            } catch (err) {
+                console.error("Error creating lobby:", err.message);
+            }
+        });
+    }
+
+    document.getElementById('btn-start-multiplayer').addEventListener('click', async () => {
+        const lobbyId = sessionStorage.getItem('current_lobby_id');
+        if (!lobbyId || !lobbyChannel) return;
+
         try {
-            // 1. Create the lobby
-            const { data, error } = await supabase
+            // 1. Create the ONE TRUE start time right here
+            const startTime = Date.now();
+
+            // 2. Update DB - Send the status AND the time together
+            const { error } = await supabase
                 .from('live_lobbies')
-                .insert([{ status: 'waiting',
-                    host_id: userId,        // From your auth/session
-                    host_name: username   // Your local username variable
-                 }])
-                .select('*') // Get everything (id, code, question_ids)
-                .maybeSingle();
+                .update({ 
+                    status: 'active',
+                    game_start_time: startTime // This fixes the 2-second drift!
+                })
+                .eq('id', lobbyId);
 
             if (error) throw error;
 
-            if (data) {
-                // 2. Setup Role and Storage
-                myRole = 'host'; // Global variable to identify player
-                // At this exact moment, there is no guest yet.
-                // So we set the label to a "Waiting..." placeholder.
-                const label = document.getElementById('opponent-name-display');
-                if (label) label.textContent = "Waiting for Guest...";
+            // 3. We set it locally for the Host as a backup
+            sessionStorage.setItem('game_start_time', startTime.toString());
+            gameStartTime = startTime;
 
-                sessionStorage.setItem('is_host', 'true');
-                sessionStorage.setItem('current_lobby_id', data.id);
-                sessionStorage.setItem('current_lobby_questions', JSON.stringify(data.question_ids));
-
-                // 3. Update UI
-                document.getElementById('lobbyCodeDisplay').textContent = data.code;
-                
-                // Reset UI state (ensure start button is hidden until someone joins)
-                document.getElementById('host-controls').classList.add('hidden');
-                document.getElementById('lobbyStatus').innerHTML = '<span class="loading-dots">Waiting for opponent to join</span>';
-                
-                // This opens the "Broadcast" channel for the Start signal
-                subscribeToLobby(data.code, data.id);
-            }
-
-            // 5. Navigate
-            window.navigateTo('view-lobby');
+            console.log("Host: Start request sent with timestamp:", startTime);
 
         } catch (err) {
-            console.error("Error creating lobby:", err.message);
+            console.error("Start failed:", err.message);
         }
     });
-}
-
-document.getElementById('btn-start-multiplayer').addEventListener('click', async () => {
-    const lobbyId = sessionStorage.getItem('current_lobby_id');
-    
-    // 1. Safety Check: Make sure we actually have a lobby to start
-    if (!lobbyId || !lobbyChannel) {
-        console.error("Missing Lobby ID or Channel connection.");
-        return;
-    }
-
-    try {
-        // 2. Update DB: This tells the GUEST to start via their Postgres listener
-        const { error } = await supabase
-            .from('live_lobbies')
-            .update({ status: 'active' })
-            .eq('id', lobbyId);
-
-        if (error) throw error;
-
-        // 3. Broadcast: This is a fast "backup" signal for the Guest
-        lobbyChannel.send({ 
-            type: 'broadcast', 
-            event: 'start-game', 
-            payload: { timestamp: Date.now() } 
-        });
-
-        // 4. Start Locally with a delay
-        console.log("Lobby set to active. Syncing with Guest...");
-       // 800ms gives the Guest's internet enough time to receive the 'active' status
-        setTimeout(() => {
-            console.log("Starting local game engine now!");
-            startMultiplayerGame();
-        }, 800);
-       
-
-    } catch (err) {
-        console.error("Failed to transition lobby to active:", err.message);
-        showGoldAlert("Connection error: Could not start duel.");
-    }
-});
 
     if (copyCodeBtn) {
-    copyCodeBtn.onclick = () => {
-        const textToCopy = document.getElementById('lobbyCodeDisplay').textContent;
+        copyCodeBtn.onclick = () => {
+            const textToCopy = document.getElementById('lobbyCodeDisplay').textContent;
 
-        // 1. Try the modern Clipboard API
-        if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(textToCopy).then(() => {
-            updateBtnText(copyCodeBtn);
-        }).catch(err => {
-            console.error("Clipboard API failed, trying fallback", err);
-            fallbackCopy(textToCopy, copyCodeBtn);
-        });
-        } else {
-        // 2. Fallback for non-HTTPS or older browsers
-        fallbackCopy(textToCopy, copyCodeBtn);
-        }
-    };
+            // 1. Try the modern Clipboard API
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    updateBtnText(copyCodeBtn);
+                }).catch(err => {
+                    console.error("Clipboard API failed, trying fallback", err);
+                    fallbackCopy(textToCopy, copyCodeBtn);
+                });
+            } else {
+                // 2. Fallback for non-HTTPS or older browsers
+                fallbackCopy(textToCopy, copyCodeBtn);
+            }
+        };
     }
 
     // Helper function for the "Old School" copy method
     function fallbackCopy(text, btn) {
-    const textArea = document.createElement("textarea");
-    textArea.value = text;
-    document.body.appendChild(textArea);
-    textArea.select();
-    try {
-        document.execCommand('copy');
-        updateBtnText(btn);
-    } catch (err) {
-        console.error('Fallback copy failed', err);
-    }
-    document.body.removeChild(textArea);
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            updateBtnText(btn);
+        } catch (err) {
+            console.error('Fallback copy failed', err);
+        }
+        document.body.removeChild(textArea);
     }
 
     // Helper to handle the "Copied!" button flicker
     function updateBtnText(btn) {
-    const originalText = btn.textContent;
-    btn.textContent = 'Copied!';
-    setTimeout(() => btn.textContent = originalText, 2000);
+        const originalText = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = originalText, 2000);
     }
 
     if (playAgainBtn) {
-            playAgainBtn.onclick = async () => {
+        playAgainBtn.onclick = async () => {
             gameEnding = false;
 
             if (isWeeklyMode) {
                 await startWeeklyChallenge();
                 return; // Stop here
-            } 
-            
+            }
+
             if (isDailyMode) {
                 preloadQueue = [];
                 await startDailyChallenge();
                 return; // Stop here
-            } 
-            
+            }
+
             if (isLiteMode) {
                 await startGame();
                 return; // Stop here
-            } 
+            }
 
             if (isMultiplayerMode) {
                 // 1. Reset local ready states
                 iAmReadyForRematch = true;
-                
+
                 // 2. Wipe the old game data
                 preloadQueue = [];
                 window.nextFetchIndex = 0;
-                sessionStorage.removeItem('current_lobby_questions'); 
+                sessionStorage.removeItem('current_lobby_questions');
 
                 // 3. UI Feedback
                 const pBtn = document.getElementById('playAgainBtn');
@@ -2186,9 +2203,9 @@ document.getElementById('btn-start-multiplayer').addEventListener('click', async
                 // 5. Host Logic
                 if (myRole === 'host' && opponentReadyForRematch) {
                     console.log("Both ready! Host starting new round...");
-                    startNewRound(); 
+                    startNewRound();
                 }
-                
+
                 return; // CRITICAL: Stop here so we DON'T hit the solo startGame() below
             }
 
@@ -2196,7 +2213,7 @@ document.getElementById('btn-start-multiplayer').addEventListener('click', async
             await startGame();
         };
     };
-    
+
 
     // Navigates to the "Enter Code" screen
     document.getElementById('btn-join-lobby').addEventListener('click', () => {
@@ -2209,88 +2226,88 @@ document.getElementById('btn-start-multiplayer').addEventListener('click', async
     });
 
     document.getElementById('btn-confirm-join').addEventListener('click', async () => {
-    const inputCode = document.getElementById('join-code-input').value.toUpperCase().trim();
-    
-    if (inputCode.length !== 6) {
-        showGoldAlert("Please enter a 6-digit code.");
-        return;
-    }
+        const inputCode = document.getElementById('join-code-input').value.toUpperCase().trim();
 
-    try {
-        resetGameEngine();
-        // 1. Look for the lobby
-        const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-        const { data, error } = await supabase
-            .from('live_lobbies')
-            .select('*')
-            .eq('code', inputCode)
-            .eq('status', 'waiting')
-            .gt('created_at', twentyFourHoursAgo)
-            .single();
-
-        if (error || !data) {
-            showGoldAlert("Lobby not found or already full.");
+        if (inputCode.length !== 6) {
+            showGoldAlert("Please enter a 6-digit code.");
             return;
         }
 
-        currentLobbyCode = data.code; // Sets the global variable for the fetcher
+        try {
+            resetGameEngine();
+            // 1. Look for the lobby
+            const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+            const { data, error } = await supabase
+                .from('live_lobbies')
+                .select('*')
+                .eq('code', inputCode)
+                .eq('status', 'waiting')
+                .gt('created_at', twentyFourHoursAgo)
+                .single();
 
-        // --- THE "GUEST" ASSIGNMENT ---
-        myRole = 'guest'; // Now this global variable is set
-        sessionStorage.setItem('is_host', 'false');
-        sessionStorage.setItem('current_lobby_id', data.id);
-        sessionStorage.setItem('current_lobby_questions', JSON.stringify(data.question_ids));
-
-        // 2. Set the Host's name on YOUR screen immediately
-        const oppLabel = document.getElementById('opponent-name-display');
-        if (oppLabel) oppLabel.textContent = data.host_name || "Host";
-
-
-        // 2. Update the DB so the Host's "Start" button appears
-        await supabase
-            .from('live_lobbies')
-            .update({ 
-                status: 'ready',
-                guest_id: userId, 
-                guest_name: username, // The Guest's name
-            })
-            .eq('id', data.id);
-        
-        // 4. Start listening for the "Start Game" signal from the Host
-        subscribeToLobby(data.code, data.id);
-
-        // 4. THE MAGIC PILL: Broadcast the arrival
-        // We wrap this in a tiny timeout to ensure the subscription is active
-        setTimeout(() => {
-            if (lobbyChannel) {
-                lobbyChannel.send({
-                    type: 'broadcast',
-                    event: 'guest-joined',
-                    payload: { name: 'Guest' }
-                });
+            if (error || !data) {
+                showGoldAlert("Lobby not found or already full.");
+                return;
             }
-        }, 500); // Give the socket half a second to open
 
-        // 3. UI Updates
-        document.getElementById('lobbyCodeDisplay').textContent = data.code;
-        // Hide host-specific controls just in case
-        const hostControls = document.getElementById('host-controls');
-        if (hostControls) hostControls.classList.add('hidden');
-        document.getElementById('lobbyStatus').innerHTML = '<span style="color: #4CAF50;">Connected! Waiting for host to start...</span>';
-        
-        window.navigateTo('view-lobby');
+            currentLobbyCode = data.code; // Sets the global variable for the fetcher
 
-    } catch (err) {
-        console.error("Join Error:", err.message);
-        showGoldAlert("An error occurred while trying to join.");
-    }
-});
+            // --- THE "GUEST" ASSIGNMENT ---
+            myRole = 'guest'; // Now this global variable is set
+            sessionStorage.setItem('is_host', 'false');
+            sessionStorage.setItem('current_lobby_id', data.id);
+            sessionStorage.setItem('current_lobby_questions', JSON.stringify(data.question_ids));
+
+            // 2. Set the Host's name on YOUR screen immediately
+            const oppLabel = document.getElementById('opponent-name-display');
+            if (oppLabel) oppLabel.textContent = data.host_name || "Host";
+
+
+            // 2. Update the DB so the Host's "Start" button appears
+            await supabase
+                .from('live_lobbies')
+                .update({
+                    status: 'ready',
+                    guest_id: userId,
+                    guest_name: username, // The Guest's name
+                })
+                .eq('id', data.id);
+
+            // 4. Start listening for the "Start Game" signal from the Host
+            subscribeToLobby(data.code, data.id);
+
+            // 4. THE MAGIC PILL: Broadcast the arrival
+            // We wrap this in a tiny timeout to ensure the subscription is active
+            setTimeout(() => {
+                if (lobbyChannel) {
+                    lobbyChannel.send({
+                        type: 'broadcast',
+                        event: 'guest-joined',
+                        payload: { name: 'Guest' }
+                    });
+                }
+            }, 500); // Give the socket half a second to open
+
+            // 3. UI Updates
+            document.getElementById('lobbyCodeDisplay').textContent = data.code;
+            // Hide host-specific controls just in case
+            const hostControls = document.getElementById('host-controls');
+            if (hostControls) hostControls.classList.add('hidden');
+            document.getElementById('lobbyStatus').innerHTML = '<span style="color: #4CAF50;">Connected! Waiting for host to start...</span>';
+
+            window.navigateTo('view-lobby');
+
+        } catch (err) {
+            console.error("Join Error:", err.message);
+            showGoldAlert("An error occurred while trying to join.");
+        }
+    });
 
 
     if (mainMenuBtns) {
         mainMenuBtns.forEach(btn => {
             btn.addEventListener('click', async () => {
-                preloadQueue = []; 
+                preloadQueue = [];
                 resetGame();
                 myRole = null; // Clear the role
                 currentLobbyCode = null;    // Clear the code
@@ -2308,7 +2325,7 @@ document.getElementById('btn-start-multiplayer').addEventListener('click', async
                 // Just hide the game-over screen and navigate. 
                 // navigateTo will handle the rest!
                 document.getElementById('end-screen').classList.add('hidden');
-                
+
                 navigateTo('view-home');
             });
         });
@@ -2341,7 +2358,7 @@ document.getElementById('btn-start-multiplayer').addEventListener('click', async
             navigateTo('view-leaderboard');
         });
     }
-    
+
     // Initial Run (Immediately pull from Score cache)
     (async () => {
         const cachedString = localStorage.getItem(`leaderboard_${currentMode}`);
@@ -2390,11 +2407,11 @@ async function handleAuthChange(event, session) {
             localStorage.removeItem('cachedUsername');
             localStorage.removeItem('cached_level');
         }
-        
+
         username = 'Guest'; // Force 'Guest' instead of cached username
         currentProfileXp = 0; // Force 0 XP for guests
         currentLevel = 1;
-    
+
         if (span) span.textContent = 'Guest';
         if (label) label.textContent = 'Log In / Sign Up';
 
@@ -2504,10 +2521,10 @@ function lockWeeklyButton() {
 
 function unlockWeeklyButton() {
     if (!weeklyBtn) return;
-        weeklyBtn.classList.add('is-active');
-        weeklyBtn.classList.remove('is-disabled');
-        weeklyBtn.style.opacity = '1'; 
-        weeklyBtn.style.pointerEvents = 'auto';
+    weeklyBtn.classList.add('is-active');
+    weeklyBtn.classList.remove('is-disabled');
+    weeklyBtn.style.opacity = '1';
+    weeklyBtn.style.pointerEvents = 'auto';
 }
 
 function lockMultiplayerButton() {
@@ -2520,10 +2537,10 @@ function lockMultiplayerButton() {
 }
 function unlockMultiplayerButton() {
     if (!multiplayerBtn) return;
-        multiplayerBtn.classList.add('is-active');
-        multiplayerBtn.classList.remove('is-disabled');
-        multiplayerBtn.style.opacity = '1'; 
-        multiplayerBtn.style.pointerEvents = 'auto';
+    multiplayerBtn.classList.add('is-active');
+    multiplayerBtn.classList.remove('is-disabled');
+    multiplayerBtn.style.opacity = '1';
+    multiplayerBtn.style.pointerEvents = 'auto';
 }
 // ====== GAME ENGINE ======
 function resetGame() {
@@ -2573,7 +2590,7 @@ async function preloadNextQuestions(targetCount = 6) {
     if (isMultiplayerMode) {
         for (let i = 0; i < needed; i++) {
             // sequential is safer to prevent index racing.
-            await fetchNextLobbyQuestion(); 
+            await fetchNextLobbyQuestion();
         }
     } else {
         activePool = normalSessionPool;
@@ -2584,18 +2601,18 @@ async function preloadNextQuestions(targetCount = 6) {
         const queuedIds = preloadQueue.map(q => String(q.id));
         // MOVE THE DECLARATION ABOVE THE LOGS
         const availableIds = activePool.filter(poolId => {
-        const sId = String(poolId); // Convert current pool ID to string for comparison
-        return !queuedIds.includes(sId) &&
-            !usedInThisSession.includes(sId) &&
-            !pendingIds.includes(sId) &&
-            (currentQuestion ? String(currentQuestion.id) !== sId : true);
+            const sId = String(poolId); // Convert current pool ID to string for comparison
+            return !queuedIds.includes(sId) &&
+                !usedInThisSession.includes(sId) &&
+                !pendingIds.includes(sId) &&
+                (currentQuestion ? String(currentQuestion.id) !== sId : true);
         });
         // CRITICAL: Stop if we ran out of questions in the pool
         if (availableIds.length === 0) return;
 
         // Only take as many as we need (or as many as are left)
         toFetch = availableIds.slice(0, needed);
-}
+    }
 
     if (toFetch.length === 0) return;
 
@@ -2745,13 +2762,26 @@ async function startGame() {
 
 async function loadQuestion(isFirst = false) {
     if (gameEnding) return;
+    // FORCE UI CLEANUP
+    const buttons = document.querySelectorAll('.answer-btn');
+    buttons.forEach(btn => {
+        btn.classList.remove('correct', 'wrong', 'selected');
+        btn.disabled = false;
+        // This ensures the transition starts from a clean dark background
+        btn.style.backgroundColor = "";
+    });
+
+    // Reset internal state for the new question
+    iHaveAnswered = false;
+    opponentHasAnswered = false;
+
     // --- MULTIPLAYER END CHECK ---
     if (isMultiplayerMode) {
         // Someone died or we ran out of lobby questions
         if (myHP <= 0 || opponentHP <= 0 || (preloadQueue.length === 0 && !isFirst)) {
             // Determine result for endGame
             const result = myHP <= 0 ? (opponentHP <= 0 ? 'draw' : 'lose') : 'win';
-            await endGame(result); 
+            await endGame(result);
             return;
         }
     } else {
@@ -2781,7 +2811,7 @@ async function loadQuestion(isFirst = false) {
     if (preloadQueue.length === 0) {
         if (isMultiplayerMode) {
             // Force a fetch from the lobby list specifically
-            await fetchNextLobbyQuestion(); 
+            await fetchNextLobbyQuestion();
         } else if (needsRefill) {
             await fetchAndBufferQuestion();
         } else {
@@ -2793,7 +2823,7 @@ async function loadQuestion(isFirst = false) {
     // Final safety check: if still empty, something is wrong with the network/DB
     if (preloadQueue.length === 0) {
         console.error("Critical: Could not populate question queue.");
-        return; 
+        return;
     }
 
     // D. POPULATE DATA (Now guaranteed to have data)
@@ -2859,7 +2889,7 @@ async function loadQuestion(isFirst = false) {
 
         // Multiplayer refill happens AFTER the UI is updated
         if (!isFirst && preloadQueue.length <= 4) {
-            preloadNextQuestions(5); 
+            preloadNextQuestions(5);
         }
     }
 
@@ -2890,12 +2920,12 @@ function startTimer() {
             clearInterval(timer); // Stop the interval immediately
             if (isMultiplayerMode) {
                 if (iHaveAnswered) {
-                console.log("Timer hit 0, but I already answered. Waiting for sync...");
-                // Do nothing here! syncAndProceed is already handling the transition.
-                return;
-            }
-            // Only trigger the damage/timeout if I HAVEN'T answered
-            handleMultiplayerTimeout();
+                    console.log("Timer hit 0, but I already answered. Waiting for sync...");
+                    // Do nothing here! syncAndProceed is already handling the transition.
+                    return;
+                }
+                // Only trigger the damage/timeout if I HAVEN'T answered
+                handleMultiplayerTimeout();
             } else {
                 // SOLO / DAILY / WEEKLY
                 handleTimeout();
@@ -2908,52 +2938,13 @@ async function handleTimeout() {
     stopTickSound();
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
     playSound(wrongBuffer);
-   
-    // --- MULTIPLAYER TIMEOUT LOGIC ---
-    if (isMultiplayerMode) {
-        const damageTaken = 20;
-        myHP = Math.max(0, myHP - damageTaken);
-        
-        // 1. Show the red splat locally
-        triggerHitsplat('my', damageTaken);
-        updateHPUI();
-
-        // 2. Broadcast that you timed out (which counts as 'wrong')
-        if (lobbyChannel) {
-            lobbyChannel.send({
-                type: 'broadcast',
-                event: 'player_answered',
-                payload: {
-                    user_id: userId,
-                    playerRole: myRole,
-                    correct: false, // Timeout is always wrong
-                    hp_remaining: myHP,
-                    damage_taken: 20
-                }
-            });
-        }
-
-        // 3. Mark yourself as finished for this round
-        iHaveAnswered = true; 
-        
-        // 4. EMERGENCY EXIT: If I just died, don't wait for a 1.5s transition.
-        // Go straight to syncAndProceed(true) to force the end.
-        if (myHP <= 0) {
-            console.log("Local player reached 0 HP. Forcing syncAndProceed now.");
-            syncAndProceed(true); 
-        } else {
-            handleMultiplayerTransition(); 
-        }
-
-        await highlightCorrectAnswer();
-        return; // EXIT HERE so solo logic doesn't run
-    }
 
     await highlightCorrectAnswer();
 
     if (isWeeklyMode) weeklyQuestionCount++;
     if (isDailyMode) dailyQuestionCount++;
     if (isLiteMode) liteQuestionCount++;
+
     updateScore();
 
     // 2. Corrected Logic & Syntax (Fixed the missing closing parenthesis)
@@ -2976,7 +2967,6 @@ async function checkAnswer(choiceId, btn) {
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
 
     // Track state for the sync
-    if (isMultiplayerMode) iHaveAnswered = true;
     if (isWeeklyMode) weeklyQuestionCount++;
     if (isDailyMode) dailyQuestionCount++;
     if (isLiteMode) liteQuestionCount++;
@@ -2996,6 +2986,7 @@ async function checkAnswer(choiceId, btn) {
 
     // --- 1. LOCAL DAMAGE & SPLAT LOGIC ---
     if (isMultiplayerMode) {
+        iHaveAnswered = true;
         if (res.correct) {
             // You got it right! Show a Blue 0 on yourself.
             triggerHitsplat('my', 0);
@@ -3033,13 +3024,11 @@ async function checkAnswer(choiceId, btn) {
                     console.warn("Opponent AFK. Forcing sync...");
                     syncAndProceed(true); // 'true' bypasses the wait
                 }
-            }, 20000); 
+            }, 15000);
         }
-        // Trigger the sync check
+      
         handleMultiplayerTransition();
     }
-
-  
 
     if (res.correct) {
         playSound(correctBuffer);
@@ -3101,7 +3090,7 @@ async function checkAnswer(choiceId, btn) {
             if (res.milestone) {
                 showAchievementNotification(res.milestone);
             }
-    
+
             // --- 2. INTEGRATED PET LOGIC ---
             const petData = res.pet_info;
             if (petData && petData.unlocked) {
@@ -3126,7 +3115,7 @@ async function checkAnswer(choiceId, btn) {
                 // UI Feedback
                 showCollectionLogNotification(petData.pet_name);
             }
-         
+
             let instantID = null;
             if (timeLeft >= 14) instantID = 777; // Lucky Guess
             else if (timeLeft <= 1 && timeLeft > 0) instantID = 999; // Just in Time
@@ -3170,7 +3159,9 @@ async function checkAnswer(choiceId, btn) {
         }
         // --- MODIFIED NEXT QUESTION LOGIC ---
         if (isMultiplayerMode) {
-            handleMultiplayerTransition();
+            setTimeout(() => {
+                handleMultiplayerTransition();
+            }, 1000);
         } else {
             setTimeout(loadQuestion, 1000); // Standard Solo behavior
         }
@@ -3179,10 +3170,13 @@ async function checkAnswer(choiceId, btn) {
         // Wrong answer logic
         playSound(wrongBuffer);
         if (btn) btn.classList.add('wrong');
-        await highlightCorrectAnswer();
+        highlightCorrectAnswer();
 
         if (isMultiplayerMode) {
-            handleMultiplayerTransition();
+            // Add a 1300ms delay so you see the Red highlight and the 20 Splat
+            setTimeout(() => {
+                handleMultiplayerTransition();
+            }, 1000);
         } else if (isDailyMode || isWeeklyMode || isLiteMode) {
             setTimeout(loadQuestion, 1300);
         } else {
@@ -3322,7 +3316,7 @@ async function endGame(result = null) {
     } else if (gameEnding) {
         return;
     }
-    
+
     if (isMultiplayerMode && !result) {
         console.warn("Race condition blocked: Solo endGame tried to override MP result.");
         return;
@@ -3342,17 +3336,30 @@ async function endGame(result = null) {
 
     // --- MULTIPLAYER RESULT HANDLING ---
     if (isMultiplayerMode && result) {
+        const startStr = sessionStorage.getItem('game_start_time');
+        let finalDisplayTime = 0;
+        if (startStr) {
+            // Calculate the difference in milliseconds
+            const sharedStart = parseInt(startStr);
+            finalDisplayTime = endTime - sharedStart;
+        } else {
+            // Fallback if the session storage was missing
+            finalDisplayTime = endTime - gameStartTime;
+        }
+
+        displayFinalTime(finalDisplayTime);
+
         // RECORD THE STAT IN THE DATABASE
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
-        const { error } = await supabase.rpc('record_match_result', {
-            p_user_id: session.user.id,
-            p_result: result // 'win', 'lose', or 'draw'
-        });
+            const { error } = await supabase.rpc('record_match_result', {
+                p_user_id: session.user.id,
+                p_result: result // 'win', 'lose', or 'draw'
+            });
 
-        if (error) console.error("Error saving match stat:", error);
-        else console.log(`Match stat (${result}) recorded!`);
-    }
+            if (error) console.error("Error saving match stat:", error);
+            else console.log(`Match stat (${result}) recorded!`);
+        }
 
         const gameOverTitle = document.getElementById('game-over-title');
         const gzTitle = document.getElementById('gz-title');
@@ -3369,15 +3376,13 @@ async function endGame(result = null) {
             }
         }
 
-        displayFinalTime(totalMs);
-
         if (gameOverTitle) {
             gameOverTitle.classList.remove('hidden');
 
             if (result === 'win') {
                 // Keep everything between the backticks on one line
                 gameOverTitle.innerHTML = `<span style="font-size: 0.9em;">You defeated <span style="color: #D7D8D9;">${opponentName || 'your opponent'}</span> with ${myHP} HP left!</span>`;
-            } 
+            }
             else if (result === 'lose') {
                 gameOverTitle.innerHTML = `<span style="font-size: 0.9em;"><span style="color: #D7D8D9;">${opponentName || 'Opponent'}</span> survived with ${opponentHP} HP.</span>`;
             }
@@ -3392,10 +3397,10 @@ async function endGame(result = null) {
         // 4. Hide Multiplayer Header (Bars) so they don't leak into end screen
         const mpHeader = document.getElementById('multiplayer-header');
         if (mpHeader) mpHeader.classList.add('hidden');
-   
+
         // This is the "Kill Switch"
         finalizeEndScreen(window.currentLobbyIndex || 0);
-             
+
         // Clean up Lobby specific flags
         iAmReadyForRematch = false;
         opponentReadyForRematch = false;
@@ -3590,7 +3595,7 @@ async function endGame(result = null) {
             }
         }
     }
-    
+
     // 4. THE BIG SWAP (Final step)
     // Use a tiny timeout or requestAnimationFrame to ensure DOM updates are ready
     requestAnimationFrame(() => {
@@ -3804,13 +3809,13 @@ if (shareBtn) {
 function fallbackCopyTextToClipboard(text) {
     const textArea = document.createElement("textarea");
     textArea.value = text;
-    
+
     // Ensure it's not visible but still part of the DOM
     textArea.style.position = "fixed";
     textArea.style.left = "-9999px";
     textArea.style.top = "0";
     document.body.appendChild(textArea);
-    
+
     textArea.focus();
     textArea.select();
 
@@ -3928,7 +3933,7 @@ function showAchievementNotification(achievementName) {
         modal.classList.remove('active');
         achievementNotificationTimeout = null;
     }, displayTime);
-    
+
     loadCollection();
 }
 
