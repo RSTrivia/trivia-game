@@ -2724,9 +2724,9 @@ input.input-field:-webkit-autofill:active {
 
   /* --- MOBILE ACHIEVEMENT FIXES --- */
   #achievementList {
-    height: 420px !important;
+    height: 413px !important;
     /* Shorter than PC to fit the 640px container */
-    max-height: 420px !important;
+    max-height: 413px !important;
   }
 
   .achieve-item {
@@ -2867,7 +2867,7 @@ input.input-field:-webkit-autofill:active {
     font-family: 'RSFont'; /* Matching your Achievement/Main titles */
     color: #d4af37;             /* Matches your Gold/Yellow theme */
     text-align: center;
-    font-size: 1.2rem !important; /* Matches your leaderboard/main titles */
+    font-size: 1.2rem; /* Matches your leaderboard/main titles */
     margin: 14px 0 5px 0;
     text-shadow: 2px 2px 0px #000;
    
@@ -2928,7 +2928,6 @@ input.input-field:-webkit-autofill:active {
     margin-right: 5px; /* Adjust this value to get exactly the space you want */
 }
 
-
 /* --- Global Stats Grid Layout --- */
 #statsList, #pbList {
     display: grid !important;
@@ -2974,14 +2973,14 @@ input.input-field:-webkit-autofill:active {
     .cape-slot {
         width: 95px;  /* Down from 110px */
         height: 60px; /* Down from 100px */
-        padding: 5px;
+        padding: 4px;
     }
     /* 2. Compact the grid inside the header */
     #statsProfileHeader div[style*="grid"] {
         margin-top: 6px !important;
         grid-template-columns: 1fr 1fr !important; 
         gap: 2px 10px !important;
-        font-size: 0.85rem;
+        font-size: 0.85rem !important;
     }
 
     /* 3. Shrink the text */
@@ -3002,7 +3001,7 @@ input.input-field:-webkit-autofill:active {
     /* Make PB items more compact */
     #statsList .achieve-item,
     #pbList .achieve-item {
-      padding: 6px 8px !important; /* Reduced from 12px 15px */
+      padding: 5px 8px !important; /* Reduced from 12px 15px */
       margin-bottom: 2px !important; /* Reduced from 8px */
       font-size: 0.85rem !important;
     }
@@ -3012,7 +3011,7 @@ input.input-field:-webkit-autofill:active {
       font-size: 0.85rem !important;
     }
     #statsName {
-      font-size: 1rem !important;
+      font-size: 1.1rem !important;
     }
     .stats-title {
       font-size: 0.9rem !important;
