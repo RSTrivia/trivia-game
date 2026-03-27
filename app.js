@@ -30,7 +30,6 @@ let achievementNotificationTimeout = null;
 let petNotificationTimeout = null;
 let lobbyChannel = null;
 let normalSessionPool = [];
-const TOTAL_ACHIEVEMENTS = 24;
 const MAX_LEVEL = 99;
 
 const DAILY_LIMIT = 10;
@@ -599,6 +598,16 @@ const ACHIEVEMENT_SCHEMA = [
         ]
     },
     {
+        cat: 'Multiplayer Mode', tasks: [
+            { id: 'mpw', text: 'First Win', check: (d) => d.multi_first_win === true },
+            { id: 'mpl', text: 'First Loss', check: (d) => d.multi_first_loss === true },
+            { id: 'mpd', text: 'First Draw', check: (d) => d.multi_first_draw === true },
+            { id: 'mp5', text: 'Reach 5 Wins', check: (d) => d.multi_5_wins === true },
+            { id: 'mp50', text: 'Reach 50 Wins', check: (d) => d.multi_50_wins === true },
+            { id: 'mp100', text: 'Reach 100 Wins', check: (d) => d.multi_100_wins === true }
+        ]
+    },
+    {
         cat: 'Daily Mode', tasks: [
             { id: 'd1', text: 'First Daily Mode', check: (d) => d.dailyTotal >= 1 },
             { id: 'd10r', text: '10 Day Streak', check: (d) => d.dailyStreak >= 10 },
@@ -743,12 +752,22 @@ async function renderStats() {
     // 5. Update UI Counters
     document.getElementById('stat-pet-count').textContent = `${stats.petsUnlocked}/${15}`;
     const allAchievements = ACHIEVEMENT_SCHEMA.flatMap(c => c.tasks);
+    
+    // Dynamically calculate the total count from your schema (currently 29 tasks)
+    const totalPossible = allAchievements.length; 
+    
+    // Count how many are actually finished
     const completedCount = allAchievements.filter(t => t.check(stats)).length;
-    document.getElementById('stat-achieve-count').textContent = `${completedCount}/${24}`;
+
+    // Update the UI with the dynamic total (e.g., "20/29")
+    const achieveCountElem = document.getElementById('stat-achieve-count');
+    if (achieveCountElem) {
+        achieveCountElem.textContent = `${completedCount}/${totalPossible}`;
+    }
 
     // 6. Cape Logic
     maxCape.classList.toggle('unlocked', stats.level >= MAX_LEVEL);
-    achieveCape.classList.toggle('unlocked', completedCount >= TOTAL_ACHIEVEMENTS);
+    achieveCape.classList.toggle('unlocked', completedCount >= totalPossible);
 
     // Apply visual state (does not need to be a function, just direct assignment)
     maxCape.classList.toggle('equipped', currentEquippedPet === 'max_cape');
@@ -793,12 +812,19 @@ function getStatsObject() {
         fastestGuess: localStorage.getItem('stat_fastest') === 'true',
         justInTime: localStorage.getItem('stat_just_in_time') === 'true',
         dailyPerfect: localStorage.getItem('stat_daily_perfect') === 'true',
-        // --- FIXED: Weekly Booleans from LocalStorage ---
+        //--- Multiplayer Booleans from LocalStorage --
+        multi_first_win: localStorage.getItem('ach_stat_multi_win') === 'true',
+        multi_first_loss: localStorage.getItem('ach_stat_multi_loss') === 'true',
+        multi_first_draw: localStorage.getItem('ach_stat_multi_draw') === 'true',
+        multi_5_wins: localStorage.getItem('ach_stat_multi_5') === 'true',
+        multi_50_wins: localStorage.getItem('ach_stat_multi_50') === 'true',
+        multi_100_wins: localStorage.getItem('ach_stat_multi_100') === 'true',
+        // --- Weekly Booleans from LocalStorage ---
         weekly25: localStorage.getItem('ach_stat_weekly_25') === 'true',
         weekly50: localStorage.getItem('ach_stat_weekly_50') === 'true',
         weeklySub3: localStorage.getItem('ach_stat_weekly_sub_3') === 'true',
         weeklySub2: localStorage.getItem('ach_stat_weekly_sub_2') === 'true',
-        // --- FIXED: Lite Booleans from LocalStorage ---
+        // --- Lite Booleans from LocalStorage ---
         lite50: localStorage.getItem('ach_stat_lite_50') === 'true',
         lite100: localStorage.getItem('ach_stat_lite_100') === 'true',
         liteSub8: localStorage.getItem('ach_stat_lite_sub_8') === 'true',
@@ -811,27 +837,11 @@ async function renderAchievements(calculatedLevel) {
     const list = document.getElementById('achievementList');
     list.innerHTML = '';
 
-    // Get user stats from LocalStorage or Supabase
-    const stats = {
-        level: calculatedLevel || parseInt(localStorage.getItem('cached_level')) || 1,
-        maxScore: parseInt(localStorage.getItem('cached_max_score')) || 0,
-        dailyTotal: parseInt(localStorage.getItem('cached_daily_total')) || 0,
-        dailyStreak: parseInt(localStorage.getItem('stat_max_streak')) || 0,
-        petsUnlocked: JSON.parse(localStorage.getItem('cached_pets') || '[]').length,
-        fastestGuess: localStorage.getItem('stat_fastest') === 'true',
-        justInTime: localStorage.getItem('stat_just_in_time') === 'true',
-        dailyPerfect: localStorage.getItem('stat_daily_perfect') === 'true',
-        // --- FIXED: Weekly Booleans from LocalStorage ---
-        weekly25: localStorage.getItem('ach_stat_weekly_25') === 'true',
-        weekly50: localStorage.getItem('ach_stat_weekly_50') === 'true',
-        weeklySub3: localStorage.getItem('ach_stat_weekly_sub_3') === 'true',
-        weeklySub2: localStorage.getItem('ach_stat_weekly_sub_2') === 'true',
-        // --- FIXED: Lite Booleans from LocalStorage ---
-        lite50: localStorage.getItem('ach_stat_lite_50') === 'true',
-        lite100: localStorage.getItem('ach_stat_lite_100') === 'true',
-        liteSub8: localStorage.getItem('ach_stat_lite_sub_8') === 'true',
-        liteSub6: localStorage.getItem('ach_stat_lite_sub_6') === 'true'
-    };
+    // Use the helper instead of re-typing everything!
+    const stats = getStatsObject();
+    
+    // Override level if a calculated one was passed in
+    if (calculatedLevel) stats.level = calculatedLevel;
 
     ACHIEVEMENT_SCHEMA.forEach(category => {
         const catHeader = document.createElement('li');
@@ -953,6 +963,13 @@ async function loadCollection() {
         localStorage.setItem('cached_xp', profileData.xp || 0);
         localStorage.setItem('cached_level', officialLevel);
         localStorage.setItem('cached_max_score', maxScore);
+        // Save Multiplayer stats to LocalStorage so renderAchievements can see them
+        localStorage.setItem('ach_stat_multi_win', (a.multi_first_win || false).toString());
+        localStorage.setItem('ach_stat_multi_loss', (a.multi_first_loss || false).toString());
+        localStorage.setItem('ach_stat_multi_draw', (a.multi_first_draw || false).toString());
+        localStorage.setItem('ach_stat_multi_5', (a.multi_5_wins || false).toString());
+        localStorage.setItem('ach_stat_multi_50', (a.multi_50_wins || false).toString());
+        localStorage.setItem('ach_stat_multi_100', (a.multi_100_wins || false).toString());
         // Save Weekly stats to LocalStorage so renderAchievements can see them
         localStorage.setItem('ach_stat_weekly_25', (a.weekly_25 || false).toString());
         localStorage.setItem('ach_stat_weekly_50', (a.weekly_50 || false).toString());
@@ -3331,12 +3348,22 @@ async function endGame(result = null) {
         // RECORD THE STAT IN THE DATABASE
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
-            const { error } = await supabase.rpc('record_match_result', {
+            const { data: newAchievements, error } = await supabase.rpc('record_match_result', {
                 p_user_id: session.user.id,
                 p_result: result // 'win', 'lose', or 'draw'
             });
 
-            if (error) console.error("Error saving match stat:", error);
+        if (!error && newAchievements && newAchievements.length > 0) {
+            newAchievements.forEach((row, index) => {
+                const task = ACHIEVEMENT_SCHEMA.flatMap(c => c.tasks).find(t => t.id === row.new_achievement_id);
+                if (task) {
+                    // Add a small delay between notifications so they don't overlap
+                    setTimeout(() => {
+                        showAchievementNotification(task.text);
+                    }, index * 1500); 
+                }
+            });
+        }
         }
 
         const gameOverTitle = document.getElementById('game-over-title');
@@ -3418,7 +3445,7 @@ async function endGame(result = null) {
         // 2. LIVE UPDATE: Refresh the stats page in the background
         // This ensures that if the user clicks "Stats" after the game, the data is already there.
         await renderStats();
-
+        
         return;
     }
 
