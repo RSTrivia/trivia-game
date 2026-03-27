@@ -2573,8 +2573,9 @@ input.input-field:-webkit-autofill:active {
 .pet-slot:not(.unlocked) .pet-name {
   letter-spacing: 2px;
   opacity: 0.4;
-  font-family: 'RSFont';
+  font-family: 'Cinzel', serif;
   color: #555;
+  font-size: 0.7rem;
 }
 
 /* Hover effect for locked slots */
@@ -2808,14 +2809,14 @@ input.input-field:-webkit-autofill:active {
 /* The "???" style: Smaller, at the bottom */
 .cape-slot:not(.unlocked)::after {
     content: "???";
-    font-size: 0.6rem; /* Smaller size */
     letter-spacing: 2px;
     opacity: 0.4;
-    font-family: 'RSFont';
+    font-family: 'Cinzel', serif;
     color: #555;
     font-size: 0.7rem; /* Matches the pet size */
     display: block;    /* Ensures it sits correctly */
 }
+
 
 /* Locked State: Greyed out & Blurred */
 .cape-slot:not(.unlocked) img {
@@ -3206,7 +3207,6 @@ input.input-field:-webkit-autofill:active {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: 'Cinzel', serif;
     font-weight: bold;
     color: white;
     text-shadow: 1px 1px 2px #000;
