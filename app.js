@@ -1377,13 +1377,6 @@ function subscribeToLobby(lobbyCode, lobbyId) {
         }
     });
 
-    lobbyChannel.on('broadcast', { event: 'player-acted' }, (payload) => {
-        if (payload.playerRole !== myRole) {
-            // Show a "Thinking..." or "Selected an answer" message
-            const statusText = document.getElementById('lobbyStatus');
-            if (statusText) statusText.innerHTML = "Opponent is deciding...";
-        }
-    });
     lobbyChannel.on('broadcast', { event: 'next_question_trigger' }, (envelope) => {
         if (myRole === 'guest') {
             //console.log("Guest: Signal received. Moving to next question", envelope.payload.nextIndex);
@@ -1707,16 +1700,6 @@ async function syncAndProceed(force = false) {
     if (!force && (!iHaveAnswered || !opponentHasAnswered)) {
         //console.log("Waiting for both players to finish the current question...");
         //console.log(`Sync Blocked: Me(${iHaveAnswered}) Opponent(${opponentHasAnswered})`);
-
-        const statusEl = document.getElementById('lobbyStatus');
-        if (statusEl && iHaveAnswered) {
-            // Use backticks ` to allow the ${variable} syntax
-            statusEl.innerHTML = `
-                <span class="loading-dots" style="color: #ff9800;">
-                    Waiting for <span style="color: #fff;">${opponentName || 'Opponent'}</span>...
-                </span>
-            `;
-        }
         return;
     }
 
@@ -2887,9 +2870,7 @@ async function loadQuestion(isFirst = false) {
         iHaveAnswered = false;
         opponentHasAnswered = false;
         isSyncing = false;
-        const statusText = document.getElementById('lobbyStatus');
-        if (statusText) statusText.innerHTML = '';
-
+ 
         // Multiplayer refill happens AFTER the UI is updated
         if (!isFirst && preloadQueue.length <= 4) {
             preloadNextQuestions(5);
