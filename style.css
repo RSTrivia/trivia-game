@@ -3009,9 +3009,9 @@ input.input-field:-webkit-autofill:active {
 
 /* Reordering the PB List */
 .pb-normal    { order: 1; } 
-.pb-weekly    { order: 2; } /* Top Right */
+.pb-weekly    { order: 4; } /* Top Right */
 .pb-lite      { order: 3; } /* Middle Left */
-.pb-daily     { order: 4; } /* Middle Right */
+.pb-daily     { order: 2; } /* Middle Right */
 
 /* Stats Header Grid Logic */
 #statsProfileHeader div[style*="grid"] {
