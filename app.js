@@ -1453,6 +1453,8 @@ async function startMultiplayerGame() {
     window.currentLobbyIndex = 0;
     window.nextFetchIndex = 0;
     preloadQueue = [];
+    // Tell the DB: "This is a new game, start my streak at 0"
+    await supabase.rpc('reset_my_streak');
 
     // ONLY set a new time if one doesn't already exist in sessionStorage
     // (This allows the Listener's synced time to stay "Locked In")
@@ -3316,7 +3318,7 @@ async function highlightCorrectAnswer() {
 }
 
 async function endGame(result = null) {
-    if (isEndGameProcessing) return; 
+    if (isMultiplayerMode && isEndGameProcessing) return; 
     isEndGameProcessing = true;
     // If this is a Multiplayer result, we IGNORE the gameEnding lock 
     // to ensure the Victory/Defeat screen overrides any "Game Over" glitch.
@@ -3363,7 +3365,7 @@ async function endGame(result = null) {
                     }, index * 1500); 
                 }
             });
-        }
+            }
         }
 
         const gameOverTitle = document.getElementById('game-over-title');
