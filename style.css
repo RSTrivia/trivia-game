@@ -2636,6 +2636,9 @@ input.input-field:-webkit-autofill:active {
   font-size: 1.1rem;
   text-align: left;
   border: 1px solid rgba(255, 255, 255, 0.05);
+  border-left: 3px solid transparent;
+  box-sizing: border-box; 
+  min-height: 24px;
 }
 
 .achieve-category {
@@ -2653,13 +2656,24 @@ input.input-field:-webkit-autofill:active {
   background: rgba(0, 150, 0, 0.15);
   color: #e3d7c1;
   /* Parchment white for completed */
+  border: 1px solid rgba(0, 150, 0, 0.2);
   border-left: 3px solid #44bb44;
   /*#00ff00;*/
 }
 
 .achieve-item.completed .status-icon::after {
   content: '✅';
-  margin-left: 8px;
+  margin-left: 8;
+  font-size: 1rem;
+}
+
+.status-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;   /* Fixed width */
+  height: 16px;  /* Fixed height */
+  flex-shrink: 0; /* Prevents it from getting squished */
 }
 
 .hidden {
