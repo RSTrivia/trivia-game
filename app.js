@@ -77,7 +77,7 @@ let iAmReadyForRematch = false;
 let opponentReadyForRematch = false;
 let currentLobbyCode = null;
 let opponentName = null;
-
+let isEndGameProcessing = false;
 
 // Do this for all your navigation buttons
 const leaderBtn = document.getElementById('btn-leaderboard');
@@ -3309,6 +3309,8 @@ async function highlightCorrectAnswer() {
 }
 
 async function endGame(result = null) {
+    if (isEndGameProcessing) return; 
+    isEndGameProcessing = true;
     // If this is a Multiplayer result, we IGNORE the gameEnding lock 
     // to ensure the Victory/Defeat screen overrides any "Game Over" glitch.
     if (isMultiplayerMode && result) {
@@ -3336,18 +3338,6 @@ async function endGame(result = null) {
 
     // --- MULTIPLAYER RESULT HANDLING ---
     if (isMultiplayerMode && result) {
-        const startStr = sessionStorage.getItem('game_start_time');
-        let finalDisplayTime = 0;
-        if (startStr) {
-            // Calculate the difference in milliseconds
-            const sharedStart = parseInt(startStr);
-            finalDisplayTime = endTime - sharedStart;
-        } else {
-            // Fallback if the session storage was missing
-            finalDisplayTime = endTime - gameStartTime;
-        }
-
-        displayFinalTime(finalDisplayTime);
 
         // RECORD THE STAT IN THE DATABASE
         const { data: { session } } = await supabase.auth.getSession();
@@ -3390,10 +3380,20 @@ async function endGame(result = null) {
                 gameOverTitle.textContent = "A double knockout!";
             }
         }
-        const endScreen = document.getElementById('end-screen');
-        if (endScreen) {
-            endScreen.classList.remove('hidden');
+     
+        const startStr = sessionStorage.getItem('game_start_time');
+
+        let finalDisplayTime = 0;
+        if (startStr) {
+            // Calculate the difference in milliseconds
+            const sharedStart = parseInt(startStr);
+            finalDisplayTime = endTime - sharedStart;
+        } else {
+            // Fallback if the session storage was missing
+            finalDisplayTime = endTime - gameStartTime;
         }
+
+        displayFinalTime(finalDisplayTime);
         // 4. Hide Multiplayer Header (Bars) so they don't leak into end screen
         const mpHeader = document.getElementById('multiplayer-header');
         if (mpHeader) mpHeader.classList.add('hidden');
@@ -3411,7 +3411,11 @@ async function endGame(result = null) {
             pBtn.disabled = false;
             pBtn.innerHTML = 'Play Again';
         }
-
+        // 7. Reset the lock after a delay (when they are safely on the end screen)
+        setTimeout(() => {
+            isEndGameProcessing = false;
+        }, 2000);
+        
         return;
     }
 
