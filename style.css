@@ -3023,7 +3023,7 @@ input.input-field:-webkit-autofill:active {
 #pbList .achieve-item {
   padding: 3px 10px; /* Reduced from 12px 15px */
   margin-bottom: 4px; /* Reduced from 8px */
-  font-size: 1.1rem;
+  font-size: 1rem;
 }
 
 .time-stamp {
