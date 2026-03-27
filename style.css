@@ -3141,9 +3141,9 @@ input.input-field:-webkit-autofill:active {
 }
 
 .player-name {
-  font-family: 'Cinzel', serif;
+  font-family: 'RSFont';
   color: #d4af37;
-  font-size: 0.9rem;
+  font-size: 1.2rem;
   margin-bottom: 4px;
   text-shadow: 1px 1px 2px #000;
 }
@@ -3173,10 +3173,10 @@ input.input-field:-webkit-autofill:active {
 }
 
 .vs-divider {
-  font-family: 'Cinzel', serif;
-  color: #ff3333;
+  font-family: 'RSFont';
+  color: #d4af37;   /*  #ff3333;*/
   font-weight: bold;
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   padding: 0 10px;
 }
 
@@ -3196,6 +3196,16 @@ input.input-field:-webkit-autofill:active {
     font-weight: bold;
     color: white;
     text-shadow: 1px 1px 2px #000;
+    /* --- EXACT ASSET DIMENSIONS --- */
+    width: 24px;
+    height: 23px;
+    /* --- RENDER QUALITY --- */
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    image-rendering: pixelated; /* Keeps it sharp on PC monitors */
+    font-family: 'RSFont';
+    font-size: 0.85rem; /* Shrunk slightly to fit a 24px box */
 }
 
 /* Blue Hitsplat for 0 (Successful Defense) */
@@ -3248,12 +3258,12 @@ input.input-field:-webkit-autofill:active {
 
     /* Shrink player name and VS text */
     .player-name {
-        font-size: 0.75rem;
+        font-size: 0.9rem;
         margin-bottom: 2px;
     }
 
     .vs-divider {
-        font-size: 0.9rem;
+        font-size: 1rem;
         padding: 0 5px;
     }
 
