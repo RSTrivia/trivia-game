@@ -1070,7 +1070,7 @@ window.navigateTo = function (viewId) {
 // 1v1 MODE
 
 function resetGameEngine() {
-    console.log("Engine: Performing full memory reset...");
+    //console.log("Engine: Performing full memory reset...");
 
     // 1. Clear the data queues
     preloadQueue = [];
@@ -1144,7 +1144,7 @@ async function startNewRound() {
         return; // STOP HERE so we don't send a fake broadcast
     }
     
-    console.log("Host: Database updated. Waiting for listener to trigger engine...");
+    //console.log("Host: Database updated. Waiting for listener to trigger engine...");
 }
 
 // Helper to handle the UI swap consistently
@@ -1228,7 +1228,7 @@ async function fetchNextLobbyQuestion() {
 
         // 2. CRITICAL: If no IDs (Rematch scenario), fetch them from the DB now
         if (!storedIds || storedIds.length === 0) {
-            console.log("Fetcher: Storage empty, performing emergency DB sync...");
+            //console.log("Fetcher: Storage empty, performing emergency DB sync...");
             const lobbyId = sessionStorage.getItem('current_lobby_id');
 
             const { data, error } = await supabase
@@ -1238,7 +1238,7 @@ async function fetchNextLobbyQuestion() {
                 .single();
 
             if (error || !data?.question_ids) {
-                console.warn("Fetcher: Could not sync IDs from DB.");
+                //console.warn("Fetcher: Could not sync IDs from DB.");
                 return;
             }
 
@@ -1255,13 +1255,13 @@ async function fetchNextLobbyQuestion() {
         const nextId = storedIds[currentToFetch];
 
         if (!nextId) {
-            console.log("End of lobby list reached.");
+            //console.log("End of lobby list reached.");
             return;
         }
 
         // 4. Increment and Fetch
         window.nextFetchIndex++;
-        console.log(`DEBUG: Index ${currentToFetch} | ID: ${nextId}`);
+        //console.log(`DEBUG: Index ${currentToFetch} | ID: ${nextId}`);
 
         const data = await fetchDeterministicQuestion(Number(nextId));
 
@@ -1298,7 +1298,7 @@ function subscribeToLobby(lobbyCode, lobbyId) {
         filter: `id=eq.${lobbyId}`
     }, (payload) => {
         const newStatus = payload.new.status;
-        console.log("DB Change Detected. New Status:", newStatus);
+        //console.log("DB Change Detected. New Status:", newStatus);
         const lobbyData = payload.new;
 
         // --- SYNC START TIME (CRITICAL FOR TIMER ACCURACY) ---
@@ -1307,7 +1307,7 @@ function subscribeToLobby(lobbyCode, lobbyId) {
             const serverTime = Number(lobbyData.game_start_time);
             gameStartTime = serverTime; // Update the global variable
             sessionStorage.setItem('game_start_time', serverTime.toString());
-            console.log("Sync: Shared Start Time Saved:", serverTime);
+            //console.log("Sync: Shared Start Time Saved:", serverTime);
         }
 
         // --- NEW: SYNC NAMES ---
@@ -1339,14 +1339,14 @@ function subscribeToLobby(lobbyCode, lobbyId) {
                 //console.log("Guest: First game ACTIVE. Launching...");
                 //startMultiplayerGame();
             //}
-            console.log(`${myRole.toUpperCase()}: First game ACTIVE. Launching...`);
+            //console.log(`${myRole.toUpperCase()}: First game ACTIVE. Launching...`);
             // Both Host and Guest now start only when the DB confirms the lobby is active
             startMultiplayerGame();
         }
 
         // --- REMATCH START LOGIC (Round 2+) ---
         if (newStatus === 'playing') {
-            console.log(`${myRole.toUpperCase()}: Starting Game from DB Signal...`);
+            //console.log(`${myRole.toUpperCase()}: Starting Game from DB Signal...`);
 
             // 1. Everyone resets memory
             sessionStorage.removeItem('current_lobby_questions');
@@ -1357,7 +1357,7 @@ function subscribeToLobby(lobbyCode, lobbyId) {
             // 2. Everyone saves the new IDs from the database payload
             if (payload.new.question_ids) {
                 sessionStorage.setItem('current_lobby_questions', JSON.stringify(payload.new.question_ids));
-                console.log(`${myRole.toUpperCase()}: IDs Synced. First ID:`, payload.new.question_ids[0]);
+                //console.log(`${myRole.toUpperCase()}: IDs Synced. First ID:`, payload.new.question_ids[0]);
             }
 
             // 3. Everyone launches at the exact same time
@@ -1384,7 +1384,7 @@ function subscribeToLobby(lobbyCode, lobbyId) {
     });
     lobbyChannel.on('broadcast', { event: 'next_question_trigger' }, (envelope) => {
         if (myRole === 'guest') {
-            console.log("Guest: Signal received. Moving to next question", envelope.payload.nextIndex);
+            //console.log("Guest: Signal received. Moving to next question", envelope.payload.nextIndex);
             executeTransition(envelope.payload.nextIndex);
         }
     });
@@ -1392,12 +1392,12 @@ function subscribeToLobby(lobbyCode, lobbyId) {
         const data = envelope.payload;
         if (data.user_id === userId) return; // Ignore my own broadcast
 
-        console.log("Opponent is ready for a rematch!");
+        //console.log("Opponent is ready for a rematch!");
         opponentReadyForRematch = true;
 
         // IF I am the Host AND I have already clicked my own Play Again button
         if (myRole === 'host' && iAmReadyForRematch) {
-            console.log("Both ready (Listener trigger): Host starting...");
+            //console.log("Both ready (Listener trigger): Host starting...");
             startNewRound();
         } else {
             // UI Polish: Change the button text so the Host knows the Guest is waiting
@@ -1415,14 +1415,14 @@ function subscribeToLobby(lobbyCode, lobbyId) {
         const actualData = envelope.payload;
         // Safety check: ensure we only process the OTHER player's data
         if (actualData && actualData.user_id !== userId) {
-            console.log("Opponent answered! Syncing HP to:", actualData.hp_remaining);
+            //console.log("Opponent answered! Syncing HP to:", actualData.hp_remaining);
             handleOpponentAction(actualData);
         }
     });
 
     // Subscribe and Log Connection
     lobbyChannel.subscribe((status) => {
-        console.log(`Lobby Channel (${lobbyCode}):`, status);
+        //console.log(`Lobby Channel (${lobbyCode}):`, status);
         if (status === 'CHANNEL_ERROR') {
             console.error("Failed to connect to Realtime. Check Replication settings.");
         }
@@ -1430,7 +1430,7 @@ function subscribeToLobby(lobbyCode, lobbyId) {
 }
 
 async function startMultiplayerGame() {
-    console.log("Starting Multiplayer Game...");
+    //console.log("Starting Multiplayer Game...");
     gameEnding = false;
     isSyncing = false;  // Reset the sync lock
     iHaveAnswered = false;
@@ -1464,13 +1464,13 @@ async function startMultiplayerGame() {
 
         // --- THE DATABASE FETCH ---
         // We force a fetch because the broadcast didn't give us IDs
-        console.log("Guest: Syncing with Lobby Database...");
+        //console.log("Guest: Syncing with Lobby Database...");
 
         // --- THE CRITICAL WAIT ---
         // If the Guest starts with an empty queue, we MUST wait for the DB
         // --- THE CRITICAL WAIT (FIXED) ---
         if (myRole === 'guest') {
-            console.log("Guest: Ensuring sync with Host's new questions...");
+            //console.log("Guest: Ensuring sync with Host's new questions...");
             let retryCount = 0;
             let success = false;
 
@@ -1567,7 +1567,7 @@ async function startMultiplayerGame() {
             preloadNextQuestions(5);
 
             gameStarting = false;
-            console.log("Multiplayer Game Started Successfully!");
+            //console.log("Multiplayer Game Started Successfully!");
         });
 
     } catch (err) {
@@ -1595,7 +1595,7 @@ function updateHPUI() {
     document.getElementById('my-hp-text').textContent = `${myHP}/${MAX_HP}`;
     document.getElementById('opponent-hp-text').textContent = `${opponentHP}/${MAX_HP}`;
 
-    console.log("Updating UI - Me:", myHP, "Opponent:", opponentHP);
+    //console.log("Updating UI - Me:", myHP, "Opponent:", opponentHP);
 
     // Color logic using Classes instead of inline styles
     const bars = [
@@ -1624,7 +1624,7 @@ function handleOpponentAction(payload) {
     // 1. Sync their HP (Force your screen to match their actual HP)
     if (payload.hp_remaining !== undefined) {
         opponentHP = payload.hp_remaining;
-        console.log("Opponent HP synced to:", opponentHP);
+        //console.log("Opponent HP synced to:", opponentHP);
     }
 
     // 2. TRIGGER THE SPLAT ON THEM
@@ -1637,7 +1637,7 @@ function handleOpponentAction(payload) {
     updateHPUI();
     // Instead of handleMultiplayerTransition, check if we can sync NOW
     if (iHaveAnswered) {
-        console.log("Both answered! Proceeding to sync...");
+        //console.log("Both answered! Proceeding to sync...");
         syncAndProceed();
     }
 }
@@ -1676,7 +1676,7 @@ function handleMultiplayerTransition() {
     // so syncAndProceed can find it later.
 
     if (iHaveAnswered && !opponentHasAnswered && timeLeft > 0) {
-        console.log("Waiting for opponent's final move... Safety timer active.");
+        //console.log("Waiting for opponent's final move... Safety timer active.");
         return;
     }
 
@@ -1695,7 +1695,7 @@ function handleMultiplayerTransition() {
 async function syncAndProceed(force = false) {
     clearTimeout(window.forceEndTimeout);
     // DEBUG: This is your best friend for fixing this
-    console.log(`[Gate Check] Me: ${iHaveAnswered} | Opponent: ${opponentHasAnswered} | Force: ${force}`);
+    //console.log(`[Gate Check] Me: ${iHaveAnswered} | Opponent: ${opponentHasAnswered} | Force: ${force}`);
 
     // 1. THE MANDATORY SYNC GATE
     // We only proceed if:
@@ -1703,8 +1703,8 @@ async function syncAndProceed(force = false) {
     // - OR BOTH players have answered. 
     // We NO LONGER check isGameOver here because we want to wait for the final outcome.
     if (!force && (!iHaveAnswered || !opponentHasAnswered)) {
-        console.log("Waiting for both players to finish the current question...");
-        console.log(`Sync Blocked: Me(${iHaveAnswered}) Opponent(${opponentHasAnswered})`);
+        //console.log("Waiting for both players to finish the current question...");
+        //console.log(`Sync Blocked: Me(${iHaveAnswered}) Opponent(${opponentHasAnswered})`);
 
         const statusEl = document.getElementById('lobbyStatus');
         if (statusEl && iHaveAnswered) {
@@ -1728,7 +1728,7 @@ async function syncAndProceed(force = false) {
     // 5. HP CHECK: Determine if the game is OVER
     const isGameOver = (myHP <= 0 || opponentHP <= 0);
     if (isGameOver) {
-        console.log("Match concluded. Final HP - Me:", myHP, "Opponent:", opponentHP);
+        //console.log("Match concluded. Final HP - Me:", myHP, "Opponent:", opponentHP);
 
         // Final Result Logic (Prioritizing the Draw)
         let result = 'win';
@@ -1765,7 +1765,7 @@ async function syncAndProceed(force = false) {
             executeTransition(nextIndex);
         }, 1200);
     } else {
-        console.log("Guest: Ready and waiting for Host trigger...");
+        //console.log("Guest: Ready and waiting for Host trigger...");
         // Guest does NOTHING here. They wait for the 'next_question_trigger' broadcast.
     }
 }
@@ -1776,7 +1776,7 @@ async function executeTransition(newIndex) {
     iHaveAnswered = false;
     window.currentLobbyIndex = newIndex;
 
-    console.log("Sync Complete. Transitioning to next question...");
+    //console.log("Sync Complete. Transitioning to next question...");
 
     const roundsDisplay = document.getElementById('rounds-display');
     if (roundsDisplay) {
@@ -2107,7 +2107,7 @@ async function init() {
             sessionStorage.setItem('game_start_time', startTime.toString());
             gameStartTime = startTime;
 
-            console.log("Host: Start request sent with timestamp:", startTime);
+            //console.log("Host: Start request sent with timestamp:", startTime);
 
         } catch (err) {
             console.error("Start failed:", err.message);
@@ -2203,7 +2203,7 @@ async function init() {
 
                 // 5. Host Logic
                 if (myRole === 'host' && opponentReadyForRematch) {
-                    console.log("Both ready! Host starting new round...");
+                    //console.log("Both ready! Host starting new round...");
                     startNewRound();
                 }
 
@@ -2829,7 +2829,7 @@ async function loadQuestion(isFirst = false) {
 
     // D. POPULATE DATA (Now guaranteed to have data)
     currentQuestion = preloadQueue.shift();
-    console.log("Question loaded:", currentQuestion.id);
+    //console.log("Question loaded:", currentQuestion.id);
 
     // Safety check just in case DB returned null
     if (!currentQuestion) {
@@ -2921,7 +2921,7 @@ function startTimer() {
             clearInterval(timer); // Stop the interval immediately
             if (isMultiplayerMode) {
                 if (iHaveAnswered) {
-                    console.log("Timer hit 0, but I already answered. Waiting for sync...");
+                    //console.log("Timer hit 0, but I already answered. Waiting for sync...");
                     // Do nothing here! syncAndProceed is already handling the transition.
                     return;
                 }
@@ -3017,7 +3017,7 @@ async function checkAnswer(choiceId, btn) {
         // --- NEW: SAFETY TIMEOUT ---
         // If I've answered but the opponent hasn't, start a 20s fallback
         if (iHaveAnswered && !opponentHasAnswered) {
-            console.log("Waiting for opponent's final move... Safety timer active.");
+            //console.log("Waiting for opponent's final move... Safety timer active.");
             clearTimeout(window.forceEndTimeout);
             window.forceEndTimeout = setTimeout(() => {
                 // Double check they still haven't answered before forcing
@@ -3348,7 +3348,6 @@ async function endGame(result = null) {
             });
 
             if (error) console.error("Error saving match stat:", error);
-            else console.log(`Match stat (${result}) recorded!`);
         }
 
         const gameOverTitle = document.getElementById('game-over-title');
