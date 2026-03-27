@@ -1051,6 +1051,7 @@ window.navigateTo = function (viewId) {
         if (petsTab) {
             petsTab.click(); // Programmatically trigger the click
         }
+        renderStats();
     }
 
     document.body.classList.remove('game-active');
@@ -3338,7 +3339,6 @@ async function endGame(result = null) {
 
     // --- MULTIPLAYER RESULT HANDLING ---
     if (isMultiplayerMode && result) {
-
         // RECORD THE STAT IN THE DATABASE
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
@@ -3415,7 +3415,22 @@ async function endGame(result = null) {
         setTimeout(() => {
             isEndGameProcessing = false;
         }, 2000);
-        
+
+        // 1. Update the LocalStorage based on the match result
+        if (result === 'win') {
+            const wins = parseInt(localStorage.getItem('multiplayer_wins') || 0);
+            localStorage.setItem('multiplayer_wins', wins + 1);
+        } else if (result === 'lose') {
+            const losses = parseInt(localStorage.getItem('multiplayer_losses') || 0);
+            localStorage.setItem('multiplayer_losses', losses + 1);
+        } else if (result === 'draw') {
+            const draws = parseInt(localStorage.getItem('multiplayer_draws') || 0);
+            localStorage.setItem('multiplayer_draws', draws + 1);
+        }
+        // 2. LIVE UPDATE: Refresh the stats page in the background
+        // This ensures that if the user clicks "Stats" after the game, the data is already there.
+        await renderStats();
+
         return;
     }
 
