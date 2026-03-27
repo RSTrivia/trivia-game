@@ -3143,7 +3143,7 @@ input.input-field:-webkit-autofill:active {
 .player-name {
   font-family: 'RSFont';
   color: #d4af37;
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   margin-bottom: 4px;
   text-shadow: 1px 1px 2px #000;
 }
@@ -3173,10 +3173,10 @@ input.input-field:-webkit-autofill:active {
 }
 
 .vs-divider {
-  font-family: 'RSFont';
-  color: #d4af37;   /*  #ff3333;*/
+  font-family: 'Cinzel', serif;
+  color: #ff3333;
   font-weight: bold;
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   padding: 0 10px;
 }
 
@@ -3258,7 +3258,7 @@ input.input-field:-webkit-autofill:active {
 
     /* Shrink player name and VS text */
     .player-name {
-        font-size: 0.9rem;
+        font-size: 1rem;
         margin-bottom: 2px;
     }
 
