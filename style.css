@@ -3224,7 +3224,6 @@ input.input-field:-webkit-autofill:active {
 
 /* Blue Hitsplat for 0 (Successful Defense) */
 .hitsplat.miss {
-  background-color: #0040ff; /* OSRS Blue Block color */
   background-image: url('/hitsplat/hitsplat_blue.png'); /* If you have the asset */
   color: white;
   text-shadow: 1px 1px 1px #000;
@@ -3232,7 +3231,6 @@ input.input-field:-webkit-autofill:active {
 
 /* Red Hitsplat for Damage (Existing) */
 .hitsplat.hit {
-  background-color: #ff0000;
   background-image: url('/hitsplat/hitsplat_red.png');
   color: white;
 }
