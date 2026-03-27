@@ -3008,7 +3008,7 @@ input.input-field:-webkit-autofill:active {
 }
 
 .text-white {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   display: flex;
   margin-left: 4px;
   /* Slightly more padding to match pet slot "heft" */
@@ -3023,7 +3023,7 @@ input.input-field:-webkit-autofill:active {
 #pbList .achieve-item {
   padding: 3px 10px; /* Reduced from 12px 15px */
   margin-bottom: 4px; /* Reduced from 8px */
-  font-size: 1.2rem;
+  font-size: 1.1rem;
 }
 
 .time-stamp {
@@ -3035,16 +3035,43 @@ input.input-field:-webkit-autofill:active {
 }
 
 
+/* --- Global Stats Grid Layout --- */
+#statsList, #pbList {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr; /* Two equal columns */
+    gap: 8px; /* Slightly larger gap for PC */
+}
+
+/* Reordering the Stats List */
+.stat-correct     { order: 1; } 
+.stat-streak      { order: 2; } 
+.stat-wrong       { order: 3; } 
+.stat-total-daily { order: 4; } 
+.stat-accuracy    { order: 5; } 
+.stat-multiplayer { order: 6; } 
+
+/* Reordering the PB List */
+.pb-normal    { order: 1; } 
+.pb-weekly    { order: 2; } /* Top Right */
+.pb-lite      { order: 3; } /* Middle Left */
+.pb-daily     { order: 4; } /* Middle Right */
+
+/* Stats Header Grid Logic */
+#statsProfileHeader div[style*="grid"] {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px 20px;
+}
+
+/* Specific Placements */
+#statsProfileHeader div[style*="grid"] div:nth-child(1) { grid-column: 1; grid-row: 1; } /* Level */
+#statsProfileHeader div[style*="grid"] div:nth-child(2) { grid-column: 1; grid-row: 2; } /* XP */
+#statsProfileHeader div[style*="grid"] div:nth-child(3) { grid-column: 2; grid-row: 1; } /* Achievements */
+#statsProfileHeader div[style*="grid"] div:nth-child(4) { grid-column: 2; grid-row: 2; } /* Pets */
 
 
 
-
-
-
-
-
-
-
+/* --------------  Multiplayer mode  -------------- */
 /* Container for the views */
 .lobby-card {
     background: rgba(0, 0, 0, 0.75);
