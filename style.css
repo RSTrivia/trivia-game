@@ -2896,37 +2896,7 @@ input.input-field:-webkit-autofill:active {
         margin-top: 6px !important;
         grid-template-columns: 1fr 1fr !important; 
         gap: 2px 10px !important;
-         /*gap: 3px 20px !important; Extremely tight gap */
         font-size: 0.85rem;
-    }
-    /* Target the grid container inside the header */
-    #statsProfileHeader div[style*="grid"] {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr !important;
-    }
-    /* placements of XP, Level, Achievements, Pets in the grid */
-    /* Level: Top Left */
-    #statsProfileHeader div[style*="grid"] div:nth-child(1) {
-        grid-column: 1;
-        grid-row: 1;
-    }
-
-    /* XP: Bottom Left (Under Level) */
-    #statsProfileHeader div[style*="grid"] div:nth-child(2) {
-        grid-column: 1;
-        grid-row: 2;
-    }
-
-    /* Achievements: Top Right */
-    #statsProfileHeader div[style*="grid"] div:nth-child(3) {
-        grid-column: 2;
-        grid-row: 1;
-    }
-
-    /* Pets: Bottom Right */
-    #statsProfileHeader div[style*="grid"] div:nth-child(4) {
-        grid-column: 2;
-        grid-row: 2;
     }
 
     /* 3. Shrink the text */
@@ -2970,19 +2940,6 @@ input.input-field:-webkit-autofill:active {
         grid-template-columns: 1fr 1fr; /* Two equal columns */
         gap: 4px; /* Small gap between items */
     }
-
-    /* Reordering the Stats List */
-    .stat-correct     { order: 1; } /* Top Left */
-    .stat-streak      { order: 2; } /* Middle Left */
-    .stat-wrong       { order: 3; } /* Top Right */
-    .stat-total-daily { order: 4; } /* Middle Right */
-    .stat-accuracy    { order: 5; } /* Bottom (Left) */
-    .stat-multiplayer { order: 6; } /* Bottom (Right) */
-    /* Reordering the PB List */
-    .pb-normal    { order: 1; } /* Top Left */
-    .pb-lite      { order: 3; } /* Middle Left */
-    .pb-weekly    { order: 2; } /* Top Right */
-    .pb-daily     { order: 4; } /* Middle Right */
 }
 
 #statsName {
@@ -3068,7 +3025,6 @@ input.input-field:-webkit-autofill:active {
 #statsProfileHeader div[style*="grid"] div:nth-child(2) { grid-column: 1; grid-row: 2; } /* XP */
 #statsProfileHeader div[style*="grid"] div:nth-child(3) { grid-column: 2; grid-row: 1; } /* Achievements */
 #statsProfileHeader div[style*="grid"] div:nth-child(4) { grid-column: 2; grid-row: 2; } /* Pets */
-
 
 
 /* --------------  Multiplayer mode  -------------- */
