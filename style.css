@@ -3202,14 +3202,11 @@ input.input-field:-webkit-autofill:active {
     top: 50%; 
     left: 50%;
     transform: translate(-50%, -50%);
-    z-index: 99; /* Higher than everything else */
     pointer-events: none;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: bold;
     color: white;
-    text-shadow: 1px 1px 2px #000;
     /* --- EXACT ASSET DIMENSIONS --- */
     width: 24px;
     height: 23px;
@@ -3225,14 +3222,11 @@ input.input-field:-webkit-autofill:active {
 /* Blue Hitsplat for 0 (Successful Defense) */
 .hitsplat.miss {
   background-image: url('/hitsplat/hitsplat_blue.png'); /* If you have the asset */
-  color: white;
-  text-shadow: 1px 1px 1px #000;
 }
 
 /* Red Hitsplat for Damage (Existing) */
 .hitsplat.hit {
   background-image: url('/hitsplat/hitsplat_red.png');
-  color: white;
 }
 
 /* The Animation */
@@ -3286,9 +3280,7 @@ input.input-field:-webkit-autofill:active {
 
     /* Scale down hitsplats so they don't cover the whole bar */
     .hitsplat {
-        width: 22px;
-        height: 22px;
-        font-size: 0.8rem;
+        font-size: 0.75rem;
     }
 
     /* Tighten the gap between players */
