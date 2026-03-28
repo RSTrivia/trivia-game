@@ -1124,6 +1124,7 @@ function resetGameEngine() {
     // Put the original HTML structure back
 
     scoreContainer.innerHTML = 'Score: <span id="finalScore">0</span>';
+    const pBtn = document.getElementById('playAgainBtn');
         if (pBtn) {
         pBtn.disabled = false; // enable
         pBtn.innerHTML = 'Play Again';
