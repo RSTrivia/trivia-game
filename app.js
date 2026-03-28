@@ -965,7 +965,7 @@ async function loadCollection() {
         localStorage.setItem('cached_xp', profileData.xp || 0);
         localStorage.setItem('cached_level', officialLevel);
         localStorage.setItem('cached_max_score', maxScore);
-        
+
         // Save Multiplayer stats to LocalStorage so renderAchievements can see them
         localStorage.setItem('ach_stat_multi_win', (a.multi_first_win || false).toString());
         localStorage.setItem('ach_stat_multi_loss', (a.multi_first_loss || false).toString());
@@ -3155,8 +3155,11 @@ async function checkAnswer(choiceId, btn) {
                 }).then(({ data: results, error }) => {
                     if (error) console.error("Achievement RPC Error:", error.message);
                     if (results) {
-                        results.forEach(r => {
-                            if (r.is_new) showAchievementNotification(r.display_name);
+                        // Filter only new achievements and apply a staggered delay
+                        results.filter(r => r.is_new).forEach((r, index) => {
+                            setTimeout(() => {
+                                showAchievementNotification(r.display_name);
+                            }, index * 1500); // 1.5 second delay between each
                         });
                     }
                 });
@@ -3176,9 +3179,12 @@ async function checkAnswer(choiceId, btn) {
                     p_time_ms: Math.floor(Date.now() - gameStartTime)
                 }).then(({ data: results }) => {
                     if (results) {
-                        results.forEach(r => {
-                            // Only show if it's actually the first time (is_new)
-                            if (r.is_new) showAchievementNotification(r.display_name);
+                        results.filter(r => r.is_new).forEach((r, index) => {
+                            // We add a slight offset (e.g., +1000ms) just in case an 
+                            // instant notification is already firing.
+                            setTimeout(() => {
+                                showAchievementNotification(r.display_name);
+                            }, (index * 1500) + 1000); 
                         });
                     }
                 });
@@ -3501,11 +3507,15 @@ async function endGame(result = null, wasFlawless = false) {
                 currentDailyStreak = stats.daily_streak || 0;
             }
 
-            // 2. Show all earned achievement notifications
-            results.forEach(res => {
-                if (res.is_new) {
+            // 2. Show all earned achievement notifications (Staggered)
+            // Filter first so we only count the 'new' ones for the delay index
+            const newEarned = results.filter(res => res.is_new);
+
+            newEarned.forEach((res, index) => {
+                // Add a 1.5 second delay multiplied by the position in the list
+                setTimeout(() => {
                     showAchievementNotification(res.display_name);
-                }
+                }, index * 1500); 
             });
         }
     }
