@@ -2391,7 +2391,6 @@ async function init() {
     await loadCollection();
 }
 
-// Replace your existing handleAuthChange with this:
 async function handleAuthChange(event, session) {
     const span = document.querySelector('#usernameSpan');
     const label = authBtn?.querySelector('.btn-label');
@@ -2410,20 +2409,20 @@ async function handleAuthChange(event, session) {
         userId = null;
         // IMPORTANT: Only wipe if we are CERTAIN this is an intentional logout
         // and not just a slow connection.
-        if (event === 'SIGNED_OUT' && wasManual === 'true') {
-            localStorage.removeItem('manual_logout');
-            // Clear all session-specific UI and storage
-            localStorage.removeItem('lastDailyScore');
-            localStorage.removeItem('dailyPlayedDate');
-            localStorage.removeItem('cached_xp');
-            localStorage.removeItem('cachedUsername');
-            localStorage.removeItem('lastDailyMessage');
-            localStorage.removeItem('cached_level');
-        }
         if (event === 'SIGNED_OUT') {
+            localStorage.removeItem('manual_logout');
             localStorage.removeItem('cached_xp');
             localStorage.removeItem('cachedUsername');
             localStorage.removeItem('cached_level');
+            if (wasManual) {
+                // Clear all session-specific UI and storage
+                localStorage.removeItem('lastDailyScore');
+                localStorage.removeItem('dailyPlayedDate');
+                localStorage.removeItem('cached_xp');
+                localStorage.removeItem('cachedUsername');
+                localStorage.removeItem('lastDailyMessage');
+                localStorage.removeItem('cached_level');
+            }
         }
 
         username = 'Guest'; // Force 'Guest' instead of cached username
@@ -2495,7 +2494,7 @@ async function handleAuthChange(event, session) {
     }
     // ENABLE the Log Button for users
     if (logBtn) {
-        logBtn.addEventListener('click', () => {
+        logBtn.onclick = () => {
             // Add the class to trigger the CSS "Shine"
             logBtn.classList.add('tapped');
 
@@ -2505,7 +2504,7 @@ async function handleAuthChange(event, session) {
             }, 300); // 300ms matches the visual feel of OSRS interface clicks
 
             navigateTo('view-collections');
-        });
+        };
         logBtn.classList.remove('is-disabled');
         logBtn.style.opacity = '1';
         logBtn.style.pointerEvents = 'auto';
