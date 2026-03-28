@@ -604,7 +604,8 @@ const ACHIEVEMENT_SCHEMA = [
             { id: 'mpd', text: 'First Draw', check: (d) => d.multi_first_draw === true },
             { id: 'mp5', text: 'Reach 5 Wins', check: (d) => d.multi_5_wins === true },
             { id: 'mp50', text: 'Reach 50 Wins', check: (d) => d.multi_50_wins === true },
-            { id: 'mp100', text: 'Reach 100 Wins', check: (d) => d.multi_100_wins === true }
+            { id: 'mp100', text: 'Reach 100 Wins', check: (d) => d.multi_100_wins === true },
+            { id: 'mp_flawless', text: 'Flawless Win', check: (d) => d.multi_flawless === true }
         ]
     },
     {
@@ -819,6 +820,7 @@ function getStatsObject() {
         multi_5_wins: localStorage.getItem('ach_stat_multi_5') === 'true',
         multi_50_wins: localStorage.getItem('ach_stat_multi_50') === 'true',
         multi_100_wins: localStorage.getItem('ach_stat_multi_100') === 'true',
+        multi_flawless: localStorage.getItem('ach_stat_multi_flawless') === 'true',
         // --- Weekly Booleans from LocalStorage ---
         weekly25: localStorage.getItem('ach_stat_weekly_25') === 'true',
         weekly50: localStorage.getItem('ach_stat_weekly_50') === 'true',
@@ -963,6 +965,7 @@ async function loadCollection() {
         localStorage.setItem('cached_xp', profileData.xp || 0);
         localStorage.setItem('cached_level', officialLevel);
         localStorage.setItem('cached_max_score', maxScore);
+        
         // Save Multiplayer stats to LocalStorage so renderAchievements can see them
         localStorage.setItem('ach_stat_multi_win', (a.multi_first_win || false).toString());
         localStorage.setItem('ach_stat_multi_loss', (a.multi_first_loss || false).toString());
@@ -970,6 +973,7 @@ async function loadCollection() {
         localStorage.setItem('ach_stat_multi_5', (a.multi_5_wins || false).toString());
         localStorage.setItem('ach_stat_multi_50', (a.multi_50_wins || false).toString());
         localStorage.setItem('ach_stat_multi_100', (a.multi_100_wins || false).toString());
+        localStorage.setItem('ach_stat_multi_flawless', (a.multi_flawless || false).toString());
         // Save Weekly stats to LocalStorage so renderAchievements can see them
         localStorage.setItem('ach_stat_weekly_25', (a.weekly_25 || false).toString());
         localStorage.setItem('ach_stat_weekly_50', (a.weekly_50 || false).toString());
@@ -1748,11 +1752,14 @@ async function syncAndProceed(force = false) {
             result = 'lose';
         }
 
+        // CHECK FOR FLAWLESS HERE
+        const wasFlawless = (result === 'win' && myHP === MAX_HP);
+
         // Give the user 800ms to actually see the "Wrong" splat and highlight
         setTimeout(async () => {
                     isSyncing = false;
-                    // Pass the accurate timestamp into endGame
-                    await endGame(result);
+                    // Pass the result AND the flawless flag to your endGame function
+                    await endGame(result, wasFlawless);
                 }, 800);
                 return;
     }
@@ -3328,7 +3335,7 @@ async function highlightCorrectAnswer() {
     });
 }
 
-async function endGame(result = null) {
+async function endGame(result = null, wasFlawless = false) {
     if (isMultiplayerMode && isEndGameProcessing) return; 
     isEndGameProcessing = true;
     // If this is a Multiplayer result, we IGNORE the gameEnding lock 
@@ -3363,7 +3370,8 @@ async function endGame(result = null) {
         if (session) {
             const { data: newAchievements, error } = await supabase.rpc('record_match_result', {
                 p_user_id: session.user.id,
-                p_result: result // 'win', 'lose', or 'draw'
+                p_result: result, // 'win', 'lose', or 'draw'
+                p_is_flawless: wasFlawless // flawless win
             });
 
         if (!error && newAchievements && newAchievements.length > 0) {
