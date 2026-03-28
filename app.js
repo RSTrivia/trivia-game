@@ -1122,7 +1122,12 @@ function resetGameEngine() {
 
     const scoreContainer = document.getElementById('finalScore').parentElement;
     // Put the original HTML structure back
+
     scoreContainer.innerHTML = 'Score: <span id="finalScore">0</span>';
+        if (pBtn) {
+        pBtn.disabled = false; // enable
+        pBtn.innerHTML = 'Play Again';
+    }
 }
 
 async function startNewRound() {
@@ -2577,6 +2582,11 @@ function resetGame() {
     if (multiRow) multiRow.classList.add('hidden');
     document.getElementById('score').classList.remove('hidden');
     document.getElementById('rounds-display').classList.add('hidden');
+    const pBtn = document.getElementById('playAgainBtn');
+    if (pBtn) {
+        pBtn.disabled = false; // enable
+        pBtn.innerHTML = 'Play Again';
+    }
 }
 
 
