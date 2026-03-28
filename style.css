@@ -2413,7 +2413,7 @@ input.input-field:-webkit-autofill:active {
 }
 
 .pet-name {
-  font-size: 1rem;
+  font-size: 0.9rem;
   /* Slightly smaller text */
   color: #888;
   line-height: 1.1;
