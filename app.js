@@ -1154,7 +1154,7 @@ async function startNewRound() {
     iAmReadyForRematch = false;
     opponentReadyForRematch = false;
 
-    const startTime = Date.now();
+    const startTime = Date.now() + 2000;
     sessionStorage.setItem('game_start_time', startTime.toString());
 
     // 2. Update Database AND WAIT FOR IT
@@ -1245,20 +1245,23 @@ async function handleMultiplayerTimeout() {
     handleMultiplayerTransition();
 }
 
-async function fetchNextLobbyQuestion() {
-    if (isFetchingLobbyQuestion) return;
+// Add the 'force' parameter
+async function fetchNextLobbyQuestion(force = false) {
+    // If we aren't forcing it and it's already busy, exit.
+    if (isFetchingLobbyQuestion && !force) return;
 
     try {
         isFetchingLobbyQuestion = true;
 
-        // 1. Check storage first
+        // 1. Get the latest IDs
         let stored = sessionStorage.getItem('current_lobby_questions');
         let storedIds = stored ? JSON.parse(stored) : null;
 
-        // 2. CRITICAL: If no IDs (Rematch scenario), fetch them from the DB now
+        // 2. EMERGENCY SYNC
+        // If the Guest's listener hasn't saved the IDs yet, we do one quick DB grab.
         if (!storedIds || storedIds.length === 0) {
-            //console.log("Fetcher: Storage empty, performing emergency DB sync...");
             const lobbyId = sessionStorage.getItem('current_lobby_id');
+            if (!lobbyId) return;
 
             const { data, error } = await supabase
                 .from('live_lobbies')
@@ -1266,15 +1269,13 @@ async function fetchNextLobbyQuestion() {
                 .eq('id', lobbyId)
                 .single();
 
-            if (error || !data?.question_ids) {
-                //console.warn("Fetcher: Could not sync IDs from DB.");
-                return;
-            }
+            if (error || !data?.question_ids) return;
 
             storedIds = data.question_ids;
             sessionStorage.setItem('current_lobby_questions', JSON.stringify(storedIds));
         }
 
+        // Ensure storedIds is a clean array
         if (typeof storedIds === 'string') storedIds = JSON.parse(storedIds);
 
         // 3. Pointer Logic
@@ -1283,19 +1284,21 @@ async function fetchNextLobbyQuestion() {
         const currentToFetch = window.nextFetchIndex;
         const nextId = storedIds[currentToFetch];
 
-        if (!nextId) {
-            //console.log("End of lobby list reached.");
-            return;
-        }
+        if (!nextId) return;
 
         // 4. Increment and Fetch
         window.nextFetchIndex++;
-        //console.log(`DEBUG: Index ${currentToFetch} | ID: ${nextId}`);
 
+        // Call your deterministic RPC
         const data = await fetchDeterministicQuestion(Number(nextId));
 
         if (data) {
-            preloadQueue.push(data);
+            // If we are FORCING (game start), put it at the FRONT of the queue
+            if (force) {
+                preloadQueue.unshift(data); 
+            } else {
+                preloadQueue.push(data);
+            }
         }
 
     } catch (err) {
@@ -1388,7 +1391,11 @@ function subscribeToLobby(lobbyCode, lobbyId) {
                 sessionStorage.setItem('current_lobby_questions', JSON.stringify(payload.new.question_ids));
                 //console.log(`${myRole.toUpperCase()}: IDs Synced. First ID:`, payload.new.question_ids[0]);
             }
-
+            // 3. Sync the Start Time exactly to the Host's calculated time
+            if (payload.new.game_start_time) {
+                gameStartTime = Number(payload.new.game_start_time);
+                sessionStorage.setItem('game_start_time', gameStartTime.toString());
+            }
             // 3. Everyone launches at the exact same time
             startMultiplayerGame();
         }
@@ -1481,43 +1488,7 @@ async function startMultiplayerGame() {
     updateHPUI();
 
     try {
-        // FINAL SYNC: Ensure we start at index 0 when the UI swaps
-        //window.currentLobbyIndex = 0;
-        //window.nextFetchIndex = 0; // The very first question to grab
-        //preloadQueue = [];
-
-        // --- THE DATABASE FETCH ---
-        // We force a fetch because the broadcast didn't give us IDs
-        //console.log("Guest: Syncing with Lobby Database...");
-
-        // --- THE CRITICAL WAIT ---
-        // If the Guest starts with an empty queue, we MUST wait for the DB
-        // --- THE CRITICAL WAIT (FIXED) ---
-        if (myRole === 'guest') {
-            //console.log("Guest: Ensuring sync with Host's new questions...");
-            let retryCount = 0;
-            let success = false;
-
-            while (retryCount < 10) { // Try for 5 seconds total
-                await fetchNextLobbyQuestion(); // This needs to update sessionStorage/preloadQueue
-
-                if (preloadQueue.length > 0) {
-                    success = true;
-                    break;
-                }
-
-                console.warn(`Guest: Questions not ready yet. Retrying... (${retryCount + 1})`);
-                await new Promise(r => setTimeout(r, 300)); // Wait 500ms
-                retryCount++;
-            }
-
-            if (!success) throw new Error("Sync failed: Questions didn't load in time.");
-
-        } else {
-            // Host logic: Just fetch once, since Host created the IDs locally
-            await fetchNextLobbyQuestion();
-        }
-
+        await fetchNextLobbyQuestion(true);
         // Now that we have IDs from the DB, load the first one
         await loadQuestion(true);
 
@@ -3412,10 +3383,10 @@ async function endGame(result = null, wasFlawless = false) {
 
             if (result === 'win') {
                 // Keep everything between the backticks on one line
-                gameOverTitle.innerHTML = `<span style="font-size: 0.9em;">You defeated <span style="color: #D7D8D9;">${opponentName || 'your opponent'}</span> with ${myHP} HP left!</span>`;
+                gameOverTitle.innerHTML = `<span>You defeated <span>${opponentName || 'your opponent'}</span> with ${myHP} HP left!</span>`;
             }
             else if (result === 'lose') {
-                gameOverTitle.innerHTML = `<span style="font-size: 0.9em;"><span style="color: #D7D8D9;">${opponentName || 'Opponent'}</span> survived with ${opponentHP} HP.</span>`;
+                gameOverTitle.innerHTML = `<span><span>${opponentName || 'Opponent'}</span> survived with ${opponentHP} HP.</span>`;
             }
             else {
                 gameOverTitle.textContent = "A double knockout!";
