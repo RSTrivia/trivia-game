@@ -42,6 +42,7 @@ const logBtn = document.getElementById('logBtn');
 const startBtn = document.getElementById('startBtn');
 const playAgainBtn = document.getElementById('playAgainBtn');
 const mainMenuBtns = document.querySelectorAll('.main-menu-btn');
+const lobbymainMenu = document.querySelectorAll('.lobby-main-menu-btn');
 const game = document.getElementById('game');
 const endScreen = document.getElementById('end-screen');
 const finalScore = document.getElementById('finalScore');
@@ -77,6 +78,7 @@ let opponentReadyForRematch = false;
 let currentLobbyCode = null;
 let opponentName = null;
 let isEndGameProcessing = false;
+let isHandlingLobbyClose = false;
 
 // Do this for all your navigation buttons
 const leaderBtn = document.getElementById('btn-leaderboard');
@@ -753,10 +755,10 @@ async function renderStats() {
     // 5. Update UI Counters
     document.getElementById('stat-pet-count').textContent = `${stats.petsUnlocked}/${15}`;
     const allAchievements = ACHIEVEMENT_SCHEMA.flatMap(c => c.tasks);
-    
+
     // Dynamically calculate the total count from your schema (currently 29 tasks)
-    const totalPossible = allAchievements.length; 
-    
+    const totalPossible = allAchievements.length;
+
     // Count how many are actually finished
     const completedCount = allAchievements.filter(t => t.check(stats)).length;
 
@@ -841,7 +843,7 @@ async function renderAchievements(calculatedLevel) {
 
     // Use the helper instead of re-typing everything!
     const stats = getStatsObject();
-    
+
     // Override level if a calculated one was passed in
     if (calculatedLevel) stats.level = calculatedLevel;
 
@@ -1076,7 +1078,12 @@ window.navigateTo = function (viewId) {
         }
         renderStats();
     }
-
+    const endScreen = document.getElementById('end-screen');
+    if (endScreen) endScreen.classList.add('hidden');
+    const mainMenuBtn = document.querySelector('.main-menu-btn');
+    if (mainMenuBtn) {
+        mainMenuBtn.textContent = 'Main Menu';
+    }
     document.body.classList.remove('game-active');
     game.classList.add('hidden');
     // 6. Update URL
@@ -1091,6 +1098,44 @@ window.navigateTo = function (viewId) {
 };
 
 // 1v1 MODE
+
+async function leaveLobby() {
+    const rawId = sessionStorage.getItem('current_lobby_id');
+    if (!rawId) return;
+
+    const lobbyId = rawId.replace(/['"]+/g, '');
+    const roleAtTimeOfLeaving = myRole;
+
+    try {
+        // Fire and forget the update - don't 'await' it if you're just leaving
+        if (roleAtTimeOfLeaving === 'host') {
+            supabase.from('live_lobbies').update({ status: 'closed' }).eq('id', lobbyId).then();
+        } else {
+            supabase.from('live_lobbies').update({ guest_id: null, guest_name: null, status: 'waiting' }).eq('id', lobbyId).then();
+        }
+    } catch (err) {
+        console.error("Cleanup error:", err);
+    }
+
+    await new Promise(res => setTimeout(res, 200));
+
+    // --- CRITICAL CHANGE HERE ---
+    if (lobbyChannel) {
+        // We MUST untrack before removing the channel to 
+        // trigger the 'leave' event for others instantly
+        supabase.removeChannel(lobbyChannel);
+        lobbyChannel = null;
+    }
+
+    // Clear local memory
+    sessionStorage.removeItem('current_lobby_id');
+    sessionStorage.removeItem('is_host');
+
+    // Reset the internal Role variable
+    myRole = null;
+
+    resetGameEngine();
+}
 
 function resetGameEngine() {
     //console.log("Engine: Performing full memory reset...");
@@ -1107,12 +1152,14 @@ function resetGameEngine() {
     sessionStorage.removeItem('game_start_time');
 
     // 3. Reset Game State Flags
+    isEndGameProcessing = false;
     gameStarting = false;
     gameEnding = false;
     isMultiplayerMode = false;
     isSyncing = false
-
-    iHaveAnswered = false; 
+    myRole = null; // Clear the role
+    currentLobbyCode = null; // Clear the code
+    iHaveAnswered = false;
     opponentHasAnswered = false;
     if (window.forceEndTimeout) clearTimeout(window.forceEndTimeout);
 
@@ -1129,7 +1176,7 @@ function resetGameEngine() {
 
     scoreContainer.innerHTML = 'Score: <span id="finalScore">0</span>';
     const pBtn = document.getElementById('playAgainBtn');
-        if (pBtn) {
+    if (pBtn) {
         pBtn.disabled = false; // enable
         pBtn.innerHTML = 'Play Again';
     }
@@ -1137,6 +1184,7 @@ function resetGameEngine() {
 
 async function startNewRound() {
     if (myRole !== 'host') return;
+
     const lobbyId = sessionStorage.getItem('current_lobby_id')?.replace(/['"]+/g, '');
 
     // 1. Generate & Shuffle 1000 IDs
@@ -1172,7 +1220,7 @@ async function startNewRound() {
         console.error("DB Update Failed - Stopping Rematch:", error);
         return; // STOP HERE so we don't send a fake broadcast
     }
-    
+
     //console.log("Host: Database updated. Waiting for listener to trigger engine...");
 }
 
@@ -1295,7 +1343,7 @@ async function fetchNextLobbyQuestion(force = false) {
         if (data) {
             // If we are FORCING (game start), put it at the FRONT of the queue
             if (force) {
-                preloadQueue.unshift(data); 
+                preloadQueue.unshift(data);
             } else {
                 preloadQueue.push(data);
             }
@@ -1308,19 +1356,24 @@ async function fetchNextLobbyQuestion(force = false) {
     }
 }
 
-function subscribeToLobby(lobbyCode, lobbyId) {
-    if (lobbyChannel) supabase.removeChannel(lobbyChannel);
+async function subscribeToLobby(lobbyCode, lobbyId) {
+    // 1. Cleanup check
+    if (lobbyChannel) {
+        await supabase.removeChannel(lobbyChannel);
+    }
+    // 2. Setup the new channel
+    lobbyChannel = supabase.channel(`lobby_${lobbyCode}`, {
+        config: {
+            broadcast: { self: false },
+            presence: { key: myRole }
+        }
+    });
 
     // RESET pointer so we start at question 0 of the lobby list
     window.currentLobbyIndex = 0;
 
-    // We use the lobbyCode for the channel name, but the lobbyId for the DB filter
-    lobbyChannel = supabase.channel(`lobby_${lobbyCode}`, {
-        config: {
-            broadcast: { self: true },
-            presence: { key: myRole }
-        }
-    });
+    // RESET the flag whenever we join a new lobby
+    isHandlingLobbyClose = false;
 
     // --- 1. Database Listener (The "Truth") ---
     lobbyChannel.on('postgres_changes', {
@@ -1336,17 +1389,19 @@ function subscribeToLobby(lobbyCode, lobbyId) {
         // --- SYNC START TIME (CRITICAL FOR TIMER ACCURACY) ---
         // This ensures Guest and Host use the same "Start Line" timestamp
         if (lobbyData.game_start_time) {
-            const serverTime = Number(lobbyData.game_start_time);
-            gameStartTime = serverTime; // Update the global variable
-            sessionStorage.setItem('game_start_time', serverTime.toString());
+            gameStartTime = Number(lobbyData.game_start_time);
+            sessionStorage.setItem('game_start_time', gameStartTime.toString());
             //console.log("Sync: Shared Start Time Saved:", serverTime);
         }
 
         // --- NEW: SYNC NAMES ---
         // If I am host, opponent is guest. If I am guest, opponent is host.
-        opponentName = (myRole === 'host') ? lobbyData.guest_name : lobbyData.host_name;
+        const newOpponentName = (myRole === 'host') ? lobbyData.guest_name : lobbyData.host_name;
 
-        if (opponentName) {
+        // Only update if we actually got a name. 
+        // This "freezes" the last known name in memory when someone leaves.
+        if (newOpponentName) {
+            opponentName = newOpponentName;
             const oppLabel = document.getElementById('opponent-name-display');
             if (oppLabel) oppLabel.textContent = opponentName;
         }
@@ -1354,25 +1409,11 @@ function subscribeToLobby(lobbyCode, lobbyId) {
         // --- HOST LOGIC: Opponent joined ---
         if (newStatus === 'ready' && myRole === 'host') {
             document.getElementById('host-controls').classList.remove('hidden');
-            // Use the actual name here too!
-            document.getElementById('lobbyStatus').innerHTML =
-                `<span style="color: #4CAF50; font-weight: bold;">${opponentName || 'Opponent'} is ready!</span>`;
 
-            if (typeof playSound === 'function' && window.notificationBuffer) {
-                playSound(notificationBuffer);
-            }
         }
 
         // --- FIRST START LOGIC ---
         if (newStatus === 'active') {
-            // CRITICAL: Only the Guest reacts to 'active'. 
-            // The Host already started via the button click 'setTimeout'.
-            //if (myRole === 'guest') {
-                //console.log("Guest: First game ACTIVE. Launching...");
-                //startMultiplayerGame();
-            //}
-            //console.log(`${myRole.toUpperCase()}: First game ACTIVE. Launching...`);
-            // Both Host and Guest now start only when the DB confirms the lobby is active
             startMultiplayerGame();
         }
 
@@ -1399,17 +1440,52 @@ function subscribeToLobby(lobbyCode, lobbyId) {
             // 3. Everyone launches at the exact same time
             startMultiplayerGame();
         }
-    });
 
-    // --- 2. Broadcast Listeners (The "Speed") ---
-    lobbyChannel.on('broadcast', { event: 'guest-joined' }, () => {
+        if (newStatus === 'closed' && myRole === 'guest') {
+            // If the Guest is currently in a match, ignore the 'closed' database signal.
+            // They will leave on their own terms when they click the Main Menu button.
+            if (isMultiplayerMode) {
+                //console.log("Lobby closed in DB, but Guest is in-game. Updating UI instead of kicking.");
+                // 1. Update the Main Menu Button Text
+                const mainMenuBtn = document.querySelector('.main-menu-btn');
+                if (mainMenuBtn) {
+                    mainMenuBtn.textContent = `${opponentName || "Host"} left. Main Menu?`;
+                }
+
+                return;
+            }
+            // 2. If I'm the Guest, I need to know the party is over
+            if (isHandlingLobbyClose) return;
+            isHandlingLobbyClose = true;
+            showGoldAlert("The Host has closed the lobby.");
+            // Clean up and go home
+            leaveLobby();
+            navigateTo('view-home');
+        }
+        // 2. GUEST DISCONNECTED (Host sees 'waiting')
+        if (newStatus === 'waiting' && myRole === 'host') {
+            const endScreen = document.getElementById('end-screen');
+            const isOnEndScreen = endScreen && !endScreen.classList.contains('hidden');
+
+            // If Host is still looking at the post-game results
+            if (isMultiplayerMode || isOnEndScreen) {
+                //console.log("Guest left, but Host is viewing results. Updating UI.");
+
+                const mainMenuBtn = document.querySelector('.main-menu-btn');
+                if (mainMenuBtn) {
+                    mainMenuBtn.textContent = `${opponentName || "Guest"} left. Main Menu?`;
+                }
+
+                // We stay on this screen so the Host can finish reading their stats
+                return;
+            }
+        }
+
         if (myRole === 'host') {
-            // Backup in case Postgres change is slow
-            document.getElementById('host-controls').classList.remove('hidden');
-           document.getElementById('lobbyStatus').innerHTML =
-            `<span style="color: #4CAF50; font-weight: bold;">${opponentName || 'Opponent'} connected!</span>`;
+            handleLobbyUpdate(lobbyData);
         }
     });
+
 
     lobbyChannel.on('broadcast', { event: 'next_question_trigger' }, (envelope) => {
         if (myRole === 'guest') {
@@ -1449,13 +1525,83 @@ function subscribeToLobby(lobbyCode, lobbyId) {
         }
     });
 
-    // Subscribe and Log Connection
-    lobbyChannel.subscribe((status) => {
-        //console.log(`Lobby Channel (${lobbyCode}):`, status);
-        if (status === 'CHANNEL_ERROR') {
-            console.error("Failed to connect to Realtime. Check Replication settings.");
+    lobbyChannel.subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+            await lobbyChannel.track({
+                user_id: userId,
+                role: myRole,
+                username: username,
+                online_at: new Date().toISOString()
+            });
         }
     });
+
+    // 2. Keep ONLY the 'leave' presence listener (This handles crashes/closed tabs)
+    lobbyChannel.on('presence', { event: 'leave' }, ({ leftPresences }) => {
+        if (myRole == 'host') {
+            const guestLeft = leftPresences.some(p => p.role === 'guest');
+            if (guestLeft) {
+                // This makes the 'Start' button vanish the MOMENT they close their tab
+                handleOpponentLeft();
+
+                // Also wipe the DB so a new person can join
+                const lobbyId = sessionStorage.getItem('current_lobby_id');
+                supabase.from('live_lobbies')
+                    .update({ guest_id: null, guest_name: null, status: 'waiting' })
+                    .eq('id', lobbyId)
+            }
+        }
+    });
+}
+
+function handleLobbyUpdate(lobby) {
+    const startBtn = document.getElementById('btn-start-multiplayer');
+    const statusEl = document.getElementById('lobbyStatus');
+
+    // If guest_id exists, someone is in the slot
+    if (lobby.guest_id) {
+        opponentName = lobby.guest_name || "Opponent";
+
+        if (startBtn) startBtn.classList.remove('hidden');
+        if (statusEl) {
+            statusEl.innerHTML = `<span style="color: #4CAF50; font-weight: bold;">${opponentName} connected!</span>`;
+        }
+    } else {
+        // If guest_id is null, the slot is empty
+        opponentName = null;
+        if (startBtn) startBtn.classList.add('hidden');
+        if (statusEl) {
+            statusEl.innerHTML = '<span class="loading-dots">Waiting for opponent to join</span>';
+        }
+    }
+}
+
+function handleOpponentLeft() {
+    // 1. Update Status Text
+    const statusEl = document.getElementById('lobbyStatus');
+    if (statusEl) {
+        statusEl.innerHTML = `<span style="color: #ffb800;">Opponent disconnected. Waiting...</span>`;
+    }
+
+    // 2. Hide Host Controls (The 'Start' button)
+    const hostControls = document.getElementById('host-controls');
+    if (hostControls) {
+        hostControls.classList.add('hidden');
+    }
+
+    // 4. Reset internal flags
+    //opponentName = null;
+    opponentReadyForRematch = false;
+    iAmReadyForRematch = false;
+
+    // 5. Cleanup old game data
+    sessionStorage.removeItem('current_lobby_questions');
+    preloadQueue = [];
+    window.nextFetchIndex = 0;
+    sessionStorage.removeItem('game_start_time');
+    gameStartTime = null;
+
+    //console.log("Lobby State: Opponent has left. UI Downgraded.");
 }
 
 async function startMultiplayerGame() {
@@ -1714,7 +1860,6 @@ async function syncAndProceed(force = false) {
     const isGameOver = (myHP <= 0 || opponentHP <= 0);
     if (isGameOver) {
         //console.log("Match concluded. Final HP - Me:", myHP, "Opponent:", opponentHP);
-
         // Final Result Logic (Prioritizing the Draw)
         let result = 'win';
         if (myHP <= 0 && opponentHP <= 0) {
@@ -1728,18 +1873,18 @@ async function syncAndProceed(force = false) {
 
         // Give the user 800ms to actually see the "Wrong" splat and highlight
         setTimeout(async () => {
-                    isSyncing = false;
-                    // Pass the result AND the flawless flag to your endGame function
-                    await endGame(result, wasFlawless);
-                }, 800);
-                return;
+            isSyncing = false;
+            // Pass the result AND the flawless flag to your endGame function
+            await endGame(result, wasFlawless);
+        }, 800);
+        return;
     }
 
     // 6. THE SYNCED TRANSITION
     if (myRole === 'host') {
         const nextIndex = window.currentLobbyIndex + 1;
-        
-    // The "Quick Fix" Delay:
+
+        // The "Quick Fix" Delay:
         // Wait 1.2 seconds before telling the Guest to move.
         // This gives the Guest time to see their hitsplat if they were last.
         setTimeout(() => {
@@ -2077,25 +2222,32 @@ async function init() {
         if (!lobbyId || !lobbyChannel) return;
 
         try {
-            // 1. Create the ONE TRUE start time right here
-            const startTime = Date.now();
+            const startTime = Date.now() + 1500;
 
-            // 2. Update DB - Send the status AND the time together
-            const { error } = await supabase
+            // 2. THE ATOMIC UPDATE (The Database Truth)
+            // We add .not('guest_id', 'is', null) to ensure that if the DB 
+            // WAS updated in the last 50ms, this update will fail.
+            const { data, error } = await supabase
                 .from('live_lobbies')
-                .update({ 
+                .update({
                     status: 'active',
-                    game_start_time: startTime // This fixes the 2-second drift!
+                    game_start_time: startTime
                 })
-                .eq('id', lobbyId);
+                .eq('id', lobbyId)
+                .not('guest_id', 'is', null) // Safety: Don't update if guest_id is null
+                .select();
 
-            if (error) throw error;
+            // 3. FINAL VERIFICATION
+            // If 'data' is empty, the update affected 0 rows because the guest is gone.
+            if (error || !data || data.length === 0) {
+                showGoldAlert("Opponent has left the lobby.");
+                handleOpponentLeft();
+                return;
+            }
 
-            // 3. We set it locally for the Host as a backup
+            // Only if we get here does the Host start their local game logic
             sessionStorage.setItem('game_start_time', startTime.toString());
             gameStartTime = startTime;
-
-            //console.log("Host: Start request sent with timestamp:", startTime);
 
         } catch (err) {
             console.error("Start failed:", err.message);
@@ -2166,7 +2318,6 @@ async function init() {
             if (isMultiplayerMode) {
                 // 1. Reset local ready states
                 iAmReadyForRematch = true;
-
                 // 2. Wipe the old game data
                 preloadQueue = [];
                 window.nextFetchIndex = 0;
@@ -2222,6 +2373,9 @@ async function init() {
             return;
         }
 
+        // CRITICAL: Ensure username exists (this fixes the Line 2278 error)
+        const activeUsername = username || "Guest_" + Math.floor(Math.random() * 1000);
+
         try {
             resetGameEngine();
             // 1. Look for the lobby
@@ -2232,7 +2386,7 @@ async function init() {
                 .eq('code', inputCode)
                 .eq('status', 'waiting')
                 .gt('created_at', twentyFourHoursAgo)
-                .single();
+                .maybeSingle();
 
             if (error || !data) {
                 showGoldAlert("Lobby not found or already full.");
@@ -2258,24 +2412,12 @@ async function init() {
                 .update({
                     status: 'ready',
                     guest_id: userId,
-                    guest_name: username, // The Guest's name
+                    guest_name: activeUsername, // The Guest's name
                 })
                 .eq('id', data.id);
 
             // 4. Start listening for the "Start Game" signal from the Host
-            subscribeToLobby(data.code, data.id);
-
-            // 4. THE MAGIC PILL: Broadcast the arrival
-            // We wrap this in a tiny timeout to ensure the subscription is active
-            setTimeout(() => {
-                if (lobbyChannel) {
-                    lobbyChannel.send({
-                        type: 'broadcast',
-                        event: 'guest-joined',
-                        payload: { name: 'Guest' }
-                    });
-                }
-            }, 500); // Give the socket half a second to open
+            await subscribeToLobby(data.code, data.id);
 
             // 3. UI Updates
             document.getElementById('lobbyCodeDisplay').textContent = data.code;
@@ -2296,21 +2438,22 @@ async function init() {
     if (mainMenuBtns) {
         mainMenuBtns.forEach(btn => {
             btn.addEventListener('click', async () => {
+                const lobbyId = sessionStorage.getItem('current_lobby_id');
+
+                // Check for the ID directly instead of the boolean flag
+                if (lobbyId) {
+                    //console.log("Lobby ID detected, triggering leaveLobby...");
+                    await leaveLobby();
+                }
                 preloadQueue = [];
                 resetGame();
-                myRole = null; // Clear the role
-                currentLobbyCode = null;    // Clear the code
-                isMultiplayerMode = false;
+
                 // RESET THE JOIN CODE INPUT
                 const joinInput = document.getElementById('join-code-input');
                 if (joinInput) {
                     joinInput.value = ''; // Clears the text
                 }
-                iHaveAnswered = false;
-                opponentHasAnswered = false;
-                isSyncing = false;
-                myHP = 60; // Or your default OSRS HP
-                opponentHP = 60;
+
                 // Just hide the game-over screen and navigate. 
                 // navigateTo will handle the rest!
                 document.getElementById('end-screen').classList.add('hidden');
@@ -2320,6 +2463,13 @@ async function init() {
         });
     }
 
+    if (lobbymainMenu) {
+        lobbymainMenu.onclick = async () => {
+            //console.log("Lobby Exit: Cleaning up everything...");
+            await leaveLobby();
+            navigateTo('view-home');
+        };
+    }
     if (muteBtn) {
         // --- ADD THESE TWO LINES TO SYNC ON REFRESH ---
         muteBtn.querySelector('#muteIcon').textContent = muted ? '🔇' : '🔊';
@@ -2544,6 +2694,8 @@ function resetGame() {
     weeklyQuestionCount = 0;
     liteQuestionCount = 0;
     dailyQuestionCount = 0;
+    isMultiplayerMode = false;
+    isEndGameProcessing = false;
 
     // 5. Reset Timer Visuals
     timeLeft = 15;
@@ -2564,6 +2716,10 @@ function resetGame() {
     if (pBtn) {
         pBtn.disabled = false; // enable
         pBtn.innerHTML = 'Play Again';
+    }
+    const mainMenuBtn = document.querySelector('.main-menu-btn');
+    if (mainMenuBtn) {
+        mainMenuBtn.textContent = 'Main Menu';
     }
 }
 
@@ -2877,7 +3033,7 @@ async function loadQuestion(isFirst = false) {
         iHaveAnswered = false;
         opponentHasAnswered = false;
         isSyncing = false;
- 
+
         // Multiplayer refill happens AFTER the UI is updated
         if (!isFirst && preloadQueue.length <= 4) {
             preloadNextQuestions(5);
@@ -3017,7 +3173,7 @@ async function checkAnswer(choiceId, btn) {
                 }
             }, 15000);
         }
-      
+
         handleMultiplayerTransition();
     }
 
@@ -3154,7 +3310,7 @@ async function checkAnswer(choiceId, btn) {
                             // instant notification is already firing.
                             setTimeout(() => {
                                 showAchievementNotification(r.display_name);
-                            }, (index * 1500) + 1000); 
+                            }, (index * 1500) + 1000);
                         });
                     }
                 });
@@ -3312,7 +3468,7 @@ async function highlightCorrectAnswer() {
 }
 
 async function endGame(result = null, wasFlawless = false) {
-    if (isMultiplayerMode && isEndGameProcessing) return; 
+    if (isMultiplayerMode && isEndGameProcessing) return;
     isEndGameProcessing = true;
     // If this is a Multiplayer result, we IGNORE the gameEnding lock 
     // to ensure the Victory/Defeat screen overrides any "Game Over" glitch.
@@ -3350,16 +3506,16 @@ async function endGame(result = null, wasFlawless = false) {
                 p_is_flawless: wasFlawless // flawless win
             });
 
-        if (!error && newAchievements && newAchievements.length > 0) {
-            newAchievements.forEach((row, index) => {
-                const task = ACHIEVEMENT_SCHEMA.flatMap(c => c.tasks).find(t => t.id === row.new_achievement_id);
-                if (task) {
-                    // Add a small delay between notifications so they don't overlap
-                    setTimeout(() => {
-                        showAchievementNotification(task.text);
-                    }, index * 1500); 
-                }
-            });
+            if (!error && newAchievements && newAchievements.length > 0) {
+                newAchievements.forEach((row, index) => {
+                    const task = ACHIEVEMENT_SCHEMA.flatMap(c => c.tasks).find(t => t.id === row.new_achievement_id);
+                    if (task) {
+                        // Add a small delay between notifications so they don't overlap
+                        setTimeout(() => {
+                            showAchievementNotification(task.text);
+                        }, index * 1500);
+                    }
+                });
             }
         }
 
@@ -3392,7 +3548,7 @@ async function endGame(result = null, wasFlawless = false) {
                 gameOverTitle.textContent = "A double knockout!";
             }
         }
-     
+
         const startStr = sessionStorage.getItem('game_start_time');
 
         let finalDisplayTime = 0;
@@ -3442,7 +3598,7 @@ async function endGame(result = null, wasFlawless = false) {
         // 2. LIVE UPDATE: Refresh the stats page in the background
         // This ensures that if the user clicks "Stats" after the game, the data is already there.
         await renderStats();
-        
+
         return;
     }
 
@@ -3485,7 +3641,7 @@ async function endGame(result = null, wasFlawless = false) {
                 // Add a 1.5 second delay multiplied by the position in the list
                 setTimeout(() => {
                     showAchievementNotification(res.display_name);
-                }, index * 1500); 
+                }, index * 1500);
             });
         }
     }
