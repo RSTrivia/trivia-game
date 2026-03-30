@@ -1690,7 +1690,7 @@ input.input-field:-webkit-autofill:active {
   width: 260px;
   /* Smaller width */
   text-align: center;
-  z-index: 999999 !important;
+  z-index: 99999 !important;
   opacity: 0;
   pointer-events: none;
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -2784,7 +2784,7 @@ input.input-field:-webkit-autofill:active {
 /* Move text above the image */
 .cape-slot span {
     order: 1;
-    font-size: 0.75rem; /* Slightly smaller to fit the square */
+    font-size: 1rem; /* Slightly smaller to fit the square */
     color: #d4af37;
     font-weight: bold;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
@@ -2796,7 +2796,6 @@ input.input-field:-webkit-autofill:active {
 /* Ensure Cape images follow the same filter/visibility logic as pets */
 .cape-slot img {
     object-fit: contain;
-    margin-bottom: 5px;
     pointer-events: none;
     user-select: none;
     transition: filter 0.3s ease;
