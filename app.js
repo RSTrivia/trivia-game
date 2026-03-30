@@ -3243,20 +3243,33 @@ async function checkAnswer(choiceId, btn) {
             const petData = res.pet_info;
             if (petData && petData.unlocked) {
 
+                // 1. Show the Pet Notification IMMEDIATELY
+                showCollectionLogNotification(petData.pet_name);
+                // 2. Determine if an achievement needs to pop later
+                let achievementName = null;
+
                 // Achievement: Unlock 1 Pet
                 if (petData.total_unlocked === 1) {
-                    showAchievementNotification("Unlock 1 Pet");
+                    achievementName = "Unlock 1 Pet";
                 }
 
                 // Achievement: Unlock 8 Pets
                 if (petData.total_unlocked === 8) {
-                    showAchievementNotification("Unlock 8 Pets");
+                    achievementName = "Unlock 8 Pets";
                 }
 
                 // Achievement: Unlock all Pets
                 if (petData.is_all_pets) {
-                    showAchievementNotification("Unlock all Pets");
+                    achievementName = "Unlock all Pets";
                 }
+
+                // 3. If there is an achievement, show it after a 2s delay
+                if (achievementName) {
+                    setTimeout(() => {
+                        showAchievementNotification(achievementName);
+                    }, 2000); // 2 seconds gives the pet modal time to shine
+                }
+
 
                 // Update LocalStorage Cache
                 let currentCached = JSON.parse(localStorage.getItem('cached_pets') || "[]");
@@ -3264,9 +3277,7 @@ async function checkAnswer(choiceId, btn) {
                     currentCached.push(petData.pet_id);
                     localStorage.setItem('cached_pets', JSON.stringify(currentCached));
                 }
-
-                // UI Feedback
-                showCollectionLogNotification(petData.pet_name);
+             
             }
 
             let instantID = null;
