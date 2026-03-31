@@ -1525,17 +1525,6 @@ async function subscribeToLobby(lobbyCode, lobbyId) {
         }
     });
 
-    lobbyChannel.subscribe(async (status) => {
-        if (status === 'SUBSCRIBED') {
-            await lobbyChannel.track({
-                user_id: userId,
-                role: myRole,
-                username: username,
-                online_at: new Date().toISOString()
-            });
-        }
-    });
-
     // 2. Keep ONLY the 'leave' presence listener (This handles crashes/closed tabs)
     lobbyChannel.on('presence', { event: 'leave' }, ({ leftPresences }) => {
         if (myRole == 'host') {
@@ -1550,6 +1539,17 @@ async function subscribeToLobby(lobbyCode, lobbyId) {
                     .update({ guest_id: null, guest_name: null, status: 'waiting' })
                     .eq('id', lobbyId)
             }
+        }
+    });
+
+    lobbyChannel.subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+            await lobbyChannel.track({
+                user_id: userId,
+                role: myRole,
+                username: username,
+                online_at: new Date().toISOString()
+            });
         }
     });
 }
