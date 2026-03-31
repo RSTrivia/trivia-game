@@ -758,7 +758,7 @@ async function renderStats() {
 
     // Dynamically calculate the total count from your schema (currently 29 tasks)
     const totalPossible = allAchievements.length;
-
+    
     // Count how many are actually finished
     const completedCount = allAchievements.filter(t => t.check(stats)).length;
 
@@ -767,7 +767,7 @@ async function renderStats() {
     if (achieveCountElem) {
         achieveCountElem.textContent = `${completedCount}/${totalPossible}`;
     }
-
+    
     // 6. Cape Logic
     maxCape.classList.toggle('unlocked', stats.level >= MAX_LEVEL);
     achieveCape.classList.toggle('unlocked', completedCount >= totalPossible);
@@ -2003,12 +2003,17 @@ async function init() {
 
     // 1. Set up the listener FIRST
     supabase.auth.onAuthStateChange((event, session) => {
-        if (['SIGNED_IN', 'TOKEN_REFRESHED', 'SIGNED_OUT', 'USER_UPDATED'].includes(event)) {
-            handleAuthChange(event, session);
-        }
-        if (event === 'SIGNED_OUT') {
-            resetCollectionUI();
-        }
+        // Run the async logic in the background without making the listener wait
+        (async () => {
+            if (['SIGNED_IN', 'TOKEN_REFRESHED', 'SIGNED_OUT', 'USER_UPDATED'].includes(event)) {
+                await handleAuthChange(event, session);
+            }
+            if (event === 'SIGNED_OUT') {
+                resetCollectionUI();
+            }
+        })(); 
+        
+        return; // Immediately exit the listener so the channel stays "clean"
     });
 
     // 1. Get the current session
@@ -3269,7 +3274,6 @@ async function checkAnswer(choiceId, btn) {
                         showAchievementNotification(achievementName);
                     }, 2000); // 2 seconds gives the pet modal time to shine
                 }
-
 
                 // Update LocalStorage Cache
                 let currentCached = JSON.parse(localStorage.getItem('cached_pets') || "[]");
