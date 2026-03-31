@@ -254,17 +254,36 @@ let gameStartTime = 0;
     const originalError = console.error;
     const originalWarn = console.warn;
 
-    const muzzle = (...args) => {
-        const message = args.join(' ');
-        if (message.includes('WebSocket') || message.includes('realtime')) {
-            return; // Ignore these specific errors
-        }
+    // List of "Annoying Environment Errors" to ignore
+    const ignoreList = [
+        'WebSocket is closed before established',
+        'message channel closed before a response was received',
+        'presence callbacks for realtime',
+        'chrome.runtime.lastError'
+    ];
+
+    const shouldIgnore = (args) => {
+        // Convert all arguments to a single string to check against our list
+        const message = args.map(arg => {
+            try {
+                return typeof arg === 'string' ? arg : JSON.stringify(arg);
+            } catch (e) {
+                return String(arg);
+            }
+        }).join(' ');
+
+        return ignoreList.some(term => message.includes(term));
+    };
+
+    // Override Error
+    console.error = (...args) => {
+        if (shouldIgnore(args)) return;
         originalError.apply(console, args);
     };
 
-    console.error = muzzle;
+    // Override Warning
     console.warn = (...args) => {
-        if (args.join(' ').includes('WebSocket')) return;
+        if (shouldIgnore(args)) return;
         originalWarn.apply(console, args);
     };
 })();
