@@ -51,22 +51,6 @@
       // 1. Instant Text/Emoji Sync
       if (span) span.textContent = ' ' + cachedUsername;
 
-      // --- ADD THE PET LOGIC HERE ---
-      const petId = localStorage.getItem('equipped_pet_id'); // We will ensure this is saved in Step 2
-      const petImg = document.getElementById('equipped-pet-display');
-
-      if (petId && petId !== "null" && petImg) {
-        const fileName = petId.replace('pet_', '') + '.png';
-        petImg.src = `pets/${fileName}`;
-        // Change visibility, not display. 
-        // This keeps the 30px 'hole' reserved so nothing moves.
-        petImg.style.visibility = 'visible';
-      } else if (petImg) {
-        // If they truly have NO pet, then remove the space.
-        petImg.style.display = 'none';
-      }
-      // ------------------------------
-
       if (muteIcon && muteBtn) {
         muteIcon.textContent = cachedMuted ? '🔇' : '🔊';
         if (cachedMuted) muteBtn.classList.add('is-muted');
