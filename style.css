@@ -1528,6 +1528,10 @@ input.input-field:-webkit-autofill:active {
   z-index: 999;
 }
 
+#multiplayer-header:not(.hidden) + #game-notifications {
+  top: 110px; /* Adjust this to clear your HP bars */
+}
+
 .notif-text {
   font-family: 'RSFont';
   font-weight: 900;
@@ -1566,7 +1570,7 @@ input.input-field:-webkit-autofill:active {
   #game-notifications {
     /* Pushes the notification down. 
            Increase to 10px or 20px if you want it even lower. */
-    top: -11px !important;
+    top: -11px;
   }
 
   .notif-text {
@@ -1585,6 +1589,12 @@ input.input-field:-webkit-autofill:active {
   }
   #levelNumber {
     font-size: 1.3rem;
+  }
+  #multiplayer-header:not(.hidden) + #game-notifications {
+    top: 87px; /* Adjust this to clear your HP bars */
+  }
+  #rounds-display {
+    margin-top: 10px !important;
   }
 }
 
@@ -3241,6 +3251,7 @@ input.input-field:-webkit-autofill:active {
   width: 100%;
   font-size: 1.3rem;
   font-weight: bold;
+  margin-top: 20px;
   /* make sure it spans the container */
 }
 
