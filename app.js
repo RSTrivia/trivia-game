@@ -363,7 +363,7 @@ function updateLeaderboard(data) {
 function getEquippedItemIcon(itemId) {
     if (!itemId) return "";
     // Check if the item is any version of a cape (including trimmed)
-     const isCape = ['max_cape', 'achievement_cape', 'max_cape_t', 'achievement_cape_t'].includes(itemId);
+    const isCape = ['max_cape', 'achievement_cape', 'max_cape_t', 'achievement_cape_t'].includes(itemId);
 
     // Use a forward slash to make the path relative to the PROJECT ROOT
     // This tells the browser: "Start from the base folder, then look in capes/ or pets/"
@@ -761,7 +761,7 @@ async function renderStats() {
 
     // Dynamically calculate the total count from your schema (currently 29 tasks)
     const totalPossible = allAchievements.length;
-    
+
     // Count how many are actually finished
     const completedCount = allAchievements.filter(t => t.check(stats)).length;
 
@@ -770,12 +770,12 @@ async function renderStats() {
     if (achieveCountElem) {
         achieveCountElem.textContent = `${completedCount}/${totalPossible}`;
     }
-    
+
     // 6. Cape Logic
     const isMaxUnlocked = stats.level >= MAX_LEVEL;
     const isAchieveUnlocked = completedCount >= totalPossible;
     const isTrimmed = isMaxUnlocked && isAchieveUnlocked;
-    
+
     const currentMaxId = isTrimmed ? 'max_cape_t' : 'max_cape';
     const currentAchieveId = isTrimmed ? 'achievement_cape_t' : 'achievement_cape';
 
@@ -1312,23 +1312,16 @@ async function handleMultiplayerTimeout() {
     handleMultiplayerTransition();
 }
 
-// Add the 'force' parameter
 async function fetchNextLobbyQuestion(force = false) {
-    // If we aren't forcing it and it's already busy, exit.
-    if (isFetchingLobbyQuestion && !force) return;
-
     try {
-        isFetchingLobbyQuestion = true;
-
         // 1. Get the latest IDs
         let stored = sessionStorage.getItem('current_lobby_questions');
         let storedIds = stored ? JSON.parse(stored) : null;
 
         // 2. EMERGENCY SYNC
-        // If the Guest's listener hasn't saved the IDs yet, we do one quick DB grab.
         if (!storedIds || storedIds.length === 0) {
             const lobbyId = sessionStorage.getItem('current_lobby_id');
-            if (!lobbyId) return;
+            if (!lobbyId) return null;
 
             const { data, error } = await supabase
                 .from('live_lobbies')
@@ -1336,13 +1329,12 @@ async function fetchNextLobbyQuestion(force = false) {
                 .eq('id', lobbyId)
                 .single();
 
-            if (error || !data?.question_ids) return;
+            if (error || !data?.question_ids) return null;
 
             storedIds = data.question_ids;
             sessionStorage.setItem('current_lobby_questions', JSON.stringify(storedIds));
         }
 
-        // Ensure storedIds is a clean array
         if (typeof storedIds === 'string') storedIds = JSON.parse(storedIds);
 
         // 3. Pointer Logic
@@ -1351,27 +1343,40 @@ async function fetchNextLobbyQuestion(force = false) {
         const currentToFetch = window.nextFetchIndex;
         const nextId = storedIds[currentToFetch];
 
-        if (!nextId) return;
+        if (!nextId) return null;
 
-        // 4. Increment and Fetch
+        // Increment pointer immediately so the next call gets index + 1
         window.nextFetchIndex++;
 
-        // Call your deterministic RPC
+        // 4. Fetch the actual data
         const data = await fetchDeterministicQuestion(Number(nextId));
 
         if (data) {
-            // If we are FORCING (game start), put it at the FRONT of the queue
+            // Image Pre-warming
+            if (data.question_image) {
+                const img = new Image();
+                img.src = data.question_image;
+                try {
+                    await img.decode();
+                    data._preloadedImg = img;
+                } catch (e) { /* ignore decode errors */ }
+            }
+
+            // --- CRITICAL CHANGE ---
+            // If it's a "force" (Game Start), we handle it immediately.
+            // Otherwise, we RETURN the data so Promise.all keeps the order.
             if (force) {
                 preloadQueue.unshift(data);
-            } else {
-                preloadQueue.push(data);
+                return data;
             }
+
+            return data;
         }
 
+        return null;
     } catch (err) {
         console.error("RPC Fetch Error:", err.message);
-    } finally {
-        isFetchingLobbyQuestion = false;
+        return null;
     }
 }
 
@@ -2033,8 +2038,8 @@ async function init() {
             if (event === 'SIGNED_OUT') {
                 resetCollectionUI();
             }
-        })(); 
-        
+        })();
+
         return; // Immediately exit the listener so the channel stays "clean"
     });
 
@@ -2751,56 +2756,52 @@ function resetGame() {
 
 async function preloadNextQuestions(targetCount = 6) {
     // 1. EXIT EARLY for Batch Modes
-    // Daily and Weekly are handled entirely by their start functions.
     if (isDailyMode || isWeeklyMode) return;
 
     const needed = targetCount - preloadQueue.length;
     if (needed <= 0) return;
 
-    let toFetch = [];
-
-    // 2. Determine which pool to use
-    let activePool;
+    // 2. MULTIPLAYER PARALLEL LOGIC
     if (isMultiplayerMode) {
+        let fetchPromises = [];
         for (let i = 0; i < needed; i++) {
-            // sequential is safer to prevent index racing.
-            await fetchNextLobbyQuestion();
+            // We call the function multiple times in parallel
+            fetchPromises.push(fetchNextLobbyQuestion());
         }
-    } else {
-        activePool = normalSessionPool;
-        if (!activePool || activePool.length === 0) {
-            console.warn("Preload: No active pool found.");
-            return;
-        }
-        const queuedIds = preloadQueue.map(q => String(q.id));
-        // MOVE THE DECLARATION ABOVE THE LOGS
-        const availableIds = activePool.filter(poolId => {
-            const sId = String(poolId); // Convert current pool ID to string for comparison
-            return !queuedIds.includes(sId) &&
-                !usedInThisSession.includes(sId) &&
-                !pendingIds.includes(sId) &&
-                (currentQuestion ? String(currentQuestion.id) !== sId : true);
-        });
-        // CRITICAL: Stop if we ran out of questions in the pool
-        if (availableIds.length === 0) return;
 
-        // Only take as many as we need (or as many as are left)
-        toFetch = availableIds.slice(0, needed);
+        // Wait for all to finish. results will be [Q1, Q2, Q3...] in order
+        const results = await Promise.all(fetchPromises);
+
+        // Push to queue in the exact order of the results array
+        results.forEach(qData => {
+            if (qData) preloadQueue.push(qData);
+        });
+        return;
     }
 
-    if (toFetch.length === 0) return;
+    // 3. SOLO MODE LOGIC (existing)
+    let activePool = normalSessionPool;
+    if (!activePool || activePool.length === 0) return;
 
-    // Add to pending to prevent duplicate workers for the same ID
+    const queuedIds = preloadQueue.map(q => String(q.id));
+    const availableIds = activePool.filter(poolId => {
+        const sId = String(poolId);
+        return !queuedIds.includes(sId) &&
+            !usedInThisSession.includes(sId) &&
+            !pendingIds.includes(sId) &&
+            (currentQuestion ? String(currentQuestion.id) !== sId : true);
+    });
+
+    if (availableIds.length === 0) return;
+
+    let toFetch = availableIds.slice(0, needed);
+
     toFetch.forEach(id => {
         const sId = String(id);
         if (!pendingIds.includes(sId)) pendingIds.push(sId);
-        // Only track "used" for Single Player logic
-        if (!isMultiplayerMode && !usedInThisSession.includes(sId)) {
-            usedInThisSession.push(sId);
-        }
+        if (!usedInThisSession.includes(sId)) usedInThisSession.push(sId);
     });
 
-    // Fire workers in parallel with specific IDs assigned
     const workers = toFetch.map(id => fetchAndBufferQuestion(id));
     await Promise.all(workers);
 }
@@ -3302,7 +3303,7 @@ async function checkAnswer(choiceId, btn) {
                     currentCached.push(petData.pet_id);
                     localStorage.setItem('cached_pets', JSON.stringify(currentCached));
                 }
-             
+
             }
 
             let instantID = null;
@@ -3352,7 +3353,7 @@ async function checkAnswer(choiceId, btn) {
                 });
             }
         }
-        
+
         // --- MODIFIED NEXT QUESTION LOGIC ---
         if (isMultiplayerMode) {
             setTimeout(() => {
