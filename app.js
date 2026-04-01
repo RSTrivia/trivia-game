@@ -634,7 +634,7 @@ const ACHIEVEMENT_SCHEMA = [
         cat: 'Pets', tasks: [
             { id: 'p1', text: 'Unlock 1 Pet', check: (d) => d.petsUnlocked >= 1 },
             { id: 'p8', text: 'Unlock 8 Pets', check: (d) => d.petsUnlocked >= 8 },
-            { id: 'pall', text: 'Unlock all Pets', check: (d) => d.petsUnlocked >= 15 }
+            { id: 'pall', text: 'Unlock All Pets', check: (d) => d.petsUnlocked >= 15 }
         ]
     },
     {
