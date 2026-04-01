@@ -1673,7 +1673,16 @@ input.input-field:-webkit-autofill:active {
   border-bottom: 1px solid transparent;
   /* Blends into the top of the list */
   font-weight: bold;
+  cursor: default;
 }
+
+/* Hover effect for inactive tabs */
+.tab-btn:not(.active):hover {
+  background: rgba(0, 0, 0, 0.85);
+  border-color: #ffea8a;
+  color: #ffea8a; /* Optional: brightens the text slightly on hover */
+}
+
 
 /* ====== tab for leaderboards xp====== */
 
