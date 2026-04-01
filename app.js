@@ -1912,7 +1912,7 @@ async function syncAndProceed(force = false) {
         const nextIndex = window.currentLobbyIndex + 1;
 
         // The "Quick Fix" Delay:
-        // Wait 1.2 seconds before telling the Guest to move.
+        // Wait 1 second before telling the Guest to move.
         // This gives the Guest time to see their hitsplat if they were last.
         setTimeout(() => {
             if (lobbyChannel) {
@@ -2780,7 +2780,7 @@ async function preloadNextQuestions(targetCount = 6) {
     }
 
     // 3. SOLO MODE LOGIC (existing)
-    let activePool = normalSessionPool;
+    const activePool = normalSessionPool;
     if (!activePool || activePool.length === 0) return;
 
     const queuedIds = preloadQueue.map(q => String(q.id));
@@ -2794,7 +2794,7 @@ async function preloadNextQuestions(targetCount = 6) {
 
     if (availableIds.length === 0) return;
 
-    let toFetch = availableIds.slice(0, needed);
+    const toFetch = availableIds.slice(0, needed);
 
     toFetch.forEach(id => {
         const sId = String(id);
