@@ -194,7 +194,7 @@
           <div id="game-notifications"></div>
           <div id="game-stats-wrapper" style="margin-bottom: 10px; text-align: center;">
             <div id="score">Score: 0</div>
-            <div id="rounds-display" class="hidden" style="color: #D7D8D9; font-size: 1.3rem;">Round: 1</div>
+            <div id="rounds-display" class="hidden">Round: 1</div>
         </div>
           <div id="question">
             <p id="questionText"></p>
@@ -482,7 +482,7 @@
 
     <div class="button-row">
         <button id="copyCodeBtn" class="btn-small">Copy Code</button>
-        <button class="btn-small main-menu-btn">Main Menu</button>
+        <button id="lobby-main-menu-btn" class="btn-small">Main Menu</button>
     </div>
 </div>
 
@@ -528,7 +528,8 @@
       if (!petImg) return;
 
       if (petId && petId !== "null") {
-        const isCape = ['max_cape', 'achievement_cape'].includes(petId);
+        // Check if the string contains 'cape' instead of an exact match
+        const isCape = petId.toLowerCase().includes('cape');
         const folder = isCape ? 'capes/' : 'pets/';
         const fileName = isCape ? `${petId}.png` : `${petId.replace('pet_', '')}.png`;
     
