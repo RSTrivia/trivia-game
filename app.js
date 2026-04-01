@@ -591,7 +591,7 @@ const ACHIEVEMENT_SCHEMA = [
             { id: 'sc10', text: 'Reach 10 Score', check: (d) => d.maxScore >= 10 },
             { id: 'sc50', text: 'Reach 50 Score', check: (d) => d.maxScore >= 50 },
             { id: 'sc100', text: 'Reach 100 Score', check: (d) => d.maxScore >= 100 },
-            { id: 'sc510', text: 'Reach Max Score', check: (d) => d.maxScore >= 610 }
+            { id: 'sc510', text: 'Reach 250 Score', check: (d) => d.maxScore >= 250 }
         ]
     },
     {
