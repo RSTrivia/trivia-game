@@ -254,36 +254,17 @@ let gameStartTime = 0;
     const originalError = console.error;
     const originalWarn = console.warn;
 
-    // List of "Annoying Environment Errors" to ignore
-    const ignoreList = [
-        'WebSocket is closed before established',
-        'message channel closed before a response was received',
-        'presence callbacks for realtime',
-        'chrome.runtime.lastError'
-    ];
-
-    const shouldIgnore = (args) => {
-        // Convert all arguments to a single string to check against our list
-        const message = args.map(arg => {
-            try {
-                return typeof arg === 'string' ? arg : JSON.stringify(arg);
-            } catch (e) {
-                return String(arg);
-            }
-        }).join(' ');
-
-        return ignoreList.some(term => message.includes(term));
-    };
-
-    // Override Error
-    console.error = (...args) => {
-        if (shouldIgnore(args)) return;
+    const muzzle = (...args) => {
+        const message = args.join(' ');
+        if (message.includes('WebSocket') || message.includes('realtime')) {
+            return; // Ignore these specific errors
+        }
         originalError.apply(console, args);
     };
 
-    // Override Warning
+    console.error = muzzle;
     console.warn = (...args) => {
-        if (shouldIgnore(args)) return;
+        if (args.join(' ').includes('WebSocket')) return;
         originalWarn.apply(console, args);
     };
 })();
@@ -1628,6 +1609,9 @@ async function startMultiplayerGame() {
     gameEnding = false;
     isSyncing = false;  // Reset the sync lock
     iHaveAnswered = false;
+    isDailyMode = false;
+    isWeeklyMode = false;
+    isLiteMode = false;
     isMultiplayerMode = true;
     myHP = MAX_HP;
     opponentHP = MAX_HP;
@@ -2718,8 +2702,6 @@ function resetGame() {
     weeklyQuestionCount = 0;
     liteQuestionCount = 0;
     dailyQuestionCount = 0;
-    isMultiplayerMode = false;
-    isEndGameProcessing = false;
 
     // 5. Reset Timer Visuals
     timeLeft = 15;
@@ -2848,6 +2830,7 @@ async function startGame() {
     gameStarting = true;
     gameEnding = false;
     isDailyMode = false;
+    isMultiplayerMode = false;
     isWeeklyMode = false;
 
     pendingIds = [];
@@ -3350,6 +3333,7 @@ async function checkAnswer(choiceId, btn) {
                 });
             }
         }
+        
         // --- MODIFIED NEXT QUESTION LOGIC ---
         if (isMultiplayerMode) {
             setTimeout(() => {
@@ -4169,6 +4153,7 @@ async function startWeeklyChallenge() {
     isWeeklyMode = true;
     isDailyMode = false;
     isLiteMode = false;
+    isMultiplayerMode = false;
     pendingIds = []
     preloadQueue = [];
     usedInThisSession = [];
@@ -4242,6 +4227,7 @@ async function startDailyChallenge(session) {
     isDailyMode = true;
     isWeeklyMode = false;
     isLiteMode = false;
+    isMultiplayerMode = false;
     pendingIds = [];
     preloadQueue = [];
     usedInThisSession = [];
