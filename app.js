@@ -697,10 +697,9 @@ async function renderStats() {
     const totalWrong = parseInt(localStorage.getItem('cached_total_wrong') || 0);
     const totalAnswers = totalCorrect + totalWrong;
 
-    // Calculate Accuracy
     const accuracy = totalAnswers > 0
-        ? Math.round((totalCorrect / totalAnswers) * 100)
-        : 0;
+        ? (Math.floor((totalCorrect / totalAnswers * 100) * 10) / 10).toFixed(1)
+        : "0.0";
 
     // Update the UI elements
     const correctElem = document.getElementById('statsTotalCorrect');
