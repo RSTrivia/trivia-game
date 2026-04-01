@@ -2276,8 +2276,11 @@ input.input-field:-webkit-autofill:active {
   border-radius: 5px;
   font-weight: 700;
   box-sizing: border-box;
-  transition: background-color 0.3s ease, color 0.3s ease, color: #D7D8D9;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  color: #D7D8D9;
   font-size: 1.3rem;
+  height: 40px; /* Matches your desktop padding/font size feel */
+  min-height: 40px;
 }
 
 #leaderboard li:nth-child(odd) {
@@ -2357,6 +2360,8 @@ input.input-field:-webkit-autofill:active {
   #leaderboard li {
     height: 38px !important;
     font-size: 0.9rem !important;
+    height: 35px !important;
+    min-height: 35px !important;
   }
 
   /* 3. Ensure the button doesn't force stretching */
