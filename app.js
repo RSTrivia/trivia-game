@@ -3306,7 +3306,7 @@ async function checkAnswer(choiceId, btn) {
 
                 // Achievement: Unlock all Pets
                 if (petData.is_all_pets) {
-                    achievementName = "Unlock all Pets";
+                    achievementName = "Unlock All Pets";
                 }
 
                 // 3. If there is an achievement, show it after a 2s delay
