@@ -640,7 +640,9 @@ const ACHIEVEMENT_SCHEMA = [
     {
         cat: 'Game', tasks: [
             { id: 'fast', text: 'Lucky Guess', check: (d) => d.fastestGuess === true },
-            { id: 'close', text: 'Just in Time', check: (d) => d.justInTime === true }
+            { id: 'close', text: 'Just in Time', check: (d) => d.justInTime === true },
+            { id: 'correct_1000', text: 'Reach 1,000 Correct Answers', check: (d) => d.correct_1000 === true },
+            { id: 'correct_10000', text: 'Reach 10,000 Correct Answers', check: (d) => d.correct_10000 === true }
         ]
     }
 ];
@@ -833,6 +835,8 @@ function getStatsObject() {
         petsUnlocked: JSON.parse(localStorage.getItem('cached_pets') || '[]').length,
         fastestGuess: localStorage.getItem('stat_fastest') === 'true',
         justInTime: localStorage.getItem('stat_just_in_time') === 'true',
+        correct_1000: localStorage.getItem('stat_correct_1000') === 'true',
+        correct_10000: localStorage.getItem('stat_correct_10000') === 'true',
         dailyPerfect: localStorage.getItem('stat_daily_perfect') === 'true',
         //--- Multiplayer Booleans from LocalStorage --
         multi_first_win: localStorage.getItem('ach_stat_multi_win') === 'true',
@@ -986,7 +990,9 @@ async function loadCollection() {
         localStorage.setItem('cached_xp', profileData.xp || 0);
         localStorage.setItem('cached_level', officialLevel);
         localStorage.setItem('cached_max_score', maxScore);
-
+        // total correct answers
+        localStorage.setItem('stat_correct_1000', (a.correct_1000 || false).toString());
+        localStorage.setItem('stat_correct_10000', (a.correct_10000 || false).toString());
         // Save Multiplayer stats to LocalStorage so renderAchievements can see them
         localStorage.setItem('ach_stat_multi_win', (a.multi_first_win || false).toString());
         localStorage.setItem('ach_stat_multi_loss', (a.multi_first_loss || false).toString());
@@ -2032,10 +2038,10 @@ async function init() {
     supabase.auth.onAuthStateChange((event, session) => {
         // Run the async logic in the background without making the listener wait
         (async () => {
-            if (['SIGNED_IN', 'TOKEN_REFRESHED', 'SIGNED_OUT', 'USER_UPDATED'].includes(event)) {
+            if (['SIGNED_IN', 'TOKEN_REFRESHED', 'SIGNED_OUT', 'USER_UPDATED', 'TOKEN_REFRESH_FAILED'].includes(event)) {
                 await handleAuthChange(event, session);
             }
-            if (event === 'SIGNED_OUT') {
+            if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESH_FAILED') {
                 resetCollectionUI();
             }
         })();
@@ -2560,9 +2566,13 @@ async function handleAuthChange(event, session) {
         // ONLY wipe if the user actually clicked Log Out
         const wasManual = localStorage.getItem('manual_logout');
         userId = null;
+        // Detect if this was a "Kick" vs a "Logout"
+        if (event === 'TOKEN_REFRESH_FAILED') {
+            showGoldAlert("Your session has expired. Please log in again.");
+        }
         // IMPORTANT: Only wipe if we are CERTAIN this is an intentional logout
         // and not just a slow connection.
-        if (event === 'SIGNED_OUT') {
+        if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESH_FAILED') {
             localStorage.removeItem('manual_logout');
             localStorage.removeItem('cached_xp');
             localStorage.removeItem('cachedUsername');
@@ -3256,10 +3266,20 @@ async function checkAnswer(choiceId, btn) {
                     if (xpData.new_level >= 92 && xpData.old_level < 92) showAchievementNotification("Reach Level 92");
                     if (xpData.new_level >= 99 && xpData.old_level < 99) showAchievementNotification("Reach Max Level");
                 }
-
-
+            }
+            // Always sync the total count to local storage for the stats profile page
+            if (res.total_correct !== undefined) {
+                localStorage.setItem('cached_total_correct', res.total_correct);
             }
 
+            if (res.achievement_pop) {
+                const milestoneText = res.achievement_pop === 1000
+                    ? "Reach 1,000 Correct Answers"
+                    : "Reach 10,000 Correct Answers";
+                
+                // Trigger notification and update local achievement list
+                showAchievementNotification(milestoneText);
+            }
             // 2. NEW: Score Milestone Logic
             // This only fires for Normal Mode
             if (res.milestone) {
