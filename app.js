@@ -362,7 +362,8 @@ function updateLeaderboard(data) {
 
 function getEquippedItemIcon(itemId) {
     if (!itemId) return "";
-    const isCape = ['max_cape', 'achievement_cape'].includes(itemId);
+    // Check if the item is any version of a cape (including trimmed)
+     const isCape = ['max_cape', 'achievement_cape', 'max_cape_t', 'achievement_cape_t'].includes(itemId);
 
     // Use a forward slash to make the path relative to the PROJECT ROOT
     // This tells the browser: "Start from the base folder, then look in capes/ or pets/"
@@ -553,7 +554,9 @@ const PET_DATA = [
     { id: 'pet_lil_zik', name: 'Lil\' Zik', rarity: 'mythic', file: 'lil_zik.png' },
     { id: 'pet_tumekens_guardian', name: 'Tumeken\'s guardian', rarity: 'mythic', file: 'tumekens_guardian.png' },
     { id: 'max_cape', name: 'Max Cape', file: 'max_cape.png' },
-    { id: 'achievement_cape', name: 'Achievement Cape', file: 'achievement_cape.png' }
+    { id: 'achievement_cape', name: 'Achievement Cape', file: 'achievement_cape.png' },
+    { id: 'max_cape_t', name: 'Max Cape (t)', file: 'max_cape_t.png' },
+    { id: 'achievement_cape_t', name: 'Achievement Cape (t)', file: 'achievement_cape_t.png' }
 ];
 
 function resetCollectionUI() {
@@ -769,21 +772,37 @@ async function renderStats() {
     }
     
     // 6. Cape Logic
-    maxCape.classList.toggle('unlocked', stats.level >= MAX_LEVEL);
-    achieveCape.classList.toggle('unlocked', completedCount >= totalPossible);
+    const isMaxUnlocked = stats.level >= MAX_LEVEL;
+    const isAchieveUnlocked = completedCount >= totalPossible;
+    const isTrimmed = isMaxUnlocked && isAchieveUnlocked;
+    
+    const currentMaxId = isTrimmed ? 'max_cape_t' : 'max_cape';
+    const currentAchieveId = isTrimmed ? 'achievement_cape_t' : 'achievement_cape';
+
+    maxCape.classList.toggle('unlocked', isMaxUnlocked);
+    achieveCape.classList.toggle('unlocked', isAchieveUnlocked);
 
     // Apply visual state (does not need to be a function, just direct assignment)
-    maxCape.classList.toggle('equipped', currentEquippedPet === 'max_cape');
-    achieveCape.classList.toggle('equipped', currentEquippedPet === 'achievement_cape');
+    maxCape.classList.toggle('equipped', currentEquippedPet === 'max_cape' || currentEquippedPet === 'max_cape_t');
+    achieveCape.classList.toggle('equipped', currentEquippedPet === 'achievement_cape' || currentEquippedPet === 'achievement_cape_t');
 
-    // Attach listeners ONCE outside of data-heavy renders if possible, 
-    // but for simplicity here, we only attach if they aren't already set.
+    // Update the image source dynamically if trimmed
+    maxCape.querySelector('img').src = `capes/${currentMaxId}.png`;
+    achieveCape.querySelector('img').src = `capes/${currentAchieveId}.png`;
+
+    // Attach listeners using the dynamic ID
     if (!maxCape.dataset.listener) {
-        maxCape.addEventListener('click', () => handleCapeClick('max_cape', maxCape));
+        maxCape.addEventListener('click', () => {
+            const idToEquip = (isMaxUnlocked && isAchieveUnlocked) ? 'max_cape_t' : 'max_cape';
+            handleCapeClick(idToEquip, maxCape);
+        });
         maxCape.dataset.listener = "true";
     }
     if (!achieveCape.dataset.listener) {
-        achieveCape.addEventListener('click', () => handleCapeClick('achievement_cape', achieveCape));
+        achieveCape.addEventListener('click', () => {
+            const idToEquip = (isMaxUnlocked && isAchieveUnlocked) ? 'achievement_cape_t' : 'achievement_cape';
+            handleCapeClick(idToEquip, achieveCape);
+        });
         achieveCape.dataset.listener = "true";
     }
 }
@@ -876,11 +895,11 @@ function applyUnlocks(unlockedList) {
 
         // Force the correct image file based on the PET_DATA array
         if (img) {
-            // Check if it's a cape based on the ID or a property in your PET_DATA
-            const isCape = pet.id === 'max_cape' || pet.id === 'achievement_cape';
+            // Updated check: if the ID contains 'cape', it goes to the capes folder
+            // This now correctly handles max_cape, achievement_cape, and the _t versions
+            const isCape = pet.id.includes('cape');
             const folder = isCape ? 'capes/' : 'pets/';
 
-            // Use the file property from PET_DATA, but point to the correct folder
             img.src = `${folder}${pet.file}`;
         }
         // Update Classes
