@@ -544,22 +544,27 @@ const PET_DATA = [
     { id: 'pet_mole', name: 'Baby Mole', rarity: 'common', file: 'mole.png' },
     { id: 'pet_kraken', name: 'Pet Kraken', rarity: 'common', file: 'kraken.png' },
     { id: 'pet_chompy', name: 'Chompy Chick', rarity: 'common', file: 'chompy.png' },
+    { id: 'pet_beef', name: 'Beef', rarity: 'common', file: 'beef.png' },
 
     { id: 'pet_zilyana', name: 'Pet Zilyana', rarity: 'uncommon', file: 'zilyana.png' },
     { id: 'pet_vorki', name: 'Vorki', rarity: 'uncommon', file: 'vorki.png' },
     { id: 'pet_snakeling', name: 'Pet Snakeling', rarity: 'uncommon', file: 'snakeling.png' },
+    { id: 'pet_callisto_cub', name: 'Callisto Cub', rarity: 'uncommon', file: 'callisto_cub.png' },
 
     { id: 'pet_yami', name: 'Yami', rarity: 'rare', file: 'yami.png' },
     { id: 'pet_bloodhound', name: 'Bloodhound', rarity: 'rare', file: 'bloodhound.png' },
     { id: 'pet_rocky', name: 'Rocky', rarity: 'rare', file: 'rocky.png' },
+    { id: 'pet_nid', name: 'Nid', rarity: 'rare', file: 'nid.png' },
 
     { id: 'pet_jad', name: 'TzRek-Jad', rarity: 'legendary', file: 'jad.png' },
     { id: 'pet_olmlet', name: 'Olmlet', rarity: 'legendary', file: 'olmlet.png' },
     { id: 'pet_corporeal_beast', name: 'Corporeal Beast', rarity: 'legendary', file: 'corporeal_beast.png' },
+    { id: 'pet_baron', name: 'Baron', rarity: 'legendary', file: 'baron.png' },
 
     { id: 'pet_zuk', name: 'TzRek-Zuk', rarity: 'mythic', file: 'zuk.png' },
     { id: 'pet_lil_zik', name: 'Lil\' Zik', rarity: 'mythic', file: 'lil_zik.png' },
     { id: 'pet_tumekens_guardian', name: 'Tumeken\'s Guardian', rarity: 'mythic', file: 'tumekens_guardian.png' },
+    { id: 'pet_kalphite_princess', name: 'Kalphite Princess', rarity: 'mythic', file: 'kalphite_princess.png' },
     { id: 'max_cape', name: 'Max Cape', file: 'max_cape.png' },
     { id: 'achievement_cape', name: 'Achievement Cape', file: 'achievement_cape.png' },
     { id: 'max_cape_t', name: 'Max Cape (t)', file: 'max_cape_t.png' },
@@ -640,8 +645,8 @@ const ACHIEVEMENT_SCHEMA = [
     {
         cat: 'Pets', tasks: [
             { id: 'p1', text: 'Unlock 1 Pet', check: (d) => d.petsUnlocked >= 1 },
-            { id: 'p8', text: 'Unlock 8 Pets', check: (d) => d.petsUnlocked >= 8 },
-            { id: 'pall', text: 'Unlock all Pets', check: (d) => d.petsUnlocked >= 15 }
+            { id: 'p10', text: 'Unlock 10 Pets', check: (d) => d.petsUnlocked >= 10 },
+            { id: 'pall', text: 'Unlock all Pets', check: (d) => d.petsUnlocked >= 20 }
         ]
     },
     {
@@ -764,7 +769,7 @@ async function renderStats() {
     });
 
     // 5. Update UI Counters
-    document.getElementById('stat-pet-count').textContent = `${stats.petsUnlocked}/${15}`;
+    document.getElementById('stat-pet-count').textContent = `${stats.petsUnlocked}/${20}`;
     const allAchievements = ACHIEVEMENT_SCHEMA.flatMap(c => c.tasks);
 
     // Dynamically calculate the total count from your schema (currently 29 tasks)
@@ -1074,7 +1079,7 @@ async function openPlayerProfile(username) {
     document.getElementById('m-statsLevel').textContent = data.level;
     document.getElementById('m-statsXP').textContent = data.xp.toLocaleString();
     document.getElementById('m-stat-achieve-count').textContent = `${data.completed_achievements}/29`;
-    document.getElementById('m-stat-pet-count').textContent = `${data.pets_unlocked}/15`;
+    document.getElementById('m-stat-pet-count').textContent = `${data.pets_unlocked}/20`;
 
     // --- Stats Grid ---
     document.getElementById('m-statsTotalCorrect').textContent = data.total_correct.toLocaleString();
@@ -3373,8 +3378,8 @@ async function checkAnswer(choiceId, btn) {
                 }
 
                 // Achievement: Unlock 8 Pets
-                if (petData.total_unlocked === 8) {
-                    achievementName = "Unlock 8 Pets";
+                if (petData.total_unlocked === 10) {
+                    achievementName = "Unlock 10 Pets";
                 }
 
                 // Achievement: Unlock all Pets
@@ -4190,7 +4195,12 @@ function showCollectionLogNotification(petName) {
         'Corporeal Beast': 'corporeal_beast.png',
         'Tumeken\'s Guardian': 'tumekens_guardian.png',
         'Lil\' Zik': 'lil_zik.png',
-        'TzRek-Zuk': 'zuk.png'
+        'TzRek-Zuk': 'zuk.png',
+        'Beef' : 'beef.png',
+        'Nid' : 'nid.png',
+        'Callisto Cub' : 'callisto_cub.png',
+        'Baron' : 'baron.png',
+        'Kalphite Princess' : 'kalphite_princess.png'
     };
 
     const fileName = fileNameMap[petName] || 'mole.png';
