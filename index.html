@@ -35,6 +35,7 @@
       const logBtn = document.getElementById('logBtn');
       const helpBtn = document.getElementById('helpBtn');
       const helpModal = document.getElementById('help-modal');
+      const playerModal = document.getElementById('playerModal');
       const closeHelpBtn = document.getElementById('closeHelpBtn');
       const multiplayerBtn = document.getElementById('MultiplayerBtn');
 
@@ -84,22 +85,27 @@
         });
       }
 
-      // Open Modal
-      helpBtn.onclick = () => {
-        helpModal.classList.remove('hidden');
-      };
-
-      // Close Modal (via button)
-      closeHelpBtn.onclick = () => {
-        helpModal.classList.add('hidden');
-      };
-
-      // Close Modal (clicking outside the box)
-      window.onclick = (event) => {
-        if (event.target == helpModal) {
-          helpModal.classList.add('hidden');
+    // --- Combined Close Logic for ALL Modals ---
+    window.onclick = (event) => {
+        // If the user clicked the background of the Help Modal
+        if (event.target === helpModal) {
+            helpModal.classList.add('hidden');
         }
-      };
+
+        // If the user clicked the background of the Player Modal
+        if (event.target === playerModal) {
+            playerModal.classList.add('hidden');
+        }
+    };
+
+    // --- Button Clicks (Keep these separate, they don't overwrite each other) ---
+    helpBtn.onclick = () => helpModal.classList.remove('hidden');
+    closeHelpBtn.onclick = () => helpModal.classList.add('hidden');
+
+    // For the Player Modal X (using the specific ID to be safe)
+    document.querySelector('#playerModal .close-modal').onclick = () => {
+        document.getElementById('playerModal').classList.add('hidden');
+    };
 
     });
 
@@ -519,6 +525,63 @@
       <button id="closeHelpBtn" class="btn" style="margin-top: 25px;">Close</button>
     </div>
   </div>
+
+<div id="playerModal" class="modal hidden">
+  <div class="modal-container">
+    <span class="close-modal">&times;</span>
+
+    <div id="m-statsView" style="width: 100%;">
+      <div id="m-statsProfileHeader" class="text-all" style="display: flex; flex-direction: column; align-items: center; gap: 15px;">
+        <div id="m-statsName" style="font-size: 1.5rem; color: #d4af37; font-weight: bold;">Player Name</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; width: 100%; gap: 10px 20px;">
+          <div class="text-white"><span class="stat-label" style="color: #d4af37;">Level: </span> <span id="m-statsLevel" style="color: #D1D1D1; font-weight: bold;">0</span></div>
+          <div class="text-white"><span class="stat-label" style="color: #d4af37;">Achievements: </span> <span id="m-stat-achieve-count" style="color: #D1D1D1; font-weight: bold;">0</span></div>
+          <div class="text-white"><span class="stat-label" style="color: #d4af37;">XP: </span> <span id="m-statsXP" style="color: #D1D1D1; font-weight: bold;">0</span></div>
+          <div class="text-white"><span class="stat-label" style="color: #d4af37;">Pets: </span> <span id="m-stat-pet-count" style="color: #D1D1D1; font-weight: bold;">0</span></div>
+        </div>  
+      </div>
+
+      <h2 class="stats-title">Stats</h2>
+      <div id="m-statsList">
+        <div class="achieve-item stat-correct"><span class="stat-label" style="color: #d4af37;">Total Correct:</span> <span id="m-statsTotalCorrect" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
+        <div class="achieve-item stat-streak"><span class="stat-label" style="color: #d4af37;">Best Daily Streak:</span> <span id="m-statsMaxStreak" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
+        <div class="achieve-item stat-wrong"><span class="stat-label" style="color: #d4af37;">Total Wrong:</span> <span id="m-statsTotalWrong" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
+        <div class="achieve-item stat-total-daily"><span class="stat-label" style="color: #d4af37;">Total Daily Games:</span> <span id="m-statsTotalDaily" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
+        <div class="achieve-item stat-accuracy"><span class="stat-label" style="color: #d4af37;">Accuracy:</span> <span id="m-statsAccuracy" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0%</span></div>
+        <div class="achieve-item stat-multiplayer">
+          <span class="stat-label" style="color: #d4af37;">Multiplayer:</span> 
+          <span class="stat-value" style="font-weight: bold;">
+            <span id="m-statsWins" style="color: #519053;">0</span><span style="color: #D1D1D1;"> / </span>
+            <span id="m-statsLosses" style="color: #994943;">0</span><span style="color: #D1D1D1;"> / </span>
+            <span id="m-statsDraws" style="color: #b0a644;">0</span>
+          </span>
+        </div>
+      </div>
+
+      <h2 class="stats-title">Personal Bests</h2>
+      <div id="m-pbList">
+        <div class="achieve-item pb-normal"><span class="stat-label" style="color: #d4af37;">Normal:</span> <span id="m-pbNormal" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
+        <div class="achieve-item pb-daily"><span class="stat-label" style="color: #d4af37;">Daily:</span> <span id="m-pbDaily" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
+        <div class="achieve-item pb-lite"><span class="stat-label" style="color: #d4af37;">Lite:</span> <span id="m-pbLite" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
+        <div class="achieve-item pb-weekly"><span class="stat-label" style="color: #d4af37;">Weekly:</span> <span id="m-pbWeekly" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
+      </div>
+
+      <div class="capes-section">
+        <h2 class="stats-title">Capes</h2>
+        <div class="cape-grid">
+          <div class="cape-slot" id="m-cape-max">
+            <img id="m-img-max" src="capes/max_cape.png" alt="Max Cape">
+            <span>Max Cape</span>
+          </div>
+          <div class="cape-slot" id="m-cape-achieve">
+            <img id="m-img-achieve" src="capes/achievement_cape.png" alt="Comp Cape">
+            <span>Achievement Cape</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
   <script type="module">
     import { supabase } from './supabase.js';
 
