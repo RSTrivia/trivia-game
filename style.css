@@ -3431,8 +3431,7 @@ input.input-field:-webkit-autofill:active {
 }
 
 /* Match the Title Spacing */
-#playerModal .stats-title,
-#playerModal h2 {
+#playerModal .stats-title {
     margin: 14px 0 5px 0;
     line-height: 1.2;
     text-align: center;
@@ -3459,6 +3458,27 @@ input.input-field:-webkit-autofill:active {
     color: #f5f5f5;
     transform: scale(1.1);
 }
+
+/* This ONLY targets items inside the player modal */
+#playerModal .achieve-item {
+    display: flex !important;
+    justify-content: flex-start !important;
+    align-items: center;
+    text-align: left !important;
+    padding: 5px !important;
+    box-sizing: border-box !important;
+}
+/* Push the value (numbers/streaks) to the far right */
+#playerModal .stat-value {
+    margin-left: auto; 
+    text-align: right;
+}
+
+/* You can even change the labels specifically for the modal */
+#playerModal .stat-label {
+    font-size: 1rem;
+}
+
 /* Re-using your animation */
 @keyframes modalSlideIn {
     from {
@@ -3471,4 +3491,23 @@ input.input-field:-webkit-autofill:active {
     }
 }
 
+@media (max-width: 480px) {
+  #playerModal .modal-container {
+      max-width: 280px; /* Desktop cap */
+  }
+  #playerModal .stat-label {
+      font-size: 0.75rem;
+  }
+  #playerModal .stats-title {
+      font-size: 1rem;
+      padding-bottom: 5px;
+  }
+  #playerModal .stat-value {
+    font-size: 0.7rem;
+  }
+  #playerModal .text-white, 
+  #playerModal .text-white span {
+      font-size: 0.9rem;
+  }
+}
 /* ---------- player modal for leaderboard ----------------- */
