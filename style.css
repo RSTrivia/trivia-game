@@ -3479,6 +3479,11 @@ input.input-field:-webkit-autofill:active {
     font-size: 1rem;
 }
 
+#playerModal .text-white, 
+#playerModal .text-white span {
+      font-size: 1.1rem;
+}
+
 /* Re-using your animation */
 @keyframes modalSlideIn {
     from {
