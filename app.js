@@ -564,7 +564,7 @@ const PET_DATA = [
     { id: 'pet_zuk', name: 'TzRek-Zuk', rarity: 'mythic', file: 'zuk.png' },
     { id: 'pet_lil_zik', name: 'Lil\' Zik', rarity: 'mythic', file: 'lil_zik.png' },
     { id: 'pet_tumekens_guardian', name: 'Tumeken\'s Guardian', rarity: 'mythic', file: 'tumekens_guardian.png' },
-    { id: 'pet_kalphite_princess', name: 'Kalphite Princess', rarity: 'mythic', file: 'kalphite_princess.png' },
+    { id: 'pet_little_nightmare', name: 'Little Nightmare', rarity: 'mythic', file: 'little_nightmare.png' },
     { id: 'max_cape', name: 'Max Cape', file: 'max_cape.png' },
     { id: 'achievement_cape', name: 'Achievement Cape', file: 'achievement_cape.png' },
     { id: 'max_cape_t', name: 'Max Cape (t)', file: 'max_cape_t.png' },
@@ -4227,7 +4227,7 @@ function showCollectionLogNotification(petName) {
         'Nid' : 'nid.png',
         'Callisto Cub' : 'callisto_cub.png',
         'Baron' : 'baron.png',
-        'Kalphite Princess' : 'kalphite_princess.png'
+        'Little Nightmare' : 'little_nightmare.png'
     };
 
     const fileName = fileNameMap[petName] || 'mole.png';
