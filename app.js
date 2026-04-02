@@ -1244,6 +1244,7 @@ function resetGameEngine() {
     sessionStorage.removeItem('current_lobby_questions');
     sessionStorage.removeItem('current_lobby_id');
     sessionStorage.removeItem('game_start_time');
+    document.getElementById('dailyEndNote').classList.add('hidden');
 
     // 3. Reset Game State Flags
     isEndGameProcessing = false;
@@ -2811,6 +2812,8 @@ function resetGame() {
     if (timeDisplay) timeDisplay.textContent = timeLeft;
     if (timeWrap) timeWrap.classList.remove('red-timer');
 
+    document.getElementById('dailyEndNote').classList.add('hidden');
+
     const gzTitle = document.getElementById('gz-title');
     if (gzTitle) gzTitle.classList.add('hidden');
     document.getElementById('multiplayer-header').classList.add('hidden');
@@ -3836,6 +3839,8 @@ async function endGame(result = null, wasFlawless = false) {
             gameOverTitle.classList.remove('hidden');
         }
 
+        document.getElementById('dailyEndNote').classList.remove('hidden');
+
         // This one function now handles: Streak, Total Count, and Perfect 10/10
         // Pass the actual 'score' variable here
         localStorage.setItem('lastDailyScoreDate', new Date().toISOString().split('T')[0]);
@@ -3856,6 +3861,7 @@ async function endGame(result = null, wasFlawless = false) {
             shareBtn.style.opacity = "1";
             shareBtn.style.pointerEvents = "auto";
         }
+
 
     } else {
         // --- NORMAL OR LITE MODE ---
