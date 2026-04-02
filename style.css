@@ -3516,3 +3516,20 @@ input.input-field:-webkit-autofill:active {
   }
 }
 /* ---------- player modal for leaderboard ----------------- */
+
+/* ---------- daily mode end note ----------------- */
+
+#dailyEndNote {
+  font-size: 1.5rem;
+  margin: 0;
+  color: #d4af37;
+}
+
+#dailyEndNote .gold-link-icon {
+    display: inline-block;
+    opacity: 0.9;
+    filter: sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85);
+    font-size: 1.1rem;
+}
+
+/* ---------- daily mode end note ----------------- */
