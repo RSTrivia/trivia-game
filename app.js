@@ -288,7 +288,6 @@ function showGoldAlert(message) {
     }, 3000);
 }
 
-
 function formatLeaderboardTime(ms) {
     // Hide if 0, null, or the default "empty" values
     if (!ms || ms <= 0 || ms === 9999 || ms === 9999999) return "";
@@ -315,6 +314,8 @@ function updateLeaderboard(data) {
         if (!entry.username) {
             userTxt.innerHTML = ''; // Changed to innerHTML to clear images
             scoreSpan.innerHTML = '';
+            userTxt.onclick = null; // Remove listener if row is empty
+            userTxt.style.cursor = "default";
             return;
         }
 
@@ -323,6 +324,12 @@ function updateLeaderboard(data) {
         const fullNameHtml = `${itemImgHtml}${entry.username}`;
         if (userTxt.innerHTML !== fullNameHtml) {
             userTxt.innerHTML = fullNameHtml;
+            
+            // --- ADDED: CLICK LOGIC ---
+            userTxt.style.cursor = "pointer";
+            userTxt.onclick = () => {
+                openPlayerProfile(entry.username);
+            };
         }
 
         let finalHTML = "";
@@ -1052,6 +1059,69 @@ async function loadCollection() {
         }
     }
 }
+
+async function openPlayerProfile(username) {
+    // 1. Fetch data from RPC
+    const { data, error } = await supabase.rpc('get_player_stats', { target_username: username });
+
+    if (error || !data) {
+        console.error("User not found or RPC error:", error);
+        return;
+    }
+
+    // --- Header ---
+    document.getElementById('m-statsName').textContent = data.username;
+    document.getElementById('m-statsLevel').textContent = data.level;
+    document.getElementById('m-statsXP').textContent = data.xp.toLocaleString();
+    document.getElementById('m-stat-achieve-count').textContent = `${data.completed_achievements}/29`;
+    document.getElementById('m-stat-pet-count').textContent = `${data.pets_unlocked}/15`;
+
+    // --- Stats Grid ---
+    document.getElementById('m-statsTotalCorrect').textContent = data.total_correct.toLocaleString();
+    document.getElementById('m-statsTotalWrong').textContent = data.total_wrong.toLocaleString();
+    document.getElementById('m-statsMaxStreak').textContent = data.best_streak.toLocaleString();
+    document.getElementById('m-statsTotalDaily').textContent = data.daily_total.toLocaleString();
+    
+    const total = data.total_correct + data.total_wrong;
+    const accuracy = total > 0 ? (Math.floor((data.total_correct / total * 100) * 10) / 10).toFixed(1) : "0.0";
+    document.getElementById('m-statsAccuracy').textContent = `${accuracy}%`;
+
+    // --- Multiplayer ---
+    document.getElementById('m-statsWins').textContent = data.wins;
+    document.getElementById('m-statsLosses').textContent = data.losses;
+    document.getElementById('m-statsDraws').textContent = data.draws;
+
+    // --- Personal Bests (Updated to match your HTML IDs) ---
+    const formatPB = (score, time) => {
+        const timeStr = formatLeaderboardTime(time); // Uses your existing global helper
+        return `${parseInt(score).toLocaleString()}${timeStr}`;
+    };
+
+    // Correctly targeting the IDs: m-pbNormal, m-pbDaily, m-pbLite, m-pbWeekly
+    document.getElementById('m-pbNormal').innerHTML = formatPB(data.pb_normal, data.pb_normal_time);
+    document.getElementById('m-pbDaily').innerHTML  = formatPB(data.pb_daily.score || 0, data.pb_daily.time || 0);
+    document.getElementById('m-pbLite').innerHTML   = formatPB(data.pb_lite.score || 0, data.pb_lite.time || 0);
+    document.getElementById('m-pbWeekly').innerHTML = formatPB(data.pb_weekly.score || 0, data.pb_weekly.time || 0);
+
+    // --- Capes ---
+    const isMaxUnlocked = data.level >= 99;
+    const isAchieveUnlocked = data.completed_achievements >= 29;
+    const isTrimmed = isMaxUnlocked && isAchieveUnlocked;
+
+    const maxCape = document.getElementById('m-cape-max');
+    const achieveCape = document.getElementById('m-cape-achieve');
+
+    maxCape.classList.toggle('unlocked', isMaxUnlocked);
+    achieveCape.classList.toggle('unlocked', isAchieveUnlocked);
+
+    // Swap images based on "Trimmed" status (99 + all achievements)
+    document.getElementById('m-img-max').src = isTrimmed ? 'capes/max_cape_t.png' : 'capes/max_cape.png';
+    document.getElementById('m-img-achieve').src = isTrimmed ? 'capes/achievement_cape_t.png' : 'capes/achievement_cape.png';
+
+    // Open Modal
+    document.getElementById('playerModal').classList.remove('hidden');
+}
+
 
 // main app
 window.navigateTo = function (viewId) {
