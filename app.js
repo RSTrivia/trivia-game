@@ -1074,11 +1074,37 @@ async function openPlayerProfile(username) {
         return;
     }
 
+    // Calculate "Virtual" Achievements
+    // Start with the ones stored in the DB
+    let finalAchieveCount = data.completed_achievements || 0;
+    // Milestone: Daily Mode
+    if (data.best_streak >= 10) finalAchieveCount++;
+    if (data.daily_total >= 1) finalAchieveCount++;
+    if (data.daily_total >= 20) finalAchieveCount++;
+    if (data.daily_total >= 100) finalAchieveCount++;
+  
+    // Milestone: Levels
+    if (data.level >= 10) finalAchieveCount++;
+    if (data.level >= 50) finalAchieveCount++;
+    if (data.level >= 92) finalAchieveCount++;
+    if (data.level >= 99) finalAchieveCount++;
+  
+    // Milestone: Normal Mode
+    if (parseInt(data.pb_normal) >= 10) finalAchieveCount++;
+    if (parseInt(data.pb_normal) >= 50) finalAchieveCount++;
+    if (parseInt(data.pb_normal) >= 100) finalAchieveCount++;
+    if (parseInt(data.pb_normal) >= 250) finalAchieveCount++;
+
+    // Milestone: Pets
+    if (data.pets_unlocked >= 1) finalAchieveCount++;
+    if (data.pets_unlocked >= 10) finalAchieveCount++;
+    if (data.pets_unlocked >= 20) finalAchieveCount++;
+
     // --- Header ---
     document.getElementById('m-statsName').textContent = data.username;
     document.getElementById('m-statsLevel').textContent = data.level;
     document.getElementById('m-statsXP').textContent = data.xp.toLocaleString();
-    document.getElementById('m-stat-achieve-count').textContent = `${data.completed_achievements}/29`;
+    document.getElementById('m-stat-achieve-count').textContent = `${finalAchieveCount}/35`;
     document.getElementById('m-stat-pet-count').textContent = `${data.pets_unlocked}/20`;
 
     // --- Stats Grid ---
@@ -1108,9 +1134,10 @@ async function openPlayerProfile(username) {
     document.getElementById('m-pbLite').innerHTML   = formatPB(data.pb_lite.score || 0, data.pb_lite.time || 0);
     document.getElementById('m-pbWeekly').innerHTML = formatPB(data.pb_weekly.score || 0, data.pb_weekly.time || 0);
 
+    // Daily total + max streak
     // --- Capes ---
     const isMaxUnlocked = data.level >= 99;
-    const isAchieveUnlocked = data.completed_achievements >= 29;
+    const isAchieveUnlocked = finalAchieveCount >= 35;
     const isTrimmed = isMaxUnlocked && isAchieveUnlocked;
 
     const maxCape = document.getElementById('m-cape-max');
