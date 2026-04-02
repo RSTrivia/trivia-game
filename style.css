@@ -3345,3 +3345,130 @@ input.input-field:-webkit-autofill:active {
     padding-top: 65px;
   }
 }
+
+
+
+/* ---------- player modal for leaderboard ----------------- */
+.user-txt {
+    transition: filter 0.2s ease;
+}
+
+.user-txt:hover {
+    filter: brightness(1.3);
+    text-shadow: 0 0 8px rgba(212, 175, 55, 0.6);
+}
+
+/* Add this to your CSS */
+.user-txt:active {
+    transform: scale(0.98);
+    filter: brightness(0.8);
+}
+
+/* --- Modal Stats Grid Layout --- */
+#m-statsList, #m-pbList {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr; /* Two equal columns */
+    gap: 8px; 
+}
+
+/* Reordering the Modal Stats List */
+#m-statsList .stat-correct      { order: 1; } 
+#m-statsList .stat-streak       { order: 2; } 
+#m-statsList .stat-wrong         { order: 3; } 
+#m-statsList .stat-total-daily  { order: 4; } 
+#m-statsList .stat-accuracy     { order: 5; } 
+#m-statsList .stat-multiplayer  { order: 6; } 
+
+/* Reordering the Modal PB List */
+#m-pbList .pb-normal { order: 1; } 
+#m-pbList .pb-weekly { order: 4; } /* Top Right */
+#m-pbList .pb-lite   { order: 3; } /* Middle Left */
+#m-pbList .pb-daily  { order: 2; } /* Middle Right */
+
+/* Modal Stats Header Grid Logic */
+#m-statsProfileHeader div[style*="grid"] {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px 20px;
+}
+
+/* Specific Placements for Level/XP/Achieve/Pets in Modal Header */
+#m-statsProfileHeader div[style*="grid"] div:nth-child(1) { grid-column: 1; grid-row: 1; } /* Level */
+#m-statsProfileHeader div[style*="grid"] div:nth-child(3) { grid-column: 1; grid-row: 2; } /* XP */
+#m-statsProfileHeader div[style*="grid"] div:nth-child(2) { grid-column: 2; grid-row: 1; } /* Achievements */
+#m-statsProfileHeader div[style*="grid"] div:nth-child(4) { grid-column: 2; grid-row: 2; } /* Pets */
+
+/* ====== PLAYER PROFILE MODAL STYLES ====== */
+#playerModal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex; /* Centering logic */
+    justify-content: center;
+    align-items: flex-start;
+    z-index: 99999;
+    backdrop-filter: blur(3px);
+    padding-top: 5vh;
+}
+
+#playerModal .modal-container {
+    position: relative;
+    width: 100%; /* Margin for mobile */
+    max-width: 390px; /* Desktop cap */
+    
+    background: rgba(0, 0, 0, 0.9);
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+
+    animation: modalSlideIn 0.3s ease-out;
+    max-height: 80vh; /* Slightly taller to fit capes */
+    overflow-y: auto;
+    
+    /* Matching your Help Modal padding */
+    padding: 10px 25px 25px 25px !important;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Match the Title Spacing */
+#playerModal .stats-title,
+#playerModal h2 {
+    margin: 14px 0 5px 0;
+    line-height: 1.2;
+    text-align: center;
+    color: #d4af37;
+    font-size: 1.2rem;
+    padding-bottom: 5px;
+}
+
+/* Close Button Positioning */
+#playerModal .close-modal {
+    position: absolute;
+    top: 1px;    /* Distance from the top border */
+    right: 10px; /* Distance from the right border */
+    
+    cursor: pointer;
+    font-size: 28px;
+    color: #d4af37;
+    line-height: 1;
+    z-index: 10;
+    transition: transform 0.1s;
+}
+
+#playerModal .close-modal:hover {
+    color: #f5f5f5;
+    transform: scale(1.1);
+}
+/* Re-using your animation */
+@keyframes modalSlideIn {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* ---------- player modal for leaderboard ----------------- */
