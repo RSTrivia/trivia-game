@@ -552,7 +552,7 @@ const PET_DATA = [
 
     { id: 'pet_zuk', name: 'TzRek-Zuk', rarity: 'mythic', file: 'zuk.png' },
     { id: 'pet_lil_zik', name: 'Lil\' Zik', rarity: 'mythic', file: 'lil_zik.png' },
-    { id: 'pet_tumekens_guardian', name: 'Tumeken\'s guardian', rarity: 'mythic', file: 'tumekens_guardian.png' },
+    { id: 'pet_tumekens_guardian', name: 'Tumeken\'s Guardian', rarity: 'mythic', file: 'tumekens_guardian.png' },
     { id: 'max_cape', name: 'Max Cape', file: 'max_cape.png' },
     { id: 'achievement_cape', name: 'Achievement Cape', file: 'achievement_cape.png' },
     { id: 'max_cape_t', name: 'Max Cape (t)', file: 'max_cape_t.png' },
@@ -634,7 +634,7 @@ const ACHIEVEMENT_SCHEMA = [
         cat: 'Pets', tasks: [
             { id: 'p1', text: 'Unlock 1 Pet', check: (d) => d.petsUnlocked >= 1 },
             { id: 'p8', text: 'Unlock 8 Pets', check: (d) => d.petsUnlocked >= 8 },
-            { id: 'pall', text: 'Unlock All Pets', check: (d) => d.petsUnlocked >= 15 }
+            { id: 'pall', text: 'Unlock all Pets', check: (d) => d.petsUnlocked >= 15 }
         ]
     },
     {
@@ -3306,7 +3306,7 @@ async function checkAnswer(choiceId, btn) {
 
                 // Achievement: Unlock all Pets
                 if (petData.is_all_pets) {
-                    achievementName = "Unlock All Pets";
+                    achievementName = "Unlock all Pets";
                 }
 
                 // 3. If there is an achievement, show it after a 2s delay
@@ -4112,7 +4112,7 @@ function showCollectionLogNotification(petName) {
         'Olmlet': 'olmlet.png',
         'TzRek-Jad': 'jad.png',
         'Corporeal Beast': 'corporeal_beast.png',
-        'Tumeken\'s guardian': 'tumekens_guardian.png',
+        'Tumeken\'s Guardian': 'tumekens_guardian.png',
         'Lil\' Zik': 'lil_zik.png',
         'TzRek-Zuk': 'zuk.png'
     };
