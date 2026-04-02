@@ -85,27 +85,27 @@
         });
       }
 
-    // --- Combined Close Logic for ALL Modals ---
-    window.onclick = (event) => {
+      // --- Combined Close Logic for ALL Modals ---
+      window.onclick = (event) => {
         // If the user clicked the background of the Help Modal
         if (event.target === helpModal) {
-            helpModal.classList.add('hidden');
+          helpModal.classList.add('hidden');
         }
 
         // If the user clicked the background of the Player Modal
         if (event.target === playerModal) {
-            playerModal.classList.add('hidden');
+          playerModal.classList.add('hidden');
         }
-    };
+      };
 
-    // --- Button Clicks (Keep these separate, they don't overwrite each other) ---
-    helpBtn.onclick = () => helpModal.classList.remove('hidden');
-    closeHelpBtn.onclick = () => helpModal.classList.add('hidden');
+      // --- Button Clicks (Keep these separate, they don't overwrite each other) ---
+      helpBtn.onclick = () => helpModal.classList.remove('hidden');
+      closeHelpBtn.onclick = () => helpModal.classList.add('hidden');
 
-    // For the Player Modal X (using the specific ID to be safe)
-    document.querySelector('#playerModal .close-modal').onclick = () => {
+      // For the Player Modal X (using the specific ID to be safe)
+      document.querySelector('#playerModal .close-modal').onclick = () => {
         document.getElementById('playerModal').classList.add('hidden');
-    };
+      };
 
     });
 
@@ -118,6 +118,7 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <link rel="icon" type="image/x-icon" href="favicon.ico">
+
 <body>
   <!-- BACKGROUND LAYERS -->
   <div id="background-root">
@@ -175,33 +176,33 @@
         <!-- Game Screen -->
         <div id="game" class="hidden">
           <!-- multiplayer -->
-              <div id="multiplayer-header" class="hidden" style="margin-bottom: 20px;">
-          <div class="duel-container">
-            <div class="player-hp-group" id="my-hp-group">
+          <div id="multiplayer-header" class="hidden" style="margin-bottom: 20px;">
+            <div class="duel-container">
+              <div class="player-hp-group" id="my-hp-group">
                 <span id="my-name-display" class="player-name">You</span>
                 <div class="hp-bar-bg">
-                    <div id="my-hp-fill" class="hp-bar-fill" style="width: 100%;"></div>
+                  <div id="my-hp-fill" class="hp-bar-fill" style="width: 100%;"></div>
                 </div>
                 <span id="my-hp-text" class="hp-text">60/60</span>
-            </div>
+              </div>
 
-            <div class="vs-divider">VS</div>
+              <div class="vs-divider">VS</div>
 
-            <div class="player-hp-group" id="opponent-hp-group">
+              <div class="player-hp-group" id="opponent-hp-group">
                 <span id="opponent-name-display" class="player-name">Opponent</span>
                 <div class="hp-bar-bg">
-                    <div id="opponent-hp-fill" class="hp-bar-fill" style="width: 100%;"></div>
+                  <div id="opponent-hp-fill" class="hp-bar-fill" style="width: 100%;"></div>
                 </div>
                 <span id="opponent-hp-text" class="hp-text">60/60</span>
+              </div>
             </div>
-        </div>
-      </div>
+          </div>
 
           <div id="game-notifications"></div>
           <div id="game-stats-wrapper" style="margin-bottom: 10px; text-align: center;">
             <div id="score">Score: 0</div>
             <div id="rounds-display" class="hidden">Round: 1</div>
-        </div>
+          </div>
           <div id="question">
             <p id="questionText"></p>
             <img id="questionImage" alt="Question image">
@@ -265,16 +266,19 @@
           <p id="end-score-container">Score: <span id="finalScore"></span></p>
           <div id="multiplayer-stats-container" class="hidden" style="margin-top: 15px;">
             <span style="color: #D7D8D9; font-size: 1.5rem;">
-                Survived <span id="multi-rounds-count" style="color: #4CAF50;">0</span> Rounds
+              Survived <span id="multi-rounds-count" style="color: #4CAF50;">0</span> Rounds
             </span>
-        </div>
+          </div>
           <div id="weeklyTimeContainer" style="display: none;">
             <p>Time: <span id="finalTime"></span></p>
           </div>
           <div id="dailyStreakContainer" style="display: none; margin-bottom: 10px;">
-            <p style="color:#d4af37; margin: 0;">
+            <p style="margin: 0;">
               Current streak: <span id="streakCount">0</span>
             </p>
+          </div>
+          <div id="dailyEndNote" class="hidden">
+              Use icon <span class="gold-link-icon">🔗</span> to share your daily score!
           </div>
           <div class="row">
             <button id="playAgainBtn" class="btn">Play Again</button>
@@ -333,53 +337,74 @@
           <ul id="achievementList">
           </ul>
         </div>
-    <div id="statsView" class="view hidden" style="width: 100%;">
-  <div id="statsProfileHeader" class="text-all" style="display: flex; flex-direction: column; align-items: center; gap: 15px;">
-      <div id="statsName" style="font-size: 1.3rem; color: #d4af37;"></div>
-  <div style="display: grid; grid-template-columns: auto; width: 100%;">
-        <div class="text-white"><span class="stat-label" style="color: #d4af37;">Level: </span> <span id="statsLevel" style="color: #D1D1D1; font-weight: bold;">0</span></div>
-        <div class="text-white"><span class="stat-label" style="color: #d4af37;">XP: </span> <span id="statsXP" style="color: #D1D1D1; font-weight: bold;">0</span></div>
-        <div class="text-white"><span class="stat-label" style="color: #d4af37;">Achievements: </span> <span id="stat-achieve-count" style="color: #D1D1D1; font-weight: bold;">0</span></div>
-        <div class="text-white"><span class="stat-label" style="color: #d4af37;">Pets: </span> <span id="stat-pet-count" style="color: #D1D1D1; font-weight: bold;">0</span></div>
-    </div>  
-  </div>
-     <h2 class="stats-title">Stats</h2>
-       <div id="statsList">
-        <div class="achieve-item stat-correct"><span class="stat-label" style="color: #d4af37;">Total Correct:</span> <span id="statsTotalCorrect" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
-        <div class="achieve-item stat-wrong"><span class="stat-label" style="color: #d4af37;">Total Wrong:</span> <span id="statsTotalWrong" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
-        <div class="achieve-item stat-accuracy"><span class="stat-label" style="color: #d4af37;">Accuracy:</span> <span id="statsAccuracy" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0%</span></div>
-        <div class="achieve-item stat-streak"><span class="stat-label" style="color: #d4af37;">Best Daily Streak:</span> <span id="statsMaxStreak" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
-        <div class="achieve-item stat-total-daily"><span class="stat-label" style="color: #d4af37;">Total Daily Games:</span> <span id="statsTotalDaily" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
-        <div class="achieve-item stat-multiplayer">
-        <span class="stat-label" style="color: #d4af37;">Multiplayer:</span> 
-        <span class="stat-value" style="font-weight: bold;">
-            <span id="statsWins" style="color: #519053;">0</span><span style="color: #D1D1D1;"> / </span>
-            <span id="statsLosses" style="color: #994943;">0</span><span style="color: #D1D1D1;"> / </span>
-            <span id="statsDraws" style="color: #b0a644;">0</span>
-        </span>
-    </div>
-   </div>
-   <h2 class="stats-title">Personal Bests</h2>
-      <div id="pbList">
-      <div class="achieve-item pb-normal" data-mode="Normal"><span class="stat-label" style="color: #d4af37;">Normal:</span> <span class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
-      <div class="achieve-item pb-lite" data-mode="Lite"><span class="stat-label" style="color: #d4af37;">Lite:</span> <span class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
-      <div class="achieve-item pb-weekly" data-mode="Weekly"><span class="stat-label" style="color: #d4af37;">Weekly:</span> <span class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
-      <div class="achieve-item pb-daily" data-mode="Daily"><span class="stat-label" style="color: #d4af37;">Daily:</span> <span class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
-   </div>
-      <div class="capes-section">
-        <h2 class="stats-title">Capes</h2>
-    <div class="cape-grid">
-          <div class="cape-slot" id="cape-max">
-            <img src="capes/max_cape.png" alt="Max Cape">
-            <span>Max Cape</span>
+        <div id="statsView" class="view hidden" style="width: 100%;">
+          <div id="statsProfileHeader" class="text-all"
+            style="display: flex; flex-direction: column; align-items: center; gap: 15px;">
+            <div id="statsName" style="font-size: 1.3rem; color: #d4af37;"></div>
+            <div style="display: grid; grid-template-columns: auto; width: 100%;">
+              <div class="text-white"><span class="stat-label" style="color: #d4af37;">Level: </span> <span
+                  id="statsLevel" style="color: #D1D1D1; font-weight: bold;">0</span></div>
+              <div class="text-white"><span class="stat-label" style="color: #d4af37;">XP: </span> <span id="statsXP"
+                  style="color: #D1D1D1; font-weight: bold;">0</span></div>
+              <div class="text-white"><span class="stat-label" style="color: #d4af37;">Achievements: </span> <span
+                  id="stat-achieve-count" style="color: #D1D1D1; font-weight: bold;">0</span></div>
+              <div class="text-white"><span class="stat-label" style="color: #d4af37;">Pets: </span> <span
+                  id="stat-pet-count" style="color: #D1D1D1; font-weight: bold;">0</span></div>
+            </div>
           </div>
-          <div class="cape-slot" id="cape-achieve">
-            <img src="capes/achievement_cape.png" alt="Comp Cape">
-            <span>Achievement Cape</span>
+          <h2 class="stats-title">Stats</h2>
+          <div id="statsList">
+            <div class="achieve-item stat-correct"><span class="stat-label" style="color: #d4af37;">Total
+                Correct:</span> <span id="statsTotalCorrect" class="stat-value"
+                style="color: #D1D1D1; font-weight: bold;">0</span></div>
+            <div class="achieve-item stat-wrong"><span class="stat-label" style="color: #d4af37;">Total Wrong:</span>
+              <span id="statsTotalWrong" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
+            <div class="achieve-item stat-accuracy"><span class="stat-label" style="color: #d4af37;">Accuracy:</span>
+              <span id="statsAccuracy" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0%</span></div>
+            <div class="achieve-item stat-streak"><span class="stat-label" style="color: #d4af37;">Best Daily
+                Streak:</span> <span id="statsMaxStreak" class="stat-value"
+                style="color: #D1D1D1; font-weight: bold;">0</span></div>
+            <div class="achieve-item stat-total-daily"><span class="stat-label" style="color: #d4af37;">Total Daily
+                Games:</span> <span id="statsTotalDaily" class="stat-value"
+                style="color: #D1D1D1; font-weight: bold;">0</span></div>
+            <div class="achieve-item stat-multiplayer">
+              <span class="stat-label" style="color: #d4af37;">Multiplayer:</span>
+              <span class="stat-value" style="font-weight: bold;">
+                <span id="statsWins" style="color: #519053;">0</span><span style="color: #D1D1D1;"> / </span>
+                <span id="statsLosses" style="color: #994943;">0</span><span style="color: #D1D1D1;"> / </span>
+                <span id="statsDraws" style="color: #b0a644;">0</span>
+              </span>
+            </div>
+          </div>
+          <h2 class="stats-title">Personal Bests</h2>
+          <div id="pbList">
+            <div class="achieve-item pb-normal" data-mode="Normal"><span class="stat-label"
+                style="color: #d4af37;">Normal:</span> <span class="stat-value"
+                style="color: #D1D1D1; font-weight: bold;">0</span></div>
+            <div class="achieve-item pb-lite" data-mode="Lite"><span class="stat-label"
+                style="color: #d4af37;">Lite:</span> <span class="stat-value"
+                style="color: #D1D1D1; font-weight: bold;">0</span></div>
+            <div class="achieve-item pb-weekly" data-mode="Weekly"><span class="stat-label"
+                style="color: #d4af37;">Weekly:</span> <span class="stat-value"
+                style="color: #D1D1D1; font-weight: bold;">0</span></div>
+            <div class="achieve-item pb-daily" data-mode="Daily"><span class="stat-label"
+                style="color: #d4af37;">Daily:</span> <span class="stat-value"
+                style="color: #D1D1D1; font-weight: bold;">0</span></div>
+          </div>
+          <div class="capes-section">
+            <h2 class="stats-title">Capes</h2>
+            <div class="cape-grid">
+              <div class="cape-slot" id="cape-max">
+                <img src="capes/max_cape.png" alt="Max Cape">
+                <span>Max Cape</span>
+              </div>
+              <div class="cape-slot" id="cape-achieve">
+                <img src="capes/achievement_cape.png" alt="Comp Cape">
+                <span>Achievement Cape</span>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-       </div>
         <button class="btn main-menu-btn">Main Menu</button>
       </div>
       <div id="view-login" class="view hidden">
@@ -403,9 +428,9 @@
         <div class="row">
           <button class="btn main-menu-btn">Main Menu</button>
         </div>
-        </div>
-  
-<div id="view-leaderboard" class="view hidden">
+      </div>
+
+      <div id="view-leaderboard" class="view hidden">
         <h1 id="leaderboard-title">Leaderboard</h1>
         <div class="leaderboard-tabs">
           <button id="scoreTab" class="tab-btn active">Normal</button>
@@ -439,61 +464,60 @@
         <button class="btn main-menu-btn">Main Menu</button>
       </div>
 
-<div id="view-multiplayer-menu" class="view hidden">
-    <h1 class="main-title">OSRS Trivia</h1>
-    <div class="lobby-card">
-        <h2 style="color: #d4af37; margin-bottom: 20px;">Multiplayer Mode</h2>
-        <div class="button-stack">
+      <div id="view-multiplayer-menu" class="view hidden">
+        <h1 class="main-title">OSRS Trivia</h1>
+        <div class="lobby-card">
+          <h2 style="color: #d4af37; margin-bottom: 20px;">Multiplayer Mode</h2>
+          <div class="button-stack">
             <button id="btn-create-lobby" class="btn">Create New Lobby</button>
             <button id="btn-join-lobby" class="btn">Join Lobby</button>
+          </div>
         </div>
-    </div>
-    <div class="row">
-        <button onclick="window.navigateTo('view-home')" class="btn">Main Menu</button>
-    </div>
-</div>
+        <div class="row">
+          <button onclick="window.navigateTo('view-home')" class="btn">Main Menu</button>
+        </div>
+      </div>
 
-<div id="view-join-lobby" class="view hidden">
-    <h1 class="main-title">OSRS Trivia</h1>
-    <div class="lobby-card">
-        <p style="color: #a0a0a0; margin-bottom: 15px;">Enter 6-Digit Code:</p>
-        
-        <input type="text" id="join-code-input" maxlength="6" 
-               placeholder="ABCDEF" class="code-input-field">
-        
-        <button id="btn-confirm-join" class="btn" style="width: 100%; margin-top: 10px;">Join Lobby</button>
-    </div>
+      <div id="view-join-lobby" class="view hidden">
+        <h1 class="main-title">OSRS Trivia</h1>
+        <div class="lobby-card">
+          <p style="color: #a0a0a0; margin-bottom: 15px;">Enter 6-Digit Code:</p>
 
-    <div class="row">
-        <button id="btn-cancel-join" class="btn">Back</button>
-    </div>
-</div>
+          <input type="text" id="join-code-input" maxlength="6" placeholder="ABCDEF" class="code-input-field">
 
-<div id="view-lobby" class="view hidden">
-    <h1 class="main-title">OSRS Trivia</h1>
-    
-  <div class="lobby-card">
-      <p style="color: #a0a0a0; margin-bottom: 5px;">Lobby Code:</p>
-      <h2 id="lobbyCodeDisplay" class="gold-text-large">------</h2>
-      <p style="font-size: 0.9rem; color: #d4af37; margin-top: 10px;">Share this code with a friend!</p>
+          <button id="btn-confirm-join" class="btn" style="width: 100%; margin-top: 10px;">Join Lobby</button>
+        </div>
+
+        <div class="row">
+          <button id="btn-cancel-join" class="btn">Back</button>
+        </div>
+      </div>
+
+      <div id="view-lobby" class="view hidden">
+        <h1 class="main-title">OSRS Trivia</h1>
+
+        <div class="lobby-card">
+          <p style="color: #a0a0a0; margin-bottom: 5px;">Lobby Code:</p>
+          <h2 id="lobbyCodeDisplay" class="gold-text-large">------</h2>
+          <p style="font-size: 0.9rem; color: #d4af37; margin-top: 10px;">Share this code with a friend!</p>
+        </div>
+
+        <div id="host-controls" class="hidden" style="margin-bottom: 20px;">
+          <button id="btn-start-multiplayer" class="btn">Start Duel</button>
+        </div>
+
+        <div id="lobbyStatus" class="status-container">
+          <span class="loading-dots">Waiting for opponent to join</span>
+        </div>
+
+        <div class="button-row">
+          <button id="copyCodeBtn" class="btn-small">Copy Code</button>
+          <button id="lobby-main-menu-btn" class="btn-small">Main Menu</button>
+        </div>
+      </div>
+
+    </div>
   </div>
-
-  <div id="host-controls" class="hidden" style="margin-bottom: 20px;">
-      <button id="btn-start-multiplayer" class="btn">Start Duel</button>
-  </div>
-
-  <div id="lobbyStatus" class="status-container">
-      <span class="loading-dots">Waiting for opponent to join</span>
-  </div>
-
-    <div class="button-row">
-        <button id="copyCodeBtn" class="btn-small">Copy Code</button>
-        <button id="lobby-main-menu-btn" class="btn-small">Main Menu</button>
-    </div>
-</div>
-
-  </div>
-</div>
   <!-- Scripts #f5f5f5 #e3d7c1-->
   <script type="module" src="supabase.js"></script>
   <script type="module" src="app.js"></script>
@@ -512,7 +536,8 @@
         <p>🛡️ <b>Normal Mode:</b> Build your score through a continuous streak of randomized questions; a single
           incorrect answer ends the game.</p>
         <p>⚡ <b>Lite Mode:</b> A 100-question challenge for a quick session.</p>
-        <p>💀 <b>Multiplayer Mode:</b> Battle a friend in real time! Answer correctly to stay in the fight and outlast your rival.</p>
+        <p>💀 <b>Multiplayer Mode:</b> Battle a friend in real time! Answer correctly to stay in the fight and outlast
+          your rival.</p>
         <p>📅 <b>Daily Mode:</b> Play the daily challenge once per day to earn bonus xp. Tackle 10 random questions that
           are the same for everyone. </p>
         <p>🏃‍♂️ <b>Weekly Mode:</b> Play the weekly challenge as many times as you want and improve your weekly score.
@@ -526,62 +551,78 @@
     </div>
   </div>
 
-<div id="playerModal" class="modal hidden">
-  <div class="modal-container">
-    <span class="close-modal">&times;</span>
+  <div id="playerModal" class="modal hidden">
+    <div class="modal-container">
+      <span class="close-modal">&times;</span>
 
-    <div id="m-statsView" style="width: 100%;">
-      <div id="m-statsProfileHeader" class="text-all" style="display: flex; flex-direction: column; align-items: center; gap: 15px;">
-        <div id="m-statsName" style="font-size: 1.5rem; color: #d4af37; font-weight: bold;">Player Name</div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; width: 100%; gap: 10px 20px;">
-          <div class="text-white"><span class="stat-label" style="color: #d4af37;">Level: </span> <span id="m-statsLevel" style="color: #D1D1D1; font-weight: bold;">0</span></div>
-          <div class="text-white"><span class="stat-label" style="color: #d4af37;">Achievements: </span> <span id="m-stat-achieve-count" style="color: #D1D1D1; font-weight: bold;">0</span></div>
-          <div class="text-white"><span class="stat-label" style="color: #d4af37;">XP: </span> <span id="m-statsXP" style="color: #D1D1D1; font-weight: bold;">0</span></div>
-          <div class="text-white"><span class="stat-label" style="color: #d4af37;">Pets: </span> <span id="m-stat-pet-count" style="color: #D1D1D1; font-weight: bold;">0</span></div>
-        </div>  
-      </div>
-
-      <h2 class="stats-title">Stats</h2>
-      <div id="m-statsList">
-        <div class="achieve-item stat-correct"><span class="stat-label" style="color: #d4af37;">Total Correct:</span> <span id="m-statsTotalCorrect" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
-        <div class="achieve-item stat-streak"><span class="stat-label" style="color: #d4af37;">Best Daily Streak:</span> <span id="m-statsMaxStreak" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
-        <div class="achieve-item stat-wrong"><span class="stat-label" style="color: #d4af37;">Total Wrong:</span> <span id="m-statsTotalWrong" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
-        <div class="achieve-item stat-total-daily"><span class="stat-label" style="color: #d4af37;">Total Daily Games:</span> <span id="m-statsTotalDaily" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
-        <div class="achieve-item stat-accuracy"><span class="stat-label" style="color: #d4af37;">Accuracy:</span> <span id="m-statsAccuracy" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0%</span></div>
-        <div class="achieve-item stat-multiplayer">
-          <span class="stat-label" style="color: #d4af37;">Multiplayer:</span> 
-          <span class="stat-value" style="font-weight: bold;">
-            <span id="m-statsWins" style="color: #519053;">0</span><span style="color: #D1D1D1;"> / </span>
-            <span id="m-statsLosses" style="color: #994943;">0</span><span style="color: #D1D1D1;"> / </span>
-            <span id="m-statsDraws" style="color: #b0a644;">0</span>
-          </span>
-        </div>
-      </div>
-
-      <h2 class="stats-title">Personal Bests</h2>
-      <div id="m-pbList">
-        <div class="achieve-item pb-normal"><span class="stat-label" style="color: #d4af37;">Normal:</span> <span id="m-pbNormal" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
-        <div class="achieve-item pb-daily"><span class="stat-label" style="color: #d4af37;">Daily:</span> <span id="m-pbDaily" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
-        <div class="achieve-item pb-lite"><span class="stat-label" style="color: #d4af37;">Lite:</span> <span id="m-pbLite" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
-        <div class="achieve-item pb-weekly"><span class="stat-label" style="color: #d4af37;">Weekly:</span> <span id="m-pbWeekly" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
-      </div>
-
-      <div class="capes-section">
-        <h2 class="stats-title">Capes</h2>
-        <div class="cape-grid">
-          <div class="cape-slot" id="m-cape-max">
-            <img id="m-img-max" src="capes/max_cape.png" alt="Max Cape">
-            <span>Max Cape</span>
+      <div id="m-statsView" style="width: 100%;">
+        <div id="m-statsProfileHeader" class="text-all"
+          style="display: flex; flex-direction: column; align-items: center; gap: 15px;">
+          <div id="m-statsName" style="font-size: 1.5rem; color: #d4af37; font-weight: bold;">Player Name</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; width: 100%; gap: 10px 20px;">
+            <div class="text-white"><span class="stat-label" style="color: #d4af37;">Level: </span> <span
+                id="m-statsLevel" style="color: #D1D1D1; font-weight: bold;">0</span></div>
+            <div class="text-white"><span class="stat-label" style="color: #d4af37;">Achievements: </span> <span
+                id="m-stat-achieve-count" style="color: #D1D1D1; font-weight: bold;">0</span></div>
+            <div class="text-white"><span class="stat-label" style="color: #d4af37;">XP: </span> <span id="m-statsXP"
+                style="color: #D1D1D1; font-weight: bold;">0</span></div>
+            <div class="text-white"><span class="stat-label" style="color: #d4af37;">Pets: </span> <span
+                id="m-stat-pet-count" style="color: #D1D1D1; font-weight: bold;">0</span></div>
           </div>
-          <div class="cape-slot" id="m-cape-achieve">
-            <img id="m-img-achieve" src="capes/achievement_cape.png" alt="Comp Cape">
-            <span>Achievement Cape</span>
+        </div>
+
+        <h2 class="stats-title">Stats</h2>
+        <div id="m-statsList">
+          <div class="achieve-item stat-correct"><span class="stat-label" style="color: #d4af37;">Total Correct:</span>
+            <span id="m-statsTotalCorrect" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
+          <div class="achieve-item stat-streak"><span class="stat-label" style="color: #d4af37;">Best Daily
+              Streak:</span> <span id="m-statsMaxStreak" class="stat-value"
+              style="color: #D1D1D1; font-weight: bold;">0</span></div>
+          <div class="achieve-item stat-wrong"><span class="stat-label" style="color: #d4af37;">Total Wrong:</span>
+            <span id="m-statsTotalWrong" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
+          <div class="achieve-item stat-total-daily"><span class="stat-label" style="color: #d4af37;">Total Daily
+              Games:</span> <span id="m-statsTotalDaily" class="stat-value"
+              style="color: #D1D1D1; font-weight: bold;">0</span></div>
+          <div class="achieve-item stat-accuracy"><span class="stat-label" style="color: #d4af37;">Accuracy:</span>
+            <span id="m-statsAccuracy" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0%</span></div>
+          <div class="achieve-item stat-multiplayer">
+            <span class="stat-label" style="color: #d4af37;">Multiplayer:</span>
+            <span class="stat-value" style="font-weight: bold;">
+              <span id="m-statsWins" style="color: #519053;">0</span><span style="color: #D1D1D1;"> / </span>
+              <span id="m-statsLosses" style="color: #994943;">0</span><span style="color: #D1D1D1;"> / </span>
+              <span id="m-statsDraws" style="color: #b0a644;">0</span>
+            </span>
+          </div>
+        </div>
+
+        <h2 class="stats-title">Personal Bests</h2>
+        <div id="m-pbList">
+          <div class="achieve-item pb-normal"><span class="stat-label" style="color: #d4af37;">Normal:</span> <span
+              id="m-pbNormal" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
+          <div class="achieve-item pb-daily"><span class="stat-label" style="color: #d4af37;">Daily:</span> <span
+              id="m-pbDaily" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
+          <div class="achieve-item pb-lite"><span class="stat-label" style="color: #d4af37;">Lite:</span> <span
+              id="m-pbLite" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
+          <div class="achieve-item pb-weekly"><span class="stat-label" style="color: #d4af37;">Weekly:</span> <span
+              id="m-pbWeekly" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
+        </div>
+
+        <div class="capes-section">
+          <h2 class="stats-title">Capes</h2>
+          <div class="cape-grid">
+            <div class="cape-slot" id="m-cape-max">
+              <img id="m-img-max" src="capes/max_cape.png" alt="Max Cape">
+              <span>Max Cape</span>
+            </div>
+            <div class="cape-slot" id="m-cape-achieve">
+              <img id="m-img-achieve" src="capes/achievement_cape.png" alt="Comp Cape">
+              <span>Achievement Cape</span>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-</div>
   <script type="module">
     import { supabase } from './supabase.js';
 
@@ -595,9 +636,9 @@
         const isCape = petId.toLowerCase().includes('cape');
         const folder = isCape ? 'capes/' : 'pets/';
         const fileName = isCape ? `${petId}.png` : `${petId.replace('pet_', '')}.png`;
-    
+
         petImg.src = `${folder}${fileName}`;
-        
+
         petImg.style.display = 'inline-block';
         petImg.style.marginLeft = '5px';
         petImg.style.verticalAlign = 'middle';
@@ -717,6 +758,3 @@
 </body>
 
 </html>
-
-
-
