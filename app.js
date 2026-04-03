@@ -3264,6 +3264,9 @@ async function checkAnswer(choiceId, btn) {
         input_id: Number(currentQuestion.id), // Ensure it's an integer
         choice: Number(choiceId),             // Ensure it's an integer
         is_daily: Boolean(isDailyMode),       // Ensure it's a boolean
+        is_weekly: Boolean(isWeeklyMode), 
+        is_lite: Boolean(isLiteMode),
+        is_multiplayer: Boolean (isMultiplayerMode),
         current_count: isDailyMode ? dailyQuestionCount : 0,
         daily_limit: DAILY_LIMIT
     });
