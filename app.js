@@ -3387,6 +3387,7 @@ async function checkAnswer(choiceId, btn) {
                 // Trigger notification and update local achievement list
                 showAchievementNotification(milestoneText);
             }
+            
             // 2. NEW: Score Milestone Logic
             // This only fires for Normal Mode
             if (res.milestone) {
