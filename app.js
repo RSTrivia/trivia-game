@@ -228,7 +228,7 @@ const dailyMessages = {
     ]
 };
 
-let correctBuffer, wrongBuffer, tickBuffer, levelUpBuffer, bonusBuffer, petBuffer, achieveBuffer;
+let correctBuffer, wrongBuffer, tickBuffer, levelUpBuffer, bonusBuffer, petBuffer, achieveBuffer, mpWinBuffer, mpLossBuffer, mpDrawBuffer;
 let activeTickSource = null; // To track the running sound
 let muted = cachedMuted;
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -3689,10 +3689,13 @@ async function endGame(result = null, wasFlawless = false) {
             gzTitle.classList.remove('hidden');
             if (result === 'win') {
                 gzTitle.textContent = "Victory!";
+                playSound(mpWinBuffer);
             } else if (result === 'draw') {
                 gzTitle.textContent = "Draw!";
+                playSound(mpDrawBuffer);
             } else {
                 gzTitle.textContent = "Defeat!";
+                playSound(mpLossBuffer);
             }
         }
 
@@ -4012,20 +4015,6 @@ function triggerXpDrop(amount) {
     setTimeout(() => {
         if (xpDrop.parentNode) xpDrop.remove();
     }, 1300);
-}
-
-function getWeeklySliceIndex(totalQuestions, WEEKLY_LIMIT) {
-    const now = new Date();
-    const startOfYear = new Date(now.getFullYear(), 0, 1);
-    const days = Math.floor((now - startOfYear) / (24 * 60 * 60 * 1000));
-    const weekNumber = Math.ceil((days + startOfYear.getDay() + 1) / 7);
-
-    // This calculates which "chunk" of 50 we are on. 
-    // The % ensures it loops back to the start if we exceed the total questions.
-    const maxChunks = Math.floor(totalQuestions / WEEKLY_LIMIT);
-    // Safety: If database is smaller than the limit, always return the first chunk
-    if (maxChunks <= 0) return 0;
-    return (weekNumber % maxChunks);
 }
 
 async function saveScore(session, mode, currentScore, timeMs, username = "", msg = "") {
@@ -4477,6 +4466,9 @@ async function loadSounds() {
     if (!bonusBuffer) bonusBuffer = await loadAudio('./sounds/bonus.mp3');
     if (!petBuffer) petBuffer = await loadAudio('./sounds/pet.mp3');
     if (!achieveBuffer) achieveBuffer = await loadAudio('./sounds/achievement.mp3');
+    if (!mpWinBuffer) mpWinBuffer = await loadAudio('./sounds/multiplayer_win.mp3');
+    if (!mpLossBuffer) mpLossBuffer = await loadAudio('./sounds/multiplayer_loss.mp3');
+    if (!mpDrawBuffer) mpDrawBuffer = await loadAudio('./sounds/multiplayer_draw.mp3');
 }
 
 async function loadAudio(url) {
