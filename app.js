@@ -1753,7 +1753,10 @@ async function startMultiplayerGame() {
     preloadQueue = [];
     // Tell the DB: "This is a new game, start my streak at 0"
     await supabase.rpc('reset_my_streak');
-
+    const streakContainer = document.getElementById('dailyStreakContainer');
+    if (streakContainer) {
+        streakContainer.style.display = 'none';
+    }
     // ONLY set a new time if one doesn't already exist in sessionStorage
     // (This allows the Listener's synced time to stay "Locked In")
     if (!sessionStorage.getItem('game_start_time')) {
@@ -2593,7 +2596,11 @@ async function init() {
                 if (joinInput) {
                     joinInput.value = ''; // Clears the text
                 }
-
+                const streakContainer = document.getElementById('dailyStreakContainer');
+                if (streakContainer) {
+                    streakContainer.style.display = 'none';
+                }
+                if (playAgainBtn) playAgainBtn.classList.remove('hidden');
                 // Just hide the game-over screen and navigate. 
                 // navigateTo will handle the rest!
                 document.getElementById('end-screen').classList.add('hidden');
