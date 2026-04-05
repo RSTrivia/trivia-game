@@ -1652,8 +1652,12 @@ async function subscribeToLobby(lobbyCode, lobbyId) {
         const actualData = envelope.payload;
         // Safety check: ensure we only process the OTHER player's data
         if (actualData && actualData.user_id !== userId) {
+            // 1. UPDATE DATA
+            opponentHasAnswered = true; // THIS UNLOCKS THE GATE
             //console.log("Opponent answered! Syncing HP to:", actualData.hp_remaining);
             handleOpponentAction(actualData);
+            // 3. TRIGGER TRANSITION (This checks syncAndProceed)
+            handleMultiplayerTransition();
         }
     });
 
@@ -1917,7 +1921,12 @@ function handleOpponentAction(payload) {
     // Instead of handleMultiplayerTransition, check if we can sync NOW
     if (iHaveAnswered) {
         //console.log("Both answered! Proceeding to sync...");
-        syncAndProceed();
+        // We wait 1 second so Player A actually SEES the opponent 
+        // take damage/answer before jumping to the Defeat screen.
+        clearTimeout(window.multiplayerSyncTimer); 
+        window.multiplayerSyncTimer = setTimeout(() => {
+            syncAndProceed();
+        }, 1000);
     }
 }
 
