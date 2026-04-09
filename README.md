@@ -1,5 +1,5 @@
 
-<h1 align="center">OSRS Trivia</h1>
+<h1 align="center">OSRS TRIVIA</h1>
 <p align="center"><i>Put your OSRS knowledge to the test in an OSRS-inspired game</i></p>
 <p align="center"><sub>This is a fan-made project and is not affiliated with or endorsed by Jagex.</sub></p>
 
