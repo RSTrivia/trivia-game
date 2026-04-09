@@ -2159,7 +2159,6 @@ async function init() {
         }
     });
 
-
     // 1. Get the current session
     const { data: { session } } = await supabase.auth.getSession();
 
