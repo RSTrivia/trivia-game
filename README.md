@@ -1,10 +1,12 @@
 
 <h1 align="center">OSRS Trivia</h1>
+<p align="center"><i>Put your OSRS knowledge to the test in an OSRS-inspired game</i></p>
 
 ## Goal
 
-[OSRS Trivia](https://osrstrivia.pages.dev) is a Trivia game for Oldschool RuneScape.
-The goal is to answer Old School RuneScape Trivia questions.
+[OSRS Trivia](https://osrstrivia.pages.dev) is a Trivia game for Oldschool RuneScape.  
+The goal is to test your Old School RuneScape knowledge and answer Trivia questions,  
+all while gaining xp, leveling up, unlocking pets and achievements and climbing the leaderboards.
 
 ## Game Modes
 There are five modes:
@@ -26,7 +28,7 @@ Create an account to unlock the full experience:
 - Save your progress and climb the leaderboard.
 
 ## Player Progression
-- **Levels & XP:** Earn xp for every correct answer. Progress from Level 1 all the way to Level 99. Reaching 99 unlocks the Trivia **Max Cape**.
+- **Levels & XP:** Earn xp for every correct answer. Progress from level 1 all the way to level 99. Reaching 99 unlocks the Trivia **Max Cape**.
 - **Pet Collection:** Every correct answer provides a chance to roll for a pet, across all game modes.  
 There are five pet tiers: Common (1/100), Uncommon (1/250), Rare (1/500), Legendary (1/1000), Mythic (1/2000).  
 There are a total of 20 pets, 4 of each tier.
@@ -44,3 +46,4 @@ Join our [Discord](https://discord.com/invite/74vQZwWTJX) to:
 - Share your Daily Mode score, achievements and pet drops.
 - Find opponents for Multiplayer Mode.
 
+* This game was made as a OSRS fan project *
