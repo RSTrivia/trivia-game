@@ -3,7 +3,7 @@
 
 ## Goal
 
-[OSRS Trivia](https://osrstrivia.pages.dev) is a Trivia game for Oldschool RuneScape.
+[Trivia](https://osrstrivia.pages.dev) is a Trivia game for Oldschool RuneScape.
 The goal is to answer Old School RuneScape Trivia questions.
 
 ## Game Modes
@@ -11,10 +11,10 @@ There are five modes:
 - Normal Mode (1000 questions, ends on incorrect answer)
 - Lite Mode (A 100-question challenge)
 - Multiplayer Mode (Play against a friend in real-time)
-- Daily Mode (a global daily challenge consisting of 10 questions, only available once a day)
-Wordle-like share button can be clicked to share your daily score with your friends!
+- Daily Mode (a global daily challenge consisting of 10 questions, only available once a day)  
+Wordle-like share button can be clicked to share your daily score with your friends!  
 The Daily Mode resets at 00:00 UTC.
-- Weekly Mode (a global weekly challenge consisting of 50 questions, unlimited tries)
+- Weekly Mode (a global weekly challenge consisting of 50 questions, unlimited tries)  
 The Weekly Mode resets at 00:00 UTC.
 
 ## Accounts
@@ -27,13 +27,13 @@ Create an account to unlock the full experience:
 
 ## Player Progression
 - **Levels & XP:** Earn xp for every correct answer. Progress from Level 1 all the way to Level 99. Reaching 99 unlocks the Trivia **Max Cape**.
-- **Pet Collection:** Every correct answer provides a chance to roll for a pet, across all game modes. 
+- **Pet Collection:** Every correct answer provides a chance to roll for a pet, across all game modes.  
 There are five pet tiers: Common (1/100), Uncommon (1/250), Rare (1/500), Legendary (1/1000), Mythic (1/2000).
 - **Achievements:** Complete 35 unique tasks and unlock the Trivia **Achievement Cape**.
 - **Global Leaderboards:** Compete for the #1 rank in Total XP or specific game mode high scores.
 
 ## Equipment & Cosmetics
-Showcase your achievements by equipping either a pet or a cape. 
+Showcase your achievements by equipping either a pet or a cape.  
 Once wielded, the pet will show up on the home screen and appear alongside your name on the leaderboards.
 
 ## Discord & Community 
