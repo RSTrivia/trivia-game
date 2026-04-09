@@ -1,6 +1,7 @@
 
 <h1 align="center">OSRS Trivia</h1>
 <p align="center"><i>Put your OSRS knowledge to the test in an OSRS-inspired game</i></p>
+<p align="center"><sub>This is a fan-made project and is not affiliated with or endorsed by Jagex.</sub></p>
 
 ## Goal
 
@@ -17,7 +18,7 @@ There are five modes:
 Wordle-like share button can be clicked to share your daily score with your friends!  
 The Daily Mode resets at 00:00 UTC.
 - Weekly Mode (a global weekly challenge consisting of 50 questions, unlimited tries)  
-The Weekly Mode resets at 00:00 UTC.
+The Weekly Mode resets on Monday at 00:00 UTC.
 
 ## Accounts
 Create an account to unlock the full experience:
@@ -46,4 +47,4 @@ Join our [Discord](https://discord.com/invite/74vQZwWTJX) to:
 - Share your Daily Mode score, achievements and pet drops.
 - Find opponents for Multiplayer Mode.
 
-* This game was made as a OSRS fan project *
+
