@@ -3,7 +3,7 @@
 
 ## Goal
 
-[Trivia](https://osrstrivia.pages.dev) is a Trivia game for Oldschool RuneScape.
+[OSRS Trivia](https://osrstrivia.pages.dev) is a Trivia game for Oldschool RuneScape.
 The goal is to answer Old School RuneScape Trivia questions.
 
 ## Game Modes
