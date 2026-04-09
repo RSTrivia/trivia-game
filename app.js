@@ -2149,16 +2149,21 @@ async function init() {
 
 
     // 1. Set up the listener FIRST
-    supabase.auth.onAuthStateChange(async (event, session) => {
+    supabase.auth.onAuthStateChange((event, session) => {
         // Run the async logic in the background without making the listener wait
-        if (['SIGNED_IN', 'TOKEN_REFRESHED', 'SIGNED_OUT', 'USER_UPDATED', 'TOKEN_REFRESH_FAILED'].includes(event)) {
+        (async () => {
+            if (['SIGNED_IN', 'TOKEN_REFRESHED', 'SIGNED_OUT', 'USER_UPDATED', 'TOKEN_REFRESH_FAILED'].includes(event)) {
                 await handleAuthChange(event, session);
-        }
-        if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESH_FAILED') {
+            }
+
+            if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESH_FAILED') {
                 resetCollectionUI();
-        }
-        return;
+            }
+        })();
+
+        return; // Immediately exit the listener so the channel stays "clean"
     });
+
 
     // 1. Get the current session
     const { data: { session } } = await supabase.auth.getSession();
