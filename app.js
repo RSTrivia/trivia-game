@@ -2157,6 +2157,7 @@ async function init() {
         if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESH_FAILED') {
                 resetCollectionUI();
         }
+        return;
     });
 
     // 1. Get the current session
