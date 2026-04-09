@@ -18,7 +18,7 @@ There are five modes:
 Wordle-like share button can be clicked to share your daily score with your friends!  
 The Daily Mode resets at 00:00 UTC.
 - Weekly Mode (a global weekly challenge consisting of 50 questions, unlimited tries)  
-The Weekly Mode resets on Monday at 00:00 UTC.
+The Weekly Mode resets every Monday at 00:00 UTC.
 
 ## Accounts
 Create an account to unlock the full experience:
