@@ -29,7 +29,8 @@ Create an account to unlock the full experience:
 - Save your progress and climb the leaderboard.
 
 ## Player Progression
-- **Levels & XP:** Earn xp for every correct answer. Progress from level 1 (1 XP) all the way to level 99 (100,000 XP). Level 99 unlocks the Trivia **Max Cape**.
+- **Levels & XP:** Earn xp for every correct answer. Progress from level 1 (1 XP) all the way to level 99 (100,000 XP).  
+Level 99 unlocks the Trivia **Max Cape**.
 - **Pet Collection:** Every correct answer provides a chance to roll for a pet, across all game modes.  
 There are five pet tiers: Common (1/100), Uncommon (1/250), Rare (1/500), Legendary (1/1000), Mythic (1/2000).  
 There are a total of 20 pets, 4 of each tier.
