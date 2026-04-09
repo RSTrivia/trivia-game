@@ -26,7 +26,7 @@ Create an account to unlock the full experience:
 - Access Multiplayer, Daily, and Weekly modes.
 - Collect pets.
 - Unlock achievements.
-- Save your progress and climb the leaderboard.
+- Save your progress and climb the leaderboards.
 
 ## Player Progression
 - **Levels & XP:** Earn xp for every correct answer. Progress from level 1 (1 XP) all the way to level 99 (100,000 XP).  
