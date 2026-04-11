@@ -178,7 +178,11 @@
           <div id="multiplayer-header" class="hidden" style="margin-bottom: 20px;">
             <div class="duel-container">
               <div class="player-hp-group" id="my-hp-group">
+                <div class="my-name-container">
                 <span id="my-name-display" class="player-name">You</span>
+                <img id="my-multiplayer-pet" draggable="false"/>
+                </div>
+
                 <div class="hp-bar-bg">
                   <div id="my-hp-fill" class="hp-bar-fill" style="width: 100%;"></div>
                 </div>
@@ -188,7 +192,11 @@
               <div class="vs-divider">VS</div>
 
               <div class="player-hp-group" id="opponent-hp-group">
-                <span id="opponent-name-display" class="player-name">Opponent</span>
+                <div class="opponent-name-container">
+                  <span id="opponent-name-display" class="player-name">Opponent</span>
+                <img id="opponent-multiplayer-pet" draggable="false"/>
+                </div>
+        
                 <div class="hp-bar-bg">
                   <div id="opponent-hp-fill" class="hp-bar-fill" style="width: 100%;"></div>
                 </div>
