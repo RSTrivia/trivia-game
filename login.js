@@ -303,7 +303,6 @@ async function setupMenuPetRealtime() {
             filter: `id=eq.${session.user.id}`
         }, payload => {
             const newPet = payload.new.equipped_pet;
-            console.log("Realtime Update Received:", newPet);
             
             // This is what updates the UI visually
             localStorage.setItem('equipped_pet_id', newPet);
