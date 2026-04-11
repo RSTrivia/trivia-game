@@ -1984,21 +1984,15 @@ input.input-field:-webkit-autofill:active {
   object-fit: contain;
   image-rendering: auto;
   vertical-align: middle;
-  /* This stops the mouse from interacting with it at all */
   pointer-events: none;
   -webkit-user-drag: none;
   user-select: none;
   margin-left: 5px;
-  /* CHANGE: Instead of display:none, use visibility:hidden or reserve space */
   display: inline-block;
-  /* Always takes up space */
   visibility: hidden;
-  /* It takes up 30px of space even before it loads */
   flex-shrink: 0;
-  /* Prevents the image from being crushed */
 }
 
-/* Add this: When the script finds a pet, just make it visible */
 #equipped-pet-display[src],
 #my-multiplayer-pet[src],
 #opponent-multiplayer-pet[src] {
@@ -2009,22 +2003,16 @@ input.input-field:-webkit-autofill:active {
 #opponent-multiplayer-pet {
   width: 16px;
   height: 16px;
-  /* Forces the top edge of the image to the top of the text line */
   vertical-align: top;
   object-fit: contain;
   image-rendering: auto;
-  /* This stops the mouse from interacting with it at all */
   pointer-events: none;
   -webkit-user-drag: none;
   user-select: none;
   margin-left: 5px;
-  /* CHANGE: Instead of display:none, use visibility:hidden or reserve space */
   display: inline-block;
-  /* Always takes up space */
   visibility: hidden;
-  /* It takes up 30px of space even before it loads */
   flex-shrink: 0;
-  /* Prevents the image from being crushed */
   align-self: flex-start;
 }
 
@@ -2032,7 +2020,6 @@ input.input-field:-webkit-autofill:active {
 .opponent-name-container {
     display: flex;
     flex-direction: row; /* Force side-by-side */
-    /* CHANGE: align-items: flex-start pulls everything to the top */
     align-items: flex-start;
     justify-content: center; /* Keep it centered in the column */
     gap: 3px; /* Space between name and pet */
@@ -2043,8 +2030,8 @@ input.input-field:-webkit-autofill:active {
 @media (max-width: 480px) {
   #my-multiplayer-pet,
   #opponent-multiplayer-pet {
-    width: 12px;
-    height: 12px;
+    width: 13px;
+    height: 13px;
   }
 }
 
