@@ -27,7 +27,7 @@ let userId = null;
 let currentEquippedPet = localStorage.getItem('equipped_pet_id') || null;
 let seenMilestones = new Set(); // Track which score milestones we've already alerted this session
 let correctBuffer, wrongBuffer, tickBuffer, levelUpBuffer, bonusBuffer, petBuffer, achieveBuffer, mpWinBuffer, mpLossBuffer, mpDrawBuffer;
-let activeTickSource = null; // To track the running sound
+let activeTickSource = null; // To track the clock sound
 let currentQuestion = null;
 let timer;
 let timeLeft = 15;
