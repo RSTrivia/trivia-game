@@ -51,7 +51,6 @@
       });
       // 1. Instant Text/Emoji Sync
       if (span) span.textContent = ' ' + cachedUsername;
-
       if (muteIcon && muteBtn) {
         muteIcon.textContent = cachedMuted ? '🔇' : '🔊';
         if (cachedMuted) muteBtn.classList.add('is-muted');
@@ -279,7 +278,7 @@
             </p>
           </div>
           <div id="dailyEndNote" class="hidden">
-              Use icon <span class="gold-link-icon">🔗</span> to share your daily score!
+            Use icon <span class="gold-link-icon">🔗</span> to share your daily score!
           </div>
           <div class="row">
             <button id="playAgainBtn" class="btn">Play Again</button>
@@ -331,8 +330,8 @@
               draggable="false"><span class="pet-name">???</span></div>
           <div class="pet-slot" id="slot-pet_corporeal_beast"><img src="pets/corporeal_beast.png" class="pet-img"
               width="50" height="50" draggable="false"><span class="pet-name">???</span></div>
-          <div class="pet-slot" id="slot-pet_baron"><img src="pets/baron.png" class="pet-img" width="50" height="50" 
-            draggable="false"><span class="pet-name">???</span></div>
+          <div class="pet-slot" id="slot-pet_baron"><img src="pets/baron.png" class="pet-img" width="50" height="50"
+              draggable="false"><span class="pet-name">???</span></div>
 
           <div class="pet-slot" id="slot-pet_zuk"><img src="pets/zuk.png" class="pet-img" width="50" height="50"
               draggable="false"><span class="pet-name">???</span></div>
@@ -369,9 +368,11 @@
                 Correct:</span> <span id="statsTotalCorrect" class="stat-value"
                 style="color: #D1D1D1; font-weight: bold;">0</span></div>
             <div class="achieve-item stat-wrong"><span class="stat-label" style="color: #d4af37;">Total Wrong:</span>
-              <span id="statsTotalWrong" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
+              <span id="statsTotalWrong" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span>
+            </div>
             <div class="achieve-item stat-accuracy"><span class="stat-label" style="color: #d4af37;">Accuracy:</span>
-              <span id="statsAccuracy" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0%</span></div>
+              <span id="statsAccuracy" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0%</span>
+            </div>
             <div class="achieve-item stat-streak"><span class="stat-label" style="color: #d4af37;">Best Daily
                 Streak:</span> <span id="statsMaxStreak" class="stat-value"
                 style="color: #D1D1D1; font-weight: bold;">0</span></div>
@@ -585,17 +586,20 @@
         <h2 class="stats-title">Stats</h2>
         <div id="m-statsList">
           <div class="achieve-item stat-correct"><span class="stat-label" style="color: #d4af37;">Total Correct:</span>
-            <span id="m-statsTotalCorrect" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
+            <span id="m-statsTotalCorrect" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span>
+          </div>
           <div class="achieve-item stat-streak"><span class="stat-label" style="color: #d4af37;">Best Daily
               Streak:</span> <span id="m-statsMaxStreak" class="stat-value"
               style="color: #D1D1D1; font-weight: bold;">0</span></div>
           <div class="achieve-item stat-wrong"><span class="stat-label" style="color: #d4af37;">Total Wrong:</span>
-            <span id="m-statsTotalWrong" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span></div>
+            <span id="m-statsTotalWrong" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0</span>
+          </div>
           <div class="achieve-item stat-total-daily"><span class="stat-label" style="color: #d4af37;">Total Daily
               Games:</span> <span id="m-statsTotalDaily" class="stat-value"
               style="color: #D1D1D1; font-weight: bold;">0</span></div>
           <div class="achieve-item stat-accuracy"><span class="stat-label" style="color: #d4af37;">Accuracy:</span>
-            <span id="m-statsAccuracy" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0%</span></div>
+            <span id="m-statsAccuracy" class="stat-value" style="color: #D1D1D1; font-weight: bold;">0%</span>
+          </div>
           <div class="achieve-item stat-multiplayer">
             <span class="stat-label" style="color: #d4af37;">Multiplayer:</span>
             <span class="stat-value" style="font-weight: bold;">
@@ -634,138 +638,6 @@
       </div>
     </div>
   </div>
-  <script type="module">
-    import { supabase } from './supabase.js';
-
-    // 1️⃣ Synchronous updater: instantly updates menu pet from localStorage
-    function updateMenuPet(petId) {
-      const petImg = document.getElementById('equipped-pet-display');
-      if (!petImg) return;
-
-      if (petId && petId !== "null") {
-        // Check if the string contains 'cape' instead of an exact match
-        const isCape = petId.toLowerCase().includes('cape');
-        const folder = isCape ? 'capes/' : 'pets/';
-        const fileName = isCape ? `${petId}.png` : `${petId.replace('pet_', '')}.png`;
-
-        petImg.src = `${folder}${fileName}`;
-
-        petImg.style.display = 'inline-block';
-        petImg.style.marginLeft = '5px';
-        petImg.style.verticalAlign = 'middle';
-      } else {
-        petImg.style.display = 'none';
-      }
-    }
-
-    // 2️⃣ Single function to sync with Supabase
-    async function syncMenuPet() {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        // Logged out → clear pet
-        localStorage.removeItem('equipped_pet_id');
-        updateMenuPet(null);
-        return;
-      }
-
-      // Fetch equipped pet from Supabase once
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('equipped_pet')
-        .eq('id', session.user.id)
-        .single();
-
-      if (!error && data) {
-        localStorage.setItem('equipped_pet_id', data.equipped_pet);
-        updateMenuPet(data.equipped_pet);
-      }
-    }
-
-    // 3️⃣ Setup a single real-time listener for changes
-    async function setupMenuPetRealtime() {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
-
-      // Only one channel, one listener
-      supabase
-        .channel('public:profiles')
-        .on('postgres_changes', {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'profiles',
-          filter: `id=eq.${session.user.id}`
-        }, payload => {
-          const newPet = payload.new.equipped_pet;
-          localStorage.setItem('equipped_pet_id', newPet);
-          updateMenuPet(newPet);
-        })
-        .subscribe();
-    }
-
-    // 4️⃣ Listen for logout directly to clear UI instantly
-    supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_OUT') {
-        localStorage.removeItem('equipped_pet_id');
-        updateMenuPet(null);
-      }
-    });
-
-    // 5️⃣ Initialize on page load
-    document.addEventListener('DOMContentLoaded', () => {
-      // Instant render from localStorage to avoid flicker
-      const currentPet = localStorage.getItem('equipped_pet_id');
-      updateMenuPet(currentPet);
-
-      // Fetch fresh state from Supabase
-      syncMenuPet();
-
-      // Setup real-time listener
-      setupMenuPetRealtime();
-    });
-
-    // This looks for buttons AND the specific top-right icons
-    const allButtons = document.querySelectorAll('.btn, .btn-small, .tab-btn, #helpBtn, #discordBtn');
-
-    allButtons.forEach(button => {
-      button.addEventListener('touchstart', () => {
-        button.classList.add('tapped');
-      }, { passive: true });
-
-      button.addEventListener('touchend', () => {
-        // 1. Force the element to lose focus immediately
-        button.blur();
-        setTimeout(() => {
-          button.classList.remove('tapped');
-        }, 100);
-      });
-
-      button.addEventListener('touchcancel', () => {
-        button.classList.remove('tapped');
-      });
-    });
-  </script>
-  <script>
-    // This runs after everything else is parsed
-    document.addEventListener('DOMContentLoaded', () => {
-      // Select all buttons by class
-      const menuButtons = document.querySelectorAll('.main-menu-btn');
-
-      menuButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-          // Since app.js is a module, we ensure it's loaded 
-          // and then call our navigation logic
-          if (typeof window.navigateTo === 'function') {
-            window.navigateTo('view-home');
-          } else {
-            // Fallback: manually force the UI reset if app.js isn't ready
-            document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
-            document.getElementById('view-home').classList.remove('hidden');
-            window.location.hash = 'home';
-          }
-        });
-      });
-    });
-  </script>
 </body>
 
 </html>
