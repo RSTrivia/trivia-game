@@ -1,5 +1,6 @@
 
 import { supabase } from './supabase.js';
+import {updateMenuPet} from './login.js';
 window.supabase = supabase;
 const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
@@ -58,7 +59,6 @@ const muteBtn = document.getElementById('muteBtn');
 const dailyBtn = document.getElementById('dailyBtn');
 const weeklyBtn = document.getElementById('weeklyBtn');
 const liteBtn = document.getElementById('liteBtn');
-
 
 //live mode
 const lobbyBtn = document.getElementById('btn-create-lobby');
@@ -324,7 +324,7 @@ function updateLeaderboard(data) {
         const fullNameHtml = `${itemImgHtml}${entry.username}`;
         if (userTxt.innerHTML !== fullNameHtml) {
             userTxt.innerHTML = fullNameHtml;
-            
+
             // --- ADDED: CLICK LOGIC ---
             userTxt.style.cursor = "pointer";
             userTxt.onclick = () => {
@@ -1082,13 +1082,13 @@ async function openPlayerProfile(username) {
     if (data.daily_total >= 1) finalAchieveCount++;
     if (data.daily_total >= 20) finalAchieveCount++;
     if (data.daily_total >= 100) finalAchieveCount++;
-  
+
     // Milestone: Levels
     if (data.level >= 10) finalAchieveCount++;
     if (data.level >= 50) finalAchieveCount++;
     if (data.level >= 92) finalAchieveCount++;
     if (data.level >= 99) finalAchieveCount++;
-  
+
     // Milestone: Normal Mode
     if (parseInt(data.pb_normal) >= 10) finalAchieveCount++;
     if (parseInt(data.pb_normal) >= 50) finalAchieveCount++;
@@ -1112,7 +1112,7 @@ async function openPlayerProfile(username) {
     document.getElementById('m-statsTotalWrong').textContent = data.total_wrong.toLocaleString();
     document.getElementById('m-statsMaxStreak').textContent = data.best_streak.toLocaleString();
     document.getElementById('m-statsTotalDaily').textContent = data.daily_total.toLocaleString();
-    
+
     const total = data.total_correct + data.total_wrong;
     const accuracy = total > 0 ? (Math.floor((data.total_correct / total * 100) * 10) / 10).toFixed(1) : "0.0";
     document.getElementById('m-statsAccuracy').textContent = `${accuracy}%`;
@@ -1130,8 +1130,8 @@ async function openPlayerProfile(username) {
 
     // Correctly targeting the IDs: m-pbNormal, m-pbDaily, m-pbLite, m-pbWeekly
     document.getElementById('m-pbNormal').innerHTML = formatPB(data.pb_normal, data.pb_normal_time);
-    document.getElementById('m-pbDaily').innerHTML  = formatPB(data.pb_daily.score || 0, data.pb_daily.time || 0);
-    document.getElementById('m-pbLite').innerHTML   = formatPB(data.pb_lite.score || 0, data.pb_lite.time || 0);
+    document.getElementById('m-pbDaily').innerHTML = formatPB(data.pb_daily.score || 0, data.pb_daily.time || 0);
+    document.getElementById('m-pbLite').innerHTML = formatPB(data.pb_lite.score || 0, data.pb_lite.time || 0);
     document.getElementById('m-pbWeekly').innerHTML = formatPB(data.pb_weekly.score || 0, data.pb_weekly.time || 0);
 
     // Daily total + max streak
@@ -1529,6 +1529,7 @@ async function subscribeToLobby(lobbyCode, lobbyId) {
         // --- NEW: SYNC NAMES ---
         // If I am host, opponent is guest. If I am guest, opponent is host.
         const newOpponentName = (myRole === 'host') ? lobbyData.guest_name : lobbyData.host_name;
+        const newOpponentPet = (myRole === 'host') ? lobbyData.guest_pet : lobbyData.host_pet;
 
         // Only update if we actually got a name. 
         // This "freezes" the last known name in memory when someone leaves.
@@ -1537,7 +1538,10 @@ async function subscribeToLobby(lobbyCode, lobbyId) {
             const oppLabel = document.getElementById('opponent-name-display');
             if (oppLabel) oppLabel.textContent = opponentName;
         }
-
+        // --- ADD THIS: Update Opponent Pet Image ---
+        if (newOpponentPet) {
+            updateMenuPet('opponent-multiplayer-pet', newOpponentPet);
+        }
         // --- HOST LOGIC: Opponent joined ---
         if (newStatus === 'ready' && myRole === 'host') {
             document.getElementById('host-controls').classList.remove('hidden');
@@ -1923,7 +1927,7 @@ function handleOpponentAction(payload) {
         //console.log("Both answered! Proceeding to sync...");
         // We wait 1 second so Player A actually SEES the opponent 
         // take damage/answer before jumping to the Defeat screen.
-        clearTimeout(window.multiplayerSyncTimer); 
+        clearTimeout(window.multiplayerSyncTimer);
         window.multiplayerSyncTimer = setTimeout(() => {
             syncAndProceed();
         }, 1000);
@@ -2196,6 +2200,7 @@ async function init() {
             localStorage.removeItem('lastDailyScore');
             localStorage.removeItem('dailyPlayedDate');
             localStorage.removeItem('lastDailyMessage');
+            localStorage.removeItem('equipped_pet_id');
 
             // Remove Supabase tokens
             Object.keys(localStorage).forEach(key => {
@@ -2326,13 +2331,15 @@ async function init() {
     if (lobbyBtn) {
         lobbyBtn.addEventListener('click', async () => {
             try {
+                const myCurrentPet = localStorage.getItem('equipped_pet_id');
                 // 1. Create the lobby
                 const { data, error } = await supabase
                     .from('live_lobbies')
                     .insert([{
                         status: 'waiting',
                         host_id: userId,        // From your auth/session
-                        host_name: username   // Your local username variable
+                        host_name: username,   // Your local username variable
+                        host_pet: myCurrentPet
                     }])
                     .select('*') // Get everything (id, code, question_ids)
                     .maybeSingle();
@@ -2559,6 +2566,14 @@ async function init() {
             const oppLabel = document.getElementById('opponent-name-display');
             if (oppLabel) oppLabel.textContent = data.host_name || "Host";
 
+            // --- ADD THIS: Show Host's pet on Guest's screen ---
+            // Note: This assumes you add 'host_pet' to your live_lobbies table
+            if (data.host_pet) {
+                updateMenuPet('opponent-multiplayer-pet', data.host_pet);
+            }
+
+            // Update the DB with your own pet so the Host can see it
+            const myCurrentPet = localStorage.getItem('equipped_pet_id');
 
             // 2. Update the DB so the Host's "Start" button appears
             await supabase
@@ -2567,6 +2582,7 @@ async function init() {
                     status: 'ready',
                     guest_id: userId,
                     guest_name: activeUsername, // The Guest's name
+                    guest_pet: myCurrentPet
                 })
                 .eq('id', data.id);
 
@@ -2697,6 +2713,7 @@ async function handleAuthChange(event, session) {
             localStorage.removeItem('cached_xp');
             localStorage.removeItem('cachedUsername');
             localStorage.removeItem('cached_level');
+            localStorage.removeItem('equipped_pet_id');
             if (wasManual) {
                 // Clear all session-specific UI and storage
                 localStorage.removeItem('lastDailyScore');
@@ -3282,9 +3299,9 @@ async function checkAnswer(choiceId, btn) {
         input_id: Number(currentQuestion.id), // Ensure it's an integer
         choice: Number(choiceId),             // Ensure it's an integer
         is_daily: Boolean(isDailyMode),       // Ensure it's a boolean
-        is_weekly: Boolean(isWeeklyMode), 
+        is_weekly: Boolean(isWeeklyMode),
         is_lite: Boolean(isLiteMode),
-        is_multiplayer: Boolean (isMultiplayerMode),
+        is_multiplayer: Boolean(isMultiplayerMode),
         current_count: isDailyMode ? dailyQuestionCount : 0,
         daily_limit: DAILY_LIMIT
     });
@@ -3401,11 +3418,11 @@ async function checkAnswer(choiceId, btn) {
                 const milestoneText = res.achievement_pop === 1000
                     ? "Reach 1,000 Correct Answers"
                     : "Reach 10,000 Correct Answers";
-                
+
                 // Trigger notification and update local achievement list
                 showAchievementNotification(milestoneText);
             }
-            
+
             // 2. NEW: Score Milestone Logic
             // This only fires for Normal Mode
             if (res.milestone) {
@@ -4234,11 +4251,11 @@ function showCollectionLogNotification(petName) {
         'Tumeken\'s Guardian': 'tumekens_guardian.png',
         'Lil\' Zik': 'lil_zik.png',
         'TzRek-Zuk': 'zuk.png',
-        'Beef' : 'beef.png',
-        'Nid' : 'nid.png',
-        'Callisto Cub' : 'callisto_cub.png',
-        'Baron' : 'baron.png',
-        'Little Nightmare' : 'little_nightmare.png'
+        'Beef': 'beef.png',
+        'Nid': 'nid.png',
+        'Callisto Cub': 'callisto_cub.png',
+        'Baron': 'baron.png',
+        'Little Nightmare': 'little_nightmare.png'
     };
 
     const fileName = fileNameMap[petName] || 'mole.png';
