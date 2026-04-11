@@ -1205,6 +1205,7 @@ window.navigateTo = function (viewId) {
             petsTab.click(); // Programmatically trigger the click
         }
         renderStats();
+        renderAchievements();
     }
     const endScreen = document.getElementById('end-screen');
     if (endScreen) endScreen.classList.add('hidden');
@@ -3969,6 +3970,10 @@ async function endGame(result = null, wasFlawless = false) {
                 // We pass the current username, and the score achieved
                 isNormalPB = await saveScore(session, 'normal', score, totalMs, username);
             }
+            if (isNormalPB) {
+                localStorage.setItem('cached_max_score', score);
+            }
+
             // we check if all questions were answered correctly in normal mode.
             const isPerfectRun = score === number_of_questions;
             // Check for Gz! (Completion) first
