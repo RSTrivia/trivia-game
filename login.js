@@ -30,6 +30,7 @@ function showGoldAlert(message) {
 
 function clearUserSessionData() {
     localStorage.removeItem('equipped_pet_id');
+    localStorage.removeItem('my-multiplayer-pet');
     // List all keys that belong to a specific user
     const userKeys = [
         'cachedUsername',
@@ -175,8 +176,10 @@ loginBtn.addEventListener('click', async () => {
             if (loginPackage.equipped_pet) {
                 const petId = loginPackage.equipped_pet;
                 localStorage.setItem('equipped_pet_id', petId);
+                localStorage.setItem('my-multiplayer-pet', petId);
             } else {
                 localStorage.removeItem('equipped_pet_id'); // Clear if they have no pet
+                localStorage.removeItem('my-multiplayer-pet');
             }
         } catch (rpcErr) {
             console.warn("RPC failed, falling back...");
@@ -205,8 +208,8 @@ loginBtn.addEventListener('click', async () => {
 });
 //   Pet updating real-time
 // 1️⃣ Synchronous updater: instantly updates menu pet from localStorage
-    function updateMenuPet(petId) {
-      const petImg = document.getElementById('equipped-pet-display');
+    export function updateMenuPet(elementId, petId) {
+      const petImg = document.getElementById(elementId);
       if (!petImg) return;
 
       if (petId && petId !== "null") {
@@ -231,7 +234,9 @@ loginBtn.addEventListener('click', async () => {
       if (!session) {
         // Logged out → clear pet
         localStorage.removeItem('equipped_pet_id');
-        updateMenuPet(null);
+        localStorage.removeItem('my-multiplayer-pet');
+        updateMenuPet('equipped-pet-display', null);
+        updateMenuPet('my-multiplayer-pet', null);
         return;
       }
 
@@ -244,7 +249,9 @@ loginBtn.addEventListener('click', async () => {
 
       if (!error && data) {
         localStorage.setItem('equipped_pet_id', data.equipped_pet);
-        updateMenuPet(data.equipped_pet);
+        updateMenuPet('equipped-pet-display', data.equipped_pet);
+        localStorage.setItem('my-multiplayer-pet', data.equipped_pet);
+        updateMenuPet('my-multiplayer-pet', data.equipped_pet);
       }
     }
 
@@ -272,7 +279,9 @@ supabase.auth.onAuthStateChange(async (event, session) => {
             petChannel = null;
         }
         localStorage.removeItem('equipped_pet_id');
-        updateMenuPet(null); // Clear the image visually
+        localStorage.removeItem('my-multiplayer-pet');
+        updateMenuPet('equipped-pet-display', null); // Clear the image visually
+        updateMenuPet('my-multiplayer-pet', null);
     }
 });
 
@@ -298,7 +307,10 @@ async function setupMenuPetRealtime() {
             
             // This is what updates the UI visually
             localStorage.setItem('equipped_pet_id', newPet);
-            updateMenuPet(newPet); 
+            localStorage.setItem('my-multiplayer-pet', newPet);
+            
+            updateMenuPet('equipped-pet-display', newPet); 
+            updateMenuPet('my-multiplayer-pet', newPet);
         })
         .subscribe((status) => {
             if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
@@ -329,7 +341,9 @@ supabase.auth.onAuthStateChange(async (event, session) => {
             petChannel = null;
         }
         localStorage.removeItem('equipped_pet_id');
-        updateMenuPet(null); // Clear the image visually
+        localStorage.removeItem('my-multiplayer-pet');
+        updateMenuPet('equipped-pet-display', null); // Clear the image visually
+        updateMenuPet('my-multiplayer-pet', null);
     }
 });
 
@@ -337,7 +351,8 @@ supabase.auth.onAuthStateChange(async (event, session) => {
     document.addEventListener('DOMContentLoaded', () => {
       // Instant render from localStorage to avoid flicker
       const currentPet = localStorage.getItem('equipped_pet_id');
-      updateMenuPet(currentPet);
+      updateMenuPet('equipped-pet-display', currentPet);
+      updateMenuPet('my-multiplayer-pet', currentPet);
     });
 
     // This looks for buttons AND the specific top-right icons
