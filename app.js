@@ -2208,7 +2208,7 @@ async function init() {
             currentProfileXp = 0;
             currentLevel = 1;
 
-            window.location.reload();
+            //window.location.reload();
         } else {
             navigateTo('view-login');
         }
