@@ -31,6 +31,8 @@ let achievementNotificationTimeout = null;
 let petNotificationTimeout = null;
 let lobbyChannel = null;
 let normalSessionPool = [];
+// Track which score milestones we've already alerted this session
+let seenMilestones = new Set();
 const MAX_LEVEL = 99;
 
 const DAILY_LIMIT = 10;
@@ -2873,6 +2875,7 @@ function resetGame() {
     weeklyQuestionCount = 0;
     liteQuestionCount = 0;
     dailyQuestionCount = 0;
+    seenMilestones.clear();
 
     // 5. Reset Timer Visuals
     timeLeft = 15;
@@ -3426,7 +3429,13 @@ async function checkAnswer(choiceId, btn) {
             // 2. NEW: Score Milestone Logic
             // This only fires for Normal Mode
             if (res.milestone) {
-                showAchievementNotification(res.milestone);
+                // Only show if we haven't seen this specific milestone text this session
+                if (!seenMilestones.has(res.milestone)) {
+                    showAchievementNotification(res.milestone);
+                    
+                    // Add it to the "already seen" list
+                    seenMilestones.add(res.milestone);
+                }
             }
 
             // --- 2. INTEGRATED PET LOGIC ---
