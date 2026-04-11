@@ -1,88 +1,94 @@
-
 import { supabase } from './supabase.js';
-import {updateMenuPet} from './login.js';
+import { updateMenuPet } from './login.js';
 window.supabase = supabase;
-const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
 // ====== UI & STATE ======
 const cachedMuted = localStorage.getItem('muted') === 'true';
-let streak = 0;              // Tracking for normal game bonus
-let dailyQuestionCount = 0;   // Tracking for daily bonus
-let currentDailyStreak = 0;
-let currentProfileXp = parseInt(localStorage.getItem('cached_xp')) || 0;    // Store the player's current XP locally
-let currentLevel = parseInt(localStorage.getItem('cached_level')) || 1;
+let muted = cachedMuted;
+let syncChannel;
+let currentProfileXp = parseInt(localStorage.getItem('cached_xp')) || 0; // Store the player's current XP locally
+let currentLevel = parseInt(localStorage.getItem('cached_level')) || 1; // Store the player's current Level locally
 let username = 'Guest';
+let currentMode = 'score';
+let gridPattern = "";
 let gameEnding = false;
 let isShowingNotification = false;
-let notificationQueue = [];
-let gridPattern = "";
-
 let gameStarting = false;
-// Add this to your script variables
-let currentEquippedPet = localStorage.getItem('equipped_pet_id') || null;
-let userId = null;
-let syncChannel;
-// Add this at the top of your script with your other global variables
+let notificationQueue = [];
 let pendingIds = [];
-// NEW GLOBAL TRACKER
 let usedInThisSession = [];
+let normalSessionPool = [];
+let preloadQueue = [];
 let achievementNotificationTimeout = null;
-// 1. Create a variable outside the function to track the timer
 let petNotificationTimeout = null;
 let lobbyChannel = null;
-let normalSessionPool = [];
-// Track which score milestones we've already alerted this session
-let seenMilestones = new Set();
+let realtimeSubscription = null; // Track the active listener
+let userId = null;
+let currentEquippedPet = localStorage.getItem('equipped_pet_id') || null;
+let seenMilestones = new Set(); // Track which score milestones we've already alerted this session
+let correctBuffer, wrongBuffer, tickBuffer, levelUpBuffer, bonusBuffer, petBuffer, achieveBuffer, mpWinBuffer, mpLossBuffer, mpDrawBuffer;
+let activeTickSource = null; // To track the running sound
+let currentQuestion = null;
+let timer;
+let timeLeft = 15;
+let isDailyMode = false;
+let isLiteMode = false;
+let isWeeklyMode = false;
+let isMultiplayerMode = false;
+let weeklyQuestionCount = 0;
+let liteQuestionCount = 0;
+let dailyQuestionCount = 0; // Tracking for daily bonus
+let currentDailyStreak = 0;
+let gameStartTime = 0;
+let streak = 0;
+let score = 0;
+
 const MAX_LEVEL = 99;
-
 const DAILY_LIMIT = 10;
-const WEEKLY_LIMIT = 50; // Change to 50 when ready to go live
-const LITE_LIMIT = 100; // Change to 100 when ready to go live
-const number_of_questions = 1000; // 1000
+const WEEKLY_LIMIT = 50;
+const LITE_LIMIT = 100;
+const number_of_questions = 1000; // 1000 Total Questions
 
-const shareBtn = document.getElementById('shareBtn');
-const logBtn = document.getElementById('logBtn');
-const startBtn = document.getElementById('startBtn');
-const playAgainBtn = document.getElementById('playAgainBtn');
-const mainMenuBtns = document.querySelectorAll('.main-menu-btn');
 const lobbymainMenu = document.getElementById('lobby-main-menu-btn');
 const game = document.getElementById('game');
 const endScreen = document.getElementById('end-screen');
-const finalScore = document.getElementById('finalScore');
 const scoreDisplay = document.getElementById('score');
 const questionText = document.getElementById('questionText');
 const questionImage = document.getElementById('questionImage');
 const answersBox = document.getElementById('answers');
 const timeDisplay = document.getElementById('time');
 const timeWrap = document.getElementById('time-wrap');
-const userDisplay = document.getElementById('userDisplay');
+
+const shareBtn = document.getElementById('shareBtn');
+const logBtn = document.getElementById('logBtn');
+const startBtn = document.getElementById('startBtn');
+const playAgainBtn = document.getElementById('playAgainBtn');
 const authBtn = document.getElementById('authBtn');
 const muteBtn = document.getElementById('muteBtn');
 const dailyBtn = document.getElementById('dailyBtn');
 const weeklyBtn = document.getElementById('weeklyBtn');
 const liteBtn = document.getElementById('liteBtn');
-
-//live mode
+const mainMenuBtns = document.querySelectorAll('.main-menu-btn');
+// Multiplayer mode buttons
 const lobbyBtn = document.getElementById('btn-create-lobby');
 const copyCodeBtn = document.getElementById('copyCodeBtn');
 const multiplayerBtn = document.getElementById('MultiplayerBtn');
-let opponentHasAnswered = false;
-let iHaveAnswered = false;
-let myRole = ''; // Will be 'host' or 'guest'
+
+// Multiplayer mode
+const MAX_HP = 60;
 let myHP = 60;
 let opponentHP = 60;
-const MAX_HP = 60;
-const multiHeader = document.getElementById('multiplayer-header');
-let isFetchingLobbyQuestion = false; // Global flag to prevent race conditions
-let isSyncing = false; // Add this global variable at the top of your script
+let opponentHasAnswered = false;
+let iHaveAnswered = false;
+let isSyncing = false;
 let iAmReadyForRematch = false;
 let opponentReadyForRematch = false;
-let currentLobbyCode = null;
 let opponentName = null;
 let isEndGameProcessing = false;
 let isHandlingLobbyClose = false;
+let myRole = ''; // 'host' or 'guest'
 
-// Do this for all your navigation buttons
+// Leaderboard
 const leaderBtn = document.getElementById('btn-leaderboard');
 const leaderboardRows = document.querySelectorAll('#leaderboard li');
 const scoreTab = document.getElementById('scoreTab');
@@ -91,10 +97,11 @@ const weeklyTab = document.getElementById('weeklyTab');
 const xpTab = document.getElementById('xpTab');
 const liteTab = document.getElementById('liteTab');
 
-let currentMode = 'score';
-let realtimeSubscription = null; // Track the active listener
+// Audio & Date 
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+const todayStr = new Date().toISOString().split('T')[0];
 
-const dailyMessages = {
+const dailyMessages = { // Daily Mode end-screen messages
     0: [
         "Ouch. Zero XP gained today.",
         "You've been defeated. Try again tomorrow!",
@@ -230,28 +237,6 @@ const dailyMessages = {
     ]
 };
 
-let correctBuffer, wrongBuffer, tickBuffer, levelUpBuffer, bonusBuffer, petBuffer, achieveBuffer, mpWinBuffer, mpLossBuffer, mpDrawBuffer;
-let activeTickSource = null; // To track the running sound
-let muted = cachedMuted;
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-const todayStr = new Date().toISOString().split('T')[0];
-let score = 0;
-let currentQuestion = null;
-let currentQuestionIndex = 0;
-let preloadQueue = [];
-let timer;
-let timeLeft = 15;
-let isDailyMode = false;
-let isWeeklyMode = false;
-let isMultiplayerMode = false;
-let weeklyQuestionCount = 0;
-let liteQuestionCount = 0;
-let isLiteMode = false;
-let liteQuestions = []; // To store the shuffled subset
-let gameStartTime = 0;
-
-
-// This intercepts and silences the "WebSocket is closed before established" error
 (function () {
     const originalError = console.error;
     const originalWarn = console.warn;
@@ -314,20 +299,19 @@ function updateLeaderboard(data) {
         const scoreSpan = row.querySelector('.score-part');
 
         if (!entry.username) {
-            userTxt.innerHTML = ''; // Changed to innerHTML to clear images
+            userTxt.innerHTML = '';
             scoreSpan.innerHTML = '';
             userTxt.onclick = null; // Remove listener if row is empty
             userTxt.style.cursor = "default";
             return;
         }
 
-        // ONLY attempt to get the icon if equipped_pet exists
+        // Only attempt to get the icon if equipped_pet exists
         const itemImgHtml = getEquippedItemIcon(entry.equipped_pet);
         const fullNameHtml = `${itemImgHtml}${entry.username}`;
         if (userTxt.innerHTML !== fullNameHtml) {
             userTxt.innerHTML = fullNameHtml;
 
-            // --- ADDED: CLICK LOGIC ---
             userTxt.style.cursor = "pointer";
             userTxt.onclick = () => {
                 openPlayerProfile(entry.username);
@@ -355,10 +339,9 @@ function updateLeaderboard(data) {
             finalHTML = `${s.toLocaleString()}${formatLeaderboardTime(t)}`;
 
         } else {
-            // NORMAL MODE (using val and time_ms)
+            // Normal mode
             const s = entry.val || 0;
             const t = entry.time_ms || 0;
-            // Pass false for isWeekly to check against the 9999999 default
             finalHTML = `${s.toLocaleString()}${formatLeaderboardTime(t)}`;
         }
 
@@ -374,8 +357,6 @@ function getEquippedItemIcon(itemId) {
     // Check if the item is any version of a cape (including trimmed)
     const isCape = ['max_cape', 'achievement_cape', 'max_cape_t', 'achievement_cape_t'].includes(itemId);
 
-    // Use a forward slash to make the path relative to the PROJECT ROOT
-    // This tells the browser: "Start from the base folder, then look in capes/ or pets/"
     const folder = isCape ? 'capes/' : 'pets/';
     const fileName = isCape ? `${itemId}.png` : `${itemId.replace('pet_', '')}.png`;
 
@@ -388,7 +369,6 @@ async function fetchLeaderboard() {
     if (currentMode === 'score') {
         query = supabase
             .from('scores')
-            // Added profiles(equipped_pet) here
             .select('username, val:score, time_ms')
             .gt('score', 0)
             .order('score', { ascending: false })
@@ -397,7 +377,6 @@ async function fetchLeaderboard() {
     } else if (currentMode === 'lite') {
         query = supabase
             .from('scores')
-            // Added profiles(equipped_pet) here
             .select('username, lite_data')
             .not('lite_data', 'is', null)
             .gt('lite_data->score', 0)
@@ -406,7 +385,6 @@ async function fetchLeaderboard() {
     } else if (currentMode === 'weekly') {
         query = supabase
             .from('scores')
-            // Added profiles(equipped_pet) here
             .select('username, weekly_data')
             .not('weekly_data', 'is', null)
             .gt('weekly_data->score', 0)
@@ -423,7 +401,6 @@ async function fetchLeaderboard() {
     } else {
         query = supabase
             .from('public_profiles')
-            // Added equipped_pet here
             .select('username, val:xp, level, equipped_pet')
             .gt('xp', 0)
             .order('xp', { ascending: false });
@@ -431,7 +408,6 @@ async function fetchLeaderboard() {
 
     const { data, error } = await query.limit(10);
     if (error) return console.error(error);
-
 
     let formattedData = data;
 
@@ -463,9 +439,9 @@ async function fetchLeaderboard() {
     }
 }
 
-// --- NEW: REALTIME SUBSCRIPTION LOGIC ---
+// Real time leaderboard
 async function subscribeToLeaderboard() {
-    // 1. Clean up existing subscription safely
+    // Clean up existing subscription safely
     if (realtimeSubscription) {
         // Only try to remove if it's NOT already closed
         if (realtimeSubscription.state !== 'closed') {
@@ -478,10 +454,7 @@ async function subscribeToLeaderboard() {
         realtimeSubscription = null;
     }
 
-    // 2. Determine which table to watch
-    const tableToWatch = (currentMode === 'xp') ? 'profiles' : 'scores';
-
-    // 3. Create the channel
+    // Create the channel
     realtimeSubscription = supabase.channel('live-leaderboard');
 
     // LISTENER 1: Always watch for Pet/XP changes in 'profiles'
@@ -540,8 +513,7 @@ if (liteTab) liteTab.onclick = () => handleTabClick('lite', liteTab);
 if (dailyTab) dailyTab.onclick = () => handleTabClick('daily', dailyTab);
 
 
-// collection
-
+// Collection
 const PET_DATA = [
     { id: 'pet_mole', name: 'Baby Mole', rarity: 'common', file: 'mole.png' },
     { id: 'pet_kraken', name: 'Pet Kraken', rarity: 'common', file: 'kraken.png' },
@@ -680,6 +652,7 @@ document.getElementById('achieveTab').onclick = () => {
     document.getElementById('achievementsView').classList.remove('hidden');
     renderAchievements();
 };
+
 document.getElementById('statsTab').onclick = () => {
     document.getElementById('statsTab').classList.add('active');
     document.getElementById('petsTab').classList.remove('active');
@@ -687,18 +660,18 @@ document.getElementById('statsTab').onclick = () => {
     document.getElementById('logGrid').classList.add('hidden');
     document.getElementById('achievementsView').classList.add('hidden');
     document.getElementById('statsView').classList.remove('hidden');
+    renderAchievements();
     renderStats();
 };
 
 async function renderStats() {
-    const statsList = document.getElementById('statsList');
     const pbList = document.getElementById('pbList');
     const maxCape = document.getElementById('cape-max');
     const achieveCape = document.getElementById('cape-achieve');
 
     const stats = getStatsObject();
 
-    // 1. Update Header
+    // Update Header
     document.getElementById('statsName').textContent = `${localStorage.getItem('cachedUsername') || 'Guest'}`;
     document.getElementById('statsLevel').textContent = `${document.getElementById('levelNumber').textContent}`;
     const rawXPValue = document.getElementById('xpBracket').textContent.replace(/[^0-9]/g, '');
@@ -706,7 +679,7 @@ async function renderStats() {
     const formattedXP = parseInt(rawXPValue, 10).toLocaleString();
     document.getElementById('statsXP').textContent = formattedXP;
 
-    // --- Correct & Wrong Answers ---
+    // Correct & Wrong Answers
     const totalCorrect = parseInt(localStorage.getItem('cached_total_correct') || 0);
     const totalWrong = parseInt(localStorage.getItem('cached_total_wrong') || 0);
     const totalAnswers = totalCorrect + totalWrong;
@@ -724,8 +697,7 @@ async function renderStats() {
     if (wrongElem) wrongElem.textContent = totalWrong.toLocaleString();
     if (accuracyElem) accuracyElem.textContent = `${accuracy}%`;
 
-    // multiplayer wins/losses/draws
-
+    // Multiplayer wins/losses/draws
     const winsEl = document.getElementById('statsWins');
     const lossesEl = document.getElementById('statsLosses');
     const drawsEl = document.getElementById('statsDraws');
@@ -744,7 +716,7 @@ async function renderStats() {
     if (streakElem) streakElem.textContent = parseInt(bestStreak).toLocaleString();
     if (totalElem) totalElem.textContent = parseInt(totalDaily).toLocaleString();
 
-    // Define the mapping based on your HTML data-mode attributes
+    // Define the mapping based on HTML data-mode attributes
     const dataMap = {
         'Normal': { s: localStorage.getItem('cached_score') || 0, t: localStorage.getItem('cached_time_ms') || 0 },
         'Lite': JSON.parse(localStorage.getItem('cached_lite_data') || '{"score":0, "time":0}'),
@@ -754,39 +726,38 @@ async function renderStats() {
 
     Object.keys(dataMap).forEach(mode => {
         const row = pbList.querySelector(`[data-mode="${mode}"]`);
-        if (!row) return; // Guard clause is cleaner
+        if (!row) return;
 
         const val = dataMap[mode];
-        // This handles both the structure from your fetch and the structure from your cache
+        
         const score = val.s ?? val.score ?? 0;
         const time = val.t ?? val.time ?? 0;
 
         const valueSpan = row.querySelector('.stat-value');
         const newContent = `${parseInt(score).toLocaleString()} <span class="time-stamp">${formatLeaderboardTime(time)}</span>`;
 
-        // Keep the DOM update optimization
         if (valueSpan.innerHTML !== newContent) {
             valueSpan.innerHTML = newContent;
         }
     });
 
-    // 5. Update UI Counters
+    // Update UI Counters
     document.getElementById('stat-pet-count').textContent = `${stats.petsUnlocked}/${20}`;
     const allAchievements = ACHIEVEMENT_SCHEMA.flatMap(c => c.tasks);
 
-    // Dynamically calculate the total count from your schema (currently 29 tasks)
+    // Dynamically calculate the total count from schema
     const totalPossible = allAchievements.length;
 
     // Count how many are actually finished
     const completedCount = allAchievements.filter(t => t.check(stats)).length;
 
-    // Update the UI with the dynamic total (e.g., "20/29")
+    // Update the UI with the dynamic total
     const achieveCountElem = document.getElementById('stat-achieve-count');
     if (achieveCountElem) {
         achieveCountElem.textContent = `${completedCount}/${totalPossible}`;
     }
 
-    // 6. Cape Logic
+    // Cape logic
     const isMaxUnlocked = stats.level >= MAX_LEVEL;
     const isAchieveUnlocked = completedCount >= totalPossible;
     const isTrimmed = isMaxUnlocked && isAchieveUnlocked;
@@ -797,7 +768,7 @@ async function renderStats() {
     maxCape.classList.toggle('unlocked', isMaxUnlocked);
     achieveCape.classList.toggle('unlocked', isAchieveUnlocked);
 
-    // Apply visual state (does not need to be a function, just direct assignment)
+    // Apply visual state
     maxCape.classList.toggle('equipped', currentEquippedPet === 'max_cape' || currentEquippedPet === 'max_cape_t');
     achieveCape.classList.toggle('equipped', currentEquippedPet === 'achievement_cape' || currentEquippedPet === 'achievement_cape_t');
 
@@ -838,20 +809,23 @@ async function handleCapeClick(id, element) {
     renderStats();
 }
 
-// Helper to provide the same stat object used in achievements
+// Stat objects in achievements
 function getStatsObject() {
-    return {
+    return { 
+        // Level, Normal Mode score, Pets
         level: parseInt(localStorage.getItem('cached_level')) || 1,
         maxScore: parseInt(localStorage.getItem('cached_max_score')) || 0,
+        petsUnlocked: JSON.parse(localStorage.getItem('cached_pets') || '[]').length,
+        // Daily Mode 
         dailyTotal: parseInt(localStorage.getItem('cached_daily_total')) || 0,
         dailyStreak: parseInt(localStorage.getItem('stat_max_streak')) || 0,
-        petsUnlocked: JSON.parse(localStorage.getItem('cached_pets') || '[]').length,
+        dailyPerfect: localStorage.getItem('stat_daily_perfect') === 'true',
+        // Game
         fastestGuess: localStorage.getItem('stat_fastest') === 'true',
         justInTime: localStorage.getItem('stat_just_in_time') === 'true',
         correct_1000: localStorage.getItem('stat_correct_1000') === 'true',
         correct_10000: localStorage.getItem('stat_correct_10000') === 'true',
-        dailyPerfect: localStorage.getItem('stat_daily_perfect') === 'true',
-        //--- Multiplayer Booleans from LocalStorage --
+        // Multiplayer Mode Booleans from LocalStorage
         multi_first_win: localStorage.getItem('ach_stat_multi_win') === 'true',
         multi_first_loss: localStorage.getItem('ach_stat_multi_loss') === 'true',
         multi_first_draw: localStorage.getItem('ach_stat_multi_draw') === 'true',
@@ -859,12 +833,12 @@ function getStatsObject() {
         multi_50_wins: localStorage.getItem('ach_stat_multi_50') === 'true',
         multi_100_wins: localStorage.getItem('ach_stat_multi_100') === 'true',
         multi_flawless: localStorage.getItem('ach_stat_multi_flawless') === 'true',
-        // --- Weekly Booleans from LocalStorage ---
+        // Weekly Mode Booleans from LocalStorage
         weekly25: localStorage.getItem('ach_stat_weekly_25') === 'true',
         weekly50: localStorage.getItem('ach_stat_weekly_50') === 'true',
         weeklySub3: localStorage.getItem('ach_stat_weekly_sub_3') === 'true',
         weeklySub2: localStorage.getItem('ach_stat_weekly_sub_2') === 'true',
-        // --- Lite Booleans from LocalStorage ---
+        // Lite Mode Booleans from LocalStorage
         lite50: localStorage.getItem('ach_stat_lite_50') === 'true',
         lite100: localStorage.getItem('ach_stat_lite_100') === 'true',
         liteSub8: localStorage.getItem('ach_stat_lite_sub_8') === 'true',
@@ -872,12 +846,10 @@ function getStatsObject() {
     };
 }
 
-
 async function renderAchievements(calculatedLevel) {
     const list = document.getElementById('achievementList');
     list.innerHTML = '';
 
-    // Use the helper instead of re-typing everything!
     const stats = getStatsObject();
 
     // Override level if a calculated one was passed in
@@ -899,7 +871,6 @@ async function renderAchievements(calculatedLevel) {
     });
 }
 
-
 function applyUnlocks(unlockedList) {
     PET_DATA.forEach(pet => {
         const slot = document.getElementById(`slot-${pet.id}`);
@@ -908,18 +879,18 @@ function applyUnlocks(unlockedList) {
         const isUnlocked = unlockedList.includes(pet.id);
         const isEquipped = currentEquippedPet === pet.id;
         const nameSpan = slot.querySelector('.pet-name');
-        const img = slot.querySelector('.pet-img'); // Get the image element
+        const img = slot.querySelector('.pet-img');
 
         // Force the correct image file based on the PET_DATA array
         if (img) {
-            // Updated check: if the ID contains 'cape', it goes to the capes folder
-            // This now correctly handles max_cape, achievement_cape, and the _t versions
+            // if the ID contains 'cape', it goes to the capes folder
+            // correctly handles max_cape, achievement_cape, and the _t versions
             const isCape = pet.id.includes('cape');
             const folder = isCape ? 'capes/' : 'pets/';
 
             img.src = `${folder}${pet.file}`;
         }
-        // Update Classes
+        // Update classes
         slot.className = `pet-slot ${isUnlocked ? 'unlocked' : ''} ${isEquipped ? 'equipped' : ''}`;
         nameSpan.textContent = isUnlocked ? pet.name : "???";
 
@@ -927,14 +898,15 @@ function applyUnlocks(unlockedList) {
         if (isUnlocked) {
             slot.onclick = () => equipPet(pet.id);
         } else {
-            slot.onclick = null; // Important: Clear any old listeners
+            // Clear any old listeners
+            slot.onclick = null; 
         }
     });
     document.getElementById('logGrid').classList.add('ready');
     document.querySelector('.container').classList.add('loaded');
 }
 async function equipPet(petId) {
-    // 1. Toggle logic (if clicking the same pet, unequip it)
+    // Toggle logic (if clicking the same pet, unequip it)
     const newPetId = (currentEquippedPet === petId) ? null : petId;
     currentEquippedPet = newPetId;
 
@@ -948,7 +920,7 @@ async function equipPet(petId) {
     // UI Refresh
     applyUnlocks(JSON.parse(localStorage.getItem('cached_pets') || '[]'));
 
-    // 3. Securely save to Supabase using RPC
+    // Save to Supabase using RPC
     const { error } = await supabase.rpc('equip_pet_secure', {
         pet_id_to_equip: newPetId
     });
@@ -958,19 +930,18 @@ async function equipPet(petId) {
 }
 
 async function loadCollection() {
-    // 1. Fetch fresh data
+    // Fetch fresh data
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
 
-    // 2. Initial UI from LocalStorage
+    // Initial UI from LocalStorage
     const cachedPets = JSON.parse(localStorage.getItem('cached_pets') || '[]');
     if (cachedPets.length > 0) applyUnlocks(cachedPets);
 
-    // --- UPDATED: Now fetching the highest score from daily_attempts as well ---
+    // Grab collections from supabase
     const [profileRes, scoreRes, attemptsRes] = await Promise.all([
         supabase.from('profiles').select('collection_log, achievements, xp, equipped_pet, level, total_correct, total_wrong, wins, losses, draws').eq('id', session.user.id).single(),
         supabase.from('scores').select('score, time_ms, lite_data, weekly_data, daily_data').eq('user_id', session.user.id).maybeSingle(),
-        // Get the count AND check if a score of 10 exists
         supabase.from('daily_attempts').select('score').eq('user_id', session.user.id)
     ]);
 
@@ -978,6 +949,7 @@ async function loadCollection() {
         console.error("Error loading profile:", profileRes.error);
         return;
     }
+
     // Extract the actual data from the response object
     const profileData = profileRes.data;
     const maxScore = scoreRes.data?.score || 0;
@@ -989,9 +961,10 @@ async function loadCollection() {
     const hasPerfectGame = attempts.some(attempt => attempt.score === 10);
 
     if (profileData) {
-        const a = profileData.achievements || {}; // Define 'a' here so it's available below
-        const s = scoreRes.data || {}; // Get the whole score object
-        // save multiplayer wins / losses / draws
+        const a = profileData.achievements || {}; // achievements object
+        const s = scoreRes.data || {}; // score object
+
+        // Save multiplayer wins / losses / draws
         localStorage.setItem('multiplayer_wins', profileData.wins || 0);
         localStorage.setItem('multiplayer_losses', profileData.losses || 0);
         localStorage.setItem('multiplayer_draws', profileData.draws || 0);
@@ -999,14 +972,15 @@ async function loadCollection() {
         // Save the counters to Cache
         localStorage.setItem('cached_total_correct', profileData.total_correct || 0);
         localStorage.setItem('cached_total_wrong', profileData.total_wrong || 0);
-
         localStorage.setItem('cached_xp', profileData.xp || 0);
         localStorage.setItem('cached_level', officialLevel);
         localStorage.setItem('cached_max_score', maxScore);
-        // total correct answers
+
+        // Total correct answers
         localStorage.setItem('stat_correct_1000', (a.correct_1000 || false).toString());
         localStorage.setItem('stat_correct_10000', (a.correct_10000 || false).toString());
-        // Save Multiplayer stats to LocalStorage so renderAchievements can see them
+
+        // Multiplayer stats
         localStorage.setItem('ach_stat_multi_win', (a.multi_first_win || false).toString());
         localStorage.setItem('ach_stat_multi_loss', (a.multi_first_loss || false).toString());
         localStorage.setItem('ach_stat_multi_draw', (a.multi_first_draw || false).toString());
@@ -1014,35 +988,38 @@ async function loadCollection() {
         localStorage.setItem('ach_stat_multi_50', (a.multi_50_wins || false).toString());
         localStorage.setItem('ach_stat_multi_100', (a.multi_100_wins || false).toString());
         localStorage.setItem('ach_stat_multi_flawless', (a.multi_flawless || false).toString());
-        // Save Weekly stats to LocalStorage so renderAchievements can see them
+        // Weekly stats
         localStorage.setItem('ach_stat_weekly_25', (a.weekly_25 || false).toString());
         localStorage.setItem('ach_stat_weekly_50', (a.weekly_50 || false).toString());
         localStorage.setItem('ach_stat_weekly_sub_3', (a.weekly_sub_3 || false).toString());
         localStorage.setItem('ach_stat_weekly_sub_2', (a.weekly_sub_2 || false).toString());
-        // Save Lite stats to LocalStorage so renderAchievements can see them
+        // Lite stats
         localStorage.setItem('ach_stat_lite_50', (a.lite_50 || false).toString());
         localStorage.setItem('ach_stat_lite_100', (a.lite_100 || false).toString());
         localStorage.setItem('ach_stat_lite_sub_8', (a.lite_sub_8 || false).toString());
         localStorage.setItem('ach_stat_lite_sub_6', (a.lite_sub_6 || false).toString());
-        // Save to LocalStorage so renderStats() can find them
+        // all modes data
         localStorage.setItem('cached_score', s.score || 0);
         localStorage.setItem('cached_time_ms', s.time_ms || 9999);
         localStorage.setItem('cached_lite_data', JSON.stringify(s.lite_data || {}));
         localStorage.setItem('cached_weekly_data', JSON.stringify(s.weekly_data || {}));
         localStorage.setItem('cached_daily_data', JSON.stringify(s.daily_data || {}));
 
-        // Total Daily Games (from achievements object 'a')
+        // Total Daily Games
         localStorage.setItem('cached_daily_total', realTotalGames);
 
         // If hasPerfectGame is true from the table, use 'true', otherwise fallback to the JSON column
         const isPerfect = hasPerfectGame || a.daily_perfect || false;
         localStorage.setItem('stat_daily_perfect', isPerfect.toString());
 
-        // Best Daily Streak (from achievements object 'a')
+        // Best Daily Streak
         localStorage.setItem('cached_daily_streak', a.daily_streak || 0);
         localStorage.setItem('stat_max_streak', a.max_streak || 0);
+        // Game
         localStorage.setItem('stat_fastest', (a.fastest_guess || false).toString());
         localStorage.setItem('stat_just_in_time', (a.just_in_time || false).toString());
+
+        // Update Pets and UI
         currentEquippedPet = profileData.equipped_pet || null;
         if (currentEquippedPet) {
             localStorage.setItem('equipped_pet_id', currentEquippedPet);
@@ -1050,7 +1027,6 @@ async function loadCollection() {
             localStorage.removeItem('equipped_pet_id');
         }
 
-        // Update Pets and UI
         const freshPets = profileData.collection_log || [];
         localStorage.setItem('cached_pets', JSON.stringify(freshPets));
         applyUnlocks(freshPets);
@@ -1059,7 +1035,7 @@ async function loadCollection() {
         if (achieveTab && achieveTab.classList.contains('active')) {
             renderAchievements(officialLevel);
         }
-        // ADD THIS: If Stats tab is active, refresh it too
+        
         const statsTab = document.getElementById('statsTab');
         if (statsTab && statsTab.classList.contains('active')) {
             renderStats();
@@ -1067,8 +1043,9 @@ async function loadCollection() {
     }
 }
 
+// To see the player's profile through leaderboard
 async function openPlayerProfile(username) {
-    // 1. Fetch data from RPC
+    // Fetch data from RPC
     const { data, error } = await supabase.rpc('get_player_stats', { target_username: username });
 
     if (error || !data) {
@@ -1076,7 +1053,7 @@ async function openPlayerProfile(username) {
         return;
     }
 
-    // Calculate "Virtual" Achievements
+    // Calculate Achievements
     // Start with the ones stored in the DB
     let finalAchieveCount = data.completed_achievements || 0;
     // Milestone: Daily Mode
@@ -1102,14 +1079,14 @@ async function openPlayerProfile(username) {
     if (data.pets_unlocked >= 10) finalAchieveCount++;
     if (data.pets_unlocked >= 20) finalAchieveCount++;
 
-    // --- Header ---
+    // Header
     document.getElementById('m-statsName').textContent = data.username;
     document.getElementById('m-statsLevel').textContent = data.level;
     document.getElementById('m-statsXP').textContent = data.xp.toLocaleString();
     document.getElementById('m-stat-achieve-count').textContent = `${finalAchieveCount}/35`;
     document.getElementById('m-stat-pet-count').textContent = `${data.pets_unlocked}/20`;
 
-    // --- Stats Grid ---
+    // Stats Grid
     document.getElementById('m-statsTotalCorrect').textContent = data.total_correct.toLocaleString();
     document.getElementById('m-statsTotalWrong').textContent = data.total_wrong.toLocaleString();
     document.getElementById('m-statsMaxStreak').textContent = data.best_streak.toLocaleString();
@@ -1119,25 +1096,23 @@ async function openPlayerProfile(username) {
     const accuracy = total > 0 ? (Math.floor((data.total_correct / total * 100) * 10) / 10).toFixed(1) : "0.0";
     document.getElementById('m-statsAccuracy').textContent = `${accuracy}%`;
 
-    // --- Multiplayer ---
+    // Multiplayer
     document.getElementById('m-statsWins').textContent = data.wins;
     document.getElementById('m-statsLosses').textContent = data.losses;
     document.getElementById('m-statsDraws').textContent = data.draws;
 
-    // --- Personal Bests (Updated to match your HTML IDs) ---
+    // Personal Bests
     const formatPB = (score, time) => {
-        const timeStr = formatLeaderboardTime(time); // Uses your existing global helper
+        const timeStr = formatLeaderboardTime(time);
         return `${parseInt(score).toLocaleString()}${timeStr}`;
     };
 
-    // Correctly targeting the IDs: m-pbNormal, m-pbDaily, m-pbLite, m-pbWeekly
     document.getElementById('m-pbNormal').innerHTML = formatPB(data.pb_normal, data.pb_normal_time);
     document.getElementById('m-pbDaily').innerHTML = formatPB(data.pb_daily.score || 0, data.pb_daily.time || 0);
     document.getElementById('m-pbLite').innerHTML = formatPB(data.pb_lite.score || 0, data.pb_lite.time || 0);
     document.getElementById('m-pbWeekly').innerHTML = formatPB(data.pb_weekly.score || 0, data.pb_weekly.time || 0);
 
-    // Daily total + max streak
-    // --- Capes ---
+    // Capes
     const isMaxUnlocked = data.level >= 99;
     const isAchieveUnlocked = finalAchieveCount >= 35;
     const isTrimmed = isMaxUnlocked && isAchieveUnlocked;
@@ -1159,25 +1134,25 @@ async function openPlayerProfile(username) {
 
 // main app
 window.navigateTo = function (viewId) {
-    // 1. SHIELD: Immediately block all taps during the transition
+    // Immediately block all taps during the transition
     document.body.style.pointerEvents = 'none';
 
-    // 2. Hide all views
+    // Hide all views
     document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
 
-    // 3. Force clean every single 'tapped' element on the screen
+    // Force clean every single 'tapped' element on the screen
     document.querySelectorAll('.tapped').forEach(el => {
         el.classList.remove('tapped');
         el.blur();
     });
 
-    // 4. Show the target view
+    // Show the target view
     const target = document.getElementById(viewId);
     if (target) {
         target.classList.remove('hidden');
     }
 
-    // Reset Home Screen Children if navigating Home ---
+    // Reset Home Screen Children if navigating Home
     if (viewId === 'view-home') {
         const toShow = ['start-screen', 'user-controls', 'main-title'];
         toShow.forEach(id => {
@@ -1187,26 +1162,19 @@ window.navigateTo = function (viewId) {
                 el.style.display = ''; // Clear any inline 'none' or 'flex' set by JS
             }
         });
-        // Also ensure the home view itself isn't stuck with an inline flex height
         const home = document.getElementById('view-home');
         if (home) home.style.display = '';
     }
 
-    // 5. App controls logic
+    // App controls logic
     if (viewId === 'view-leaderboard') {
+        // Force the Normal mode tab to be the active one
+        handleTabClick('score', scoreTab);
         app.classList.add('hide-controls');
     } else {
         app.classList.remove('hide-controls');
     }
-    if (viewId === 'view-collections') {
-        // 2. Force the Pets tab to be the active one
-        const petsTab = document.getElementById('petsTab');
-        if (petsTab) {
-            petsTab.click(); // Programmatically trigger the click
-        }
-        renderStats();
-        renderAchievements();
-    }
+
     const endScreen = document.getElementById('end-screen');
     if (endScreen) endScreen.classList.add('hidden');
     const mainMenuBtn = document.querySelector('.main-menu-btn');
@@ -1215,11 +1183,22 @@ window.navigateTo = function (viewId) {
     }
     document.body.classList.remove('game-active');
     game.classList.add('hidden');
-    // 6. Update URL
+
+    // Update URL
     const path = viewId.replace('view-', '');
     window.location.hash = path;
 
-    // 7. UN-SHIELD: Re-enable interaction after a short delay
+    if (viewId === 'view-collections') {
+        // Force the Pets tab to be the active one
+        const petsTab = document.getElementById('petsTab');
+        if (petsTab) {
+            petsTab.click(); // Programmatically trigger the click
+        }
+        renderStats();
+        renderAchievements();
+    }
+
+    // Re-enable interaction after a short delay
     // The delay ensures the transition is finished before the user can tap again
     setTimeout(() => {
         document.body.style.pointerEvents = 'auto';
@@ -1288,7 +1267,6 @@ function resetGameEngine() {
     isMultiplayerMode = false;
     isSyncing = false
     myRole = null; // Clear the role
-    currentLobbyCode = null; // Clear the code
     iHaveAnswered = false;
     opponentHasAnswered = false;
     if (window.forceEndTimeout) clearTimeout(window.forceEndTimeout);
@@ -2557,8 +2535,6 @@ async function init() {
                 return;
             }
 
-            currentLobbyCode = data.code; // Sets the global variable for the fetcher
-
             // --- THE "GUEST" ASSIGNMENT ---
             myRole = 'guest'; // Now this global variable is set
             sessionStorage.setItem('is_host', 'false');
@@ -2615,7 +2591,6 @@ async function init() {
 
                 // Check for the ID directly instead of the boolean flag
                 if (lobbyId) {
-                    //console.log("Lobby ID detected, triggering leaveLobby...");
                     await leaveLobby();
                 }
                 preloadQueue = [];
@@ -2631,10 +2606,9 @@ async function init() {
                     streakContainer.style.display = 'none';
                 }
                 if (playAgainBtn) playAgainBtn.classList.remove('hidden');
-                // Just hide the game-over screen and navigate. 
-                // navigateTo will handle the rest!
-                document.getElementById('end-screen').classList.add('hidden');
 
+                // hide the game-over screen and navigate. 
+                document.getElementById('end-screen').classList.add('hidden');
                 navigateTo('view-home');
             });
         });
