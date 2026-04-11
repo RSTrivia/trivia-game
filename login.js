@@ -1,8 +1,6 @@
 import { supabase } from './supabase.js';
 
 const app = document.getElementById('app');
-const usernameInput = document.getElementById('username');
-const passwordInput = document.getElementById('password');
 const loginBtn = document.getElementById('loginBtn');
 const signupBtn = document.getElementById('signupBtn');
 
@@ -33,18 +31,20 @@ function showGoldAlert(message) {
 function clearUserSessionData() {
     // List all keys that belong to a specific user
     const userKeys = [
-        'cachedUsername', 
-        'cachedLoggedIn', 
+        'cachedUsername',
+        'cachedLoggedIn',
         'dailyPlayedDate'
     ];
-    
+
     userKeys.forEach(key => localStorage.removeItem(key));
 }
 
 signupBtn.addEventListener('click', async () => {
-    const username = usernameInput.value.trim();
-    const password = passwordInput.value;
-    
+    const usernameInput_signup = document.getElementById('username');
+    const passwordInput_signup = document.getElementById('password');
+    const username = usernameInput_signup.value.trim();
+    const password = passwordInput_signup.value;
+
     setBusy(true);
     // 🛑 STOP if the name is longer than 8
     if (username.length > 7) {
@@ -61,8 +61,8 @@ signupBtn.addEventListener('click', async () => {
         setBusy(false);
         return showGoldAlert("Please enter a username.");
     }
-        
-   // 🛡️ Ask the DB to validate EVERYTHING (Length, Regex, Availability)
+
+    // 🛡️ Ask the DB to validate EVERYTHING (Length, Regex, Availability)
     const { data: validationResult, error: rpcErr } = await supabase
         .rpc('check_username_available', { target_username: username });
 
@@ -77,14 +77,14 @@ signupBtn.addEventListener('click', async () => {
         setBusy(false);
         return;
     }
-    
+
     const email = username.toLowerCase() + '@example.com';
 
     //sign up
-    const { data: authData, error: signUpError } = await supabase.auth.signUp({ 
-        email, 
+    const { data: authData, error: signUpError } = await supabase.auth.signUp({
+        email,
         password,
-        options: { data: { display_name: username } } 
+        options: { data: { display_name: username } }
     });
 
     if (signUpError) {
@@ -93,93 +93,107 @@ signupBtn.addEventListener('click', async () => {
         return;
     }
 
-   // 2. AUTO-LOGIN
-   const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({ email, password });
+    // 2. AUTO-LOGIN
+    const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({ email, password });
 
-    if (loginError|| !loginData?.user) {
+    if (loginError || !loginData?.user) {
         // If auto-login fails for some weird reason, at least they have an account now
         showGoldAlert("Account created!\nPlease log in manually.");
         setBusy(false);
     } else {
         // SUCCESSFUL AUTO-LOGIN
-        
+
         // 🛡️ RESET: Wipe any data left over from previous people on this device
-        clearUserSessionData(); 
+        clearUserSessionData();
 
         // 🛡️ SET: Save the new user's details
         localStorage.setItem('cachedUsername', username);
         localStorage.setItem('cachedLoggedIn', 'true');
-        
+
         // 🛡️ CLEANUP: Kill any lingering socket connections
         await supabase.removeAllChannels();
 
         // 🛡️ REDIRECT: Go to the game
-        window.location.href = 'index.html';
+        navigateTo('view-home');
     }
 });
 
 loginBtn.addEventListener('click', async () => {
-    const usernameInputVal = usernameInput.value.trim();
-    const password = passwordInput.value;
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    if (!usernameInput || !passwordInput) return;
 
-    if (!usernameInputVal || !password) {
+    const usernameInputVal = usernameInput.value.trim();
+    const password_login = passwordInput.value;
+
+    if (!usernameInputVal || !password_login) {
         return showGoldAlert("Enter credentials.");
     }
 
     setBusy(true);
-    const email = usernameInputVal.toLowerCase() + '@example.com';
-    
-    // 1. Authenticate with Supabase Auth
-    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email, password });
-    
-    // Better Error Handling
-    if (authError) {
-        setBusy(false);
-        // Specifically check for 'Invalid login credentials'
-        if (authError.status === 400) {
-            return showGoldAlert("Invalid username or password.");
-        }
-        return showGoldAlert(authError.message);
-    }
-
-    if (!authData?.user) {
-        setBusy(false);
-        return showGoldAlert("Login failed. Please try again.");
-    }
-
-    // 🛡️ RESET: Clear any old user data from the device immediately
-    clearUserSessionData();
-
     try {
-        // 2. Fetch the "Login Package" from the server
-        const { data: loginPackage, error: rpcError } = await supabase.rpc('get_user_login_data', { 
-            target_uid: authData.user.id 
-        });
+        const email = usernameInputVal.toLowerCase() + '@example.com';
 
-        if (rpcError) throw rpcError;
+        // 2. Clear local junk - DO NOT AWAIT THIS
+        // We fire it and move on so it can't hang the login
+        supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+        const projectID = 'nnlkcwvqhkxasjtshvpw';
+        localStorage.removeItem(`sb-${projectID}-auth-token`);
 
-        // 3. Apply Server Data to Local Storage
-        const finalUsername = loginPackage.username || usernameInputVal;
-        localStorage.setItem('cachedUsername', finalUsername);
-        localStorage.setItem('cachedLoggedIn', 'true');
+        // 3. Authenticate with a 5-second "Race" timeout
+        const { data: authData, error: authError } = await Promise.race([
+            supabase.auth.signInWithPassword({
+                email: email,
+                password: password_login
+            }),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 5000))
+        ]);
 
-        if (loginPackage.has_played_today) {
-            const todayStr = new Date().toISOString().split('T')[0];
-            localStorage.setItem('dailyPlayedDate', todayStr);
+        if (authError) {
+            if (authError.status === 400) {
+                showGoldAlert("Invalid username or password.");
+            } else {
+                showGoldAlert(authError.message);
+            }
+            setBusy(false); // Unlock here
+            return; 
         }
+
+        // 4. Handle RPC Data
+        clearUserSessionData();
+        try {
+            const { data: pkg } = await supabase.rpc('get_user_login_data', {
+                target_uid: authData.user.id
+            });
+            
+            const finalUsername = pkg?.username || usernameInputVal;
+            localStorage.setItem('cachedUsername', finalUsername);
+            localStorage.setItem('cachedLoggedIn', 'true');
+        } catch (rpcErr) {
+            console.warn("RPC failed, falling back...");
+            localStorage.setItem('cachedUsername', usernameInputVal);
+            localStorage.setItem('cachedLoggedIn', 'true');
+        }
+
+        // 5. Cleanup Channels - DO NOT AWAIT THIS
+        supabase.removeAllChannels();
+
+        // 6. Final Redirect
+        navigateTo('view-home');
 
     } catch (err) {
-        console.warn("Post-login verification failed:", err);
-        // Fallback to basic data so the user can still enter the game
-        localStorage.setItem('cachedUsername', usernameInputVal);
-        localStorage.setItem('cachedLoggedIn', 'true');
+        console.error("Critical Login Error:", err);
+        if (err.message === 'TIMEOUT') {
+            showGoldAlert("Connection timed out. Try again.");
+        } else {
+            showGoldAlert("An unexpected error occurred.");
+        }
+    } finally {
+        // 🛡️ THE GUARANTEE: This runs whether the login worked OR failed.
+        // This ensures the button is NEVER stuck in a disabled state.
+        setBusy(false);
     }
-    
-    // 4. Cleanup and Redirect
-    await supabase.removeAllChannels();
-    window.location.href = 'index.html';
 });
 
 app.classList.remove('app-hidden');
 app.classList.add('app-ready');
-
