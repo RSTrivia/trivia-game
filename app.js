@@ -2159,7 +2159,6 @@ async function init() {
 
     // 1. Set up the listener FIRST
     supabase.auth.onAuthStateChange((event, session) => {
-        console.log("Auth Event Fired:", event);
         // Run the async logic in the background without making the listener wait
         (async () => {
             if (['SIGNED_IN', 'TOKEN_REFRESHED', 'SIGNED_OUT', 'USER_UPDATED', 'TOKEN_REFRESH_FAILED'].includes(event)) {
