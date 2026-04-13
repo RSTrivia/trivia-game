@@ -272,22 +272,35 @@ const dailyMessages = { // Daily Mode end-screen messages
     ]
 };
 
-window.addEventListener('unhandledrejection', function (event) {
-    // Check if the error is the specific Supabase Refresh failure
-    const errorMsg = event.reason?.message || "";
-    if (errorMsg.includes("Refresh Token Not Found") || errorMsg.includes("Invalid Refresh Token")) {
-        console.warn("Global Catch: Session expired.");
-        
-        const hadUser = localStorage.getItem('cachedUsername');
-        const wasManual = localStorage.getItem('manual_logout');
-
-        if (hadUser && !wasManual) {
-            showGoldAlert("Your session has expired. Please log in again.");
-            // Force the UI to Guest mode since the listener failed to fire
-            handleAuthChange('SIGNED_OUT', null);
+// This intercepts and silences the "WebSocket is closed before established" error
+(function () {
+    const muzzle = (...args) => {
+        const message = args.join(' ');
+        // Silence WebSockets, Realtime, and Supabase Auth Refresh errors
+        if (
+            message.includes('WebSocket') || 
+            message.includes('realtime') || 
+            message.includes('Refresh Token') || 
+            message.includes('AuthApiError')
+        ) {
+            return; 
         }
-    }
-});
+        // Original error behavior for everything else
+        console._error(...args);
+    };
+
+    // Save original console functions to prevent infinite loops
+    console._error = console.error;
+    console._warn = console.warn;
+
+    console.error = muzzle;
+    console.warn = (...args) => {
+        const message = args.join(' ');
+        if (message.includes('WebSocket') || message.includes('Refresh Token')) return;
+        console._warn(...args);
+    };
+})();
+
 
 function formatLeaderboardTime(ms) {
     // Hide if 0, null, or the default "empty" values
@@ -481,12 +494,8 @@ async function subscribeToLeaderboard() {
             if (currentMode === 'xp' || (payload.new && payload.new.equipped_pet !== undefined)) {
                 fetchLeaderboard();
             }
-            // 2. Refresh Achievements/Stats if active
-            if (document.getElementById('achieveTab').classList.contains('active')) {
-                loadCollection(); // This triggers renderAchievements()
-            }
-            if (document.getElementById('statsTab').classList.contains('active')) {
-                loadCollection(); // This triggers renderStats()
+            if (document.getElementById('petsTab').classList.contains('active')) {
+                loadCollection(); // This triggers loadCollection()
             }
         }
     );
@@ -2159,6 +2168,7 @@ async function init() {
 
     // 1. Set up the listener FIRST
     supabase.auth.onAuthStateChange((event, session) => {
+        console.log("Auth Event Fired:", event);
         // Run the async logic in the background without making the listener wait
         (async () => {
             if (['SIGNED_IN', 'TOKEN_REFRESHED', 'SIGNED_OUT', 'USER_UPDATED', 'TOKEN_REFRESH_FAILED'].includes(event)) {
@@ -2725,9 +2735,9 @@ async function handleAuthChange(event, session) {
         if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESH_FAILED') {
             localStorage.removeItem('manual_logout');
             localStorage.removeItem('cached_xp');
-            localStorage.removeItem('cachedUsername');
             localStorage.removeItem('cached_level');
             localStorage.removeItem('equipped_pet_id');
+            localStorage.removeItem('cachedUsername');
             if (wasManual) {
                 // Clear all session-specific UI and storage
                 localStorage.removeItem('lastDailyScore');
