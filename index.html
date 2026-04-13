@@ -17,7 +17,7 @@
   <title>OSRS Trivia</title>
   <script>
 
-    // Define these globally for this script
+    // Define globally
     const cachedUsername = localStorage.getItem('cachedUsername') || 'Guest';
     const cachedLoggedIn = localStorage.getItem('cachedLoggedIn') === 'true';
     const cachedMuted = localStorage.getItem('muted') === 'true';
@@ -101,7 +101,7 @@
       helpBtn.onclick = () => helpModal.classList.remove('hidden');
       closeHelpBtn.onclick = () => helpModal.classList.add('hidden');
 
-      // Player Modal X
+      // Player Modal (X icon - to close the modal)
       document.querySelector('#playerModal .close-modal').onclick = () => {
         document.getElementById('playerModal').classList.add('hidden');
       };
@@ -119,12 +119,12 @@
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 
 <body>
-  <!-- BACKGROUND LAYERS -->
+  <!-- Background Layers -->
   <div id="background-root">
     <div id="bg-fade-layer"></div>
   </div>
 
-  <!-- App wrapper -->
+  <!-- App Wrapper -->
   <div id="app">
     <div class="container" style="position: relative;">
       <a id="discordBtn" href="https://discord.gg/74vQZwWTJX" target="_blank" rel="noopener noreferrer">
@@ -243,21 +243,21 @@
               <div class="btn-sub">Play against a friend</div>
             </button>
           </div>
-          <!-- Third row: Daily mode -->
+          <!-- Forth row: Daily mode -->
           <div class="row">
             <button id="dailyBtn" class="btn is-disabled">
               <div class="btn-main">Daily Mode</div>
               <div class="btn-sub">10 questions, play once a day</div>
             </button>
           </div>
-          <!-- Forth row: Weekly mode -->
+          <!-- Fifth row: Weekly mode -->
           <div class="row">
             <button id="weeklyBtn" class="btn is-disabled">
               <div class="btn-main">Weekly Mode</div>
               <div class="btn-sub">50 questions, questions change weekly</div>
             </button>
           </div>
-          <!-- Fifth row: Login + Leaderboard -->
+          <!-- Sixth row: Login + Leaderboard -->
           <div class="row">
             <button id="authBtn" class="btn-small">
               <span class="btn-label">Log In / Sign Up</span>
@@ -297,6 +297,7 @@
         </div>
       </div>
 
+      <!-- Collections View: Pets, Achievements, Statistics -->
       <div id="view-collections" class="view hidden">
         <h1 id="main-title">Collections</h1>
         <div class="leaderboard-tabs">
@@ -304,6 +305,7 @@
           <button id="achieveTab" class="tab-btn">Achievements</button>
           <button id="statsTab" class="tab-btn">Statistics</button>
         </div>
+        <!-- Pets Grid -->
         <div id="logGrid">
           <div class="pet-slot" id="slot-pet_mole"><img src="pets/mole.png" class="pet-img" width="50" height="50"
               draggable="false"><span class="pet-name">???</span></div>
@@ -351,10 +353,12 @@
               width="50" height="50" draggable="false"><span class="pet-name">???</span></div>
 
         </div>
+        <!-- Achievements -->
         <div id="achievementsView" class="hidden" style="width: 100%;">
           <ul id="achievementList">
           </ul>
         </div>
+        <!-- Statistics -->
         <div id="statsView" class="view hidden" style="width: 100%;">
           <div id="statsProfileHeader" class="text-all"
             style="display: flex; flex-direction: column; align-items: center; gap: 15px;">
@@ -427,6 +431,7 @@
         </div>
         <button class="btn main-menu-btn">Main Menu</button>
       </div>
+      <!-- Login View -->
       <div id="view-login" class="view hidden">
         <h1>OSRS Trivia</h1>
         <form id="loginForm">
@@ -450,6 +455,7 @@
         </div>
       </div>
 
+      <!-- Leaderboard View: Normal Score, Lite Mode, Daily Mode, Weekly Mode, Total XP -->
       <div id="view-leaderboard" class="view hidden">
         <h1 id="leaderboard-title">Leaderboard</h1>
         <div class="leaderboard-tabs">
@@ -484,6 +490,7 @@
         <button class="btn main-menu-btn">Main Menu</button>
       </div>
 
+      <!-- Multiplayer View -->
       <div id="view-multiplayer-menu" class="view hidden">
         <h1 class="main-title">OSRS Trivia</h1>
         <div class="lobby-card">
@@ -498,6 +505,7 @@
         </div>
       </div>
 
+      <!-- Multiplayer Join-Lobby View -->
       <div id="view-join-lobby" class="view hidden">
         <h1 class="main-title">OSRS Trivia</h1>
         <div class="lobby-card">
@@ -513,6 +521,7 @@
         </div>
       </div>
 
+      <!-- Multiplayer Lobby View -->
       <div id="view-lobby" class="view hidden">
         <h1 class="main-title">OSRS Trivia</h1>
 
@@ -538,12 +547,14 @@
 
     </div>
   </div>
+
   <!-- Scripts -->
   <script type="module" src="supabase.js"></script>
   <script type="module" src="app.js"></script>
   <script type="module" src="login.js"></script>
   <script src="background.js" defer></script>
 
+  <!-- Help Modal (To explain the game on the "?" sign) -->
   <div id="help-modal" class="modal-overlay hidden">
     <div class="container modal-content">
       <h2 style="font-family: 'Cinzel', serif; color: #d4af37; margin-top: 0; text-align: center;">How to Play</h2>
@@ -571,6 +582,7 @@
     </div>
   </div>
 
+  <!-- Player Modal (To show a player's stats through the leaderboard) -->
   <div id="playerModal" class="modal hidden">
     <div class="modal-container">
       <span class="close-modal">&times;</span>
