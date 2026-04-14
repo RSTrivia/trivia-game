@@ -1089,19 +1089,15 @@ async function openPlayerProfile(username) {
 
     // Calculate Achievements
     // Start with the ones stored in the DB
+    
     let finalAchieveCount = data.completed_achievements || 0;
-    // Milestone: Daily Mode
-    if (data.best_streak >= 10) finalAchieveCount++;
-    if (data.daily_total >= 1) finalAchieveCount++;
-    if (data.daily_total >= 20) finalAchieveCount++;
-    if (data.daily_total >= 100) finalAchieveCount++;
 
     // Milestone: Levels
     if (data.level >= 10) finalAchieveCount++;
     if (data.level >= 50) finalAchieveCount++;
     if (data.level >= 92) finalAchieveCount++;
     if (data.level >= 99) finalAchieveCount++;
-
+ 
     // Milestone: Normal Mode
     if (parseInt(data.pb_normal) >= 10) finalAchieveCount++;
     if (parseInt(data.pb_normal) >= 50) finalAchieveCount++;
