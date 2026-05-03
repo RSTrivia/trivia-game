@@ -4167,7 +4167,6 @@ if (shareBtn) {
         const shareText = `OSRS Trivia ${dailyEdition}  ${currentScore}/${totalQs} ⚔️\n` +
             `${dynamicGrid}\n` +
             `Streak: ${currentStreak} 🔥\n`;
-        //`https://osrstrivia.pages.dev/`;
 
         // 5. Desktop Tooltip Logic
         if (window.matchMedia("(hover: hover)").matches) {
