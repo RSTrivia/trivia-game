@@ -1,7 +1,7 @@
 
 <h1 align="center">OSRS TRIVIA</h1>
 <p align="center"><i>Put your OSRS knowledge to the test in an OSRS-inspired game</i></p>
-<p align="center"><sub>This is a fan-made project and is not affiliated with or endorsed by Jagex.</sub></p>
+<p align="center"><sub>This is a fan-made project created using intellectual property belonging to Jagex Limited under the terms of Jagex's Fan Content Policy. This content is not endorsed by or affiliated with Jagex.</sub></p>
 
 ## Goal
 
@@ -48,4 +48,4 @@ Join our [Discord](https://discord.com/invite/74vQZwWTJX) to:
 - Share your Daily Mode score, achievements and pet drops.
 - Find opponents for Multiplayer Mode.
 
-
+Created using intellectual property belonging to Jagex Limited under the terms of Jagex's Fan Content Policy. This content is not endorsed by or affiliated with Jagex.
