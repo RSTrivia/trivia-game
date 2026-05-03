@@ -47,5 +47,3 @@ Join our [Discord](https://discord.com/invite/74vQZwWTJX) to:
 - Report issues or suggest new additions for the game.
 - Share your Daily Mode score, achievements and pet drops.
 - Find opponents for Multiplayer Mode.
-
-Created using intellectual property belonging to Jagex Limited under the terms of Jagex's Fan Content Policy. This content is not endorsed by or affiliated with Jagex.
