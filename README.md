@@ -6,7 +6,7 @@
 ## Goal
 
 [OSRS Trivia](https://osrstrivia.pages.dev) is a Trivia game for Oldschool RuneScape.  
-The goal is to test your Old School RuneScape knowledge and answer Trivia questions,  
+The goal is to test your Old School RuneScape knowledge and answer trivia questions,  
 all while gaining xp, leveling up, unlocking pets and achievements and climbing the leaderboards.
 
 ## Game Modes
