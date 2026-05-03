@@ -132,9 +132,8 @@ const weeklyTab = document.getElementById('weeklyTab');
 const xpTab = document.getElementById('xpTab');
 const liteTab = document.getElementById('liteTab');
 
-// Audio & Date 
+// Audio
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-const todayStr = new Date().toISOString().split('T')[0];
 
 const dailyMessages = { // Daily Mode end-screen messages
     0: [
@@ -2110,7 +2109,9 @@ async function syncDailySystem() {
             return;
         }
 
-        const { data: summary, error } = await supabase.rpc('get_daily_summary');
+        const { data: summary, error: error } = await supabase.rpc('get_daily_summary', {
+            t: new Date().getTime() 
+        });
 
         if (error) {
             console.error("Error fetching daily summary:", error);
@@ -2134,9 +2135,11 @@ async function syncDailySystem() {
             shareBtn.style.pointerEvents = "auto";
             shareBtn.style.opacity = "1";
 
+            // GENERATE FRESH DATE HERE
+            const currentUtcStr = new Date().toISOString().split('T')[0];
             // Save only score and date for the share logic
             localStorage.setItem('lastDailyScore', summary.score);
-            localStorage.setItem('dailyPlayedDate', todayStr);
+            localStorage.setItem('dailyPlayedDate', currentUtcStr);
         } else {
             shareBtn.classList.add('is-disabled');
             shareBtn.style.pointerEvents = "none";
@@ -2164,6 +2167,7 @@ async function init() {
 
     // 1. Set up the listener FIRST
     supabase.auth.onAuthStateChange((event, session) => {
+        console.log("Auth Event Fired:", event);
         // Run the async logic in the background without making the listener wait
         (async () => {
             if (['SIGNED_IN', 'TOKEN_REFRESHED', 'SIGNED_OUT', 'USER_UPDATED', 'TOKEN_REFRESH_FAILED'].includes(event)) {
@@ -2282,7 +2286,9 @@ async function init() {
 
             // 2. Play Status Check via get_daily_summary
             // Using the existing get_daily_summary RPC
-            const { data: summary, error: rpcError } = await supabase.rpc('get_daily_summary');
+            const { data: summary, error: rpcError } = await supabase.rpc('get_daily_summary', {
+                t: new Date().getTime() 
+            });
 
             if (rpcError) {
                 console.error("RPC Check failed:", rpcError);
@@ -3378,6 +3384,8 @@ async function checkAnswer(choiceId, btn) {
         updateScore();
         // --- NEW: DAILY GRID PATTERN LOGIC ---
         if (isDailyMode) {
+            // GENERATE FRESH DATE HERE
+            const currentUtcStr = new Date().toISOString().split('T')[0];
             // 1. Map the question number to the correct string index
             let patternArray = gridPattern.split('');
             let index = dailyQuestionCount - 1;
@@ -3391,7 +3399,7 @@ async function checkAnswer(choiceId, btn) {
             await supabase
                 .from('daily_attempts')
                 .update({ grid_pattern: gridPattern })
-                .match({ user_id: userId, attempt_date: todayStr });
+                .match({ user_id: userId, attempt_date: currentUtcStr });
         }
         // 🛡️ THE "MASTER" GUEST CHECK
         if (userId) {
@@ -3936,10 +3944,11 @@ async function endGame(result = null, wasFlawless = false) {
 
         // This one function now handles: Streak, Total Count, and Perfect 10/10
         // Pass the actual 'score' variable here
-        localStorage.setItem('lastDailyScoreDate', new Date().toISOString().split('T')[0]);
+        const currentUtcStr = new Date().toISOString().split('T')[0];
+        localStorage.setItem('lastDailyScoreDate', currentUtcStr);
 
         localStorage.setItem('lastDailyScore', score);
-        localStorage.setItem('dailyPlayedDate', todayStr);
+        localStorage.setItem('dailyPlayedDate', currentUtcStr);
         localStorage.setItem('lastDailyMessage', randomMsg);
 
         // Show the streak container
@@ -4137,12 +4146,14 @@ if (shareBtn) {
         // Pull the streak we just saved in handleAuthChange
         const currentStreak = liveStats.current_daily_streak || "0";
 
+        const currentUtcStr = new Date().toISOString().split('T')[0];
+
         // 4. Build the Grid
         // 4. FETCH THE REAL PATTERN FROM DB
         const { data: attemptData } = await supabase
             .from('daily_attempts')
             .select('grid_pattern')
-            .match({ user_id: session.user.id, attempt_date: todayStr })
+            .match({ user_id: session.user.id, attempt_date: currentUtcStr })
             .single();
 
         const pattern = attemptData?.grid_pattern || "0000000000";
@@ -4432,11 +4443,13 @@ async function startDailyChallenge(session) {
     dailyQuestionCount = 0;
     updateScore();
 
+    const currentUtcStr = new Date().toISOString().split('T')[0];
+
     // 1. BURN ATTEMPT & FETCH DAILY IDs FROM RPC
     const [burnRes, questionsRes] = await Promise.all([
         supabase.from('daily_attempts').insert({
             user_id: session.user.id,
-            attempt_date: todayStr,
+            attempt_date: currentUtcStr,
             grid_pattern: gridPattern
         }),
         supabase.rpc('get_daily_questions') // The new logic happens here!
