@@ -1,6 +1,5 @@
 import { supabase } from './supabase.js';
 import { updateMenuPet, showGoldAlert } from './login.js';
-window.supabase = supabase;
 
 // UI & STATE
 const cachedMuted = localStorage.getItem('muted') === 'true';
