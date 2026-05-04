@@ -389,7 +389,6 @@ function getEquippedItemIcon(itemId) {
     return `<img src="${folder}${fileName}" class="mini-pet-icon" draggable="false">`;
 }
 
-window.getEquippedItemIcon = getEquippedItemIcon;
 async function fetchLeaderboard() {
     let query;
     if (currentMode === 'score') {
@@ -827,6 +826,10 @@ async function handleCapeClick(id, element) {
     else localStorage.removeItem('equipped_pet_id');
 
     await supabase.rpc('equip_pet_secure', { pet_id_to_equip: newEquipped });
+    
+    // Refresh the pet grid visuals
+    const cachedPets = JSON.parse(localStorage.getItem('cached_pets') || '[]');
+    applyUnlocks(cachedPets);
 
     // Refresh stats to trigger classList updates
     renderStats();
