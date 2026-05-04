@@ -2,7 +2,7 @@ import { supabase } from './supabase.js';
 import { updateMenuPet, showGoldAlert } from './login.js';
 window.supabase = supabase;
 
-// ====== UI & STATE ======
+// UI & STATE
 const cachedMuted = localStorage.getItem('muted') === 'true';
 let muted = cachedMuted;
 let syncChannel;
@@ -488,7 +488,7 @@ async function subscribeToLeaderboard() {
         { event: '*', schema: 'public', table: 'profiles' },
         (payload) => {
             // Refresh if pet changed OR if we are in XP mode and XP changed
-            // 1. Leaderboard refresh
+            // Leaderboard refresh
             if (currentMode === 'xp' || (payload.new && payload.new.equipped_pet !== undefined)) {
                 fetchLeaderboard();
             }
@@ -654,7 +654,7 @@ const ACHIEVEMENT_SCHEMA = [
     }
 ];
 
-// TAB SWITCHING
+// tab switching
 document.getElementById('petsTab').onclick = () => {
     document.getElementById('petsTab').classList.add('active');
     document.getElementById('achieveTab').classList.remove('active');
@@ -826,7 +826,7 @@ async function handleCapeClick(id, element) {
     else localStorage.removeItem('equipped_pet_id');
 
     await supabase.rpc('equip_pet_secure', { pet_id_to_equip: newEquipped });
-    
+
     // Refresh the pet grid visuals
     const cachedPets = JSON.parse(localStorage.getItem('cached_pets') || '[]');
     applyUnlocks(cachedPets);
@@ -1237,86 +1237,46 @@ window.navigateTo = function (viewId) {
     }, 300);
 };
 
+
 // 1v1 MODE
-
-async function leaveLobby() {
-    const rawId = sessionStorage.getItem('current_lobby_id');
-    if (!rawId) return;
-
-    const lobbyId = rawId.replace(/['"]+/g, '');
-    const roleAtTimeOfLeaving = myRole;
-
-    try {
-        // Fire and forget the update
-        if (roleAtTimeOfLeaving === 'host') {
-            supabase.from('live_lobbies').update({ status: 'closed' }).eq('id', lobbyId).then();
-        } else {
-            supabase.from('live_lobbies').update({ guest_id: null, guest_name: null, status: 'waiting' }).eq('id', lobbyId).then();
-        }
-    } catch (err) {
-        console.error("Cleanup error:", err);
-    }
-
-    await new Promise(res => setTimeout(res, 200));
-
-    if (lobbyChannel) {
-        // untrack before removing the channel to 
-        // trigger the 'leave' event for others instantly
-        supabase.removeChannel(lobbyChannel);
-        lobbyChannel = null;
-    }
-
-    // Clear local memory
-    sessionStorage.removeItem('current_lobby_id');
-    sessionStorage.removeItem('is_host');
-
-    // Reset the internal Role variable
-    myRole = null;
-
-    resetGameEngine();
-}
-
 function resetGameEngine() {
-    //console.log("Engine: Performing full memory reset...");
-
-    // 1. Clear the data queues
+    // Clear the data queues
     preloadQueue = [];
     window.nextFetchIndex = 0;
     window.currentLobbyIndex = 0;
     gameStartTime = null;
 
-    // 2. Clear the storage so the next lobby MUST fetch from DB
+    // Clear the storage so the next lobby must fetch from DB
     sessionStorage.removeItem('current_lobby_questions');
     sessionStorage.removeItem('current_lobby_id');
     sessionStorage.removeItem('game_start_time');
     document.getElementById('dailyEndNote').classList.add('hidden');
 
-    // 3. Reset Game State Flags
+    // Reset Game State Flags
     isEndGameProcessing = false;
     gameStarting = false;
     gameEnding = false;
     isMultiplayerMode = false;
     isSyncing = false
-    myRole = null; // Clear the role
+    myRole = null;
     iHaveAnswered = false;
     opponentHasAnswered = false;
     if (window.forceEndTimeout) clearTimeout(window.forceEndTimeout);
 
-    myHP = 60; // Or your MAX_HP
+    myHP = 60;
     opponentHP = 60;
 
-    // 4. Reset UI (Optional but recommended)
+    // Reset UI
     if (typeof timerInterval !== 'undefined') clearInterval(timerInterval);
     const answersBox = document.getElementById('answers-box');
     if (answersBox) answersBox.innerHTML = '';
 
     const scoreContainer = document.getElementById('finalScore').parentElement;
-    // Put the original HTML structure back
-
+    
     scoreContainer.innerHTML = 'Score: <span id="finalScore">0</span>';
     const pBtn = document.getElementById('playAgainBtn');
     if (pBtn) {
-        pBtn.disabled = false; // enable
+        pBtn.disabled = false; // enable button
         pBtn.innerHTML = 'Play Again';
     }
 }
@@ -1326,7 +1286,7 @@ async function startNewRound() {
 
     const lobbyId = sessionStorage.getItem('current_lobby_id')?.replace(/['"]+/g, '');
 
-    // 1. Generate & Shuffle 1000 IDs
+    // Generate & Shuffle 1000 IDs
     const allIDs = Array.from({ length: 1000 }, (_, i) => i + 1);
     for (let i = allIDs.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -1334,7 +1294,7 @@ async function startNewRound() {
     }
     // Force the IDs to be a clean array of numbers
     const cleanIDs = allIDs.map(id => Number(id));
-    // CRITICAL: Save the new IDs locally so the Host's engine sees them
+    // Save the new IDs locally so the Host's engine sees them
     sessionStorage.setItem('current_lobby_questions', JSON.stringify(allIDs));
     preloadQueue = [];
     window.nextFetchIndex = 0;
@@ -1344,23 +1304,21 @@ async function startNewRound() {
     const startTime = Date.now() + 2000;
     sessionStorage.setItem('game_start_time', startTime.toString());
 
-    // 2. Update Database AND WAIT FOR IT
+    // Update Database and wait for it
     const { error } = await supabase
         .from('live_lobbies')
         .update({
             question_ids: cleanIDs,
             status: 'playing',
-            game_start_time: startTime // Changing status helps trigger listeners
+            game_start_time: startTime // Change status
         })
         .eq('id', lobbyId)
         .select();
 
     if (error) {
         console.error("DB Update Failed - Stopping Rematch:", error);
-        return; // STOP HERE so we don't send a fake broadcast
+        return; // stop here so we don't send a fake broadcast
     }
-
-    //console.log("Host: Database updated. Waiting for listener to trigger engine...");
 }
 
 // Helper to handle the UI swap consistently
@@ -1390,12 +1348,49 @@ function finalizeEndScreen(rounds = null) {
     });
 }
 
+async function leaveLobby() {
+    const rawId = sessionStorage.getItem('current_lobby_id');
+    if (!rawId) return;
+
+    const lobbyId = rawId.replace(/['"]+/g, '');
+    const roleAtTimeOfLeaving = myRole;
+
+    try {
+        // Fire and forget the lobby update
+        if (roleAtTimeOfLeaving === 'host') {
+            supabase.from('live_lobbies').update({ status: 'closed' }).eq('id', lobbyId).then();
+        } else {
+            supabase.from('live_lobbies').update({ guest_id: null, guest_name: null, status: 'waiting' }).eq('id', lobbyId).then();
+        }
+    } catch (err) {
+        console.error("Cleanup error:", err);
+    }
+
+    await new Promise(res => setTimeout(res, 200));
+
+    if (lobbyChannel) {
+        // untrack before removing the channel to trigger the 'leave' event for others instantly
+        supabase.removeChannel(lobbyChannel);
+        lobbyChannel = null;
+    }
+
+    // Clear local memory
+    sessionStorage.removeItem('current_lobby_id');
+    sessionStorage.removeItem('is_host');
+
+    // Reset the internal Role variable
+    myRole = null;
+
+    resetGameEngine();
+}
+
+
 async function handleMultiplayerTimeout() {
-    // 1. Prevent double-triggering if the player clicks right as it expires
+    // Prevent double-triggering if the player clicks right as it expires
     if (iHaveAnswered || gameEnding) return;
     iHaveAnswered = true;
     clearInterval(timer); // Stop the visual clock now that we've hit 0
-    // 2. UI & Sound Feedback
+    // UI & Sound Feedback
     stopTickSound();
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
     playSound(wrongBuffer);
@@ -1403,16 +1398,15 @@ async function handleMultiplayerTimeout() {
     // Show them what they missed
     highlightCorrectAnswer();
 
-    // 3. OSRS Style Damage
-    // A timeout is a "missed flick" - take significant damage
+    // A timeout is equal to a wrong answer
     const timeoutDamage = 20;
     myHP = Math.max(0, myHP - timeoutDamage);
     triggerHitsplat('my', 20);
 
-    // Update your bars using your existing function
+    // Update hp bars using existing function
     updateHPUI();
 
-    // 4. Tell the Lobby what happened
+    // broadcast what happened
     if (lobbyChannel) {
         lobbyChannel.send({
             type: 'broadcast',
@@ -1434,11 +1428,11 @@ async function handleMultiplayerTimeout() {
 
 async function fetchNextLobbyQuestion(force = false) {
     try {
-        // 1. Get the latest IDs
+        // Get the latest IDs
         let stored = sessionStorage.getItem('current_lobby_questions');
         let storedIds = stored ? JSON.parse(stored) : null;
 
-        // 2. EMERGENCY SYNC
+        // emergency fetch from DB if for some reason we don't have the IDs in session
         if (!storedIds || storedIds.length === 0) {
             const lobbyId = sessionStorage.getItem('current_lobby_id');
             if (!lobbyId) return null;
@@ -1457,7 +1451,7 @@ async function fetchNextLobbyQuestion(force = false) {
 
         if (typeof storedIds === 'string') storedIds = JSON.parse(storedIds);
 
-        // 3. Pointer Logic
+        // Pointer Logic
         if (window.nextFetchIndex === undefined) window.nextFetchIndex = 0;
 
         const currentToFetch = window.nextFetchIndex;
@@ -1468,7 +1462,7 @@ async function fetchNextLobbyQuestion(force = false) {
         // Increment pointer immediately so the next call gets index + 1
         window.nextFetchIndex++;
 
-        // 4. Fetch the actual data
+        // Fetch the actual data
         const data = await fetchDeterministicQuestion(Number(nextId));
 
         if (data) {
@@ -1482,9 +1476,8 @@ async function fetchNextLobbyQuestion(force = false) {
                 } catch (e) { /* ignore decode errors */ }
             }
 
-            // --- CRITICAL CHANGE ---
-            // If it's a "force" (Game Start), we handle it immediately.
-            // Otherwise, we RETURN the data so Promise.all keeps the order.
+            // If it's a "force" (Game Start), handle it immediately.
+            // Otherwise, return the data so Promise.all keeps the order.
             if (force) {
                 preloadQueue.unshift(data);
                 return data;
@@ -1501,11 +1494,11 @@ async function fetchNextLobbyQuestion(force = false) {
 }
 
 async function subscribeToLobby(lobbyCode, lobbyId) {
-    // 1. Cleanup check
+    // Cleanup check
     if (lobbyChannel) {
         await supabase.removeChannel(lobbyChannel);
     }
-    // 2. Setup the new channel
+    // Setup the new channel
     lobbyChannel = supabase.channel(`lobby_${lobbyCode}`, {
         config: {
             broadcast: { self: false },
@@ -1513,13 +1506,13 @@ async function subscribeToLobby(lobbyCode, lobbyId) {
         }
     });
 
-    // RESET pointer so we start at question 0 of the lobby list
+    // reset pointer so we start at question 0 of the lobby list
     window.currentLobbyIndex = 0;
 
-    // RESET the flag whenever we join a new lobby
+    // reset the flag whenever we join a new lobby
     isHandlingLobbyClose = false;
 
-    // --- 1. Database Listener (The "Truth") ---
+    // Database Listener
     lobbyChannel.on('postgres_changes', {
         event: 'UPDATE',
         schema: 'public',
@@ -1527,18 +1520,16 @@ async function subscribeToLobby(lobbyCode, lobbyId) {
         filter: `id=eq.${lobbyId}`
     }, (payload) => {
         const newStatus = payload.new.status;
-        //console.log("DB Change Detected. New Status:", newStatus);
         const lobbyData = payload.new;
 
-        // --- SYNC START TIME (CRITICAL FOR TIMER ACCURACY) ---
+        // Sync start time
         // This ensures Guest and Host use the same "Start Line" timestamp
         if (lobbyData.game_start_time) {
             gameStartTime = Number(lobbyData.game_start_time);
             sessionStorage.setItem('game_start_time', gameStartTime.toString());
-            //console.log("Sync: Shared Start Time Saved:", serverTime);
         }
 
-        // --- NEW: SYNC NAMES ---
+        // Sync names
         // If I am host, opponent is guest. If I am guest, opponent is host.
         const newOpponentName = (myRole === 'host') ? lobbyData.guest_name : lobbyData.host_name;
         const newOpponentPet = (myRole === 'host') ? lobbyData.guest_pet : lobbyData.host_pet;
@@ -1550,42 +1541,39 @@ async function subscribeToLobby(lobbyCode, lobbyId) {
             const oppLabel = document.getElementById('opponent-name-display');
             if (oppLabel) oppLabel.textContent = opponentName;
         }
-        // --- ADD THIS: Update Opponent Pet Image ---
+        // Update Opponent Pet Image
         if (newOpponentPet) {
             updateMenuPet('opponent-multiplayer-pet', newOpponentPet);
         }
-        // --- HOST LOGIC: Opponent joined ---
+        // Opponent joined
         if (newStatus === 'ready' && myRole === 'host') {
             document.getElementById('host-controls').classList.remove('hidden');
 
         }
 
-        // --- FIRST START LOGIC ---
+        // Start multiplayer game
         if (newStatus === 'active') {
             startMultiplayerGame();
         }
 
-        // --- REMATCH START LOGIC (Round 2+) ---
+        // Rematch start logic (Rounds 2+)
         if (newStatus === 'playing') {
-            //console.log(`${myRole.toUpperCase()}: Starting Game from DB Signal...`);
-
-            // 1. Everyone resets memory
+            // Everyone resets memory
             sessionStorage.removeItem('current_lobby_questions');
             preloadQueue = [];
             window.nextFetchIndex = 0;
             window.currentLobbyIndex = 0;
 
-            // 2. Everyone saves the new IDs from the database payload
+            // Everyone saves the new IDs from the database payload
             if (payload.new.question_ids) {
                 sessionStorage.setItem('current_lobby_questions', JSON.stringify(payload.new.question_ids));
-                //console.log(`${myRole.toUpperCase()}: IDs Synced. First ID:`, payload.new.question_ids[0]);
             }
-            // 3. Sync the Start Time exactly to the Host's calculated time
+            // Sync the Start Time exactly to the Host's calculated time
             if (payload.new.game_start_time) {
                 gameStartTime = Number(payload.new.game_start_time);
                 sessionStorage.setItem('game_start_time', gameStartTime.toString());
             }
-            // 3. Everyone launches at the exact same time
+            // Everyone launches at the exact same time
             startMultiplayerGame();
         }
 
@@ -1593,8 +1581,7 @@ async function subscribeToLobby(lobbyCode, lobbyId) {
             // If the Guest is currently in a match, ignore the 'closed' database signal.
             // They will leave on their own terms when they click the Main Menu button.
             if (isMultiplayerMode) {
-                //console.log("Lobby closed in DB, but Guest is in-game. Updating UI instead of kicking.");
-                // 1. Update the Main Menu Button Text
+                // Update the Main Menu Button Text
                 const mainMenuBtn = document.querySelector('.main-menu-btn');
                 if (mainMenuBtn) {
                     mainMenuBtn.textContent = `${opponentName || "Host"} left. Main Menu?`;
@@ -1602,7 +1589,7 @@ async function subscribeToLobby(lobbyCode, lobbyId) {
 
                 return;
             }
-            // 2. If I'm the Guest, I need to know the party is over
+            // If I'm the Guest, I need to know the game is over
             if (isHandlingLobbyClose) return;
             isHandlingLobbyClose = true;
             showGoldAlert("The Host has closed the lobby.");
@@ -1610,15 +1597,13 @@ async function subscribeToLobby(lobbyCode, lobbyId) {
             leaveLobby();
             navigateTo('view-home');
         }
-        // 2. GUEST DISCONNECTED (Host sees 'waiting')
+        // guest disconnected (Host sees 'waiting')
         if (newStatus === 'waiting' && myRole === 'host') {
             const endScreen = document.getElementById('end-screen');
             const isOnEndScreen = endScreen && !endScreen.classList.contains('hidden');
 
             // If Host is still looking at the post-game results
             if (isMultiplayerMode || isOnEndScreen) {
-                //console.log("Guest left, but Host is viewing results. Updating UI.");
-
                 const mainMenuBtn = document.querySelector('.main-menu-btn');
                 if (mainMenuBtn) {
                     mainMenuBtn.textContent = `${opponentName || "Guest"} left. Main Menu?`;
@@ -1637,52 +1622,46 @@ async function subscribeToLobby(lobbyCode, lobbyId) {
 
     lobbyChannel.on('broadcast', { event: 'next_question_trigger' }, (envelope) => {
         if (myRole === 'guest') {
-            //console.log("Guest: Signal received. Moving to next question", envelope.payload.nextIndex);
             executeTransition(envelope.payload.nextIndex);
         }
     });
+
     lobbyChannel.on('broadcast', { event: 'rematch_ready' }, (envelope) => {
         const data = envelope.payload;
         if (data.user_id === userId) return; // Ignore my own broadcast
 
-        //console.log("Opponent is ready for a rematch!");
         opponentReadyForRematch = true;
 
         // IF I am the Host AND I have already clicked my own Play Again button
         if (myRole === 'host' && iAmReadyForRematch) {
-            //console.log("Both ready (Listener trigger): Host starting...");
             startNewRound();
         } else {
-            // UI Polish: Change the button text so the Host knows the Guest is waiting
+            // Change the button text so the Host knows the Guest is waiting
             const pBtn = document.getElementById('playAgainBtn');
             if (pBtn && !iAmReadyForRematch) {
                 pBtn.innerHTML = `${opponentName || 'Opponent'} is ready! Play Again?`;
-                //pBtn.classList.add('glow-gold'); // Optional CSS class for flair
             }
         }
     });
 
     // Change the event name to match what your answer/timeout functions send
     lobbyChannel.on('broadcast', { event: 'player_answered' }, (envelope) => {
-        // Supabase wraps your data: envelope.payload is the object you sent
         const actualData = envelope.payload;
-        // Safety check: ensure we only process the OTHER player's data
+        // ensure we only process the other player's data
         if (actualData && actualData.user_id !== userId) {
-            // 1. UPDATE DATA
-            opponentHasAnswered = true; // THIS UNLOCKS THE GATE
-            //console.log("Opponent answered! Syncing HP to:", actualData.hp_remaining);
+            // update data
+            opponentHasAnswered = true; // unlocks gate
             handleOpponentAction(actualData);
-            // 3. TRIGGER TRANSITION (This checks syncAndProceed)
-            handleMultiplayerTransition();
+            handleMultiplayerTransition(); // trigger transition (checks syncAndProceed)
         }
     });
 
-    // 2. Keep ONLY the 'leave' presence listener (This handles crashes/closed tabs)
+    // Keep only the 'leave' presence listener (This handles crashes/closed tabs)
     lobbyChannel.on('presence', { event: 'leave' }, ({ leftPresences }) => {
         if (myRole == 'host') {
             const guestLeft = leftPresences.some(p => p.role === 'guest');
             if (guestLeft) {
-                // This makes the 'Start' button vanish the MOMENT they close their tab
+                // This makes the 'Start' button vanish the moment they close their tab
                 handleOpponentLeft();
 
                 // Also wipe the DB so a new person can join
@@ -1729,37 +1708,33 @@ function handleLobbyUpdate(lobby) {
 }
 
 function handleOpponentLeft() {
-    // 1. Update Status Text
+    // Update Status Text
     const statusEl = document.getElementById('lobbyStatus');
     if (statusEl) {
         statusEl.innerHTML = `<span style="color: #ffb800;">Opponent disconnected. Waiting...</span>`;
     }
 
-    // 2. Hide Host Controls (The 'Start' button)
+    // Hide Host Controls (The 'Start' button)
     const hostControls = document.getElementById('host-controls');
     if (hostControls) {
         hostControls.classList.add('hidden');
     }
 
-    // 4. Reset internal flags
-    //opponentName = null;
+    // Reset internal flags
     opponentReadyForRematch = false;
     iAmReadyForRematch = false;
 
-    // 5. Cleanup old game data
+    // Cleanup old game data
     sessionStorage.removeItem('current_lobby_questions');
     preloadQueue = [];
     window.nextFetchIndex = 0;
     sessionStorage.removeItem('game_start_time');
     gameStartTime = null;
-
-    //console.log("Lobby State: Opponent has left. UI Downgraded.");
 }
 
 async function startMultiplayerGame() {
-    //console.log("Starting Multiplayer Game...");
     gameEnding = false;
-    isSyncing = false;  // Reset the sync lock
+    isSyncing = false;
     iHaveAnswered = false;
     isDailyMode = false;
     isWeeklyMode = false;
@@ -1777,7 +1752,7 @@ async function startMultiplayerGame() {
     if (streakContainer) {
         streakContainer.style.display = 'none';
     }
-    // ONLY set a new time if one doesn't already exist in sessionStorage
+    // only set a new time if one doesn't already exist in sessionStorage
     // (This allows the Listener's synced time to stay "Locked In")
     if (!sessionStorage.getItem('game_start_time')) {
         gameStartTime = Date.now();
@@ -1796,7 +1771,7 @@ async function startMultiplayerGame() {
         // Now that we have IDs from the DB, load the first one
         await loadQuestion(true);
 
-        // 3. IMAGE PREPARATION (Copying your solo logic)
+        // image preparation
         // This prevents the "Black Screen" while an image is still loading
         if (currentQuestion && currentQuestion.question_image) {
             try {
@@ -1806,24 +1781,22 @@ async function startMultiplayerGame() {
             } catch (e) { console.warn("Image decode failed:", e); }
         }
 
-
         requestAnimationFrame(() => {
-            // --- STEP A: HIDE ALL VIEWS ---
+            // Hide all viewes
             // This ensures no other screen (Lobby, Leaderboard, etc.) is blocking the view
             document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
 
-            // --- STEP B: SHOW THE HOME VIEW (Parent) ---
+            // show the home view
             const homeView = document.getElementById('view-home');
             if (homeView) {
                 homeView.classList.remove('hidden');
-                homeView.style.display = 'flex'; // Force layout
+                homeView.style.display = 'flex';
             }
-            // Replace 'view-lobby' with the actual ID of your lobby div
             const lobbyView = document.getElementById('view-lobby');
             if (lobbyView) {
                 lobbyView.classList.add('hidden');
             }
-            // --- STEP C: CLEAN UP HOME SCREEN UI ---
+            // clean up home screen
             // Hide the menu specific items so only the game shows
             const startScreen = document.getElementById('start-screen');
             const userControls = document.getElementById('user-controls');
@@ -1837,7 +1810,7 @@ async function startMultiplayerGame() {
             if (userControls) userControls.classList.add('hidden');
             if (mainTitle) mainTitle.classList.add('hidden');
 
-            // --- STEP D: SHOW THE GAME ---
+            // show the game
             document.body.classList.add('game-active');
             game.classList.remove('hidden');
             game.style.display = 'flex';
@@ -1861,12 +1834,11 @@ async function startMultiplayerGame() {
 
             startTimer();
 
-            // 6. BACKGROUND FILL
+            // background fill
             // While they answer Q1, fetch the next 5 from the lobby list
             preloadNextQuestions(5);
 
             gameStarting = false;
-            //console.log("Multiplayer Game Started Successfully!");
         });
 
     } catch (err) {
@@ -1894,9 +1866,6 @@ function updateHPUI() {
     document.getElementById('my-hp-text').textContent = `${myHP}/${MAX_HP}`;
     document.getElementById('opponent-hp-text').textContent = `${opponentHP}/${MAX_HP}`;
 
-    //console.log("Updating UI - Me:", myHP, "Opponent:", opponentHP);
-
-    // Color logic using Classes instead of inline styles
     const bars = [
         { el: myFill, pct: myPct, text: document.getElementById('my-hp-text') },
         { el: oppFill, pct: oppPct, text: document.getElementById('opponent-hp-text') }
@@ -1920,13 +1889,12 @@ function updateHPUI() {
 function handleOpponentAction(payload) {
     opponentHasAnswered = true;
 
-    // 1. Sync their HP (Force your screen to match their actual HP)
+    // Sync their HP (Force your screen to match their actual HP)
     if (payload.hp_remaining !== undefined) {
         opponentHP = payload.hp_remaining;
-        //console.log("Opponent HP synced to:", opponentHP);
     }
 
-    // 2. TRIGGER THE SPLAT ON THEM
+    // trigger the hitsplat on them
     // If they sent damage_taken: 0, it shows a Blue 0 on their side.
     // If they sent damage_taken: 20, it shows a Red 20 on their side.
     if (payload.damage_taken !== undefined) {
@@ -1934,11 +1902,7 @@ function handleOpponentAction(payload) {
     }
 
     updateHPUI();
-    // Instead of handleMultiplayerTransition, check if we can sync NOW
     if (iHaveAnswered) {
-        //console.log("Both answered! Proceeding to sync...");
-        // We wait 1 second so Player A actually SEES the opponent 
-        // take damage/answer before jumping to the Defeat screen.
         clearTimeout(window.multiplayerSyncTimer);
         window.multiplayerSyncTimer = setTimeout(() => {
             syncAndProceed();
@@ -1947,16 +1911,16 @@ function handleOpponentAction(payload) {
 }
 
 function triggerHitsplat(target, damage = 20) {
-    // 1. Find the parent container (the HP bar area)
+    // Find the parent container (the HP bar area)
     const containerId = target === 'my' ? 'my-hp-group' : 'opponent-hp-group';
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    // 2. Create a NEW hitsplat element
+    // Create a new hitsplat element
     const splat = document.createElement('div');
     splat.textContent = damage;
 
-    // 3. Apply classes based on damage
+    // Apply classes based on damage
     splat.className = 'hitsplat show-splat';
     if (damage === 0) {
         splat.classList.add('miss'); // Blue
@@ -1964,23 +1928,17 @@ function triggerHitsplat(target, damage = 20) {
         splat.classList.add('hit');  // Red
     }
 
-    // 4. Add to the game world
+    // Add to the game world
     container.appendChild(splat);
 
-    // 5. Cleanup after animation finishes (1 second)
+    // Cleanup after animation finishes (1 second)
     setTimeout(() => {
         splat.remove();
     }, 1000);
 }
 
 function handleMultiplayerTransition() {
-    // If I've answered but the opponent hasn't, and the timer is still running...
-    // WAIT. Don't trigger syncAndProceed yet.
-    // If a timestamp was provided (meaning someone died), save it globally 
-    // so syncAndProceed can find it later.
-
     if (iHaveAnswered && !opponentHasAnswered && timeLeft > 0) {
-        //console.log("Waiting for opponent's final move... Safety timer active.");
         return;
     }
 
@@ -1995,34 +1953,25 @@ function handleMultiplayerTransition() {
     }, 1000); // 1 second buffer for visual splats to play
 }
 
-// Add a parameter 'force' that defaults to false
+
 async function syncAndProceed(force = false) {
     clearTimeout(window.forceEndTimeout);
-    // DEBUG: This is your best friend for fixing this
-    //console.log(`[Gate Check] Me: ${iHaveAnswered} | Opponent: ${opponentHasAnswered} | Force: ${force}`);
 
-    // 1. THE MANDATORY SYNC GATE
-    // We only proceed if:
-    // - force is true (emergency/timeout)
-    // - OR BOTH players have answered. 
-    // We NO LONGER check isGameOver here because we want to wait for the final outcome.
+    // We only proceed if force is true (emergency/timeout) OR both players have answered. 
     if (!force && (!iHaveAnswered || !opponentHasAnswered)) {
-        //console.log("Waiting for both players to finish the current question...");
-        //console.log(`Sync Blocked: Me(${iHaveAnswered}) Opponent(${opponentHasAnswered})`);
         return;
     }
 
-    // 2. THE LOCK: Prevent double-execution
+    // Prevent double-execution
     if (isSyncing) return;
     isSyncing = true;
 
-    // 4. STOP THE TIMER: Ensure the old clock is DEAD before Q2 starts
+    // Ensure the old clock is DEAD before Q2 starts
     clearInterval(timer);
 
-    // 5. HP CHECK: Determine if the game is OVER
+    // Determine if the game is over based on HP
     const isGameOver = (myHP <= 0 || opponentHP <= 0);
     if (isGameOver) {
-        //console.log("Match concluded. Final HP - Me:", myHP, "Opponent:", opponentHP);
         // Final Result Logic (Prioritizing the Draw)
         let result = 'win';
         if (myHP <= 0 && opponentHP <= 0) {
@@ -2031,23 +1980,22 @@ async function syncAndProceed(force = false) {
             result = 'lose';
         }
 
-        // CHECK FOR FLAWLESS HERE
+        // check for a flawless victory (win with full HP)
         const wasFlawless = (result === 'win' && myHP === MAX_HP);
 
         // Give the user 800ms to actually see the "Wrong" splat and highlight
         setTimeout(async () => {
             isSyncing = false;
-            // Pass the result AND the flawless flag to your endGame function
+            // Pass the result and the flawless flag to your endGame function
             await endGame(result, wasFlawless);
         }, 800);
         return;
     }
 
-    // 6. THE SYNCED TRANSITION
+    // The synced transition to the next question
     if (myRole === 'host') {
         const nextIndex = window.currentLobbyIndex + 1;
 
-        // The "Quick Fix" Delay:
         // Wait 1 second before telling the Guest to move.
         // This gives the Guest time to see their hitsplat if they were last.
         setTimeout(() => {
@@ -2060,19 +2008,15 @@ async function syncAndProceed(force = false) {
             }
             executeTransition(nextIndex);
         }, 1200);
-    } else {
-        //console.log("Guest: Ready and waiting for Host trigger...");
-        // Guest does NOTHING here. They wait for the 'next_question_trigger' broadcast.
     }
 }
+
 async function executeTransition(newIndex) {
     clearInterval(timer); // Kill the old timer immediately
-    // STATE RESET: Clear flags for the NEW question
+    // Clear flags for the new question
     opponentHasAnswered = false;
     iHaveAnswered = false;
     window.currentLobbyIndex = newIndex;
-
-    //console.log("Sync Complete. Transitioning to next question...");
 
     const roundsDisplay = document.getElementById('rounds-display');
     if (roundsDisplay) {
@@ -2081,20 +2025,12 @@ async function executeTransition(newIndex) {
 
     await loadQuestion();
 
-    // REFILL & RELEASE
+    // refill & restart
     setTimeout(() => {
         isSyncing = false;
         if (isMultiplayerMode) preloadNextQuestions(5);
     }, 500);
 }
-
-
-
-
-
-
-
-
 
 async function syncDailySystem() {
     try {
@@ -2121,7 +2057,7 @@ async function syncDailySystem() {
             return;
         }
 
-        // 1. UI SYNC: Daily Play Button
+        // UI sync: Daily Play Button
         if (summary.has_played) {
             lockDailyButton();
         } else {
@@ -2131,15 +2067,16 @@ async function syncDailySystem() {
             dailyBtn.style.opacity = '1';
         }
 
-        // 2. UI SYNC: Share Button
+        // UI sync: Share Button
         if (summary.can_share) {
             shareBtn.classList.remove('is-disabled');
             shareBtn.classList.add('is-active');
             shareBtn.style.pointerEvents = "auto";
             shareBtn.style.opacity = "1";
 
-            // GENERATE FRESH DATE HERE
+            // current date in UTC
             const currentUtcStr = new Date().toISOString().split('T')[0];
+
             // Save only score and date for the share logic
             localStorage.setItem('lastDailyScore', summary.score);
             localStorage.setItem('dailyPlayedDate', currentUtcStr);
@@ -2156,19 +2093,13 @@ async function syncDailySystem() {
     }
 }
 
-
-
 // ====== INITIALIZATION ======
 async function init() {
-    // Define all your UI elements first
-    const victoryScreen = document.getElementById('victory-screen');
-    // 1. Immediately sync the button based on CACHE only (Instant)
-    // This stops the flicker because the button starts in the 'locked' state 
-    // if they played, before any network request happens.
+    // Immediately sync the daily button
     lockDailyButton();
 
 
-    // 1. Set up the listener FIRST
+    // Set up the listener for auth changes
     supabase.auth.onAuthStateChange((event, session) => {
         // Run the async logic in the background without making the listener wait
         (async () => {
@@ -2185,7 +2116,7 @@ async function init() {
     });
 
     try {
-        // 1. Get the current session
+        // Get the current session
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) {
             if (localStorage.getItem('cachedUsername')) {
@@ -2194,7 +2125,7 @@ async function init() {
             }
             await handleAuthChange('SIGNED_OUT', null);
         }
-        // 2. Run the UI sync once
+        // Run the UI sync once
         else if (session) {
             // We have a session, sync everything
             await handleAuthChange('INITIAL_LOAD', session);
@@ -2207,13 +2138,14 @@ async function init() {
             }
         }
     } catch (err) {
-        // This is for when getSession() itself crashes
+        // getSession() itself crashed
         if (localStorage.getItem('cachedUsername')) {
             showGoldAlert("Session expired. Please log in again.");
         }
         await handleAuthChange('SIGNED_OUT', null);
     }
-    // 2. Auth Button (Log In / Log Out)
+
+    // Auth Button (Log In / Log Out)
     authBtn.addEventListener('click', async () => {
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
@@ -2240,14 +2172,14 @@ async function init() {
             currentProfileXp = 0;
             currentLevel = 1;
 
-            //window.location.reload();
         } else {
             navigateTo('view-login');
         }
     });
 
-    // 3. Game Buttons
-    if (startBtn) {
+    // Game Buttons
+    // Normal Mode button
+    if (startBtn) { 
         startBtn.onclick = async () => {
             isDailyMode = false;
             isWeeklyMode = false;
@@ -2258,6 +2190,7 @@ async function init() {
         };
     }
 
+    // Lite Mode button
     if (liteBtn) {
         liteBtn.onclick = async () => {
             isDailyMode = false;
@@ -2269,10 +2202,11 @@ async function init() {
             startGame();
         };
     }
-
+    
+    // Daily Mode button
     if (dailyBtn) {
         dailyBtn.onclick = async () => {
-            // 1. Instant Audio & Session Check (Parallel)
+            // Instant Audio & Session Check
             const [sessionRes, audioRes] = await Promise.all([
                 supabase.auth.getSession(),
                 audioCtx.state === 'suspended' ? audioCtx.resume() : Promise.resolve()
@@ -2286,8 +2220,7 @@ async function init() {
                 return;
             }
 
-            // 2. Play Status Check via get_daily_summary
-            // Using the existing get_daily_summary RPC
+            // Play Status Check via get_daily_summary
             const { data: summary, error: rpcError } = await supabase.rpc('get_daily_summary', {
                 t: new Date().getTime() 
             });
@@ -2297,14 +2230,14 @@ async function init() {
                 return;
             }
 
-            // 3. Stop them if they already played today
+            // exit if they already played today
             if (summary.has_played) {
                 showGoldAlert(`You've already completed today's challenge! Your score: ${summary.score}`);
                 lockDailyButton(); // Ensure the UI reflects they are done
                 return;
             }
 
-            // 4. Broadcast and Lock UI
+            // Broadcast and Lock UI
             if (syncChannel) {
                 syncChannel.send({
                     type: 'broadcast',
@@ -2315,18 +2248,20 @@ async function init() {
 
             loadSounds();
 
-            // 4. Start Challenge immediately
+            // Start Challenge immediately
             await startDailyChallenge(session);
             lockDailyButton();
         };
     }
 
+    // Weekly Mode button
     if (weeklyBtn) {
         weeklyBtn.onclick = async () => {
-            // 1. Audio setup
+            // Audio setup
             if (audioCtx.state === 'suspended') await audioCtx.resume();
             loadSounds();
             try {
+                // Start Weekly Mode
                 await startWeeklyChallenge();
             } catch (err) {
                 console.error("Failed to start weekly mode:", err);
@@ -2337,15 +2272,15 @@ async function init() {
         };
     }
 
+    // Multiplayer Mode button
     if (multiplayerBtn) {
         multiplayerBtn.onclick = async () => {
-            // Check if the user is logged in
-            // Note: Use your global variable (userId) or supabase.auth.getSession()
+            // Safety check if the user is logged in.
             if (!userId) {
                 showGoldAlert("You must be logged in to access Multiplayer Duels.");
                 return;
             }
-            // 4. Navigate to the main lobby menu view
+            // Navigate to the main lobby menu view
             if (typeof window.navigateTo === 'function') {
                 if (audioCtx.state === 'suspended') await audioCtx.resume();
                 loadSounds();
@@ -2357,17 +2292,18 @@ async function init() {
         };
     }
 
+    // Multiplayer Mode -> Create New Lobby button
     if (lobbyBtn) {
         lobbyBtn.addEventListener('click', async () => {
             try {
                 const myCurrentPet = localStorage.getItem('equipped_pet_id');
-                // 1. Create the lobby
+                // Create the lobby
                 const { data, error } = await supabase
                     .from('live_lobbies')
                     .insert([{
                         status: 'waiting',
-                        host_id: userId,        // From your auth/session
-                        host_name: username,   // Your local username variable
+                        host_id: userId,  // From your auth/session
+                        host_name: username, // Your local username variable
                         host_pet: myCurrentPet
                     }])
                     .select('*') // Get everything (id, code, question_ids)
@@ -2376,18 +2312,14 @@ async function init() {
                 if (error) throw error;
 
                 if (data) {
-                    // 2. Setup Role and Storage
+                    // Setup Role and Storage
                     myRole = 'host'; // Global variable to identify player
-                    // At this exact moment, there is no guest yet.
-                    // So we set the label to a "Waiting..." placeholder.
-                    const label = document.getElementById('opponent-name-display');
-                    if (label) label.textContent = "Waiting for Guest...";
 
                     sessionStorage.setItem('is_host', 'true');
                     sessionStorage.setItem('current_lobby_id', data.id);
                     sessionStorage.setItem('current_lobby_questions', JSON.stringify(data.question_ids));
 
-                    // 3. Update UI
+                    // Update UI
                     document.getElementById('lobbyCodeDisplay').textContent = data.code;
 
                     // Reset UI state (ensure start button is hidden until someone joins)
@@ -2398,7 +2330,7 @@ async function init() {
                     subscribeToLobby(data.code, data.id);
                 }
 
-                // 5. Navigate
+                // Navigate to the Lobby view where the host waits for a guest to join
                 window.navigateTo('view-lobby');
 
             } catch (err) {
@@ -2407,6 +2339,7 @@ async function init() {
         });
     }
 
+    // Multiplayer Mode -> Create New Lobby button -> Start Duel button
     document.getElementById('btn-start-multiplayer').addEventListener('click', async () => {
         const lobbyId = sessionStorage.getItem('current_lobby_id');
         if (!lobbyId || !lobbyChannel) return;
@@ -2414,9 +2347,6 @@ async function init() {
         try {
             const startTime = Date.now() + 1500;
 
-            // 2. THE ATOMIC UPDATE (The Database Truth)
-            // We add .not('guest_id', 'is', null) to ensure that if the DB 
-            // WAS updated in the last 50ms, this update will fail.
             const { data, error } = await supabase
                 .from('live_lobbies')
                 .update({
@@ -2427,7 +2357,6 @@ async function init() {
                 .not('guest_id', 'is', null) // Safety: Don't update if guest_id is null
                 .select();
 
-            // 3. FINAL VERIFICATION
             // If 'data' is empty, the update affected 0 rows because the guest is gone.
             if (error || !data || data.length === 0) {
                 showGoldAlert("Opponent has left the lobby.");
@@ -2444,11 +2373,12 @@ async function init() {
         }
     });
 
+    // Copy code button in Multiplayer Mode
     if (copyCodeBtn) {
         copyCodeBtn.onclick = () => {
             const textToCopy = document.getElementById('lobbyCodeDisplay').textContent;
 
-            // 1. Try the modern Clipboard API
+            // Modern Clipboard API
             if (navigator.clipboard && window.isSecureContext) {
                 navigator.clipboard.writeText(textToCopy).then(() => {
                     updateBtnText(copyCodeBtn);
@@ -2457,7 +2387,7 @@ async function init() {
                     fallbackCopy(textToCopy, copyCodeBtn);
                 });
             } else {
-                // 2. Fallback for non-HTTPS or older browsers
+                // Fallback for non-HTTPS or older browsers
                 fallbackCopy(textToCopy, copyCodeBtn);
             }
         };
@@ -2485,6 +2415,7 @@ async function init() {
         setTimeout(() => btn.textContent = originalText, 2000);
     }
 
+    // Play Again button on end screen
     if (playAgainBtn) {
         playAgainBtn.onclick = async () => {
             gameEnding = false;
@@ -2506,22 +2437,21 @@ async function init() {
             }
 
             if (isMultiplayerMode) {
-                // 1. Reset local ready states
+                // Reset local ready states
                 iAmReadyForRematch = true;
-                // 2. Wipe the old game data
+                // Wipe the old game data
                 preloadQueue = [];
                 window.nextFetchIndex = 0;
                 sessionStorage.removeItem('current_lobby_questions');
 
-                // 3. UI Feedback
+                // UI Feedback
                 const pBtn = document.getElementById('playAgainBtn');
                 if (pBtn) {
                     pBtn.disabled = true; // Disable so they don't spam it while waiting
-                    // Use backticks ` and the || 'Opponent' fallback for safety
                     pBtn.innerHTML = `<i class="fa fa-spinner fa-spin"></i> Waiting for ${opponentName || 'Opponent'}...`;
                 }
 
-                // 4. Tell the other player
+                // Broadcast to the other player
                 if (lobbyChannel) {
                     lobbyChannel.send({
                         type: 'broadcast',
@@ -2530,16 +2460,15 @@ async function init() {
                     });
                 }
 
-                // 5. Host Logic
+                // Host Logic
                 if (myRole === 'host' && opponentReadyForRematch) {
-                    //console.log("Both ready! Host starting new round...");
                     startNewRound();
                 }
 
-                return; // CRITICAL: Stop here so we DON'T hit the solo startGame() below
+                return; // Stop here so we DON'T hit the solo startGame() below
             }
 
-            // --- ONLY REACHED IF NOT IN ANY SPECIAL MODE (NORMAL SOLO) ---
+            // for normal mode
             await startGame();
         };
     };
@@ -2555,6 +2484,7 @@ async function init() {
         window.navigateTo('view-multiplayer-menu');
     });
 
+    // Join Lobby button inside "Enter Code" screen
     document.getElementById('btn-confirm-join').addEventListener('click', async () => {
         const inputCode = document.getElementById('join-code-input').value.toUpperCase().trim();
 
@@ -2563,12 +2493,12 @@ async function init() {
             return;
         }
 
-        // CRITICAL: Ensure username exists (this fixes the Line 2278 error)
+        // Ensure username exists
         const activeUsername = username || "Guest_" + Math.floor(Math.random() * 1000);
 
         try {
             resetGameEngine();
-            // 1. Look for the lobby
+            // Look for the lobby
             const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
             const { data, error } = await supabase
                 .from('live_lobbies')
@@ -2583,18 +2513,17 @@ async function init() {
                 return;
             }
 
-            // --- THE "GUEST" ASSIGNMENT ---
+            // the guest assignment
             myRole = 'guest'; // Now this global variable is set
             sessionStorage.setItem('is_host', 'false');
             sessionStorage.setItem('current_lobby_id', data.id);
             sessionStorage.setItem('current_lobby_questions', JSON.stringify(data.question_ids));
 
-            // 2. Set the Host's name on YOUR screen immediately
+            // Set the Host's name on YOUR screen immediately
             const oppLabel = document.getElementById('opponent-name-display');
             if (oppLabel) oppLabel.textContent = data.host_name || "Host";
 
-            // --- ADD THIS: Show Host's pet on Guest's screen ---
-            // Note: This assumes you add 'host_pet' to your live_lobbies table
+            // Show Host's pet on Guest's screen
             if (data.host_pet) {
                 updateMenuPet('opponent-multiplayer-pet', data.host_pet);
             }
@@ -2602,7 +2531,7 @@ async function init() {
             // Update the DB with your own pet so the Host can see it
             const myCurrentPet = localStorage.getItem('equipped_pet_id');
 
-            // 2. Update the DB so the Host's "Start" button appears
+            // Update the DB so the Host's "Start" button appears
             await supabase
                 .from('live_lobbies')
                 .update({
@@ -2613,16 +2542,16 @@ async function init() {
                 })
                 .eq('id', data.id);
 
-            // 4. Start listening for the "Start Game" signal from the Host
+            // Start listening for the "Start Game" signal from the Host
             await subscribeToLobby(data.code, data.id);
 
-            // 3. UI Updates
+            // UI Updates
             document.getElementById('lobbyCodeDisplay').textContent = data.code;
             // Hide host-specific controls just in case
             const hostControls = document.getElementById('host-controls');
             if (hostControls) hostControls.classList.add('hidden');
             document.getElementById('lobbyStatus').innerHTML = '<span style="color: #4CAF50;">Connected! Waiting for host to start...</span>';
-
+            // go to Lobby view where the Guest waits for the Host to start the game
             window.navigateTo('view-lobby');
 
         } catch (err) {
@@ -2631,20 +2560,20 @@ async function init() {
         }
     });
 
-
+    // Main Menu buttons
     if (mainMenuBtns) {
         mainMenuBtns.forEach(btn => {
             btn.addEventListener('click', async () => {
                 const lobbyId = sessionStorage.getItem('current_lobby_id');
 
-                // Check for the ID directly instead of the boolean flag
+                // Check for the ID directly
                 if (lobbyId) {
                     await leaveLobby();
                 }
                 preloadQueue = [];
                 resetGame();
 
-                // RESET THE JOIN CODE INPUT
+                // reset the join code input
                 const joinInput = document.getElementById('join-code-input');
                 if (joinInput) {
                     joinInput.value = ''; // Clears the text
@@ -2655,22 +2584,21 @@ async function init() {
                 }
                 if (playAgainBtn) playAgainBtn.classList.remove('hidden');
 
-                // hide the game-over screen and navigate. 
+                // hide the game-over screen and navigate to home 
                 document.getElementById('end-screen').classList.add('hidden');
                 navigateTo('view-home');
             });
         });
     }
-
+    // if clicked main menu button while in a lobby, it will trigger leave lobby logic before going back to the home screen
     if (lobbymainMenu) {
         lobbymainMenu.onclick = async () => {
-            //console.log("Lobby Exit: Cleaning up everything...");
             await leaveLobby();
             navigateTo('view-home');
         };
     }
+    // Mute button logic (Persists across all views and modes)
     if (muteBtn) {
-        // --- ADD THESE TWO LINES TO SYNC ON REFRESH ---
         muteBtn.querySelector('#muteIcon').textContent = muted ? '🔇' : '🔊';
         muteBtn.classList.toggle('is-muted', muted);
 
@@ -2684,13 +2612,14 @@ async function init() {
             if (muted) {
                 stopTickSound();
             }
-            // If user unmutes, check if we ARE in the final 3 seconds
-            // AND make sure it's not already playing
+            // If user unmutes, check if we are in the final 3 seconds
+            // and make sure it's not already playing
             if (timeLeft <= 5 && timeLeft > 0 && !activeTickSource) {
                 activeTickSource = playSound(tickBuffer, true);
             }
         };
     }
+    // Leaderboard button in the main menu
     if (leaderBtn) {
         leaderBtn.addEventListener('click', () => {
             navigateTo('view-leaderboard');
@@ -2715,25 +2644,25 @@ async function handleAuthChange(event, session) {
     const span = document.querySelector('#usernameSpan');
     const label = authBtn?.querySelector('.btn-label');
 
-    // Ensure the auth button is ALWAYS active so guests can actually click "Log In"
+    // Ensure the auth button is always active so guests can actually click "Log In"
     if (authBtn) {
         authBtn.style.opacity = '1';
         authBtn.style.pointerEvents = 'auto';
         authBtn.classList.remove('is-disabled');
     }
 
-    // 1. Logged Out State
+    // Logged Out State
     if (!session) {
-        // ONLY wipe if the user actually clicked Log Out
+        // only wipe if the user actually clicked Log Out
         const wasManual = localStorage.getItem('manual_logout');
-        // If we are signed out, but it WASN'T manual and we HAD a user before...
+        // If we are signed out, but it wasn't manual and we had a user before, it's likely a session expiration "Kick" rather than a "Logout"
         const hadUser = localStorage.getItem('cachedUsername');
         userId = null;
         // Detect if this was a "Kick" vs a "Logout"
         if (!wasManual && hadUser && event !== 'INITIAL_LOAD') {
             showGoldAlert("Your session has expired. Please log in again.");
         }
-        // IMPORTANT: Only wipe if we are CERTAIN this is an intentional logout
+        // Only wipe if we are certain this is an intentional logout
         // and not just a slow connection.
         if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESH_FAILED') {
             localStorage.removeItem('manual_logout');
@@ -2774,20 +2703,20 @@ async function handleAuthChange(event, session) {
         loadCollection();
         return; // Stop here for guests
     }
-    // 3. Handle LOGGED IN State
+    // Handle logged in state
     userId = session.user.id;
-    // 1. Immediately sync with local cache so we don't overwrite the HTML script's work
+    // Immediately sync with local cache so we don't overwrite the HTML script's work
     username = localStorage.getItem('cachedUsername') || 'Player';
     currentProfileXp = parseInt(localStorage.getItem('cached_xp')) || 0;
     currentLevel = parseInt(localStorage.getItem('cached_level')) || 1;
 
-    // 2. Update the UI with the cached values right now
+    // Update the UI with the cached values right now
     if (span) span.textContent = ' ' + username;
     if (label) label.textContent = 'Log Out';
     updateLevelUI();
     loadCollection();
 
-    // 2. Logged In State
+    // Logged In State
     // Fetch profile
     try {
         const { data: profile, error } = await supabase
@@ -2802,7 +2731,6 @@ async function handleAuthChange(event, session) {
                 username = profile.username || 'Player';
                 currentProfileXp = profile.xp || 0;
                 currentLevel = profile.level || 1;
-                // Access the daily_streak inside the achievements JSONB
                 liveStats.current_daily_streak = profile.achievements?.daily_streak || 0;
                 // Save to cache
                 localStorage.setItem('cached_level', currentLevel);
@@ -2818,7 +2746,7 @@ async function handleAuthChange(event, session) {
     } catch (err) {
         console.error("Profile fetch failed:", err);
     }
-    // ENABLE the Log Button for users
+    // enable the Log Button for users
     if (logBtn) {
         logBtn.onclick = () => {
             // Add the class to trigger the CSS "Shine"
@@ -2827,7 +2755,7 @@ async function handleAuthChange(event, session) {
             // Remove it after a short delay to create the "linger" effect
             setTimeout(() => {
                 logBtn.classList.remove('tapped');
-            }, 300); // 300ms matches the visual feel of OSRS interface clicks
+            }, 300); // 300ms delay
 
             navigateTo('view-collections');
         };
@@ -2878,6 +2806,7 @@ function lockMultiplayerButton() {
     multiplayerBtn.style.pointerEvents = 'none';
 
 }
+
 function unlockMultiplayerButton() {
     if (!multiplayerBtn) return;
     multiplayerBtn.classList.add('is-active');
@@ -2885,14 +2814,15 @@ function unlockMultiplayerButton() {
     multiplayerBtn.style.opacity = '1';
     multiplayerBtn.style.pointerEvents = 'auto';
 }
-// ====== GAME ENGINE ======
+
+
 function resetGame() {
-    // 2. Stop any active logic
+    // Stop any active logic
     clearInterval(timer);
     stopTickSound();
     document.querySelectorAll('.firework-particle').forEach(p => p.remove());
 
-    // 3. Reset numerical state
+    // Reset numerical state
     score = 0;
     currentQuestion = null;
     weeklyQuestionCount = 0;
@@ -2900,7 +2830,7 @@ function resetGame() {
     dailyQuestionCount = 0;
     seenMilestones.clear();
 
-    // 5. Reset Timer Visuals
+    // Reset Timer Visuals
     timeLeft = 15;
     if (timeDisplay) timeDisplay.textContent = timeLeft;
     if (timeWrap) timeWrap.classList.remove('red-timer');
@@ -2930,13 +2860,13 @@ function resetGame() {
 
 
 async function preloadNextQuestions(targetCount = 6) {
-    // 1. EXIT EARLY for Batch Modes
+    // exit early for Batch Modes
     if (isDailyMode || isWeeklyMode) return;
 
     const needed = targetCount - preloadQueue.length;
     if (needed <= 0) return;
 
-    // 2. MULTIPLAYER PARALLEL LOGIC
+    // Multiplayer parallel logic
     if (isMultiplayerMode) {
         let fetchPromises = [];
         for (let i = 0; i < needed; i++) {
@@ -2954,7 +2884,7 @@ async function preloadNextQuestions(targetCount = 6) {
         return;
     }
 
-    // 3. SOLO MODE LOGIC (existing)
+    // solo mode logic
     const activePool = normalSessionPool;
     if (!activePool || activePool.length === 0) return;
 
@@ -2992,7 +2922,6 @@ async function fetchAndBufferQuestion(assignedId) {
             const img = new Image();
             img.src = questionData.question_image;
 
-            // This 'decode()' is the secret sauce. It forces the browser to 
             // decompress the image in the background thread.
             try {
                 await img.decode();
@@ -3001,10 +2930,8 @@ async function fetchAndBufferQuestion(assignedId) {
                 console.warn("Image decode failed in background", e);
             }
 
-            //usedInThisSession.push(assignedId);
             preloadQueue.push(questionData);
         } else if (questionData) {
-            //usedInThisSession.push(assignedId);
             preloadQueue.push(questionData);
         }
     } catch (err) {
@@ -3014,12 +2941,13 @@ async function fetchAndBufferQuestion(assignedId) {
     }
 }
 
-// Helper: Fetch a specific ID (Deterministic)
+// Fetch a specific ID (Deterministic)
 async function fetchDeterministicQuestion(qId) {
     const { data, error } = await supabase.rpc('get_question_by_id', { input_id: qId });
     return (!error && data?.[0]) ? data[0] : null;
 }
 
+// Start Normal Mode Game
 async function startGame() {
     if (gameStarting) return;
     gameStarting = true;
@@ -3032,27 +2960,26 @@ async function startGame() {
     usedInThisSession = [];
     normalSessionPool = [];
 
-    // 1. Identify what is already waiting in the queue so we don't pick them again
+    // Identify what is already waiting in the queue so we don't pick them again
     const alreadyBufferedIds = preloadQueue.map(q => Number(q.id));
 
-    // 2. Create the full pool
+    // Create the full pool
     let fullPool = Array.from({ length: number_of_questions }, (_, i) => i + 1);
-    // 3. Remove IDs that are already in the preloadQueue
-    // This prevents the "duplicate" issue when keeping the queue
+
+    // Remove IDs that are already in the preloadQueue
     let availableToShuffle = fullPool.filter(id => !alreadyBufferedIds.includes(id));
 
-    // 4. Shuffle only the available remainder (Fisher-Yates)
+    // Shuffle only the available remainder (Fisher-Yates)
     for (let i = availableToShuffle.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [availableToShuffle[i], availableToShuffle[j]] = [availableToShuffle[j], availableToShuffle[i]];
     }
 
-    // 5. Build the final session pool: [Existing Queue IDs] + [Shuffled Others]
-    // We add buffered IDs to usedInThisSession so they aren't fetched again
+    // Build the final session pool: [Existing Queue IDs] + [Shuffled Others]
     usedInThisSession = [...alreadyBufferedIds.map(id => String(id))];
     normalSessionPool = availableToShuffle;
 
-    // 6. If Lite Mode is active, truncate the pool to exactly 100 questions
+    // If Lite Mode is active, truncate the pool to exactly 100 questions
     if (isLiteMode) {
         // In Lite Mode, we only want 100 total. 
         // We take (100 - already buffered) from the shuffled pool.
@@ -3060,7 +2987,7 @@ async function startGame() {
         normalSessionPool = normalSessionPool.slice(0, neededForLite);
     }
 
-    // 7. INTERNAL STATE RESET
+    // internal state reset
     clearInterval(timer);
     score = 0;
     // Tell the DB: "This is a new game, start my streak at 0"
@@ -3070,15 +2997,14 @@ async function startGame() {
     currentQuestion = null;
     updateScore();
     resetGame();
-    // 1. CONDITIONAL CLEAR
-    // Only clear if we have nothing. If we have items, the game starts INSTANTLY.
+    // Only clear if we have nothing. If we have items, the game starts instantly.
     if (preloadQueue.length === 0) {
         await preloadNextQuestions(1);
     }
 
     await loadQuestion(true);
 
-    // 4. WAIT FOR IMAGE TO BE READY FOR DISPLAY
+    // wait for the image to be ready for display
     if (currentQuestion && currentQuestion.question_image) {
         try {
             const img = currentQuestion._preloadedImg || new Image();
@@ -3091,20 +3017,17 @@ async function startGame() {
         const gzTitle = document.getElementById('gz-title');
         if (gameOverTitle) { gameOverTitle.classList.add('hidden'); gameOverTitle.textContent = ""; }
         if (gzTitle) { gzTitle.classList.add('hidden'); gzTitle.textContent = ""; }
-        // 3. NOW update the visuals that shouldn't look "stale"
         if (timeDisplay) timeDisplay.textContent = 15;
 
-        // 4. THE BIG SWAP (User finally sees the game)
+        // Swap screens. User finally sees the game
         document.body.classList.add('game-active');
         game.classList.remove('hidden');
         document.getElementById('start-screen').classList.add('hidden');
         endScreen.classList.add('hidden');
 
         gameStartTime = Date.now();
-        startTimer(); // Fire the clock
-        // Start immediately for Solo
-        // 6. FILL THE REST IN THE BACKGROUND
-        // We don't 'await' this; it runs while the user is looking at question 1
+        startTimer(); // Start the clock
+        // Start immediately for Solo, fill question in the background, while the user is playing.
         preloadNextQuestions(8);
         gameStarting = false;
     });
@@ -3112,7 +3035,7 @@ async function startGame() {
 
 async function loadQuestion(isFirst = false) {
     if (gameEnding) return;
-    // FORCE UI CLEANUP
+    // force UI cleanup
     const buttons = document.querySelectorAll('.answer-btn');
     buttons.forEach(btn => {
         btn.classList.remove('correct', 'wrong', 'selected');
@@ -3125,7 +3048,7 @@ async function loadQuestion(isFirst = false) {
     iHaveAnswered = false;
     opponentHasAnswered = false;
 
-    // --- MULTIPLAYER END CHECK ---
+    // Multiplayer End Checks (Before we do anything else, check if the game should end)
     if (isMultiplayerMode) {
         // Someone died or we ran out of lobby questions
         if (myHP <= 0 || opponentHP <= 0 || (preloadQueue.length === 0 && !isFirst)) {
@@ -3135,29 +3058,28 @@ async function loadQuestion(isFirst = false) {
             return;
         }
     } else {
-        // 1. End Game Checks for single player modes
+        // End Game Checks for single player modes
         if (isWeeklyMode && weeklyQuestionCount >= WEEKLY_LIMIT) { await endGame(); return; }
         if (isLiteMode && liteQuestionCount >= LITE_LIMIT) { await endGame(); return; }
         if (isDailyMode && dailyQuestionCount >= DAILY_LIMIT) { await endGame(); return; }
         if (score === number_of_questions) { await endGame(); return; }
     }
-    // A. CONDITIONAL CLEANUP
+    // conditional cleanup
     if (!isFirst) {
         document.querySelectorAll('.answer-btn').forEach(btn => btn.disabled = true);
         if (questionImage) questionImage.style.opacity = '0';
     }
 
-    // B. REFILL THE BUFFER 
+    // refill the buffer
     let needsRefill = !isDailyMode && !isWeeklyMode;
 
-    // ONLY refill if we are NOT in Daily Mode (since Daily is pre-loaded)
+    // only refill if we are NOT in Daily Mode
     if (!isMultiplayerMode && !isFirst && preloadQueue.length <= 4) {
         if (needsRefill) {
-            preloadNextQuestions(8); // Solo logic stays here
+            preloadNextQuestions(8);
         }
     }
 
-    // C. THE "NO-UNDEFINED" GATE
     if (preloadQueue.length === 0) {
         if (isMultiplayerMode) {
             // Force a fetch from the lobby list specifically
@@ -3176,20 +3098,17 @@ async function loadQuestion(isFirst = false) {
         return;
     }
 
-    // D. POPULATE DATA (Now guaranteed to have data)
+    // populate data (Now guaranteed to have data)
     currentQuestion = preloadQueue.shift();
-    //console.log("Question loaded:", currentQuestion.id);
 
     // Safety check just in case DB returned null
     if (!currentQuestion) {
-        //console.error("Failed to retrieve question from queue.");
         return;
     }
 
-    //answersBox.innerHTML = '';
     questionText.textContent = currentQuestion.question;
 
-    // E. RENDER ANSWERS
+    // render answers
     const answers = [
         { text: currentQuestion.answer_a, id: 1 },
         { text: currentQuestion.answer_b, id: 2 },
@@ -3210,13 +3129,13 @@ async function loadQuestion(isFirst = false) {
     answersBox.innerHTML = '';
     answersBox.appendChild(fragment);
 
-    // F. IMAGE HANDLING
+    // image handling
     if (currentQuestion.question_image) {
         // Use the already decoded image if it exists
         if (currentQuestion._preloadedImg) {
             questionImage.src = currentQuestion._preloadedImg.src;
             questionImage.style.display = 'block';
-            questionImage.style.opacity = '1'; // Show it instantly
+            questionImage.style.opacity = '1';
         } else {
             // Fallback if the background worker hasn't finished yet
             questionImage.src = currentQuestion.question_image;
@@ -3229,7 +3148,7 @@ async function loadQuestion(isFirst = false) {
         questionImage.src = '';
     }
 
-    // --- G. MULTIPLAYER SPECIFIC RESET & REFILL (AT THE END) ---
+    // Multiplayer specific reset and refill logic
     if (isMultiplayerMode) {
         iHaveAnswered = false;
         opponentHasAnswered = false;
@@ -3241,7 +3160,7 @@ async function loadQuestion(isFirst = false) {
         }
     }
 
-    // G. TIMER
+    // start timer
     if (!isFirst) startTimer();
 }
 
@@ -3263,19 +3182,18 @@ function startTimer() {
         }
         if (timeLeft <= 5) timeWrap.classList.add('red-timer');
 
-        // --- ROUND END LOGIC ---
+        // round end logic
         if (timeLeft <= 0) {
             clearInterval(timer); // Stop the interval immediately
             if (isMultiplayerMode) {
                 if (iHaveAnswered) {
-                    //console.log("Timer hit 0, but I already answered. Waiting for sync...");
-                    // Do nothing here! syncAndProceed is already handling the transition.
+                    // syncAndProceed is handling the transition.
                     return;
                 }
-                // Only trigger the damage/timeout if I HAVEN'T answered
+                // Only trigger the damage/timeout if I haven't answered
                 handleMultiplayerTimeout();
             } else {
-                // SOLO / DAILY / WEEKLY
+                // Solo modes timeout logic
                 handleTimeout();
             }
         }
@@ -3287,15 +3205,17 @@ async function handleTimeout() {
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
     playSound(wrongBuffer);
 
+    // Highlight correct answer for the user even if they didn't choose
     await highlightCorrectAnswer();
 
+    // increment counter for batch modes to keep track, even if they didn't answer
     if (isWeeklyMode) weeklyQuestionCount++;
     if (isDailyMode) dailyQuestionCount++;
     if (isLiteMode) liteQuestionCount++;
 
+    // update the score
     updateScore();
 
-    // 2. Corrected Logic & Syntax (Fixed the missing closing parenthesis)
     if ((isDailyMode && dailyQuestionCount < DAILY_LIMIT) || (isWeeklyMode && weeklyQuestionCount < WEEKLY_LIMIT) || (isLiteMode && liteQuestionCount < LITE_LIMIT)) {
         setTimeout(loadQuestion, 1300);
     } else {
@@ -3307,7 +3227,7 @@ async function handleTimeout() {
 async function checkAnswer(choiceId, btn) {
     stopTickSound();
     if (timeLeft <= 0) return;
-    // Only stop the timer if we are NOT in multiplayer.
+    // Only stop the timer if we are not in multiplayer.
     // In Multiplayer, we want to see it run down to 0 for the opponent.
     if (!isMultiplayerMode) {
         clearInterval(timer);
@@ -3319,7 +3239,7 @@ async function checkAnswer(choiceId, btn) {
     if (isDailyMode) dailyQuestionCount++;
     if (isLiteMode) liteQuestionCount++;
 
-    // THE ONE CALL TO RULE THEM ALL
+    // call RPC process answer
     const { data: res, error: rpcErr } = await supabase.rpc('process_answer', {
         input_id: Number(currentQuestion.id), // Ensure it's an integer
         choice: Number(choiceId),             // Ensure it's an integer
@@ -3333,7 +3253,7 @@ async function checkAnswer(choiceId, btn) {
 
     if (rpcErr) return console.error("RPC Error:", rpcErr);
 
-    // --- 1. LOCAL DAMAGE & SPLAT LOGIC ---
+    // local damage & hitsplat logic
     if (isMultiplayerMode) {
         iHaveAnswered = true;
         if (res.correct) {
@@ -3348,24 +3268,23 @@ async function checkAnswer(choiceId, btn) {
         }
     }
 
-    // --- 2. MULTIPLAYER BROADCAST ---
+    // Multiplayer broadcast logic (This goes before the UI updates so the opponent sees it in real-time)
     if (isMultiplayerMode) {
         lobbyChannel.send({
             type: 'broadcast',
-            event: 'player_answered', // Changed to match your new listener
+            event: 'player_answered',
             payload: {
                 user_id: userId,
                 playerRole: myRole,
                 correct: res.correct,
                 hp_remaining: myHP,
-                // If YOU were correct, the OPPONENT will take damage on their screen
                 damage_taken: res.correct ? 0 : 20
             }
         });
-        // --- NEW: SAFETY TIMEOUT ---
+
+        // safety timeout
         // If I've answered but the opponent hasn't, start a 20s fallback
         if (iHaveAnswered && !opponentHasAnswered) {
-            //console.log("Waiting for opponent's final move... Safety timer active.");
             clearTimeout(window.forceEndTimeout);
             window.forceEndTimeout = setTimeout(() => {
                 // Double check they still haven't answered before forcing
@@ -3384,29 +3303,27 @@ async function checkAnswer(choiceId, btn) {
         btn.classList.add('correct');
         score++;
         updateScore();
-        // --- NEW: DAILY GRID PATTERN LOGIC ---
+        // daily mode
         if (isDailyMode) {
-            // GENERATE FRESH DATE HERE
+            // generate fresh data here
             const currentUtcStr = new Date().toISOString().split('T')[0];
-            // 1. Map the question number to the correct string index
+            // Map the question number to the correct string index
             let patternArray = gridPattern.split('');
             let index = dailyQuestionCount - 1;
-
-            // 2. Flip the 0 to a 1
             patternArray[index] = "1";
             gridPattern = patternArray.join('');
 
-            // 3. Update the DB immediately
+            // Update the DB immediately
             // Using .match ensures we hit the specific attempt for today
             await supabase
                 .from('daily_attempts')
                 .update({ grid_pattern: gridPattern })
                 .match({ user_id: userId, attempt_date: currentUtcStr });
         }
-        // 🛡️ THE "MASTER" GUEST CHECK
+        // Users
         if (userId) {
-            const xpData = res.xp_info; // This is the JSON object from add_user_xp
-            // Check if xpData exists AND it's not null (Guest check)
+            const xpData = res.xp_info;
+            // Check if xpData exists AND it's not null (Make sure user isn't a Guest)
             if (xpData && xpData.new_xp !== undefined) {
                 // Update local state with truth from DB
                 currentProfileXp = xpData.new_xp;
@@ -3425,7 +3342,7 @@ async function checkAnswer(choiceId, btn) {
                 // Level Up logic
                 if (xpData.leveled_up) {
                     triggerFireworks();
-                    showNotification(`LEVEL UP!`, levelUpBuffer, "#ffde00"); // (${xpData.new_level})
+                    showNotification(`LEVEL UP!`, levelUpBuffer, "#ffde00");
 
                     // Milestone notifications
                     if (xpData.new_level >= 10 && xpData.old_level < 10) showAchievementNotification("Reach Level 10");
@@ -3448,8 +3365,8 @@ async function checkAnswer(choiceId, btn) {
                 showAchievementNotification(milestoneText);
             }
 
-            // 2. NEW: Score Milestone Logic
-            // This only fires for Normal Mode
+            // Score Milestone Logic
+            // This is only for Normal Mode
             if (res.milestone) {
                 // Only show if we haven't seen this specific milestone text this session
                 if (!seenMilestones.has(res.milestone)) {
@@ -3460,13 +3377,13 @@ async function checkAnswer(choiceId, btn) {
                 }
             }
 
-            // --- 2. INTEGRATED PET LOGIC ---
+            // integrated pet logic
             const petData = res.pet_info;
             if (petData && petData.unlocked) {
 
-                // 1. Show the Pet Notification IMMEDIATELY
+                // Show the Pet Notification immediately
                 showCollectionLogNotification(petData.pet_name);
-                // 2. Determine if an achievement needs to pop later
+                // Determine if an achievement needs to pop later
                 let achievementName = null;
 
                 // Achievement: Unlock 1 Pet
@@ -3484,11 +3401,11 @@ async function checkAnswer(choiceId, btn) {
                     achievementName = "Unlock all Pets";
                 }
 
-                // 3. If there is an achievement, show it after a 2s delay
+                // If there is an achievement, show it after a 2s delay
                 if (achievementName) {
                     setTimeout(() => {
                         showAchievementNotification(achievementName);
-                    }, 2000); // 2 seconds gives the pet modal time to shine
+                    }, 2000);
                 }
 
                 // Update LocalStorage Cache
@@ -3516,13 +3433,12 @@ async function checkAnswer(choiceId, btn) {
                         results.filter(r => r.is_new).forEach((r, index) => {
                             setTimeout(() => {
                                 showAchievementNotification(r.display_name);
-                            }, index * 1500); // 1.5 second delay between each
+                            }, index * 1500); // 1.5 second delay between each achievement if multiple pop at once
                         });
                     }
                 });
             }
 
-            // --- MID-GAME ACHIEVEMENT CHECK ---
             // Only trigger RPC if they hit a specific milestone number
             let shouldCheck = false;
             if (isWeeklyMode && score === 25) shouldCheck = true;
@@ -3548,7 +3464,7 @@ async function checkAnswer(choiceId, btn) {
             }
         }
 
-        // --- MODIFIED NEXT QUESTION LOGIC ---
+        // next question logic
         if (isMultiplayerMode) {
             setTimeout(() => {
                 handleMultiplayerTransition();
@@ -3557,21 +3473,22 @@ async function checkAnswer(choiceId, btn) {
             setTimeout(loadQuestion, 1000); // Standard Solo behavior
         }
     } else {
-        updateScore();
         // Wrong answer logic
+        updateScore();
         playSound(wrongBuffer);
         if (btn) btn.classList.add('wrong');
         highlightCorrectAnswer();
         liveStats.total_wrong=liveStats.total_wrong+1;
 
+        // multiplayer
         if (isMultiplayerMode) {
-            // Add a 1300ms delay so you see the Red highlight and the 20 Splat
             setTimeout(() => {
                 handleMultiplayerTransition();
             }, 1000);
         } else if (isDailyMode || isWeeklyMode || isLiteMode) {
             setTimeout(loadQuestion, 1300);
         } else {
+            // normal mode (always ends on wrong answer)
             setTimeout(endGame, 1000);
         }
     }
@@ -3587,8 +3504,6 @@ function updateLevelUI() {
         return;
     }
 
-    // Use a "Source of Truth" hierarchy: 
-    // 1. Current variable -> 2. LocalStorage -> 3. Hardcoded Default
     const level = currentLevel || 1;
     const xp = currentProfileXp || 0;
 
@@ -3608,7 +3523,7 @@ function triggerFireworks() {
     }
 }
 
-// Call this function for Level Ups, Bonuses, or Achievements
+// Notification for Level Ups and XP Bonuses
 function showNotification(message, soundToPlay = null, color = "#ffde00") {
     notificationQueue.push({
         text: message,
@@ -3625,7 +3540,7 @@ function processQueue() {
     const container = document.getElementById('game-notifications');
     const item = notificationQueue.shift();
 
-    // Only play if sound exists AND it's a valid audio buffer
+    // Only play if sound exists and it's a valid audio buffer
     if (item.sound && typeof item.sound === 'object') {
         try {
             playSound(item.sound);
@@ -3642,9 +3557,8 @@ function processQueue() {
 
     container.appendChild(notif);
 
-    // --- DYNAMIC TIMING ---
     // If more notifications are waiting, go fast (600ms).
-    // If it's the last one, stay longer (2000ms) so the player can actually read it.
+    // If it's the last one, stay longer (1600ms) so the player can actually read it.
     const displayTime = notificationQueue.length > 0 ? 600 : 1600;
 
     setTimeout(() => {
@@ -3654,7 +3568,7 @@ function processQueue() {
             notif.remove();
             isShowingNotification = false;
             processQueue();
-        }, 300); // 300ms for the fade-out animation to finish
+        }, 300);
     }, displayTime);
 }
 
@@ -3665,7 +3579,6 @@ function createParticle(parent, xPosPercent, colors) {
     // Get viewport coordinates
     const rect = parent.getBoundingClientRect();
 
-    // REMOVED window.scrollX/Y because CSS is 'position: fixed'
     const startX = rect.left + (xPosPercent / 100) * rect.width;
     const startY = rect.top + (rect.height / 2);
 
@@ -3703,10 +3616,8 @@ async function highlightCorrectAnswer() {
 async function endGame(result = null, wasFlawless = false) {
     if (isMultiplayerMode && isEndGameProcessing) return;
     isEndGameProcessing = true;
-    // If this is a Multiplayer result, we IGNORE the gameEnding lock 
-    // to ensure the Victory/Defeat screen overrides any "Game Over" glitch.
     if (isMultiplayerMode && result) {
-        gameEnding = false; // Force reset the lock for the final screen
+        gameEnding = false;
     } else if (gameEnding) {
         return;
     }
@@ -3721,16 +3632,15 @@ async function endGame(result = null, wasFlawless = false) {
     clearInterval(timer);
     stopTickSound();
 
-    // 1. Calculate time for the CURRENT segment (Solo)
+    // Calculate time for the current segment (Solo)
     const endTime = Date.now();
 
     // This covers all modes
     const totalMs = endTime - gameStartTime;
-    const totalSeconds = totalMs / 1000;
 
-    // --- MULTIPLAYER RESULT HANDLING ---
+    // multiplayer result handling
     if (isMultiplayerMode && result) {
-        // RECORD THE STAT IN THE DATABASE
+        // record the result in the database and get & show new achievements
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
             const { data: newAchievements, error } = await supabase.rpc('record_match_result', {
@@ -3755,7 +3665,7 @@ async function endGame(result = null, wasFlawless = false) {
         const gameOverTitle = document.getElementById('game-over-title');
         const gzTitle = document.getElementById('gz-title');
 
-        // 1. Set the big "Gz!" or "Game Over" message
+        // Set the message according to multiplayer game result
         if (gzTitle) {
             gzTitle.classList.remove('hidden');
             if (result === 'win') {
@@ -3770,11 +3680,12 @@ async function endGame(result = null, wasFlawless = false) {
             }
         }
 
+        // set gameovertitle with dynamic opponent name and HP values
         if (gameOverTitle) {
             gameOverTitle.classList.remove('hidden');
 
             if (result === 'win') {
-                // Keep everything between the backticks on one line
+
                 gameOverTitle.innerHTML = `<span>You defeated <span>${opponentName || 'your opponent'}</span> with ${myHP} HP left!</span>`;
             }
             else if (result === 'lose') {
@@ -3798,29 +3709,29 @@ async function endGame(result = null, wasFlawless = false) {
         }
 
         displayFinalTime(finalDisplayTime);
-        // 4. Hide Multiplayer Header (Bars) so they don't leak into end screen
+        // Hide Multiplayer Bars so they don't leak into end screen
         const mpHeader = document.getElementById('multiplayer-header');
         if (mpHeader) mpHeader.classList.add('hidden');
 
-        // This is the "Kill Switch"
+        // End Multiplayer Game and show end screen (This also handles the UI cleanup for multiplayer mode)
         finalizeEndScreen(window.currentLobbyIndex || 0);
 
         // Clean up Lobby specific flags
         iAmReadyForRematch = false;
         opponentReadyForRematch = false;
 
-        // 3. UI Cleanup
+        // UI Cleanup
         const pBtn = document.getElementById('playAgainBtn');
         if (pBtn) {
             pBtn.disabled = false;
             pBtn.innerHTML = 'Play Again';
         }
-        // 7. Reset the lock after a delay (when they are safely on the end screen)
+        // Reset the lock after a delay (when they are safely on the end screen)
         setTimeout(() => {
             isEndGameProcessing = false;
         }, 2000);
 
-        // 1. Update the LocalStorage based on the match result
+        // Update the LocalStorage based on the match result
         if (result === 'win') {
             const wins = liveStats.multiplayer_wins || 0;
             liveStats.multiplayer_wins = wins + 1;
@@ -3831,14 +3742,14 @@ async function endGame(result = null, wasFlawless = false) {
             const draws = liveStats.multiplayer_draws || 0;
             liveStats.multiplayer_draws = draws + 1;
         }
-        // 2. LIVE UPDATE: Refresh the stats page in the background
+        // Refresh the stats page in the background
         // This ensures that if the user clicks "Stats" after the game, the data is already there.
         await renderStats();
 
         return;
     }
 
-    // 1. PREPARE DATA FIRST (Quietly in background)
+    // prepare data first (Quietly in background)
     const { data: { session } } = await supabase.auth.getSession();
 
     if (session) {
@@ -3848,8 +3759,7 @@ async function endGame(result = null, wasFlawless = false) {
         else if (isWeeklyMode) mode = 'weekly';
         else if (isLiteMode) mode = 'lite';
 
-
-        // This replaces updateDailyStreak and multiple saveAchievement calls
+        // call check_game_achievements RPC to get the results
         const { data: results, error: achError } = await supabase.rpc('check_game_achievements', {
             p_mode: mode,
             p_score: score,
@@ -3857,7 +3767,7 @@ async function endGame(result = null, wasFlawless = false) {
         });
 
         if (!achError && results && results.length > 0) {
-            // 1. Update LocalStorage from the DB "Source of Truth"
+            // Update LocalStorage from the DB
             const stats = results[0].current_stats;
             if (stats) {
                 liveStats.max_daily_streak = stats.max_streak || 0;
@@ -3866,7 +3776,7 @@ async function endGame(result = null, wasFlawless = false) {
                 liveStats.current_daily_streak = stats.daily_streak || 0;
             }
 
-            // 2. Show all earned achievement notifications (Staggered)
+            // Show all earned achievement notifications (Staggered)
             // Filter first so we only count the 'new' ones for the delay index
             const newEarned = results.filter(res => res.is_new);
 
@@ -3884,16 +3794,16 @@ async function endGame(result = null, wasFlawless = false) {
     const streakContainer = document.getElementById('dailyStreakContainer');
     const streakCount = document.getElementById('streakCount');
 
-    // RESET WEEKLY UI (Crucial Fix)
-    // We hide this immediately so it doesn't leak into Normal/Daily modes
+    // reset weekly UI
+    // hide immediately so it doesn't leak into Normal/Daily modes
     if (weeklyTimeContainer) weeklyTimeContainer.style.display = 'none';
 
     const finalScore = document.getElementById('finalScore');
 
-    // 3. POPULATE END SCREEN BEFORE SHOWING IT
+    // populate end screen before showing it
     if (finalScore) {
         if (isLiteMode) {
-            // This shows the 3/100 format ONLY on the end screen
+            // This shows the 3/100 format only on the end screen
             finalScore.textContent = `${score}/${LITE_LIMIT}`;
         } else if (isWeeklyMode) {
             finalScore.textContent = `${score}/${WEEKLY_LIMIT}`;
@@ -3922,6 +3832,7 @@ async function endGame(result = null, wasFlawless = false) {
 
         // Save Score and Check for PB
         let isWeeklyPB = session ? await saveScore(session, 'weekly', score, totalMs, username) : false;
+
         // Update Titles
         if (gameOverTitle) {
             gameOverTitle.textContent = isWeeklyPB ? "New PB achieved!" : "Weekly Mode Completed!";
@@ -3944,8 +3855,6 @@ async function endGame(result = null, wasFlawless = false) {
 
         document.getElementById('dailyEndNote').classList.remove('hidden');
 
-        // This one function now handles: Streak, Total Count, and Perfect 10/10
-        // Pass the actual 'score' variable here
         const currentUtcStr = new Date().toISOString().split('T')[0];
         localStorage.setItem('lastDailyScoreDate', currentUtcStr);
 
@@ -3958,6 +3867,7 @@ async function endGame(result = null, wasFlawless = false) {
             streakContainer.style.display = 'block';
             streakCount.textContent = liveStats.current_daily_streak;
         }
+
         const shareBtn = document.getElementById('shareBtn');
         if (shareBtn) {
             shareBtn.classList.remove('is-disabled');
@@ -3966,14 +3876,13 @@ async function endGame(result = null, wasFlawless = false) {
             shareBtn.style.pointerEvents = "auto";
         }
 
-
     } else {
-        // --- NORMAL OR LITE MODE ---
+        // Normal or Lite Modes
         if (streakContainer) streakContainer.style.display = 'none';
         if (playAgainBtn) playAgainBtn.classList.remove('hidden');
         displayFinalTime(totalMs);
 
-        // 1. Lite Mode Specific Logic
+        // Lite Mode Specific Logic
         if (isLiteMode) {
             let isLitePB = session ? await saveScore(session, 'lite', score, totalMs, username) : false;
             if (gameOverTitle) {
@@ -3982,8 +3891,7 @@ async function endGame(result = null, wasFlawless = false) {
             }
 
         } else {
-            // end of Lite Mode
-            // --- ACTUAL NORMAL MODE ---
+            // Normal Mode specific logic
             let isNormalPB = false;
             // Trigger the high-score save
             if (session && score > 0) {
@@ -3993,12 +3901,11 @@ async function endGame(result = null, wasFlawless = false) {
             if (isNormalPB) {
                 liveStats.maxScore = score;
             }
-
-            // we check if all questions were answered correctly in normal mode.
+            // check if all questions were answered correctly in normal mode
             const isPerfectRun = score === number_of_questions;
             // Check for Gz! (Completion) first
             if (isPerfectRun) {
-                // Handle the "Completion" Titles
+                // handle the gz title
                 if (gzTitle) {
                     const gzMessages = ['You won!', 'Gz!', 'GG!', 'Victory!'];
                     const randomMessage = gzMessages[Math.floor(Math.random() * gzMessages.length)];
@@ -4011,7 +3918,7 @@ async function endGame(result = null, wasFlawless = false) {
                         gameOverTitle.textContent = "New PB achieved!";
                         gameOverTitle.classList.remove('hidden');
                     } else {
-                        // Hide if it's a perfect run but NOT a PB (keeps UI clean)
+                        // Hide if it's a perfect run but not a PB (keeps UI clean)
                         gameOverTitle.classList.add('hidden');
                         gameOverTitle.textContent = "";
                     }
@@ -4028,7 +3935,7 @@ async function endGame(result = null, wasFlawless = false) {
         }
     }
 
-    // 4. THE BIG SWAP (Final step)
+    // swap to endscreen
     // Use a tiny timeout or requestAnimationFrame to ensure DOM updates are ready
     requestAnimationFrame(() => {
         document.body.classList.remove('game-active');
@@ -4067,17 +3974,17 @@ function triggerXpDrop(amount) {
 
     const xpDrop = document.createElement('div');
     xpDrop.className = 'xp-drop';
+
     // We add a specific style here to ensure Flexbox ignores it
     xpDrop.style.position = 'absolute';
     xpDrop.innerHTML = `<span>+</span><span class="xp-number">${amount}</span>`;
 
-    // IF MULTIPLAYER: Push it down so it doesn't hit the HP bars
+    // push xp drop down if in multiplayer mode
     if (isMultiplayerMode) {
-        // Using setProperty ensures we override the CSS !important
         xpDrop.style.setProperty('top', '110px', 'important');
     }
 
-    // This ensures that as soon as the 1.2s animation is done, it is GONE from the DOM
+    // This ensures that as soon as the 1.2s animation is done, it is gone from the DOM
     xpDrop.onanimationend = () => {
         xpDrop.remove();
     };
@@ -4091,7 +3998,7 @@ function triggerXpDrop(amount) {
 }
 
 async function saveScore(session, mode, currentScore, timeMs, username = "", msg = "") {
-    // 1. Safety check: ensure session exists
+    // Safety check: ensure session exists
     if (!session || !session.user) {
         console.warn(`No session provided for ${mode} score save.`);
         return false;
@@ -4108,34 +4015,34 @@ async function saveScore(session, mode, currentScore, timeMs, username = "", msg
 
         if (error) throw error;
 
-        // 2. Specific post-save logic for Daily Mode
+        // Specific post-save logic for Daily Mode
         if (mode === 'daily') {
             syncDailySystem();
         }
 
         return data.is_pb; // Returns true/false
+
     } catch (err) {
         console.error(`Error saving ${mode} score:`, err);
         return false;
     }
 }
 
-
-
+// Share button for daily mode
 if (shareBtn) {
     shareBtn.onclick = async () => {
-        // 1. UI Feedback
+        // UI Feedback
         shareBtn.classList.add('tapped');
         setTimeout(() => shareBtn.classList.remove('tapped'), 300);
 
-        // 2. Auth Check
+        // Auth Check
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
             showGoldAlert("Please log in to share your score!");
             return;
         }
 
-        // 3. FETCH THE EDITION NUMBER (Directly from DB Truth)
+        // fetch the edition number (Directly from DB Truth)
         const { data: dailyData, error: dailyErr } = await supabase.rpc('get_daily_questions');
         if (dailyErr || !dailyData || dailyData.length === 0) {
             console.error("Could not fetch daily edition for sharing");
@@ -4143,15 +4050,15 @@ if (shareBtn) {
         }
         const dailyEdition = dailyData[0].edition_number;
 
-        // 3. Get Data
+        // Get Data
         const currentScore = parseInt(localStorage.getItem('lastDailyScore') || "0");
         // Pull the streak we just saved in handleAuthChange
         const currentStreak = liveStats.current_daily_streak || "0";
 
         const currentUtcStr = new Date().toISOString().split('T')[0];
 
-        // 4. Build the Grid
-        // 4. FETCH THE REAL PATTERN FROM DB
+        // Build the Grid
+        // fetch the real pattern from the DB 
         const { data: attemptData } = await supabase
             .from('daily_attempts')
             .select('grid_pattern')
@@ -4170,7 +4077,7 @@ if (shareBtn) {
             `${dynamicGrid}\n` +
             `Streak: ${currentStreak} 🔥\n`;
 
-        // 5. Desktop Tooltip Logic
+        // Desktop Tooltip Logic
         if (window.matchMedia("(hover: hover)").matches) {
             const tooltip = document.createElement('div');
             tooltip.className = 'copy-tooltip';
@@ -4181,15 +4088,15 @@ if (shareBtn) {
 
             // Place it relative to the viewport, not the button
             tooltip.style.position = 'fixed';
-            tooltip.style.top = (rect.top - 30) + 'px'; // 30px above the button
+            tooltip.style.top = (rect.top - 30) + 'px';
             tooltip.style.left = (rect.left + rect.width / 2) + 'px';
 
-            document.body.appendChild(tooltip); // Attach to body, NOT shareBtn
+            document.body.appendChild(tooltip);
 
             setTimeout(() => tooltip.remove(), 500);
         }
 
-        // 6. Execution
+        // Execution
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
         if (isMobile && navigator.share) {
@@ -4199,7 +4106,6 @@ if (shareBtn) {
                     text: shareText
                 });
             } catch (err) {
-                //console.log("Share cancelled"); 
             }
         } else {
             // Check if modern Clipboard API exists
@@ -4251,14 +4157,14 @@ function showCollectionLogNotification(petName) {
         document.body.appendChild(modal);
     }
 
-    // 2. Clear any existing timer so they don't overlap
+    // Clear any existing timer so they don't overlap
     if (petNotificationTimeout) {
         clearTimeout(petNotificationTimeout);
     }
-    // 3. Reset the state immediately to restart animation
+    // Reset the state immediately to restart animation
     modal.classList.remove('active');
 
-    // 4. Play sound
+    // Play sound
     if (typeof playSound === "function" && petBuffer) {
         playSound(petBuffer);
     }
@@ -4304,7 +4210,7 @@ function showCollectionLogNotification(petName) {
     // Trigger fireworks
     if (typeof triggerFireworks === "function") triggerFireworks();
 
-    // 2. Dynamic Display Time (Mobile: 2s, PC: 6s)
+    // Dynamic Display Time (Mobile: 2s, PC: 6s)
     const isMobile = window.innerWidth <= 480;
     const displayTime = isMobile ? 6000 : 8000;
 
@@ -4373,39 +4279,37 @@ async function startWeeklyChallenge() {
     // Tell the DB: "This is a new game, start my streak at 0"
     await supabase.rpc('reset_my_streak');
 
-    // 1. ENSURE THE POOL IS READY (We only fetch the 50 IDs, not the full data)
+    // ensure the pool is ready (We only fetch the 50 IDs, not the full data)
     const { data, error } = await supabase.rpc('get_weekly_questions', {});
     if (error || !data) {
         console.error(error);
         return showGoldAlert("Error loading weekly questions.");
     }
 
-    // 3. CONVERT TO STRING IDS
+    // convert the string IDs
     const allWeeklyIds = data.map(q => String(q.question_id || q.id));
-    // 4. SHUFFLE THE IDS (Fisher-Yates)
+    // shuffle the IDs (Fisher-Yates)
     for (let i = allWeeklyIds.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         // Swap elements
         [allWeeklyIds[i], allWeeklyIds[j]] = [allWeeklyIds[j], allWeeklyIds[i]];
     }
 
-    // 4. LOCK ALL 50 IDS IMMEDIATELY
-    // This prevents any other background logic from "stealing" these IDs
+    // Lock All 50 IDs immediately
     pendingIds = [...allWeeklyIds];
 
-    // 1. Fire the first 5 immediately for a fast start (Indices 0, 1, 2, 3, 4)
+    // Fire the first 5 immediately for a fast start (Indices 0, 1, 2, 3, 4)
     allWeeklyIds.slice(0, 5).forEach(id => fetchAndBufferQuestion(id));
 
-    // 6. WAIT FOR QUESTION #1 (The Barrier)
-    // 2. Wait a tiny bit (until first question is ready)
+    // wait for question #1
     while (preloadQueue.length === 0) {
         await new Promise(r => setTimeout(r, 50));
     }
 
-    // 3. Fire the remaining 45 in the background (Indices 5 through 49)
+    // Fire the remaining 45 in the background (Indices 5 through 49)
     allWeeklyIds.slice(5).forEach(id => fetchAndBufferQuestion(id));
 
-    // 7. UI TRANSITION
+    // UI TRANSITION
     resetGame();
     await loadQuestion(true);
 
@@ -4420,7 +4324,7 @@ async function startWeeklyChallenge() {
         document.getElementById('start-screen').classList.add('hidden');
         endScreen.classList.add('hidden');
 
-        gameStartTime = Date.now(); // total weekly run time
+        gameStartTime = Date.now();
         startTimer();
         gameStarting = false;
     });
@@ -4440,20 +4344,19 @@ async function startDailyChallenge(session) {
     preloadQueue = [];
     usedInThisSession = [];
     score = 0;
-    // INTERNAL STATE RESET
     dailyQuestionCount = 0;
     updateScore();
 
     const currentUtcStr = new Date().toISOString().split('T')[0];
 
-    // 1. BURN ATTEMPT & FETCH DAILY IDs FROM RPC
+    // burn attempt & fetch daily IDs from RPC
     const [burnRes, questionsRes] = await Promise.all([
         supabase.from('daily_attempts').insert({
             user_id: session.user.id,
             attempt_date: currentUtcStr,
             grid_pattern: gridPattern
         }),
-        supabase.rpc('get_daily_questions') // The new logic happens here!
+        supabase.rpc('get_daily_questions')
     ]);
     // Your exact error check
     if (burnRes.error) return showGoldAlert("You've already played today!");
@@ -4463,21 +4366,20 @@ async function startDailyChallenge(session) {
         return showGoldAlert("Error loading daily questions.");
     }
 
-    // Tell the DB: "This is a new game, start my streak at 0"
+    // reset streak
     await supabase.rpc('reset_my_streak');
 
-    // 3. Extract IDs in the SPECIFIC order from SQL
+    // Extract IDs in the specific order from DB
     const allDailyIds = questionsRes.data.map(q => String(q.question_id));
 
-    // 4. BATCH LOAD: Start all 10 workers immediately
+    // batch load: Start all 10 workers immediately
     // We don't use 'preloadNextQuestions' here because we already have the IDs.
     pendingIds = [...allDailyIds]; // Lock all 10
 
-    // 4. ORDERED FETCH (The "Map" Strategy)
     // We start all fetches, but we keep them in a Promise array to preserve index
     const fetchPromises = allDailyIds.map(id => fetchDeterministicQuestion(id));
 
-    // 5. Wait for ONLY the first question to display the game immediately
+    // Wait for only the first question to display the game immediately
     const firstQuestionData = await fetchPromises[0];
     if (firstQuestionData) {
         // Image pre-warming for Question 1
@@ -4489,7 +4391,7 @@ async function startDailyChallenge(session) {
         preloadQueue.push(firstQuestionData);
     }
 
-    // 6. Start the Game UI
+    // Start the Game UI
     resetGame();
     await loadQuestion(true);
 
@@ -4507,12 +4409,11 @@ async function startDailyChallenge(session) {
         gameStarting = false;
     });
 
-    // 7. BACKGROUND: Fill the rest of the queue in the CORRECT order
-    // We already started the fetches in step 4, now we just wait for them in sequence
+    // Fill the rest of the queue in the correct order
     for (let i = 1; i < fetchPromises.length; i++) {
         const qData = await fetchPromises[i];
         if (qData) {
-            // Optional: warm the image in background
+            // warm the image in background
             if (qData.question_image) {
                 const img = new Image();
                 img.src = qData.question_image;
@@ -4524,7 +4425,7 @@ async function startDailyChallenge(session) {
 }
 
 
-// ====== HELPERS & AUDIO ======
+// Audio
 async function loadSounds() {
     if (!correctBuffer) correctBuffer = await loadAudio('./sounds/correct.mp3');
     if (!wrongBuffer) wrongBuffer = await loadAudio('./sounds/wrong.mp3');
@@ -4547,7 +4448,7 @@ async function loadAudio(url) {
 function playSound(buffer, loop = false) {
     if (!buffer || muted) return;
 
-    // 🔥 On mobile, we must resume inside the play call too 
+    // On mobile, we must resume inside the play call too 
     // just in case the context auto-suspended
     if (audioCtx.state === 'suspended') {
         audioCtx.resume();
@@ -4562,7 +4463,7 @@ function playSound(buffer, loop = false) {
 
     source.connect(gain).connect(audioCtx.destination);
     source.start(0); // Add the 0 for older mobile browser compatibility
-    return source; // Return this so we can call .stop()
+    return source;
 }
 
 function stopTickSound() {
@@ -4578,7 +4479,7 @@ function stopTickSound() {
 
 function updateScore() {
     if (!scoreDisplay) return;
-    // 1. MULTIPLAYER UI HANDLING
+    // Multiplayer UI handling
     if (isMultiplayerMode) {
         // We hide the score display so the HP bars are the focus
         scoreDisplay.style.display = 'none';
@@ -4600,10 +4501,10 @@ function updateScore() {
     }
 }
 
-// ====== MOBILE TAP FEEDBACK (THE FLASH) ======
+// Mobile tap feedback (Flash)
 document.addEventListener('DOMContentLoaded', () => {
     (async () => {
-        //syncUsername();
+    
         await init();
 
         // This function applies the flash to any button we give it
@@ -4623,10 +4524,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         };
 
-        // 1. Apply to all buttons currently on the screen
+        // Apply to all buttons currently on the screen
         const staticButtons = document.querySelectorAll('.btn, .btn-small, #authBtn, #muteBtn');
         staticButtons.forEach(applyFlash);
 
 
     })(); // closes the async function AND invokes it
-});   // closes DOMContentLoaded listener
+}); // closes DOMContentLoaded listener
