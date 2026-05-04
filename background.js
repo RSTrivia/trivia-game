@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!fadeLayer) return;
 
   const FADE_DURATION = 1500;
-  const CHANGE_INTERVAL = 240000; //4 mins  //10000; Testing interval
+  const CHANGE_INTERVAL = 240000; //4 mins
   const backgrounds = [
     "images/background.jpg",
     "images/background2.png",
@@ -25,14 +25,14 @@ document.addEventListener("DOMContentLoaded", () => {
   let isNavigating = false;
   window.addEventListener("beforeunload", () => { isNavigating = true; });
 
-  // 1. Get current stable background
+  // Get current stable background
   let currentBg = localStorage.getItem("bg_current") || backgrounds[0];
   document.documentElement.style.setProperty("--bg-image", `url('${currentBg}')`);
 
-  // 2. Preload
+  // Preload
   backgrounds.forEach(src => { const img = new Image(); img.src = src; });
 
-  // 3. ONLY reset the timer if it doesn't exist or is in the past
+  // Only reset the timer if it doesn't exist or is in the past
   let savedNextChange = localStorage.getItem("bg_next_change");
   let nextChangeTime = parseInt(savedNextChange);
 
@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
   worker.onmessage = (e) => {
     const nextBg = e.data;
     
-    // Safety: If the worker suggests the same image or we are leaving, ignore it.
+    // If the worker suggests the same image or we are leaving, ignore it.
     if (document.hidden || isNavigating || nextBg === currentBg) return;
 
     const img = new Image();
@@ -59,7 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
     img.onload = () => {
       if (isNavigating) return;
 
-      // Update storage IMMEDIATELY so navigation knows where we are
+      // Update storage immediately so navigation knows where we are
       localStorage.setItem("bg_current", nextBg);
 
       // Prepare Fade
@@ -83,7 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
           fadeLayer.style.opacity = '0';
           currentBg = nextBg;
           
-          // ONLY NOW do we set the time for the NEXT change
+          // set the time for the next change
           const newTime = Date.now() + CHANGE_INTERVAL;
           localStorage.setItem("bg_next_change", newTime);
           
