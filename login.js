@@ -95,7 +95,7 @@ signupBtn.addEventListener('click', async () => {
         return;
     }
 
-    // AUTO-LOGIN
+    // auto-login
     const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({ email, password });
 
     if (loginError || !loginData?.user) {
@@ -103,16 +103,13 @@ signupBtn.addEventListener('click', async () => {
         showGoldAlert("Account created!\nPlease log in manually.");
         setBusy(false);
     } else {
-        // SUCCESSFUL AUTO-LOGIN
+        // Successful login
         // Wipe any data left over from previous people on this device
         clearUserSessionData();
 
         // Save the new user's details
         localStorage.setItem('cachedUsername', username);
         localStorage.setItem('cachedLoggedIn', 'true');
-
-        // Kill any lingering socket connections
-        //await supabase.removeAllChannels();
 
         // Go to home view
         navigateTo('view-home');
@@ -132,7 +129,7 @@ loginBtn.addEventListener('click', async () => {
     }
 
     setBusy(true);
-    
+
     try {
         const email = usernameInputVal.toLowerCase() + '@example.com';
 
@@ -162,7 +159,7 @@ loginBtn.addEventListener('click', async () => {
 
         // clear data
         clearUserSessionData();
-        
+
         try {
             // Fetch the "Login Package" from the server
             const { data: loginPackage, error: rpcError } = await supabase.rpc('get_user_login_data', {
@@ -172,7 +169,7 @@ loginBtn.addEventListener('click', async () => {
             const finalUsername = loginPackage.username || usernameInputVal;
             localStorage.setItem('cachedUsername', finalUsername);
             localStorage.setItem('cachedLoggedIn', 'true');
-    
+
             if (loginPackage.equipped_pet) {
                 const petId = loginPackage.equipped_pet;
                 localStorage.setItem('equipped_pet_id', petId);
@@ -209,11 +206,11 @@ loginBtn.addEventListener('click', async () => {
 
 // Pet updating real-time
 // Synchronous updater: instantly updates menu pet from localStorage
-    export function updateMenuPet(elementId, petId) {
-      const petImg = document.getElementById(elementId);
-      if (!petImg) return;
+export function updateMenuPet(elementId, petId) {
+    const petImg = document.getElementById(elementId);
+    if (!petImg) return;
 
-      if (petId && petId !== "null") {
+    if (petId && petId !== "null") {
         // Check if the string contains 'cape' instead of an exact match
         const isCape = petId.toLowerCase().includes('cape');
         const folder = isCape ? 'capes/' : 'pets/';
@@ -224,39 +221,39 @@ loginBtn.addEventListener('click', async () => {
         petImg.style.display = 'inline-block';
         petImg.style.marginLeft = '5px';
         petImg.style.verticalAlign = 'middle';
-      } else {
+    } else {
         petImg.style.display = 'none';
-      }
     }
+}
 
-    // Single function to sync with Supabase
-    async function syncMenuPet() {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+// Single function to sync with Supabase
+async function syncMenuPet() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
         // Logged out → clear pet
         localStorage.removeItem('equipped_pet_id');
         localStorage.removeItem('my-multiplayer-pet');
         updateMenuPet('equipped-pet-display', null);
         updateMenuPet('my-multiplayer-pet', null);
         return;
-      }
+    }
 
-      // Fetch equipped pet from Supabase once
-      const { data, error } = await supabase
+    // Fetch equipped pet from Supabase once
+    const { data, error } = await supabase
         .from('profiles')
         .select('equipped_pet')
         .eq('id', session.user.id)
         .single();
 
-      if (!error && data) {
+    if (!error && data) {
         localStorage.setItem('equipped_pet_id', data.equipped_pet);
         updateMenuPet('equipped-pet-display', data.equipped_pet);
         localStorage.setItem('my-multiplayer-pet', data.equipped_pet);
         updateMenuPet('my-multiplayer-pet', data.equipped_pet);
-      }
     }
+}
 
-    let petChannel = null; // Track this globally at the top of your script
+let petChannel = null; // Track this globally at the top of your script
 
 // AUTH LISTENER
 supabase.auth.onAuthStateChange(async (event, session) => {
@@ -272,7 +269,7 @@ supabase.auth.onAuthStateChange(async (event, session) => {
             setTimeout(() => {
                 syncMenuPet(); // Initial fetch from DB
                 setupMenuPetRealtime();  // Start watching for changes
-            }, 500); 
+            }, 500);
         }
     } else if (event === 'SIGNED_OUT') {
         if (petChannel) {
@@ -304,12 +301,12 @@ async function setupMenuPetRealtime() {
             filter: `id=eq.${session.user.id}`
         }, payload => {
             const newPet = payload.new.equipped_pet;
-            
+
             // update the UI visually
             localStorage.setItem('equipped_pet_id', newPet);
             localStorage.setItem('my-multiplayer-pet', newPet);
-            
-            updateMenuPet('equipped-pet-display', newPet); 
+
+            updateMenuPet('equipped-pet-display', newPet);
             updateMenuPet('my-multiplayer-pet', newPet);
         })
         .subscribe((status) => {
@@ -319,53 +316,52 @@ async function setupMenuPetRealtime() {
         });
 }
 
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+    // Instant render from localStorage
+    const currentPet = localStorage.getItem('equipped_pet_id');
+    updateMenuPet('equipped-pet-display', currentPet);
+    updateMenuPet('my-multiplayer-pet', currentPet);
+});
 
-    // Initialize on page load
-    document.addEventListener('DOMContentLoaded', () => {
-     // Instant render from localStorage
-      const currentPet = localStorage.getItem('equipped_pet_id');
-      updateMenuPet('equipped-pet-display', currentPet);
-      updateMenuPet('my-multiplayer-pet', currentPet);
-    });
+// This looks for buttons AND the specific top-right icons
+const allButtons = document.querySelectorAll('.btn, .btn-small, .tab-btn, #helpBtn, #discordBtn');
 
-    // This looks for buttons AND the specific top-right icons
-    const allButtons = document.querySelectorAll('.btn, .btn-small, .tab-btn, #helpBtn, #discordBtn');
-
-    allButtons.forEach(button => {
-      button.addEventListener('touchstart', () => {
+allButtons.forEach(button => {
+    button.addEventListener('touchstart', () => {
         button.classList.add('tapped');
-      }, { passive: true });
+    }, { passive: true });
 
-      button.addEventListener('touchend', () => {
+    button.addEventListener('touchend', () => {
         // Force the element to lose focus immediately
         button.blur();
         setTimeout(() => {
-          button.classList.remove('tapped');
+            button.classList.remove('tapped');
         }, 100);
-      });
-
-      button.addEventListener('touchcancel', () => {
-        button.classList.remove('tapped');
-      });
-        
-      // Select all buttons by class
-      const menuButtons = document.querySelectorAll('.main-menu-btn');
-
-      menuButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-          // Since app.js is a module, we ensure it's loaded 
-          // and then call our navigation logic
-          if (typeof window.navigateTo === 'function') {
-            window.navigateTo('view-home');
-          } else {
-            // Fallback: manually force the UI reset if app.js isn't ready
-            document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
-            document.getElementById('view-home').classList.remove('hidden');
-            window.location.hash = 'home';
-          }
-        });
-      });
     });
+
+    button.addEventListener('touchcancel', () => {
+        button.classList.remove('tapped');
+    });
+
+    // Select all buttons by class
+    const menuButtons = document.querySelectorAll('.main-menu-btn');
+
+    menuButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Since app.js is a module, we ensure it's loaded 
+            // and then call our navigation logic
+            if (typeof window.navigateTo === 'function') {
+                window.navigateTo('view-home');
+            } else {
+                // Fallback: manually force the UI reset if app.js isn't ready
+                document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+                document.getElementById('view-home').classList.remove('hidden');
+                window.location.hash = 'home';
+            }
+        });
+    });
+});
 
 app.classList.remove('app-hidden');
 app.classList.add('app-ready');
