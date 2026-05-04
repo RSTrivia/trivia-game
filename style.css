@@ -2508,9 +2508,19 @@ input.input-field:-webkit-autofill:active {
 #logGrid .pet-slot:nth-child(n+9):nth-child(-n+12).unlocked.equipped:hover,
 #logGrid .pet-slot:nth-child(n+13):nth-child(-n+16).unlocked.equipped:hover,
 #logGrid .pet-slot:nth-child(n+17):nth-child(-n+20).unlocked.equipped:hover {
-  border-color: #66cc66 !important;
+  border-color: #77ff77 !important;
   background: rgba(0, 150, 0, 0.2) !important;
   box-shadow: 0 0 10px rgba(68, 187, 68, 0.2) !important;
+}
+
+/* 2. Hover Green State (Slightly brighter but still soft) */
+#logGrid .pet-slot.unlocked.equipped:hover span,
+#logGrid .pet-slot:nth-child(-n+4).unlocked.equipped:hover span,
+#logGrid .pet-slot:nth-child(n+5):nth-child(-n+8).unlocked.equipped:hover span,
+#logGrid .pet-slot:nth-child(n+9):nth-child(-n+12).unlocked.equipped:hover span,
+#logGrid .pet-slot:nth-child(n+13):nth-child(-n+16).unlocked.equipped:hover span,
+#logGrid .pet-slot:nth-child(n+17):nth-child(-n+20).unlocked.equipped:hover span {
+  color: #77ff77 !important;
 }
 
 /* 3. Text and Image Styling (Muted Green) */
@@ -2533,6 +2543,15 @@ input.input-field:-webkit-autofill:active {
 #logGrid .pet-slot:nth-child(n+13):nth-child(-n+16).unlocked:not(.equipped):hover,
 #logGrid .pet-slot:nth-child(n+17):nth-child(-n+20).unlocked:not(.equipped):hover {
   border-color: #ffea8a !important;
+}
+
+#logGrid .pet-slot.unlocked:not(.equipped):hover span,
+#logGrid .pet-slot:nth-child(-n+4).unlocked:not(.equipped):hover span,
+#logGrid .pet-slot:nth-child(n+5):nth-child(-n+8).unlocked:not(.equipped):hover span,
+#logGrid .pet-slot:nth-child(n+9):nth-child(-n+12).unlocked:not(.equipped):hover span,
+#logGrid .pet-slot:nth-child(n+13):nth-child(-n+16).unlocked:not(.equipped):hover span,
+#logGrid .pet-slot:nth-child(n+17):nth-child(-n+20).unlocked:not(.equipped):hover span {
+  color: #ffea8a !important;
 }
 
 /* Styling for the equipped pet slot */
@@ -2909,6 +2928,11 @@ input.input-field:-webkit-autofill:active {
   border-color: #ffea8a !important;
 }
 
+.cape-slot.unlocked:hover span {
+    color: #ffea8a !important;
+}
+
+
 /* --- EQUIPPED STATE FOR CAPES (Matches Pet Green) --- */
 
 .cape-slot.unlocked.equipped {
@@ -2919,9 +2943,14 @@ input.input-field:-webkit-autofill:active {
 
 /* Optional: Hover effect the equipped cape to match pets */
 .cape-slot.unlocked.equipped:hover {
-    border-color: #66cc66 !important;
+    border-color: #77ff77 !important;
     background: rgba(0, 150, 0, 0.2) !important;
 }
+
+.cape-slot.unlocked.equipped:hover span {
+    color: #77ff77 !important;
+}
+
 
 /* Ensure the text and image look 'active' */
 .cape-slot.equipped span {
@@ -2949,7 +2978,6 @@ input.input-field:-webkit-autofill:active {
 #statsView {
   width: 100%;
   margin-bottom: 10px;
-  /* <--- Add this to match the grid gap */
 }
 
 #statsName {
