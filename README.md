@@ -1,10 +1,9 @@
 
+https://github.com/user-attachments/assets/c9ca06c4-b33d-4756-a1c0-153db1274fff
 
 <h1 align="center">OSRS TRIVIA</h1>
 <p align="center"><i>Put your OSRS knowledge to the test in an OSRS-inspired game</i></p>
 <p align="center"><sub>This is a fan-made project created using intellectual property belonging to Jagex Limited under the terms of Jagex's Fan Content Policy. This content is not endorsed by or affiliated with Jagex.</sub></p>
-
-[![Preview](https://img.youtube.com/vi/LLa6XvFp1-Y/maxresdefault.jpg)](https://www.youtube.com/watch?v=LLa6XvFp1-Y)
 
 ## Goal
 
