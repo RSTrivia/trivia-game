@@ -276,12 +276,12 @@ const dailyMessages = { // Daily Mode end-screen messages
         const message = args.join(' ');
         // Silence WebSockets, Realtime, and Supabase Auth Refresh errors
         if (
-            message.includes('WebSocket') || 
-            message.includes('realtime') || 
-            message.includes('Refresh Token') || 
+            message.includes('WebSocket') ||
+            message.includes('realtime') ||
+            message.includes('Refresh Token') ||
             message.includes('AuthApiError')
         ) {
-            return; 
+            return;
         }
         // Original error behavior for everything else
         console._error(...args);
@@ -728,7 +728,7 @@ async function renderStats() {
 
     // Daily streak and total
     const bestStreak = liveStats.max_daily_streak || 0;
-    
+
     const totalDaily = liveStats.daily_total || 0;
 
     const streakElem = document.getElementById('statsMaxStreak');
@@ -861,7 +861,7 @@ function getStatsObject() {
         multi_50_wins: liveStats.multi_50_wins === 'true',
         multi_100_wins: liveStats.multi_100_wins === 'true',
         multi_flawless: liveStats.multi_flawless === 'true',
-    
+
         // Weekly Mode Booleans from LocalStorage
         weekly25: liveStats.weekly_25 === 'true',
         weekly50: liveStats.weekly_50 === 'true',
@@ -1090,7 +1090,7 @@ async function openPlayerProfile(username) {
 
     // Calculate Achievements
     // Start with the ones stored in the DB
-    
+
     let finalAchieveCount = data.completed_achievements || 0;
 
     // Milestone: Levels
@@ -1098,7 +1098,7 @@ async function openPlayerProfile(username) {
     if (data.level >= 50) finalAchieveCount++;
     if (data.level >= 92) finalAchieveCount++;
     if (data.level >= 99) finalAchieveCount++;
- 
+
     // Milestone: Normal Mode
     if (parseInt(data.pb_normal) >= 10) finalAchieveCount++;
     if (parseInt(data.pb_normal) >= 50) finalAchieveCount++;
@@ -1271,7 +1271,7 @@ function resetGameEngine() {
     if (answersBox) answersBox.innerHTML = '';
 
     const scoreContainer = document.getElementById('finalScore').parentElement;
-    
+
     scoreContainer.innerHTML = 'Score: <span id="finalScore">0</span>';
     const pBtn = document.getElementById('playAgainBtn');
     if (pBtn) {
@@ -1655,6 +1655,24 @@ async function subscribeToLobby(lobbyCode, lobbyId) {
         }
     });
 
+    lobbyChannel.on('broadcast', { event: 'game_over_sync' }, (envelope) => {
+        const data = envelope.payload;
+        if (data && data.user_id !== userId) {
+            console.log("Game over signal received from opponent.");
+
+            // Update local HP values to match the final state sent by the opponent
+            // This ensures both players agree on who died
+            opponentHP = data.final_myHP;
+            myHP = data.final_opponentHP;
+
+            // Mark the opponent as "answered" so syncAndProceed doesn't block
+            opponentHasAnswered = true;
+
+            // Force the sync to happen now
+            syncAndProceed(true);
+        }
+    });
+
     // Keep only the 'leave' presence listener (This handles crashes/closed tabs)
     lobbyChannel.on('presence', { event: 'leave' }, ({ leftPresences }) => {
         if (myRole == 'host') {
@@ -1982,6 +2000,20 @@ async function syncAndProceed(force = false) {
         // check for a flawless victory (win with full HP)
         const wasFlawless = (result === 'win' && myHP === MAX_HP);
 
+        // Tell the other player the game is officially over
+        // This ensures if the Guest dies, the Host gets the message to stop waiting.
+        if (lobbyChannel) {
+            lobbyChannel.send({
+                type: 'broadcast',
+                event: 'game_over_sync',
+                payload: {
+                    user_id: userId,
+                    final_myHP: myHP,
+                    final_opponentHP: opponentHP
+                }
+            });
+        }
+
         // Give the user 800ms to actually see the "Wrong" splat and highlight
         setTimeout(async () => {
             isSyncing = false;
@@ -2048,7 +2080,7 @@ async function syncDailySystem() {
         }
 
         const { data: summary, error: error } = await supabase.rpc('get_daily_summary', {
-            t: new Date().getTime() 
+            t: new Date().getTime()
         });
 
         if (error) {
@@ -2178,7 +2210,7 @@ async function init() {
 
     // Game Buttons
     // Normal Mode button
-    if (startBtn) { 
+    if (startBtn) {
         startBtn.onclick = async () => {
             isDailyMode = false;
             isWeeklyMode = false;
@@ -2201,7 +2233,7 @@ async function init() {
             startGame();
         };
     }
-    
+
     // Daily Mode button
     if (dailyBtn) {
         dailyBtn.onclick = async () => {
@@ -2221,7 +2253,7 @@ async function init() {
 
             // Play Status Check via get_daily_summary
             const { data: summary, error: rpcError } = await supabase.rpc('get_daily_summary', {
-                t: new Date().getTime() 
+                t: new Date().getTime()
             });
 
             if (rpcError) {
@@ -3288,7 +3320,7 @@ async function checkAnswer(choiceId, btn) {
             window.forceEndTimeout = setTimeout(() => {
                 // Double check they still haven't answered before forcing
                 if (!opponentHasAnswered) {
-                    console.warn("Opponent AFK. Forcing sync...");
+                    //console.warn("Opponent AFK. Forcing sync...");
                     syncAndProceed(true); // 'true' bypasses the wait
                 }
             }, 15000);
@@ -3477,7 +3509,7 @@ async function checkAnswer(choiceId, btn) {
         playSound(wrongBuffer);
         if (btn) btn.classList.add('wrong');
         highlightCorrectAnswer();
-        liveStats.total_wrong=liveStats.total_wrong+1;
+        liveStats.total_wrong = liveStats.total_wrong + 1;
 
         // multiplayer
         if (isMultiplayerMode) {
@@ -4503,7 +4535,7 @@ function updateScore() {
 // Mobile tap feedback (Flash)
 document.addEventListener('DOMContentLoaded', () => {
     (async () => {
-    
+
         await init();
 
         // This function applies the flash to any button we give it
