@@ -2,7 +2,7 @@
 <p align="center"><i>Put your OSRS knowledge to the test in an OSRS-inspired game</i></p>
 <p align="center"><sub>This is a fan-made project created using intellectual property belonging to Jagex Limited under the terms of Jagex's Fan Content Policy. This content is not endorsed by or affiliated with Jagex.</sub></p>
 
-https://github.com/user-attachments/assets/c8c854ed-32b2-48c3-82c4-53a8fc122c2b
+https://github.com/user-attachments/assets/6a3678b9-ef62-4ecb-a9ac-a4ce054346b5
 
 ## Goal
 
