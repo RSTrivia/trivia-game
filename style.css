@@ -1,7 +1,6 @@
-/* ====== GLOBAL RESET ====== */
+
 html {
   background-color: #0e0e0e;
-  /* The 'Flash' protection */
 }
 
 @font-face {
@@ -20,26 +19,22 @@ body {
   height: 100dvh;
   overflow: hidden;
   background: transparent;
-   /*font-family: Arial, sans-serif;*/
   font-family: 'RSFont';
 }
 
 :root {
   --bg-image: url('images/background.jpg');
-  /* default background */
 }
 
 #background-root {
   position: fixed;
   inset: 0;
   z-index: -2;
-  /*0*/
   background-image: var(--bg-image);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   pointer-events: none;
-  /* Force GPU rendering to prevent the "white flash" */
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   transform: translateZ(0);
@@ -61,23 +56,15 @@ body {
 
 #bg-fade-layer {
   position: fixed;
-  /* cover entire viewport */
   inset: 0;
-  /* top:0; right:0; bottom:0; left:0 */
   pointer-events: none;
-  /* allow clicks through */
   opacity: 0;
-  /* start fully transparent */
   will-change: opacity;
-  /* optimize fade animations */
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   z-index: -1;
-  /* above #background-root but below #app */
 }
-
-
 
 @keyframes fadeLoop {
 
@@ -94,7 +81,6 @@ body {
 a,
 button {
   -webkit-tap-highlight-color: transparent;
-  /* Removes the system "box" animation */
   outline: none;
 }
 
@@ -104,13 +90,10 @@ button {
   justify-content: center;
   align-items: flex-start;
   padding: 20px;
-  /*40px;*/
   position: relative;
   z-index: 10;
-  /* above the background */
 }
 
-/* App visibility control */
 .app-hidden {
   opacity: 0;
 }
@@ -126,12 +109,10 @@ button {
   width: 440px;
   max-width: 95%;
   min-height: 300px;
-  /* ensures it never shrinks too small */
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: stretch;
-  /* make children fill width */
   height: auto;
   padding: 25px;
   box-sizing: border-box;
@@ -142,11 +123,9 @@ button {
 
 
 /* Input fields */
-/* The actual thin fields */
 .input-field {
   width: 100%;
   height: 36px;
-  /* Much thinner height */
   padding: 0 12px;
   border-radius: 6px;
   border: 2px solid #d4af37;
@@ -168,62 +147,46 @@ button {
   color: #fff !important;
 }
 
-/* Only make <a> tags show pointer cursor when hover */
 a {
   cursor: pointer;
 }
 
-/* ====== BIG GOLD BUTTONS ====== */
+/* ====== BUTTONS ====== */
 .btn {
   font-family: 'RSFont';
-  /* Forces the <a> to act like a <button> */
   box-sizing: border-box;
-  /* CRITICAL: ensures padding doesn't stretch links differently */
   display: flex;
   flex-direction: column;
-  /*block*/
   align-items: center;
-  /* vertical centering */
   justify-content: center;
-  /* horizontal centering */
   text-align: center;
-  /* fallback */
   background: rgba(0, 0, 0, 0.6);
   color: #d4af37;
-  /*#ffd700;*/
   padding: 14px 22px;
   border: 2px solid #d4af37;
   font-size: 1.4rem;
-  /*#ffd700;*/
   border-radius: 8px;
   width: 100%;
   margin: 0;
   transition: 0.2s;
   cursor: pointer;
   text-decoration: none;
-  /* Removes link underline */
   appearance: none;
-  /* Removes default browser link styling */
   user-select: none;
-  /* 1. Stops the "dragging" ghost image from following your finger */
   -webkit-user-drag: none;
-  /* 2. Stops the browser from trying to select the text */
   user-select: none;
   -webkit-user-select: none;
-  /* 3. Prevents the long-press "Save Link" menu (iOS/Android) */
   -webkit-touch-callout: none;
-  /* 4. Fixes the "Sticky" hover delay */
   touch-action: manipulation;
 }
 
-/* Fix the class name to match your HTML */
 .btn-main {
   font-size: 1.3rem;
 }
 
 .btn-sub {
-  font-size: 0.8rem; /* Smaller text */
-  color: #a0a0a0!important;     /* Grey color */
+  font-size: 0.8rem;
+  color: #a0a0a0!important;
 }
 
 .btn:hover {
@@ -251,28 +214,25 @@ a {
 }
 
 
-/* Target screens smaller than 600px */
 @media (max-width: 600px) {
-  /* Shrink the main big buttons */
   #view-home #start-screen .btn {
       padding: 5px 14px;
       font-size: 1.1rem;
   }
 
   .btn-main {
-    font-size: 1.1rem;   /* Match the parent reduction */
+    font-size: 1.1rem;
   }
 
-  /* Shrink the small buttons even further */
   .btn-small {
-    padding: 4px 12px;  /* Reduced from 10px 16px */
+    padding: 4px 12px;
     font-size: 0.9rem;
   }
 
-  /* Ensure the row can fit more items */
+ 
   .menu-row {
-    gap: 1px;           /* Tighter spacing between buttons */
-    flex-wrap: nowrap;  /* Prevents them from jumping to a new line */
+    gap: 1px;
+    flex-wrap: nowrap;
     width: 100%;
     margin-top: 10px;
   }
@@ -286,7 +246,6 @@ a {
   padding: 10px 16px;
   font-size: 1rem;
   border-color: #d4af37;
-  /* color only */
   border-radius: 8px;
   display: inline-flex;
   align-items: center;
@@ -295,20 +254,14 @@ a {
   text-align: center;
   text-decoration: none;
   transition: all 0.2s ease;
-  /* This ensures color, border, and bg all flash together */
   cursor: pointer;
   user-select: none;
   appearance: none;
-  /* Removes default browser link styling */
   user-select: none;
-  /* 1. Stops the "dragging" ghost image from following your finger */
   -webkit-user-drag: none;
-  /* 2. Stops the browser from trying to select the text */
   user-select: none;
   -webkit-user-select: none;
-  /* 3. Prevents the long-press "Save Link" menu (iOS/Android) */
   -webkit-touch-callout: none;
-  /* 4. Fixes the "Sticky" hover delay */
   touch-action: manipulation;
 }
 
@@ -322,11 +275,8 @@ a {
 .btn,
 .btn-small {
   position: relative;
-  /* ensures click area is on top */
   user-select: none;
-  /* optional: prevent text selection when clicking */
   z-index: 2;
-  /* ensure above all background layers */
 }
 
 
@@ -347,17 +297,13 @@ a {
   padding: 12px;
   margin: 6px 0;
   width: 100%;
-  /* Occupy full container width */
   min-width: 100%;
-  /* Double-down to prevent shrinking */
   flex-shrink: 0;
-  /* CRITICAL: Tells flexbox "Do not shrink me" */
   border-radius: 6px;
   font-size: 1.3rem;
   transition: background-color 0.15s ease;
   cursor: pointer;
   box-sizing: border-box;
-  /* Ensures padding doesn't add to width */
 }
 
 .answer-btn:hover {
@@ -373,27 +319,21 @@ a {
   background-color: #3d8c40 !important;
 }
 
-/*#4caf50*/
 .wrong {
   background-color: #a63232 !important;
 }
 
-/*#f44336*/
 
 /* ====== GAME SCREEN ===== */
 #game {
   position: relative !important;
   overflow: visible !important;
-  /* Required for XP drops to float out */
   display: none;
-  /* Hidden by default */
   flex-direction: column;
   align-items: center;
-  /* Centers everything horizontally */
   padding: 20px;
   border-radius: 10px;
   width: 100%;
-  /* Ensure it fills the container */
   box-sizing: border-box;
 }
 
@@ -401,13 +341,12 @@ a {
   display: flex !important;
 }
 
-/* Ensure children inside #game stay white and correctly layered */
+
 #game>* {
   color: #ffffff;
   position: relative;
   z-index: 1;
   width: 100%;
-  /* Force question text and buttons to span width */
 }
 
 
@@ -434,9 +373,7 @@ a {
   margin: 10px 0;
   border-radius: 8px;
   display: none;
-  /*background-color: transparent;*/
 }
-
 
 @media (max-width: 480px) {
   #questionText {
@@ -449,14 +386,7 @@ a {
 }
 
 
-
-
-
-
-
-
-
-/* ====== OSRS TITLE ===== */
+/* ====== TITLE ===== */
 h1 {
   font-family:'Cinzel', serif;
   font-size: 2.75rem;
@@ -464,32 +394,21 @@ h1 {
   text-align: center;
   letter-spacing: 2px;
 
-  /* 1. YOUR ORIGINAL GRADIENT (Untouched) */
   background: linear-gradient(145deg, #fff8dc 0%, #ffdd44 25%, #f2b705 50%, #c28f0c 75%, #a77b0a 100%);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 
-  /* 2. THE CUSTOM BALANCED GLOW */
-  /* This is stronger than the 35px "Sweet Spot" but cleaner than the 80px "Fog" */
   text-shadow:
     0 0 4px rgba(0, 0, 0, 0.8),
-    /* Original depth */
     1px 1px 0 #000,
-    /* Original sharp edge */
     2px 2px 2px rgba(0, 0, 0, 0.6),
-    /* Original shadow shadow */
     0 0 12px rgba(212, 175, 55, 0.95),
-    /* Layer 1: Strong Core (Button Gold) */
     0 0 30px rgba(212, 175, 55, 0.75),
-    /* Layer 2: Deep Bloom (Thicker than before) */
     0 0 55px rgba(212, 175, 55, 0.45);
-  /* Layer 3: Wide Radiance (Increased presence) */
-
-  /* 3. FINAL VIBRANCE */
   filter: saturate(1.15);
 }
 
-/* ====== UTIL ===== */
 .hidden {
   display: none !important;
 }
@@ -511,24 +430,20 @@ h1 {
 #user-controls {
   display: flex;
   align-items: center;
-  /* This is the secret: space-between + 3 equal parts */
   justify-content: space-between;
   width: 100%;
   margin-bottom: 30px;
   padding: 0 10px;
-  /* Keeps icons from touching the very edge */
   box-sizing: border-box;
   height: 40px;
 }
 
-/* 1. The Left Side (Icons) */
+/* The Left Side (Icons) */
 .icon-group {
   display: flex;
   gap: 8px;
   flex: 1;
-  /* Takes up 1/3 of the space */
   justify-content: flex-start;
-  /* Aligns icons to the left */
 }
 
 /* 2. The Center Side (Name) */
@@ -538,34 +453,27 @@ h1 {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  /* Center vertically */
   margin: 0 !important;
   font-size: 1.2rem;
   color: #d4af37;
-  /* LOCK THE HEIGHT: This prevents jumping when text appears */
   height: 44px;
   min-height: 44px;
-  /* Prevent horizontal shifting */
   min-width: 120px;
 }
 
-/* 3. The "Ghost" Right Side (To balance the center) */
+/* balance the center */
 #user-controls::after {
   content: "";
   flex: 1;
-  /* Takes up 1/3 of the space on the right */
   pointer-events: none;
-  /* Add this! */
 }
 
 
-/* ====== USER CONTROLS (FIXED PLACEMENT & COLORS) ====== */
-/* 3. The Icons: Clean up the individual buttons */
+/* ====== USER CONTROLS ====== */
 #shareBtn,
 #muteBtn,
 #logBtn {
   position: relative;
-  /* Add this! This anchors the tooltip to the button, not the group */
   width: 32px;
   height: 32px;
   display: flex;
@@ -577,8 +485,6 @@ h1 {
   cursor: pointer;
   padding: 0;
   transition: opacity 0.2s ease;
- 
-  /* DEFAULT TO GREY: This ensures they start grey */
   filter: grayscale(1) brightness(0.5);
   opacity: 0.5;
 }
@@ -593,7 +499,6 @@ h1 {
 #shareBtn:active {
   filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.3) drop-shadow(0 0 5px #ffea8a) !important;
   transform: scale(0.9);
-  /* Slight shrink makes it feel physical */
   opacity: 1 !important;
 }
 
@@ -601,7 +506,7 @@ h1 {
   margin-right: 4px;
 }
 
-/* 2. Standard State: Your Original Gold */
+/* Standard State */
 #shareBtn:not(.is-disabled),
 #logBtn:not(.is-disabled),
 #muteBtn:not(.is-muted) {
@@ -620,7 +525,7 @@ h1 {
   transition: 0s !important;
 }
 
-/* 4. Muted/Disabled State: Grey */
+/* Muted/Disabled State: Grey */
 #muteBtn.is-muted,
 #shareBtn.is-disabled,
 #logBtn.is-disabled {
@@ -628,7 +533,7 @@ h1 {
   opacity: 0.5 !important;
 }
 
-/* 5. Hover Logic: ONLY for Desktop/Mouse users */
+/* Hover Logic: ONLY for Desktop/Mouse users */
 @media (hover: hover) {
 
   #shareBtn:not(.is-disabled):hover,
@@ -636,14 +541,11 @@ h1 {
   #muteBtn:not(.is-muted):hover {
     opacity: 1 !important;
     filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.2) drop-shadow(0 0 5px #ffea8a) !important;
-    /* filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.1);*/
   }
 
   /* This targets the mic ONLY when it has the .is-muted class */
   #muteBtn.is-muted:hover {
     opacity: 0.8 !important;
-    /* Slightly clearer than 0.5 */
-    /* Brightens the grey without adding color/sepia */
     filter: grayscale(1) brightness(0.8) !important;
     cursor: pointer;
   }
@@ -658,18 +560,10 @@ h1 {
   z-index: 10000;
   pointer-events: none;
   white-space: nowrap;
-
-  /* Small but matching button style */
   color: #d4af37;
-  /* Button Gold */
   font-size: 0.8rem;
-  /* Scaled down from 1rem */
   padding: 3px 8px;
-  /* Very tight box */
-  /*font-family: Arial, sans-serif;*/
   font-family: Arial, sans-serif;
-
-  /* Quality of life */
   -webkit-font-smoothing: antialiased;
   filter: none !important;
   animation: tooltip-fade-only 0.5s ease-out forwards;
@@ -694,7 +588,7 @@ h1 {
 }
 
 
-/* ====== user controls and name and level ===== */
+/* ====== user controls, name and level ===== */
 @media (max-width: 480px) {
   #user-controls {
     justify-content: flex-start !important;
@@ -706,9 +600,7 @@ h1 {
   .icon-group {
     flex: 0 0 auto !important;
     display: flex !important;
-    /* NEGATIVE MARGIN: Pulls buttons toward the container edge */
     margin-left: -12px !important;
-    /* CRUSH GAPS: Overlap buttons slightly to remove dead space */
     gap: 1px !important;
   }
 
@@ -716,7 +608,6 @@ h1 {
     flex: 1 !important;
     text-align: left !important;
     align-items: flex-start !important;
-    /* ULTRA-TIGHT: Pulls text much closer to the mic icon */
     margin-left: 3px !important;
     padding: 0 !important;
   }
@@ -724,16 +615,13 @@ h1 {
   #shareBtn,
   #muteBtn,
   #logBtn {
-    /* CRITICAL: Buttons often have default padding that creates space */
     padding: 0 !important;
     margin: 0 !important;
     width: 30px !important;
-    /* Slightly smaller width helps them sit closer */
     display: flex !important;
     justify-content: center;
     align-items: center;
     border: none !important;
-    /* If they have borders, they add 2px of gap */
     background: none !important;
   }
 
@@ -746,21 +634,17 @@ h1 {
 
 /* Score */
 #score {
-  /*margin-bottom: 10px;*/
   color: #f5f5f5;
-  /* explicit white */
   text-align: center;
   width: 100%;
   font-size: 1.3rem;
   font-weight: bold;
-  /* make sure it spans the container */
 }
 
 /* Question text */
 #questionText {
   margin: 5px 0;
   color: #f5f5f5;
-  /* white text */
 }
 
 /* Timer */
@@ -770,8 +654,7 @@ h1 {
   color: #f5f5f5;
   text-align: center;
   width: 100%;
-    font-weight: bold;
-  /* make sure it spans the container */
+  font-weight: bold;
 }
 
 #time-wrap.red-timer {
@@ -782,15 +665,13 @@ h1 {
     0 0 8px rgba(255, 0, 0, 0.6);
 }
 
-/* ====== INPUT & BUTTON ALIGNMENT FIX ===== */
+/* ====== INPUT & BUTTON ALIGNMENT ===== */
 .input-field,
 .btn,
 .btn-small {
   box-sizing: border-box;
-  /* include padding/border in width */
 }
 
-/* Ensure input fields never overflow the container */
 .input-field {
   max-width: 100%;
 }
@@ -811,7 +692,6 @@ h1 {
   font-family: 'RSFont';
 
   border: 2px solid #d4af37;
-  /* fixed border width */
   border-radius: 8px;
 
   display: inline-flex;
@@ -836,22 +716,15 @@ h1 {
 /* Text can change freely */
 .btn-label {
   display: flex !important;
-  /* use flex instead of inline-block */
   align-items: center !important;
-  /* vertical centering */
   justify-content: center !important;
-  /* horizontal centering */
   width: 100% !important;
-  /* fill the button width */
   text-align: center !important;
-  /* fallback */
   white-space: nowrap !important;
-  /* prevent wrapping */
 }
 
 
 /* ====== LOGIN PAGE SPECIFIC (CLEAN FONTS & MENU MATCHED) ====== */
-/* Sharp, thin login fields */
 #view-login .input-field {
   font-family: 'RSFont';
   height: 28px !important;
@@ -859,44 +732,34 @@ h1 {
   font-size: 1.1rem !important;
   margin-bottom: 4px !important;
   line-height: 28px !important;
-
-  /* Thinner Border */
   border: 1px solid #d4af37 !important;
   background: rgba(15, 15, 15, 0.95) !important;
-  /* Slightly darker to pop the gold */
 }
 
-/* NEW: Input Hover State */
+/* Input Hover State */
 #view-login .input-field:hover {
   border-color: #ffea8a !important;
 }
 
-/* Update focus state to match */
 #view-login .input-field:focus {
   border-color: #ffea8a !important;
   box-shadow: 0 0 5px rgba(212, 175, 55, 0.2);
-  /* Optional: subtle glow */
-
 }
 
 /* Buttons: Side-by-Side row */
-/* Buttons: Side-by-Side row - UPDATED TO MATCH MAIN MENU */
 #view-login .menu-row {
   display: flex !important;
   gap: 20px !important;
-  /* Matches the new button row gap */
   width: 100%;
   margin-top: 10px !important;
 }
 
 #view-login .btn-small {
   flex: 1;
-
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
-  /* Exact match to your new button specs */
   height: auto !important;
   min-height: 10px !important;
   padding: 10px 10px !important;
@@ -912,7 +775,7 @@ h1 {
   box-sizing: border-box;
 }
 
-/* Ensure hover state matches too */
+/* Ensure hover state matches */
 #view-login .btn-small:hover {
   background: rgba(0, 0, 0, 0.85) !important;
   border-color: #ffea8a !important;
@@ -927,20 +790,14 @@ h1 {
   margin-top: 20px !important;
 }
 
-/* Removes the specific negative margins to let the 20px gap do the work */
 #view-login .row:has(#username) {
   margin-bottom: 10px !important;
 }
 
-/* Target the specific container for the inputs to push the buttons down */
 #view-login .row:has(#password) {
   margin-bottom: 20px !important;
-  /* Increase this number to increase the gap */
 }
 
-
-
-/* Chrome / Edge autofill fix */
 input.input-field:-webkit-autofill,
 input.input-field:-webkit-autofill:hover,
 input.input-field:-webkit-autofill:focus,
@@ -956,39 +813,25 @@ input.input-field:-webkit-autofill:active {
   color: #d4af37;
   min-height: 24px;
   display: flex;
-  /* make it inline-flex to center text vertically */
   align-items: flex-start;
-  /*center;*/
-  /*justify-content: center;  center the text horizontally */
   flex-direction: column;
-  /*margin-left: -70px;*/
 }
 
-/* ====== ROW LAYOUT FIX ===== */
+/* ====== ROW LAYOUT ===== */
 .row {
   display: flex;
   align-items: center;
-  /* vertically center content */
   justify-content: center;
-  /* horizontally center content by default */
   gap: 20px;
-  /* space between elements */
   margin: 5px 0;
-  /* spacing between rows */
 }
 
-/* Ensure user + mute icon row aligns left inside container */
+
 #user-controls {
   display: flex;
-  /* horizontal layout */
   align-items: center;
-  /* vertically center icon & text */
   justify-content: center;
-  /* horizontally center the whole row */
   gap: 10px;
-  /* space between mute icon and name */
-  /* margin-bottom: 15px;      /* optional spacing below */
-  /*text-align: center;*/
 }
 
 #usernameSpan {
@@ -996,57 +839,22 @@ input.input-field:-webkit-autofill:active {
   font-size: 1.5rem;
   display: inline-block;
   min-width: 10ch;
-  /*width: 10ch; reserve space for ~10 characters */
   text-align: left;
   margin-left: 0.4ch;
-  /* small space between Player: and username */
   white-space: nowrap;
-  /* overflow: hidden;*/
 }
+
 #levelNumber {
   font-family: 'RSFont' !important;
   font-size: 1.4rem;
 }
 
-/* ===========================
-   STABLE LOGIN / LEADERBOARD
-   =========================== */
 
-/* ====== LOGIN / LEADERBOARD BUTTON ROW ===== */
-/*#start-screen .row:nth-child(3) {
-  display: flex;
-  gap: 10px;
-  width: 100%;
-  align-items: stretch;
-}
-
-
-/* Buttons inside that row */
-/*#start-screen .row:nth-child(3) button,
-/*#start-screen .row:nth-child(3) a {
-  flex: 1;                   /* take equal space */
-/*display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  box-sizing: border-box;    /* include padding & border in width/height */
-/*padding: 12px;
-  font-size: 1rem;
-  line-height: 1;
-  height: 60px;          /* equal height */
-/*overflow: hidden;
-  min-width: 120px;          /* stable width for Log In / Log Out */
-/*}*/
-
-/* ====== LOGIN / LEADERBOARD BUTTON ROW ===== */
-/* This targets BOTH the Log In button and the Leaderboard link */
-/* ====== LOGIN / LEADERBOARD BUTTON ROW ===== */
 /* ====== START SCREEN CONTAINER ====== */
 #start-screen {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  /* This creates the 20px gap vertically between rows */
   width: 100%;
   margin-top: 10px;
 }
@@ -1061,19 +869,15 @@ input.input-field:-webkit-autofill:active {
 
 
 /* ====== SHARED SIDE-BY-SIDE BUTTON ROWS ====== */
-
-/* Target both the top row (Normal/Lite) and the bottom row (Auth/Leaderboard) */
 #start-screen .button-row,
 #start-screen .row:has(#authBtn) {
   display: flex !important;
   gap: 20px !important;
-  /* Uniform gap for both rows */
   width: 100%;
   margin: 0 !important;
   align-items: stretch;
 }
 
-/* Force all buttons in these specific rows to match exactly */
 #start-screen .button-row .btn,
 #start-screen #authBtn,
 #start-screen a.btn-small[href="leaderboard.html"] {
@@ -1081,20 +885,13 @@ input.input-field:-webkit-autofill:active {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
-  /* Identical Sizing */
   height: auto !important;
   min-height: 10px;
   padding: 10px 16px !important;
-  /* Balanced padding for mobile/desktop */
-
-  /* Identical Typography */
   font-size: 1.4rem !important;
-  font-family: 'RsFont';/*Arial, sans-serif;*/
+  font-family: 'RsFont';
   text-decoration: none;
   white-space: nowrap;
-
-  /* Identical Borders/Background */
   border: 2px solid #d4af37 !important;
   border-radius: 8px !important;
   background: rgba(0, 0, 0, 0.6) !important;
@@ -1102,7 +899,6 @@ input.input-field:-webkit-autofill:active {
   box-sizing: border-box;
 }
 
-/* Ensure the Login label stays centered and sized */
 #authBtn .btn-label {
   font-size: 1.4rem !important;
   display: flex;
@@ -1110,7 +906,6 @@ input.input-field:-webkit-autofill:active {
   width: 100%;
 }
 
-/* Uniform Hover Effect for all buttons in these rows */
 #start-screen .button-row .btn:hover,
 #start-screen #authBtn:hover,
 #start-screen a.btn-small[href="leaderboard.html"]:hover {
@@ -1119,104 +914,58 @@ input.input-field:-webkit-autofill:active {
   color: #ffea8a !important;
 }
 
-
 @media (max-width: 480px) {
   .container {
     min-height: auto;
-    /* Don't force 500px on mobile */
     height: auto;
-    /* Let it expand naturally */
     max-height: 95dvh;
-    /* Stay within screen but don't cut off */
     overflow-y: auto;
-    /* Scroll only if it gets too long */
     padding: 15px;
-    /* Tighter padding for phones */
   }
 }
 
-
-
-/*@media (max-width: 480px) {
-  .container {
-    height: 650px;                 
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;  
-    align-items: center;
-    padding: 15px;              
-  }
-
-  /* Leaderboard adapts inside fixed container */
-/* #leaderboard {
-    flex: 1 1 auto;             
-    margin-bottom: 5px;         
-    overflow-y: auto;           
-  }
-
-  /* Main Menu button: same width as PC */
-/*.container a.btn-small {
-    margin-top: 5px;
-    width: auto;                 
-    max-width: 240px;              
-    box-sizing: border-box;
-    align-self: center;           
-  }
-} */
-
 /* ====== MOBILE NO-FLICKER BUTTONS ====== */
 @media (hover: none) and (pointer: coarse) {
-
-  /* 1. Reset all hover/active for the big .btn and .btn-small */
   .btn:not(.is-disabled):hover,
   .btn-small:not(.is-disabled):hover {
-    /*#dailyBtn.is-active:not(.is-disabled):hover,
-  #weeklyBtn.is-active:hover,   /* ADDED THIS */
-    /*#lobbyBtn.is-active:hover     /* ADDED THIS */
-    /*background: rgba(0, 0, 0, 0.6) !important;*/
     border-color: #d4af37 !important;
     color: #d4af37 !important;
   }
 
-  /* 2. THE PRESS (Finger Down) */
+  /* THE PRESS (Finger Down) */
   .btn:not(.is-disabled):active,
   .btn-small:not(.is-disabled):active,
   .btn.tapped:not(.is-disabled),
   .btn-small.tapped:not(.is-disabled),
   #dailyBtn.tapped,
   #weeklyBtn.tapped,
-  /* ADDED THIS */
   #lobbyBtn.tapped,
   #helpBtn:active {
-    /* ADDED THIS */
     background-color: #000000 !important;
     border-color: #ffea8a !important;
     color: #ffea8a !important;
     transition: 0s !important;
-    /* Force instant highlight */
     transform: scale(0.97) !important;
-    /* Physical "click" feel */
   }
 
-  /* Ensure disabled buttons on mobile stay flat and grey */
+  /* Ensure disabled buttons on mobile stay grey */
   .is-disabled {
     transform: none !important;
     background: rgba(20, 20, 20, 0.5) !important;
     border-color: #555 !important;
   }
 
-  /* 3. THE RELEASE (Finger Up - The "Slow Glow" Return) */
+  /* THE RELEASE (Finger Up - The "Slow Glow" Return) */
   .btn,
   .btn-small,
   #dailyBtn.is-active,
   #weeklyBtn,
   #lobbyBtn,
   #helpBtn {
-    /* We use 0.5s here so you can actually see the gold highlight fade away */
     transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.1s ease !important;
   }
 
-  /* 1. Prevent icons from flickering between gold and grey on touch */
+  /* Prevent icons from flickering between gold and grey on touch */
   #shareBtn,
   #muteBtn,
   #logBtn,
@@ -1224,24 +973,21 @@ input.input-field:-webkit-autofill:active {
   #lobbyBtn,
   #helpBtn {
     -webkit-tap-highlight-color: transparent;
-    /* Disable transitions for filters on mobile to stop the "flash" */
     transition: transform 0.1s ease !important;
   }
 
-  /* 2. Force consistent filter behavior */
+  /* Force consistent filter behavior */
   #muteBtn:not(.is-muted) {
     filter: sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85) !important;
     opacity: 1 !important;
   }
 
-  /* 3. Handle the active (pressed) state without filter jumping */
+  /* Handle the active (pressed) state without filter jumping */
   #muteBtn:active {
     transform: scale(0.9) !important;
     opacity: 0.7 !important;
-    /* Keep the filter exactly the same so only opacity/scale changes */
   }
 
-  /* 4. Fix the positioning logic that was shifting icons left */
   #shareBtn,
   #muteBtn,
   #logBtn {
@@ -1249,36 +995,28 @@ input.input-field:-webkit-autofill:active {
     margin-right: 8px !important;
   }
 
-  /* 4. Disable system gray boxes */
+  /* Disable system gray boxes */
   * {
     -webkit-tap-highlight-color: transparent !important;
   }
 }
 
-
 #authBtn .btn-label {
   display: flex;
-  /* instead of inline-block */
   align-items: center;
-  /* vertical center */
   justify-content: center;
-  /* horizontal center */
   width: 100%;
 }
-
 
 /* ====== END SCREEN SPACING ====== */
 #end-screen {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  /* Match the Start Screen vertical spacing */
   align-items: center;
-  /* FIX: Ensure it takes up the full width of the parent */
   width: 100%; 
-  max-width: 420px; /* Limits width so it doesn't look stretched on PC */
-  margin: 0 auto;   /* Centers the 500px box horizontally */
-  
+  max-width: 420px;
+  margin: 0 auto;
   text-align: center;
   box-sizing: border-box;
 }
@@ -1286,10 +1024,9 @@ input.input-field:-webkit-autofill:active {
 #end-screen .row {
   width: 100%;
   margin: 0 !important;
-  /* Let the flex gap handle it */
 }
 
-/* Ensure the GZ or Game Over text doesn't have huge default margins */
+
 #end-screen p {
   margin: 0;
   font-size: 1.6rem;
@@ -1298,18 +1035,18 @@ input.input-field:-webkit-autofill:active {
 /* ====== HIDE ONLY THE MAIN TITLE DURING GAME (MOBILE ONLY) and end-screen ====== */
 @media (max-width: 480px) {
 
-  /* 1. Hide the main title when the game is active 
-     (Only if #game is inside #view-home and not hidden) */
+  /* Hide the main title when the game is active 
+  (Only if #game is inside #view-home and not hidden) */
   #view-home:has(#game:not(.hidden), #end-screen:not(.hidden))>h1:not(#gz-title) {
     display: none !important;
   }
 
-  /* 3. Global App Padding adjustment when active */
+  /* Global App Padding adjustment when active */
   #view-home:has(#game:not(.hidden), #end-screen:not(.hidden)) #app {
     padding-top: 20px !important;
   }
 
-  /* 2. ADD THE GAP: When either game or end-screen are active */
+  /* When either game or end-screen are active */
   #view-home:has(#game:not(.hidden), #end-screen:not(.hidden)) .container {
     padding-top: 65px !important;
   }
@@ -1320,18 +1057,12 @@ input.input-field:-webkit-autofill:active {
     display: none !important;
   }
 
-  /* Force the "gz" title to stay visible (if you remove the .hidden class from it) check if it works without it*/
-  /*#gz-title {
-    display: block !important;
-    margin-bottom: 10px;
-  }*/
-
-  /* 2. ADD THE GAP: If the container has a visible end-screen, add the top padding */
+  /* If the container has a visible end-screen, add the top padding */
   .container:has(#end-screen:not(.hidden)) {
     padding-top: 65px !important;
   }
 
-  /* 2. ADD THE GAP: If the container has a visible end-screen, add the top padding */
+  /* If the container has a visible end-screen, add the top padding */
   .container:has(#game:not(.hidden)) {
     padding-top: 65px !important;
   }
@@ -1339,9 +1070,7 @@ input.input-field:-webkit-autofill:active {
 }
 
 
-/* ====== MOBILE NO-FLASH & FIXED BORDERS ====== */
 @media (pointer: coarse) {
-  /* 1. Remove ALL native pseudo-states */
   .answer-btn:hover, 
   .answer-btn:active,
   .answer-btn:focus {
@@ -1350,14 +1079,13 @@ input.input-field:-webkit-autofill:active {
     transition: none !important;
   }
 
-  /* 2. Define the "Pressed" state strictly using your JS class */
+  /* Define the "Pressed" state */
   .answer-btn.tapped {
-    background-color: #1F2223 !important; /* Your hover color becomes the pressed color */
-    border-color: #ffea8a !important;     /* Optional: add a pop of color for feedback */
+    background-color: #1F2223 !important; 
+    border-color: #ffea8a !important;
     transition: none !important;
   }
 
-  /* 3. Keep your success/failure states clean */
   .answer-btn.correct {
     background-color: #3d8c40 !important;
     border-color: #8C8273 !important;
@@ -1374,20 +1102,13 @@ input.input-field:-webkit-autofill:active {
 }
 
 
-
-/*                            new for xp drops                                              */
-
-/* Ensure the game div is the absolute anchor */
-/* Ensure the game div is the absolute anchor */
+/* XP drops */
 .xp-drop {
   position: absolute !important;
   top: 0 !important;
   right: 10px !important;
-  /* FIX: Force browser to ignore the left side and not stretch the width */
   left: auto !important;
   width: auto !important;
-
-  /* Look & Feel */
   color: #ffffff;
   font-weight: 900 !important;
   font-size: 22px !important;
@@ -1397,12 +1118,9 @@ input.input-field:-webkit-autofill:active {
   text-shadow: 2px 2px 0px #000;
   pointer-events: none;
   z-index: 99999 !important;
-
   display: flex;
   align-items: center;
   gap: 2px;
-
-  /* Animation */
   animation: xp-float-ne 1.3s ease-out forwards;
 }
 
@@ -1413,75 +1131,53 @@ input.input-field:-webkit-autofill:active {
 
 .xp-number {
   color: #00ff00 !important;
-  /* OSRS Green */
 }
 
+/* The animation */
 @keyframes xp-float-ne {
   0% {
     opacity: 0;
     transform: translateY(20px);
-    /* Starts slightly below */
   }
 
   20% {
     opacity: 1;
     transform: translateY(0);
-    /* Hits the center */
   }
 
   100% {
     opacity: 0;
     transform: translateY(-20px);
-    /* Floats straight up */
   }
 }
 
-/*                                                                                     */
-
-
-
-/*                               user info, level                                         */
-
+/* user info, level */
 .user-info-row {
   font-family: 'RSFont';
   font-size: 1.5rem;
-  /* Matches your #userDisplay font-size */
   color: #d4af37;
-  /* The exact gold from your Player:Shir style */
   min-height: 30px;
-  /* fixed level from jumping */
   display: flex;
   align-items: center;
   white-space: nowrap;
-  /* Ensuring consistency with your script */
 }
 
-/* Optional: Slight adjustment to make the XP look clean in brackets */
 #xpBracket {
   font-weight: normal;
   color: #888;
-  /* This keeps the (XP) part grey while Level: 7 stays gold */
   margin-left: 5px;
   font-size: 0.85em;
-  /* Makes the XP slightly smaller than the Level text */
 }
 
-/*                               user info, level                                         */
 
-/*                               fireworks for level up                                         */
 /* Firework Particle Styling */
-/* ====== FIREWORKS FIX: PREVENT STRETCHING ====== */
-
-/* Update your particle block */
 .firework-particle {
   position: fixed !important;
-  /* Stay relative to screen */
   top: 0;
   left: 0;
   width: 0;
   height: 0;
   z-index: 100000 !important;
-  /* Top-most layer */
   pointer-events: none;
 }
 
@@ -1508,13 +1204,7 @@ input.input-field:-webkit-autofill:active {
   }
 }
 
-/*                               fireworks for level up                                       */
-
-
-
-/*                             for notifications in text                                       */
-
-/* ====== LEVEL UP NOTIFICATION (STATIC FADE) ====== */
+/* ====== LEVEL UP & BONUS XP NOTIFICATIONS ====== */
 #game-notifications {
   position: absolute;
   top: -15px;
@@ -1529,7 +1219,7 @@ input.input-field:-webkit-autofill:active {
 }
 
 #multiplayer-header:not(.hidden) + #game-notifications {
-  top: 110px; /* Adjust this to clear your HP bars */
+  top: 110px;
 }
 
 .notif-text {
@@ -1539,7 +1229,6 @@ input.input-field:-webkit-autofill:active {
   color: #ffde00;
   white-space: nowrap;
   text-shadow: 2px 2px 0px #000, 0 0 5px currentColor;
-  /* We use a simple fade animation now */
   animation: notif-fade-only 1.2s ease-in-out forwards;
 }
 
@@ -1550,31 +1239,24 @@ input.input-field:-webkit-autofill:active {
 
   15% {
     opacity: 1;
-    /* Quickly appears */
   }
 
   70% {
     opacity: 1;
-    /* Stays fully visible for a while */
   }
 
   100% {
     opacity: 0;
-    /* Smoothly fades out without moving */
   }
 }
 
-/*                             for notifications in text                                       */
 /* ====== MOBILE NOTIFICATION ADJUSTMENT ====== */
 @media (max-width: 480px) {
   #game-notifications {
-    /* Pushes the notification down. 
-           Increase to 10px or 20px if you want it even lower. */
     top: -11px;
   }
 
   .notif-text {
-    /* Slightly smaller font for mobile to keep it tidy */
     font-size: 20px !important;
   }
 
@@ -1591,19 +1273,16 @@ input.input-field:-webkit-autofill:active {
     font-size: 1.3rem;
   }
   #multiplayer-header:not(.hidden) + #game-notifications {
-    top: 87px; /* Adjust this to clear your HP bars */
+    top: 87px;
   }
   #rounds-display {
     margin-top: 10px !important;
   }
 }
 
-/* ====== MOBILE NOTIFICATION ADJUSTMENT ====== */
-
 /* ====== MOBILE XP DROP ADJUSTMENT ====== */
 @media (max-width: 480px) {
   .xp-drop {
-    /* Reduce font size slightly for mobile if desired, or keep at 22px */
     font-size: 18px !important;
     animation: xp-float-mobile 0.9s ease-out forwards !important;
   }
@@ -1611,40 +1290,28 @@ input.input-field:-webkit-autofill:active {
   @keyframes xp-float-mobile {
     0% {
       opacity: 0;
-      /* 1. START LOWER: Increase this number to start further down */
       transform: translateY(30px);
     }
 
     20% {
       opacity: 1;
-      /* 2. THE PEAK: This is the 'resting' point during the fade */
       transform: translateY(0);
     }
 
     100% {
       opacity: 0;
-      /* 3. FINISH POINT: Where it disappears */
       transform: translateY(-20px);
     }
   }
 }
 
-/* ====== MOBILE XP DROP ADJUSTMENT ====== */
-
-
-
-/* ====== tab for leaderboards xp====== */
-/* Tab Navigation */
-/* Thinner Tab Styling */
+/* ====== tab for leaderboards xp ====== */
 .leaderboard-tabs {
   display: flex;
   width: 100%;
   gap: 0;
-  /* Removed gap for a tighter look */
   margin-bottom: 10px;
-  /* Less space between tabs and list */
   margin-top: 20px;
-  /* <--- Adjust this value to move the table down */
 }
 
 .tab-btn {
@@ -1652,17 +1319,13 @@ input.input-field:-webkit-autofill:active {
   background: rgba(20, 20, 20, 0.9);
   border: 1px solid rgba(212, 175, 55, 0.4);
   color: #777;
-
-  /* Thinner padding and smaller font */
   padding: 6px 0;
   font-size: 1.2rem;
-
-  font-family:'RsFont'; /*'Cinzel', serif;*/
+  font-family:'RsFont';
   cursor: pointer;
   transition: all 0.2s ease;
   border-radius: 4px 4px 0 0;
   text-transform: uppercase;
-  /* Makes small text easier to read */
   letter-spacing: 1px;
 }
 
@@ -1671,43 +1334,30 @@ input.input-field:-webkit-autofill:active {
   color: #ffdd44;
   border-color: #ffdd44;
   border-bottom: 1px solid transparent;
-  /* Blends into the top of the list */
   font-weight: bold;
   cursor: default;
 }
 
-/* Hover effect for inactive tabs */
 .tab-btn:not(.active):hover {
   background: rgba(0, 0, 0, 0.85);
   border-color: #ffea8a;
-  color: #ffea8a; /* Optional: brightens the text slightly on hover */
+  color: #ffea8a;
 }
 
 
-/* ====== tab for leaderboards xp====== */
-
-
-
 /* ====== PET UNLOCK MODAL ====== */
-/* ====== PET UNLOCK WINDOW (TRANSPARENT) ====== */
-/* ====== COMPACT PET MODAL ====== */
 #pet-modal {
   position: fixed !important;
   left: 50% !important;
   top: 20px !important;
-  /* Desktop remains at top */
   transform: translateX(-50%) scale(0.8);
-
   background: rgba(15, 15, 15, 0.9) !important;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 2px solid #d4af37 !important;
   border-radius: 8px;
-
   padding: 12px 15px;
-  /* Compact padding */
   width: 260px;
-  /* Smaller width */
   text-align: center;
   z-index: 99999 !important;
   opacity: 0;
@@ -1734,13 +1384,11 @@ input.input-field:-webkit-autofill:active {
   font-family: 'RSFont';
   color: #ffde00;
   font-size: 1.2rem;
-  /* Small & sharp */
   margin: 0 0 5px 0;
 }
 
 .pet-unlock-icon {
   width: 40px;
-  /* Small icon */
   height: 40px;
   image-rendering: pixelated;
   margin: 5px auto;
@@ -1757,14 +1405,9 @@ input.input-field:-webkit-autofill:active {
 .pet-unlock-msg {
   color: #d4af37;
   font-size: 0.85rem;
-  /* Tiny flavor text */
   font-style: italic;
   margin-top: 2px;
 }
-
-/* ====== PET UNLOCK MODAL ====== */
-
-
 
 /* ====== HELP MODAL STYLES ====== */
 .modal-overlay {
@@ -1779,29 +1422,25 @@ input.input-field:-webkit-autofill:active {
 }
 
 .modal-content {
-  width: 90%; /* Leaves a small margin on the sides of mobile screens */
-  max-width: 440px; /* Prevents it from getting too wide on desktop */
+  width: 90%;
+  max-width: 440px;
   margin: auto;
 
   animation: modalSlideIn 0.3s ease-out;
   max-height: 80vh;
   overflow-y: auto;
 
-  /* REDUCED TOP PADDING */
   padding: 10px 25px 25px 25px !important;
   display: flex;
   flex-direction: column;
 }
 
-/* TARGET THE TITLE SPECIFICALLY */
+/* ====== HELP MODAL TITLE ====== */
 .modal-content h2,
 .modal-content h1 {
   margin-top: 0;
-  /* Removes gap between top of modal and title */
   margin-bottom: 5px;
-  /* Minimizes gap between title and the text below */
   line-height: 1.2;
-  /* Optional: tightens the text height */
 }
 
 @keyframes modalSlideIn {
@@ -1818,16 +1457,11 @@ input.input-field:-webkit-autofill:active {
 
 .instructions-text p {
   margin-top: 0;
-  /* Ensures the first paragraph doesn't push away from title */
   margin-bottom: 10px;
-  /* Slightly reduced from 15px */
 }
 
-/* ====== HELP MODAL STYLES ====== */
 
-/* ------------------ Statistics Scrollbar ------------------ */
-
-/* Only apply these scrollbar styles on mobile screens */
+/* ====== Statistics Scrollbar ====== */
 @media (max-width: 480px) {
   #statsView::-webkit-scrollbar,
   #logGrid::-webkit-scrollbar,
@@ -1875,16 +1509,11 @@ input.input-field:-webkit-autofill:active {
 
 #statsView, #achievementList, #logGrid {
   width: 100%;
-  /* Restrict the container height so it doesn't push the page */
   max-height: 70vh;
-  /* This is the magic: it creates a scrollbar inside the div */
   overflow-y: auto; 
-  /* Ensure it has space to breathe */
   padding-right: 10px;
-  /* Ensure it doesn't overflow horizontally */
   overflow-x: hidden;
 }
-/* ----------------------------------------------------------- */
 
 
 /* Achievement Modal Base */
@@ -1898,11 +1527,9 @@ input.input-field:-webkit-autofill:active {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 2px solid #cd7f32 !important;
-  /* Bronze */
   border-radius: 8px;
 
   padding: 15px 20px;
-  /* Adjusted for single-line balance */
   min-width: 220px;
   text-align: center;
   z-index: 999999 !important;
@@ -1917,18 +1544,14 @@ input.input-field:-webkit-autofill:active {
   pointer-events: auto !important;
 }
 
-/* Mobile top of the screen*/
 @media screen and (max-width: 480px) {
   #achievement-modal {
-    /* Anchor to top, override the 50% you had before */
     top: 20px !important;
     left: 50% !important;
-    /* Only translate X to center horizontally, keep scale at 0.8 for the pop-in */
     transform: translateX(-50%) scale(0.8) !important;
   }
 
   #achievement-modal.active {
-    /* Maintain horizontal center while scaling to 1 */
     transform: translateX(-50%) scale(1) !important;
   }
 }
@@ -1936,7 +1559,6 @@ input.input-field:-webkit-autofill:active {
 .achieve-unlock-title {
   font-family: 'RSFont';
   color: #cd7f32;
-  /* Bronze "Achievement Unlocked!" */
   font-size: 1.7rem;
   letter-spacing: 1px;
   margin: 0 0 4px 0;
@@ -1945,32 +1567,23 @@ input.input-field:-webkit-autofill:active {
 
 .achieve-unlock-name {
   color: #ffde00;
-  /* Your Golden Yellow for the Achievement Name */
   font-family: 'RSFont';
   font-weight: bold;
   font-size: 1.5rem;
   text-shadow: 2px 2px 0px #000;
 }
 
-/* Achievement Modal Base */
 
-
-/* PC HOVER FIX */
 @media (hover: hover) {
-
-  /* Targets Normal/Lite buttons OR Active Weekly/Daily/Lobby buttons */
   .btn:not(.is-disabled):hover,
   .btn.is-active:hover,
   .btn-small:not(.is-disabled):hover {
-    /*background: rgba(212, 175, 55, 0.2) !important; /* Semi-transparent gold */
     border-color: #ffea8a !important;
     color: #ffea8a !important;
     cursor: pointer !important;
-    /*box-shadow: 0 0 10px rgba(212, 175, 55, 0.5) !important;*/
   }
 }
 
-/* Ensure disabled buttons NEVER trigger hover */
 .is-disabled {
   pointer-events: none !important;
   opacity: 0.5 !important;
@@ -2019,10 +1632,10 @@ input.input-field:-webkit-autofill:active {
 .my-name-container,
 .opponent-name-container {
     display: flex;
-    flex-direction: row; /* Force side-by-side */
+    flex-direction: row;
     align-items: flex-start;
-    justify-content: center; /* Keep it centered in the column */
-    gap: 3px; /* Space between name and pet */
+    justify-content: center;
+    gap: 3px;
     width: 100%;
 }
 
@@ -2035,12 +1648,11 @@ input.input-field:-webkit-autofill:active {
   }
 }
 
-/*-------------- gold alert on login-------------- */
-/*-------------- Updated Gold Alert (Button Match) -------------- */
+/*-- gold alert -- */
+
 #toast-container {
   position: fixed;
   top: 30px;
-  /* Moved down slightly from the very top */
   left: 50%;
   transform: translateX(-50%);
   z-index: 999999 !important;
@@ -2049,34 +1661,23 @@ input.input-field:-webkit-autofill:active {
   align-items: center;
   pointer-events: none;
   width: 90%;
-  /* Ensures it doesn't overflow on small screens */
   max-width: 400px;
 }
 
 .gold-toast {
-  /* Matching .btn properties */
   background: rgba(0, 0, 0, 0.85);
-  /* Slightly darker than btn for readability */
   color: #d4af37;
   border: 2px solid #d4af37;
   border-radius: 8px;
-  /* Matches your .btn */
   padding: 14px 22px;
-  /* Matches your .btn */
   font-family: 'RSFont';
-  /* Per your request */
   font-size: 1.1rem;
-  /* Matches your .btn */
   text-align: center;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
-
   margin-top: 10px;
   width: 100%;
   box-sizing: border-box;
   white-space: pre-line;
-  /* Allows the \n in your JS to create new lines */
-
-  /* Animation */
   animation: toast-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
@@ -2092,7 +1693,6 @@ input.input-field:-webkit-autofill:active {
   }
 }
 
-/* Add this to your existing fadeOut animation if you haven't already */
 @keyframes fadeOut {
   from {
     opacity: 1;
@@ -2105,11 +1705,8 @@ input.input-field:-webkit-autofill:active {
   }
 }
 
-/*   -------------------------------------- */
 
-
-
-/* ------------ discord icon ------------ */
+/* -- discord icon -- */
 
 #discordBtn {
   position: absolute !important;
@@ -2122,20 +1719,15 @@ input.input-field:-webkit-autofill:active {
   justify-content: center;
   align-items: center;
   cursor: pointer;
-
-  /* Kill the box */
   background: transparent !important;
   border: none !important;
   filter: none !important;
   outline: none !important;
   -webkit-tap-highlight-color: transparent !important;
-
-  /* CRITICAL: Allow the glow to spill outside the 26px box */
   overflow: visible !important;
 }
 
 .gold-svg-icon {
-  /* SHRINK THE ICON: This gives 4px of "safe space" for the glow */
   width: 18px !important;
   height: 18px !important;
 
@@ -2145,28 +1737,21 @@ input.input-field:-webkit-autofill:active {
   pointer-events: none;
 }
 
-/* TARGET THE ICON FOR GLOW */
 #discordBtn:hover .gold-svg-icon,
 #discordBtn:active .gold-svg-icon,
 #discordBtn.tapped .gold-svg-icon {
   opacity: 1 !important;
-  /* Use a slightly smaller glow radius (5px instead of 8px) to fit the space */
   filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.3) drop-shadow(0 0 5px #ffea8a) !important;
 }
 
-/* TARGET THE BUTTON FOR PHYSICAL PRESS */
 #discordBtn:active,
 #discordBtn.tapped {
   transform: scale(0.9) !important;
   transition: 0s !important;
   filter: none !important;
-  /* Ensure the container never glows */
 }
 
-/* ------------ discord icon ------------ */
-
-
-/* ------------ help icon ------------ */
+/* -- help icon -- */
 #helpBtn {
   position: absolute !important;
   top: 5px;
@@ -2182,15 +1767,9 @@ input.input-field:-webkit-autofill:active {
   background: transparent !important;
   border: none !important;
   outline: none !important;
-
-  /* CRITICAL FIXES */
   overflow: visible !important;
-  /* Let the glow escape the box */
   filter: none !important;
-  /* Keep the square container clear */
   -webkit-tap-highlight-color: transparent !important;
-
-  /* ANTI-DRAG */
   -webkit-user-drag: none;
   user-select: none;
   -webkit-user-select: none;
@@ -2203,6 +1782,7 @@ input.input-field:-webkit-autofill:active {
   font-size: 1.1rem !important;
   line-height: 1.5;
   background: linear-gradient(to bottom, #d4af37 0%, #b8860b 50%, #8b6508 100%);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   display: inline-block;
@@ -2210,22 +1790,17 @@ input.input-field:-webkit-autofill:active {
   transition: filter 0.2s ease;
 }
 
-/* PC HOVER - Target the ICON */
 @media (hover: hover) {
   #helpBtn:hover .gold-text-icon {
     filter: sepia(1) saturate(2.5) hue-rotate(-20deg) brightness(1.1) drop-shadow(0 0 5px rgba(212, 175, 55, 0.6)) !important;
   }
 }
-
-/* ACTIVE (PC) & TAPPED (MOBILE) - Target the ICON */
 #helpBtn:active .gold-text-icon,
 #helpBtn.tapped .gold-text-icon {
   filter: sepia(1) saturate(3) hue-rotate(-18deg) brightness(1.3) drop-shadow(0 0 8px #ffea8a) !important;
   opacity: 1 !important;
   transition: 0s !important;
 }
-
-/* PHYSICAL PRESS - Scale the button but NO filter on the box */
 #helpBtn:active,
 #helpBtn.tapped {
   transform: scale(0.9) !important;
@@ -2233,66 +1808,45 @@ input.input-field:-webkit-autofill:active {
   transition: 0s !important;
 }
 
-/* ------------ help icon ------------ */
-
-
 /* End screen titles and score */
 #end-screen #game-over-title {
   background: none !important;
-  /*text-shadow: 0 0 4px rgba(0,0,0,0.8) !important;   subtle shadow like final score */
-  /* bigger than final score */
   text-align: center;
   font-family: 'RSFont';
   font-size: 1.8rem;
-  /* match final score */
   white-space: pre-line;
   line-height: 1.4;
 }
 
 /* End screen titles and score */
-/* 1. Set all general titles/labels to White first */
-/* 1. The Title: Game Over (White) */
 #end-screen h2,
 #game-over-title {
   color: #D7D8D9 !important;
   -webkit-text-fill-color: #D7D8D9 !important;
 }
 
-/* 2. The Labels: Score, Time, Streak (Gold) */
-/* This targets the <p> tags but NOT the spans inside them */
 #end-screen p,
 #finalScore {
   color: #D7D8D9 !important;
   -webkit-text-fill-color: #D7D8D9 !important;
 }
 
-/* 3. The Numbers: 50, 01:30, etc. (White) */
-/* This pierces the gold to make the values stand out */
 #end-screen p span,
 #finalScore span,
 #streakCount {
   color: #D7D8D9 !important;
-  /* #f5f5f5 */
   -webkit-text-fill-color: #D7D8D9 !important;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8) !important;
 }
 
 
-
-
-
-/* new */
-
+/* LEADERBOARD VIEW */
 #leaderboard {
   width: 100%;
   list-style: none;
   padding: 0;
   margin: 0 0 20px 0;
-
-  /* Change this: */
   min-height: auto !important;
-
-  /* Let the list grow naturally */
   flex-grow: 1;
   overflow-y: auto;
 }
@@ -2309,7 +1863,7 @@ input.input-field:-webkit-autofill:active {
   transition: background-color 0.3s ease, color 0.3s ease;
   color: #D7D8D9;
   font-size: 1.3rem;
-  height: 40px; /* Matches your desktop padding/font size feel */
+  height: 40px;
   min-height: 40px;
 }
 
@@ -2341,7 +1895,6 @@ input.input-field:-webkit-autofill:active {
   font-weight: 700;
 }
 
-/* ALIGNMENT CLASSES */
 .rank-slot {
   display: inline-block;
   width: 38px;
@@ -2364,7 +1917,6 @@ input.input-field:-webkit-autofill:active {
   vertical-align: middle;
   margin-right: 8px;
   image-rendering: pixelated;
-  /* Keeps it sharp like your collection page */
   object-fit: contain;
 }
 
@@ -2372,19 +1924,15 @@ input.input-field:-webkit-autofill:active {
   #view-leaderboard .container {
     height: auto !important;
     min-height: auto !important;
-
-    /* Match the Login padding exactly */
     padding: 25px !important;
     padding-top: 65px !important;
-
     display: flex !important;
     flex-direction: column !important;
   }
 
   #view-leaderboard h1#leaderboard-title {
     font-size: 2.3rem !important;
-     /* Adjust this value to move the title down on mobile */
-    margin: 5px 0 5px 0 !important; /* Reduced from 20px 0 5px 0 */
+    margin: 5px 0 5px 0 !important;
   }
 
   #leaderboard li {
@@ -2394,15 +1942,12 @@ input.input-field:-webkit-autofill:active {
     min-height: 35px !important;
   }
 
-  /* 3. Ensure the button doesn't force stretching */
   #view-leaderboard .btn {
     width: 100%;
     margin-top: auto !important;
     flex-shrink: 0;
-    /* Important: prevents the button from squishing */
   }
 
-  /* Simply hide them when the app is in "leaderboard" mode */
   .hide-controls #helpBtn,
   .hide-controls #discordBtn {
     display: none !important;
@@ -2410,15 +1955,13 @@ input.input-field:-webkit-autofill:active {
 }
 
 
-/* 1. from col-log page */
-/* 4x2 Grid Layout */
+/* COLLECTIONS VIEW */
 #logGrid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   grid-template-rows: repeat(5, 1fr);
   gap: 8px;
   width: 100%;
-  /* Reduced bottom margin because margin-top: auto will do the heavy lifting */
   margin-bottom: 15px;
   opacity: 0;
   transition: opacity 0.2s ease-in;
@@ -2427,10 +1970,8 @@ input.input-field:-webkit-autofill:active {
 #achievementsView {
   width: 100%;
   margin-bottom: 15px;
-  /* <--- Add this to match the grid gap */
 }
 
-/* Show the grid once the JS has applied the classes */
 #logGrid.ready {
   opacity: 1;
 }
@@ -2440,7 +1981,6 @@ input.input-field:-webkit-autofill:active {
   border: 2px solid transparent;
   border-radius: 8px;
   padding: 5px 2px;
-  /* Thinner padding */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2448,10 +1988,8 @@ input.input-field:-webkit-autofill:active {
   transition: all 0.2s ease;
   box-sizing: border-box;
   height: 95px;
-  /* Reduced from 120px */
 }
 
-/* Add this to allow the gold reveal to animate ONLY when actually unlocking, not refreshing */
 .container.loaded .pet-slot {
   transition: all 0.5s ease;
 }
@@ -2468,25 +2006,14 @@ input.input-field:-webkit-autofill:active {
 
 .pet-name {
   font-size: 0.9rem;
-  /* Slightly smaller text */
   color: #888;
   line-height: 1;
   word-break: break-word;
-  /* Prevents long names from breaking the box */
   text-align: center; 
   display: block;
 }
 
-/* Styling for the equipped pet slot */
-
-/* --- EQUIPPED STATE (Multi-Tier Final Fix) --- */
-
-/* 1. Base Green State for ALL Rows */
-/* --- EQUIPPED STATE (Perfect Achievement Green Match) --- */
-
-/* --- EQUIPPED STATE (Muted OSRS Green) --- */
-
-/* 1. Base Green State for ALL Rows */
+/* Base Green State for ALL Rows */
 #logGrid .pet-slot.unlocked.equipped,
 #logGrid .pet-slot:nth-child(-n+4).unlocked.equipped,
 #logGrid .pet-slot:nth-child(n+5):nth-child(-n+8).unlocked.equipped,
@@ -2494,14 +2021,11 @@ input.input-field:-webkit-autofill:active {
 #logGrid .pet-slot:nth-child(n+13):nth-child(-n+16).unlocked.equipped,
 #logGrid .pet-slot:nth-child(n+17):nth-child(-n+20).unlocked.equipped {
   border: 2px solid #44bb44 !important;
-  /* Muted Sage Green - no neon glow */
   background: rgba(0, 150, 0, 0.15) !important;
-  /* Keep Background as requested */
   box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5) !important;
-  /* Darker inner shadow for depth */
 }
 
-/* 2. Hover Green State (Slightly brighter but still soft) */
+/* Hover Green State */
 #logGrid .pet-slot.unlocked.equipped:hover,
 #logGrid .pet-slot:nth-child(-n+4).unlocked.equipped:hover,
 #logGrid .pet-slot:nth-child(n+5):nth-child(-n+8).unlocked.equipped:hover,
@@ -2513,7 +2037,7 @@ input.input-field:-webkit-autofill:active {
   box-shadow: 0 0 10px rgba(68, 187, 68, 0.2) !important;
 }
 
-/* 2. Hover Green State (Slightly brighter but still soft) */
+/* Hover Green State */
 #logGrid .pet-slot.unlocked.equipped:hover span,
 #logGrid .pet-slot:nth-child(-n+4).unlocked.equipped:hover span,
 #logGrid .pet-slot:nth-child(n+5):nth-child(-n+8).unlocked.equipped:hover span,
@@ -2523,7 +2047,7 @@ input.input-field:-webkit-autofill:active {
   color: #77ff77 !important;
 }
 
-/* 3. Text and Image Styling (Muted Green) */
+/* Text and Image Styling */
 #logGrid .pet-slot.equipped .pet-name {
   color: #44bb44 !important;
   font-weight: bold;
@@ -2532,10 +2056,9 @@ input.input-field:-webkit-autofill:active {
 
 #logGrid .pet-slot.equipped .pet-img {
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6)) !important;
-  /* Standard shadow, no green glow */
 }
 
-/* 4. Tiered Gold Hover (Only triggers if NOT equipped) */
+/* Tiered Gold Hover */
 #logGrid .pet-slot.unlocked:not(.equipped):hover,
 #logGrid .pet-slot:nth-child(-n+4).unlocked:not(.equipped):hover,
 #logGrid .pet-slot:nth-child(n+5):nth-child(-n+8).unlocked:not(.equipped):hover,
@@ -2555,19 +2078,14 @@ input.input-field:-webkit-autofill:active {
 }
 
 /* Styling for the equipped pet slot */
-
-/* --- 1. BASE UNLOCKED STATE (Common Tier - Row 1) --- */
 .unlocked {
-  /* Very subtle gold tint */
   background: rgba(212, 175, 55, 0.1) !important;
   border: 2px solid rgba(212, 175, 55, 0.4) !important;
   box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5) !important;
   position: relative;
   overflow: hidden;
   transition: border-color 0.2s ease;
-  /* Smooth border-only transition */
   cursor: pointer !important;
-  /* This adds the hand icon */
 }
 
 .unlocked .pet-img {
@@ -2577,16 +2095,12 @@ input.input-field:-webkit-autofill:active {
 
 .unlocked .pet-name {
   color: #d4af37 !important;
-  /* Standard App Gold */
   font-weight: bold;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
-/* --- 2. TIERED ROW EFFECTS (Subtle Border/Fill Increases) --- */
-
-/* --- 2. TIERED ROW EFFECTS --- */
-
-/* Row 1 (Handled by base .unlocked) */
+/* --- TIERED ROW EFFECTS --- */
+/* Row 1 (Common)*/
 #logGrid .pet-slot.unlocked:hover {
   border-color: #ffea8a !important;
 }
@@ -2621,12 +2135,10 @@ input.input-field:-webkit-autofill:active {
   border-color: #ffea8a !important;
 }
 
-/* Row 5 (Mythic/Extra: 13-15) */
+/* Row 5 (Mythic) */
 #logGrid .pet-slot:nth-child(n+17):nth-child(-n+20).unlocked {
   background: rgba(212, 175, 55, 0.3) !important;
-  /* change here */
   border-color: #d4af37 !important;
-  /* Lighter, shining gold border */
   box-shadow: inset 0 0 15px rgba(212, 175, 55, 0.4) !important;
 }
 
@@ -2634,7 +2146,7 @@ input.input-field:-webkit-autofill:active {
   border-color: #ffea8a !important;
 }
 
-/* --- 4. MYSTERY (LOCKED) STATES --- */
+/* LOCKED STATE */
 .pet-slot:not(.unlocked) {
   background: rgba(0, 0, 0, 0.5);
   border: 2px dashed #2a2a2a;
@@ -2659,35 +2171,29 @@ input.input-field:-webkit-autofill:active {
   border-color: #555;
 }
 
-/*                 achievements                     */
-/* --- Updated Achievements CSS --- */
+/* ACHIEVEMENT TAB */
 #achievementList {
   width: 100%;
   list-style: none;
   padding: 0;
   margin: 0;
-  /* Increase height to match the 5-row Pet Grid (~507px) */
   height: 507px;
   max-height: 525px;
   overflow-y: auto;
-  /* Custom Scrollbar to keep it looking clean */
   scrollbar-width: thin;
   scrollbar-color: #8c7332 transparent;
 }
 #statsView, #logGrid, .modal-content {
   list-style: none;
-  /* Custom Scrollbar to keep it looking clean */
   scrollbar-width: thin;
   scrollbar-color: #8c7332 transparent;
 }
-/* Chrome/Safari Scrollbar Styling */
 #achievementList::-webkit-scrollbar,
 #statsView::-webkit-scrollbar,
 #logGrid::-webkit-scrollbar,
 .modal-content::-webkit-scrollbar {
   width: 6px;
 }
-
 #achievementList::-webkit-scrollbar-thumb,
 #statsView::-webkit-scrollbar-thumb,
 #logGrid::-webkit-scrollbar-thumb,
@@ -2702,11 +2208,8 @@ input.input-field:-webkit-autofill:active {
   justify-content: space-between;
   align-items: center;
   padding: 8px 15px;
-  /* Slightly more padding to match pet slot "heft" */
   margin-bottom: 8px;
-  /* Gap similar to the pet grid gap */
   border-radius: 8px;
-  /* Match pet-slot radius */
   background: rgba(40, 40, 40, 0.7);
   color: #888;
   font-size: 1.1rem;
@@ -2731,10 +2234,8 @@ input.input-field:-webkit-autofill:active {
 .achieve-item.completed {
   background: rgba(0, 150, 0, 0.15);
   color: #e3d7c1;
-  /* Parchment white for completed */
   border: 1px solid rgba(0, 150, 0, 0.2);
   border-left: 3px solid #44bb44;
-  /*#00ff00;*/
 }
 
 .achieve-item.completed .status-icon::after {
@@ -2747,21 +2248,18 @@ input.input-field:-webkit-autofill:active {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 16px;   /* Fixed width */
-  height: 16px;  /* Fixed height */
-  flex-shrink: 0; /* Prevents it from getting squished */
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
 .hidden {
   display: none !important;
 }
 
-/*                 achievements                     */
-
 @media (max-width: 480px) {
   #view-collections container {
     width: 100% !important;
-    /*  440px   */
     max-width: 95% !important;
     min-height: 640px !important;
     padding: 10px 15px 15px 20px !important;
@@ -2776,26 +2274,20 @@ input.input-field:-webkit-autofill:active {
     letter-spacing: 1px !important;
   }
 
-  /* This ensures the button stays the small size and goes to the bottom */
   #view-collections .btn {
     margin-top: 10px !important;
-    /* Pushes it to bottom of the 640px box */
   }
 
   #logGrid {
-    /* Reduce gap slightly on mobile to make room */
     gap: 7px !important;
     grid-template-columns: repeat(4, 1fr) !important;
-    /* Keep 3 columns on mobile */
     margin-bottom: 0 !important;
   }
 
   /* Shrink the boxes themselves */
   .pet-slot {
     padding: 5px !important;
-    /* Smaller inner spacing */
     height: 78px !important;
-    /* Force a smaller height than PC */
     min-height: 78px !important;
   }
 
@@ -2808,20 +2300,16 @@ input.input-field:-webkit-autofill:active {
 
   .pet-name {
     font-size: 0.65rem !important;
-    /* Smaller text to prevent overflow */
     line-height: 0.9 !important;
   }
 
-  /* --- MOBILE ACHIEVEMENT FIXES --- */
   #achievementList {
     height: 413px !important;
-    /* Shorter than PC to fit the 640px container */
     max-height: 413px !important;
   }
 
   .achieve-item {
     padding: 8px 12px !important;
-    /* Slimmer items for mobile */
     margin-bottom: 6px !important;
     font-size: 1rem !important;
   }
@@ -2834,12 +2322,11 @@ input.input-field:-webkit-autofill:active {
 
 
 
-/* statistics tab */
-/* Ensure the grid container is a row and centers the items */
+/* STATISTICS TAB */
 .cape-grid {
     display: flex;
-    justify-content: center; /* Centers the slots side-by-side */
-    gap: 60px;              /* Spacing between the two slots */
+    justify-content: center;
+    gap: 60px;
     margin-top: 15px;
 }
 
@@ -2856,10 +2343,9 @@ input.input-field:-webkit-autofill:active {
     border-radius: 8px;
 }
 
-/* Move text above the image */
 .cape-slot span {
     order: 1;
-    font-size: 1rem; /* Slightly smaller to fit the square */
+    font-size: 1rem;
     color: #d4af37;
     font-weight: bold;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
@@ -2868,34 +2354,30 @@ input.input-field:-webkit-autofill:active {
     margin-top: 2px;
 }
 
-/* Ensure Cape images follow the same filter/visibility logic as pets */
 .cape-slot img {
     object-fit: contain;
     pointer-events: none;
     user-select: none;
     transition: filter 0.3s ease;
-    width: 50px;   /* Set a consistent width */
-    height: 80px;  /* Set a consistent height */
-    display: block; /* Prevents inline alignment issues */
+    width: 50px;
+    height: 80px;
+    display: block;
 }
-/* NEW: The Locked State */
+/* The Locked State */
 .cape-slot.locked img {
-    filter: brightness(0) invert(0.5); /* Makes the image look dark/mysterious */
+    filter: brightness(0) invert(0.5);
 }
 
-/* The "???" style: Smaller, at the bottom */
 .cape-slot:not(.unlocked)::after {
     content: "???";
     letter-spacing: 2px;
     opacity: 0.4;
     font-family: 'Cinzel', serif;
     color: #555;
-    font-size: 0.7rem; /* Matches the pet size */
-    display: block;    /* Ensures it sits correctly */
+    font-size: 0.7rem;
+    display: block;
 }
 
-
-/* Locked State: Greyed out & Blurred */
 .cape-slot:not(.unlocked) img {
     filter:  brightness(0) contrast(0.5) blur(2px);
     opacity: 0.3;
@@ -2909,7 +2391,6 @@ input.input-field:-webkit-autofill:active {
     opacity: 1;
 }
 
-/* Text visibility: fade if locked */
 .cape-slot:not(.unlocked) span {
     color: #555 !important;
     letter-spacing: 2px;
@@ -2933,15 +2414,13 @@ input.input-field:-webkit-autofill:active {
 }
 
 
-/* --- EQUIPPED STATE FOR CAPES (Matches Pet Green) --- */
-
+/* --- EQUIPPED STATE --- */
 .cape-slot.unlocked.equipped {
-    border: 2px solid #44bb44 !important; /* Muted Sage Green */
+    border: 2px solid #44bb44 !important;
     background: rgba(0, 150, 0, 0.15) !important;
     box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5) !important;
 }
 
-/* Optional: Hover effect the equipped cape to match pets */
 .cape-slot.unlocked.equipped:hover {
     border-color: #77ff77 !important;
     background: rgba(0, 150, 0, 0.2) !important;
@@ -2951,8 +2430,6 @@ input.input-field:-webkit-autofill:active {
     color: #77ff77 !important;
 }
 
-
-/* Ensure the text and image look 'active' */
 .cape-slot.equipped span {
     color: #44bb44 !important;
     font-weight: bold;
@@ -2963,13 +2440,11 @@ input.input-field:-webkit-autofill:active {
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6)) !important;
 }
 
-
-/* Syncing the Titles */
 .stats-title {
-    font-family: 'RSFont'; /* Matching your Achievement/Main titles */
-    color: #d4af37;             /* Matches your Gold/Yellow theme */
+    font-family: 'RSFont';
+    color: #d4af37;
     text-align: center;
-    font-size: 1.2rem; /* Matches your leaderboard/main titles */
+    font-size: 1.2rem;
     margin: 14px 0 5px 0;
     text-shadow: 2px 2px 0px #000;
    
@@ -2988,52 +2463,45 @@ input.input-field:-webkit-autofill:active {
 .text-all {
   display: flex;
   padding: 5px 5px;
-  /* Slightly more padding to match pet slot "heft" */
-  /* Gap similar to the pet grid gap */
   border-radius: 8px;
   color: #a4a4a4;
   background: rgba(40, 40, 40, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* Reduce overall vertical bulk in the stats header */
 #statsProfileHeader {
-  padding: 5px 5px !important; /* Reduced from 8px 5px */
-  gap: 2px !important;         /* Reduced from 15px */
+  padding: 5px 5px !important;
+  gap: 2px !important;
 }
 
 .text-white {
   font-size: 1.1rem;
   display: flex;
   margin-left: 4px;
-  /* Slightly more padding to match pet slot "heft" */
-  /* Gap similar to the pet grid gap */
   border-radius: 8px;
   color: #a4a4a4;
   padding: 2px 1px;
 }
 
-/* Make PB items more compact */
 #statsList .achieve-item,
 #pbList .achieve-item {
-  padding: 4px 10px; /* Reduced from 12px 15px */
-  margin-bottom: 5px; /* Reduced from 8px */
+  padding: 4px 10px;
+  margin-bottom: 5px;
   font-size: 1.1rem;
 }
 
 .time-stamp {
-    opacity: 0.9;             /* You can adjust this to make it less transparent */
+    opacity: 0.9;
 }
 
 .stat-label {
-    margin-right: 5px; /* Adjust this value to get exactly the space you want */
+    margin-right: 5px;
 }
 
-/* --- Global Stats Grid Layout --- */
 #statsList, #pbList {
     display: grid !important;
-    grid-template-columns: 1fr 1fr; /* Two equal columns */
-    gap: 8px; /* Slightly larger gap for PC */
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
 }
 
 /* Reordering the Stats List */
@@ -3065,18 +2533,18 @@ input.input-field:-webkit-autofill:active {
 
 
 @media (max-width: 480px) {
-    /* 1. Reduce the gap between the two capes */
+    /* Reduce the gap between the two capes */
     .cape-grid {
         gap: 15px; 
     }
 
-    /* 2. Shrink the boxes */
+    /* Shrink the boxes */
     .cape-slot {
-        width: 95px;  /* Down from 110px */
-        height: 64px; /* Down from 100px */
+        width: 95px;
+        height: 64px;
         padding: 5px;
     }
-    /* 2. Compact the grid inside the header */
+    /* Compact the grid inside the header */
     #statsProfileHeader div[style*="grid"] {
         margin-top: 6px !important;
         grid-template-columns: 1fr 1fr !important; 
@@ -3084,26 +2552,26 @@ input.input-field:-webkit-autofill:active {
         font-size: 0.85rem !important;
     }
 
-    /* 3. Shrink the text */
+    /* Shrink the text */
     .cape-slot span {
-        font-size: 0.6rem !important; /* Smaller text */
+        font-size: 0.6rem !important;
     }
     
-    /* 4. Shrink the "???" placeholder */
+    /* Shrink the "???" placeholder */
     .cape-slot:not(.unlocked)::after {
         font-size: 0.6rem !important;
     }
 
-    /* 5. Shrink the images to fit inside the smaller boxes */
+    /* Shrink the images to fit inside the smaller boxes */
     .cape-slot img {
-        width: 40px;  /* Adjust based on your specific cape images */
+        width: 40px;
         height: 50px;
     }
     /* Make PB items more compact */
     #statsList .achieve-item,
     #pbList .achieve-item {
-      padding: 5px 8px !important; /* Reduced from 12px 15px */
-      margin-bottom: 3px !important; /* Reduced from 8px */
+      padding: 5px 8px !important;
+      margin-bottom: 3px !important;
       font-size: 0.75rem !important;
     }
     
@@ -3120,13 +2588,12 @@ input.input-field:-webkit-autofill:active {
     }
 
   #statsList, #pbList {
-      gap: 4px !important; /* Small gap between items */
+      gap: 4px !important;
     }
 
 }
 
-/* --------------  Multiplayer mode  -------------- */
-/* Container for the views */
+/* -- Multiplayer mode -- */
 .lobby-card {
     background: rgba(0, 0, 0, 0.75);
     padding: 30px;
@@ -3207,19 +2674,18 @@ input.input-field:-webkit-autofill:active {
 
 #lobbyCodeDisplay {
   text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-  user-select: all; /* Allows easy highlight/copy on mobile */
+  user-select: all;
 }
 
 #multiplayer-header {
   width: 100%;
-  max-width: 440px; /* Keeps it tight on desktop */
+  max-width: 440px;
   margin: 0 auto 20px auto;
   padding: 10px;
-  background: rgba(0, 0, 0, 0.4); /* Dark translucent backing */
-  border: 2px solid #3d3528; /* OSRS Brown border */
+  background: rgba(0, 0, 0, 0.4);
+  border: 2px solid #3d3528;
   border-radius: 8px;
   box-shadow: inset 0 0 10px #000;
-  /* Required for the nudge to work */
   position: relative;
 }
 
@@ -3237,12 +2703,11 @@ input.input-field:-webkit-autofill:active {
     flex-direction: column;
     align-items: center;
     flex: 1;
-    /* CRITICAL: Allow hitsplats to float outside the container */
     overflow: visible !important; 
 }
 
 .player-name {
-  display: inline;      /* CRITICAL: Ensure this isn't 'block' */
+  display: inline;
   vertical-align: middle;
   font-family: 'RSFont';
   color: #d4af37;
@@ -3255,7 +2720,7 @@ input.input-field:-webkit-autofill:active {
 .hp-bar-bg {
   width: 100%;
   height: 18px;
-  background: #330000; /* Dark red "empty" color */
+  background: #330000;
   border: 1px solid #555;
   border-radius: 3px;
   overflow: hidden;
@@ -3283,10 +2748,9 @@ input.input-field:-webkit-autofill:active {
   padding: 0 10px;
 }
 
-/* ====== HITSPLATS (The OSRS Damage Icons) ===== */
+/* == HITSPLATS == */
 .hitsplat {
    position: absolute;
-    /* This centers it over the HP bar area */
     top: 50%; 
     left: 50%;
     transform: translate(-50%, -50%);
@@ -3295,24 +2759,22 @@ input.input-field:-webkit-autofill:active {
     align-items: center;
     justify-content: center;
     color: white;
-    /* --- EXACT ASSET DIMENSIONS --- */
     width: 24px;
     height: 23px;
-    /* --- RENDER QUALITY --- */
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    image-rendering: pixelated; /* Keeps it sharp on PC monitors */
+    image-rendering: pixelated;
     font-family: 'RSFont';
-    font-size: 0.85rem; /* Shrunk slightly to fit a 24px box */
+    font-size: 0.85rem;
 }
 
 /* Blue Hitsplat for 0 (Successful Defense) */
 .hitsplat.miss {
-  background-image: url('/hitsplat/hitsplat_blue.png'); /* If you have the asset */
+  background-image: url('/hitsplat/hitsplat_blue.png');
 }
 
-/* Red Hitsplat for Damage (Existing) */
+/* Red Hitsplat for Damage */
 .hitsplat.hit {
   background-image: url('/hitsplat/hitsplat_red.png');
 }
@@ -3323,15 +2785,12 @@ input.input-field:-webkit-autofill:active {
 }
 
 #rounds-display {
-  /*margin-bottom: 10px;*/
   color: #f5f5f5;
-  /* explicit white */
   text-align: center;
   width: 100%;
   font-size: 1.3rem;
   font-weight: bold;
   margin-top: 20px;
-  /* make sure it spans the container */
 }
 
 @keyframes hit-pop {
@@ -3343,8 +2802,6 @@ input.input-field:-webkit-autofill:active {
 /* PC ONLY SHIFT */
 @media (min-width: 481px) {
   #multiplayer-header {
-    /* Adjust this number to move it more or less */
-    /* Negative moves left, Positive moves right */
     left: -10px; 
   }
 }
@@ -3352,14 +2809,14 @@ input.input-field:-webkit-autofill:active {
 /* Mobile Adjustments for Multiplayer HUD */
 @media (max-width: 600px) {
     #multiplayer-header {
-        max-width: 95%; /* Use more horizontal space on small screens */
+        max-width: 95%;
         margin-bottom: 10px;
         padding: 6px;
     }
 
     /* Shrink the bar height */
     .hp-bar-bg {
-        height: 12px; /* Smaller height for mobile */
+        height: 12px;
     }
 
     /* Shrink player name and VS text */
@@ -3389,20 +2846,15 @@ input.input-field:-webkit-autofill:active {
     }
 }
 
-
 @media (max-width: 480px) {
-  /* 1. Target the container ONLY when the multiplayer header is visible */
   .container:has(#multiplayer-header:not(.hidden)) {
     padding-top: 15px !important;
   }
 
-  /* 2. Optional: If the Duel UI feels too close to the top edge, 
-     you can also adjust the #app wrapper at the same time */
   #view-home:has(#multiplayer-header:not(.hidden)) #app {
     padding-top: 10px !important;
   }
 
-  /* 3. Keep your original 65px for the normal game */
   .container:has(#game:not(.hidden)):not(:has(#multiplayer-header:not(.hidden))) {
     padding-top: 65px;
   }
@@ -3410,7 +2862,7 @@ input.input-field:-webkit-autofill:active {
 
 
 
-/* ---------- player modal for leaderboard ----------------- */
+/* -- PLAYER MODAL AND LEADERBOARD -- */
 .user-txt {
     transition: filter 0.2s ease;
 }
@@ -3420,16 +2872,14 @@ input.input-field:-webkit-autofill:active {
     text-shadow: 0 0 8px rgba(212, 175, 55, 0.6);
 }
 
-/* Add this to your CSS */
 .user-txt:active {
     transform: scale(0.98);
     filter: brightness(0.8);
 }
 
-/* --- Modal Stats Grid Layout --- */
 #m-statsList, #m-pbList {
     display: grid !important;
-    grid-template-columns: 1fr 1fr; /* Two equal columns */
+    grid-template-columns: 1fr 1fr;
     gap: 8px; 
 }
 
@@ -3465,7 +2915,7 @@ input.input-field:-webkit-autofill:active {
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.7);
-    display: flex; /* Centering logic */
+    display: flex;
     justify-content: center;
     align-items: flex-start;
     z-index: 99999;
@@ -3475,24 +2925,19 @@ input.input-field:-webkit-autofill:active {
 
 #playerModal .modal-container {
     position: relative;
-    width: 100%; /* Margin for mobile */
-    max-width: 390px; /* Desktop cap */
-    
+    width: 100%;
+    max-width: 390px;
     background: rgba(0, 0, 0, 0.9);
     border-radius: 8px;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-
     animation: modalSlideIn 0.3s ease-out;
-    max-height: 80vh; /* Slightly taller to fit capes */
+    max-height: 80vh;
     overflow-y: auto;
-    
-    /* Matching your Help Modal padding */
     padding: 10px 25px 25px 25px !important;
     display: flex;
     flex-direction: column;
 }
 
-/* Match the Title Spacing */
 #playerModal .stats-title {
     margin: 14px 0 5px 0;
     line-height: 1.2;
@@ -3505,9 +2950,8 @@ input.input-field:-webkit-autofill:active {
 /* Close Button Positioning */
 #playerModal .close-modal {
     position: absolute;
-    top: 1px;    /* Distance from the top border */
-    right: 10px; /* Distance from the right border */
-    
+    top: 1px;
+    right: 10px;
     cursor: pointer;
     font-size: 28px;
     color: #d4af37;
@@ -3521,7 +2965,6 @@ input.input-field:-webkit-autofill:active {
     transform: scale(1.1);
 }
 
-/* This ONLY targets items inside the player modal */
 #playerModal .achieve-item {
     display: flex !important;
     justify-content: flex-start !important;
@@ -3530,13 +2973,12 @@ input.input-field:-webkit-autofill:active {
     padding: 5px !important;
     box-sizing: border-box !important;
 }
-/* Push the value (numbers/streaks) to the far right */
+
 #playerModal .stat-value {
     margin-left: auto; 
     text-align: right;
 }
 
-/* You can even change the labels specifically for the modal */
 #playerModal .stat-label {
     font-size: 1rem;
 }
@@ -3546,7 +2988,6 @@ input.input-field:-webkit-autofill:active {
       font-size: 1.1rem;
 }
 
-/* Re-using your animation */
 @keyframes modalSlideIn {
     from {
         transform: translateY(-20px);
@@ -3560,7 +3001,7 @@ input.input-field:-webkit-autofill:active {
 
 @media (max-width: 480px) {
   #playerModal .modal-container {
-      max-width: 280px; /* Desktop cap */
+      max-width: 280px;
   }
   #playerModal .stat-label {
       font-size: 0.75rem;
@@ -3577,10 +3018,9 @@ input.input-field:-webkit-autofill:active {
       font-size: 0.9rem;
   }
 }
-/* ---------- player modal for leaderboard ----------------- */
 
-/* ---------- daily mode end note ----------------- */
 
+/* -- DAILY MODE END NOTE -- */
 #dailyEndNote {
   font-size: 1.5rem;
   margin: 0;
@@ -3594,15 +3034,13 @@ input.input-field:-webkit-autofill:active {
     font-size: 1.1rem;
 }
 
-/* ---------- daily mode end note ----------------- */
-
 .row-text {
   font-family: 'RSFont';
   font-size: 16px;
-  color: #d4af37;   /* Make it stand out against the background */
-  padding: 0 10px;     /* Give it some breathing room from the buttons */
-  align-self: center;  /* Ensures it stays vertically centered in the row */
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* Good for game UIs */
+  color: #d4af37;
+  padding: 0 10px;
+  align-self: center;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
 }
 
 @media (max-width: 480px) {
