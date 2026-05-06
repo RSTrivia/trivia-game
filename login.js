@@ -111,6 +111,10 @@ signupBtn.addEventListener('click', async () => {
         localStorage.setItem('cachedUsername', username);
         localStorage.setItem('cachedLoggedIn', 'true');
 
+        // remove local storage pets
+        localStorage.removeItem('equipped_pet_id');
+        localStorage.removeItem('my-multiplayer-pet');
+
         // Go to home view
         navigateTo('view-home');
     }
