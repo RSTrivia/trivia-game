@@ -328,7 +328,6 @@ a {
 #game {
   position: relative !important;
   overflow: visible !important;
-  max-height: 100%;
   display: none;
   flex-direction: column;
   align-items: center;
