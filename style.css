@@ -327,7 +327,7 @@ a {
 /* ====== GAME SCREEN ===== */
 #game {
   position: relative !important;
-  overflow: auto !important;
+  overflow: visible !important;
   max-height: 100%;
   display: none;
   flex-direction: column;
