@@ -917,6 +917,7 @@ input.input-field:-webkit-autofill:active {
   font-size: 1.4rem !important;
   display: flex;
   justify-content: center;
+  align-items: center;
   width: 100%;
 }
 
@@ -941,7 +942,11 @@ input.input-field:-webkit-autofill:active {
 /* ====== MOBILE NO-FLICKER BUTTONS ====== */
 @media (hover: none) and (pointer: coarse) {
   .btn:not(.is-disabled):hover,
-  .btn-small:not(.is-disabled):hover {
+  .btn-small:not(.is-disabled):hover,
+  #start-screen #authBtn:hover,
+  #authBtn:hover {
+    background: rgba(0, 0, 0, 0.6) !important;
+    transform: none !important;
     border-color: #d4af37 !important;
     color: #d4af37 !important;
   }
@@ -954,7 +959,8 @@ input.input-field:-webkit-autofill:active {
   #dailyBtn.tapped,
   #weeklyBtn.tapped,
   #lobbyBtn.tapped,
-  #helpBtn:active {
+  #helpBtn:active,
+  #authBtn:active, #start-screen #authBtn:active, #authBtn.tapped {
     background-color: #000000 !important;
     border-color: #ffea8a !important;
     color: #ffea8a !important;
@@ -975,8 +981,10 @@ input.input-field:-webkit-autofill:active {
   #dailyBtn.is-active,
   #weeklyBtn,
   #lobbyBtn,
-  #helpBtn {
+  #helpBtn,
+  #authBtn {
     transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.1s ease !important;
+    -webkit-tap-highlight-color: transparent !important;
   }
 
   /* Prevent icons from flickering between gold and grey on touch */
@@ -989,7 +997,12 @@ input.input-field:-webkit-autofill:active {
     -webkit-tap-highlight-color: transparent;
     transition: transform 0.1s ease !important;
   }
-
+  /* Prevents the label from blocking the button's touch state */
+  #authBtn .btn-label {
+    pointer-events: none !important;
+    user-select: none !important;
+    -webkit-user-select: none !important;
+  }
   /* Force consistent filter behavior */
   #muteBtn:not(.is-muted) {
     filter: sepia(1) saturate(2.2) hue-rotate(-18deg) brightness(0.85) !important;
@@ -1013,13 +1026,6 @@ input.input-field:-webkit-autofill:active {
   * {
     -webkit-tap-highlight-color: transparent !important;
   }
-}
-
-#authBtn .btn-label {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
 }
 
 /* ====== END SCREEN SPACING ====== */
@@ -1129,7 +1135,7 @@ input.input-field:-webkit-autofill:active {
 /* XP drops */
 .xp-drop {
   position: absolute !important;
-  top: 15px !important;
+  top: 12px !important;
   right: 10px !important;
   left: auto !important;
   width: auto !important;
