@@ -1658,8 +1658,6 @@ async function subscribeToLobby(lobbyCode, lobbyId) {
     lobbyChannel.on('broadcast', { event: 'game_over_sync' }, (envelope) => {
         const data = envelope.payload;
         if (data && data.user_id !== userId) {
-            console.log("Game over signal received from opponent.");
-
             // Update local HP values to match the final state sent by the opponent
             // This ensures both players agree on who died
             opponentHP = data.final_myHP;
