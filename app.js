@@ -1,5 +1,7 @@
 import { supabase } from './supabase.js';
 import { updateMenuPet, showGoldAlert } from './login.js';
+// FORCE it to be global immediately
+window.supabase = supabase;
 
 // UI & STATE
 const cachedMuted = localStorage.getItem('muted') === 'true';
@@ -3871,7 +3873,7 @@ async function endGame(result = null, wasFlawless = false) {
         displayFinalTime(totalMs);
 
         // Save Score and Check for PB
-        let isWeeklyPB = session ? await saveScore(session, 'weekly', score, totalMs, username) : false;
+        let isWeeklyPB = session ? await saveScore(session, 'weekly', score, totalMs) : false;
 
         // Update Titles
         if (gameOverTitle) {
@@ -3881,7 +3883,7 @@ async function endGame(result = null, wasFlawless = false) {
     } else if (isDailyMode) {
         if (playAgainBtn) playAgainBtn.classList.add('hidden');
         // Saves the score for the leaderboard
-        let isDailyPB = await saveScore(session, 'daily', score, totalMs, username, randomMsg);
+        let isDailyPB = await saveScore(session, 'daily', score, totalMs, randomMsg);
         displayFinalTime(totalMs);
 
         if (gameOverTitle) {
@@ -3924,7 +3926,7 @@ async function endGame(result = null, wasFlawless = false) {
 
         // Lite Mode Specific Logic
         if (isLiteMode) {
-            let isLitePB = session ? await saveScore(session, 'lite', score, totalMs, username) : false;
+            let isLitePB = session ? await saveScore(session, 'lite', score, totalMs) : false;
             if (gameOverTitle) {
                 gameOverTitle.textContent = isLitePB ? "New PB achieved!" : "Lite Mode Completed!";
                 gameOverTitle.classList.remove('hidden');
@@ -3936,7 +3938,7 @@ async function endGame(result = null, wasFlawless = false) {
             // Trigger the high-score save
             if (session && score > 0) {
                 // We pass the current username, and the score achieved
-                isNormalPB = await saveScore(session, 'normal', score, totalMs, username);
+                isNormalPB = await saveScore(session, 'normal', score, totalMs);
             }
             if (isNormalPB) {
                 liveStats.maxScore = score;
@@ -4037,7 +4039,7 @@ function triggerXpDrop(amount) {
     }, 1300);
 }
 
-async function saveScore(session, mode, currentScore, timeMs, username = "", msg = "") {
+async function saveScore(session, mode, currentScore, timeMs, msg = "") {
     // Safety check: ensure session exists
     if (!session || !session.user) {
         console.warn(`No session provided for ${mode} score save.`);
@@ -4049,7 +4051,6 @@ async function saveScore(session, mode, currentScore, timeMs, username = "", msg
             p_mode: mode,
             p_score: currentScore,
             p_time_ms: Math.floor(timeMs),
-            p_username: username,
             p_message: msg
         });
 
