@@ -1300,7 +1300,7 @@ async function startNewRound() {
     iAmReadyForRematch = false;
     opponentReadyForRematch = false;
 
-    const startTime = Date.now() + 2000;
+    const startTime = Date.now() + 3000;
     sessionStorage.setItem('game_start_time', startTime.toString());
 
     // Update Database and wait for it
@@ -1776,6 +1776,10 @@ async function startMultiplayerGame() {
         gameStartTime = Number(sessionStorage.getItem('game_start_time'));
     }
 
+    // Calculate how long to wait before the "Starting Gun" fires
+    const now = Date.now();
+    const waitTime = gameStartTime - now;
+
     if (gameStarting) return;
     gameStarting = true;
 
@@ -1847,11 +1851,18 @@ async function startMultiplayerGame() {
             document.getElementById('my-hp-text').textContent = `${MAX_HP}/${MAX_HP}`;
             document.getElementById('opponent-hp-text').textContent = `${MAX_HP}/${MAX_HP}`;
 
-            startTimer();
-
-            // background fill
-            // While they answer Q1, fetch the next 5 from the lobby list
-            preloadNextQuestions(5);
+            // If the start time is in the future, wait for it.
+            // This forces the Host (who gets here early) to wait for the Guest.
+            if (waitTime > 0) {
+                setTimeout(() => {
+                    startTimer();
+                    preloadNextQuestions(5);
+                }, waitTime);
+            } else {
+                // If the network was super slow and we're already past the time, start immediately
+                startTimer();
+                preloadNextQuestions(5);
+            }
 
             gameStarting = false;
         });
