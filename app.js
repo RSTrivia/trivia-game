@@ -3132,6 +3132,13 @@ async function checkAnswer(choiceId, btn) {
 
     if (rpcErr) return console.error("RPC Error:", rpcErr);
 
+    if (isDailyMode) {
+        // Just update local memory for UI/Share button
+        let patternArray = gridPattern.split('');
+        patternArray[dailyQuestionCount - 1] = res.correct ? "1" : "0";
+        gridPattern = patternArray.join('');
+    }
+
     // local damage & hitsplat logic
     if (isMultiplayerMode) {
         iHaveAnswered = true;
@@ -3182,23 +3189,6 @@ async function checkAnswer(choiceId, btn) {
         btn.classList.add('correct');
         score++;
         updateScore();
-        // daily mode
-        if (isDailyMode) {
-            // generate fresh data here
-            const currentUtcStr = new Date().toISOString().split('T')[0];
-            // Map the question number to the correct string index
-            let patternArray = gridPattern.split('');
-            let index = dailyQuestionCount - 1;
-            patternArray[index] = "1";
-            gridPattern = patternArray.join('');
-
-            // Update the DB immediately
-            // Using .match ensures we hit the specific attempt for today
-            await supabase
-                .from('daily_attempts')
-                .update({ grid_pattern: gridPattern })
-                .match({ user_id: userId, attempt_date: currentUtcStr });
-        }
         // Users
         if (userId) {
             const xpData = res.xp_info;
@@ -3854,36 +3844,6 @@ function triggerXpDrop(amount) {
     }, 1300);
 }
 
-async function saveScore(session, mode, currentScore, timeMs, msg = "") {
-    // Safety check: ensure session exists
-    if (!session || !session.user) {
-        console.warn(`No session provided for ${mode} score save.`);
-        return false;
-    }
-
-    try {
-        const { data, error } = await supabase.rpc('submit_game_score', {
-            p_mode: mode,
-            p_score: currentScore,
-            p_time_ms: Math.floor(timeMs),
-            p_message: msg
-        });
-
-        if (error) throw error;
-
-        // Specific post-save logic for Daily Mode
-        if (mode === 'daily') {
-            syncDailySystem();
-        }
-
-        return data.is_pb; // Returns true/false
-
-    } catch (err) {
-        console.error(`Error saving ${mode} score:`, err);
-        return false;
-    }
-}
-
 // Share button for daily mode
 if (shareBtn) {
     shareBtn.onclick = async () => {
@@ -4211,16 +4171,19 @@ async function startDailyChallenge(session) {
     const currentUtcStr = new Date().toISOString().split('T')[0];
 
     // burn attempt & fetch daily IDs from RPC
-    const [burnRes, questionsRes] = await Promise.all([
-        supabase.from('daily_attempts').insert({
-            user_id: session.user.id,
-            attempt_date: currentUtcStr,
-            grid_pattern: gridPattern
-        }),
+    // Replace your burnRes / questionsRes logic with this:
+    const [initRes, questionsRes] = await Promise.all([
+        supabase.rpc('initialize_daily_challenge'),
         supabase.rpc('get_daily_questions')
     ]);
-    // Your exact error check
-    if (burnRes.error) return showGoldAlert("You've already played today!");
+    // 1. Check if the initialization failed
+    if (initRes.data?.error === 'ALREADY_PLAYED') {
+        return showGoldAlert("You've already played today!");
+    }
+    if (!initRes.data?.success) {
+        console.error("Initialization error:", initRes.error);
+        return showGoldAlert("Could not start Daily Challenge.");
+    }
     // Check if questions loaded
     if (questionsRes.error || !questionsRes.data) {
         console.error(questionsRes.error);
