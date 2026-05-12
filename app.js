@@ -82,7 +82,7 @@ const TOTAL_PETS = 20;
 const MAX_LEVEL = 99;
 const DAILY_LIMIT = 10;
 const WEEKLY_LIMIT = 50;
-const LITE_LIMIT = 100;
+const LITE_LIMIT = 100;//100;
 const number_of_questions = 1000; // 1000 Total Questions
 
 const lobbymainMenu = document.getElementById('lobby-main-menu-btn');
@@ -135,142 +135,6 @@ const liteTab = document.getElementById('liteTab');
 
 // Audio
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-const dailyMessages = { // Daily Mode end-screen messages
-    0: [
-        "Ouch. Zero XP gained today.",
-        "You've been defeated. Try again tomorrow!",
-        "Sit.",
-        "You've been slapped by the Sandwich Lady.",
-        "Back to Tutorial Island for you.",
-        "It can only go higher from here.",
-        "Buying brain for 10k?",
-        "Your hitpoints reached 0. Oh dear.",
-        "You're splashing on a seagull in Port Sarim.",
-        "This score is lower than the chances of a 3rd Age Pickaxe."
-    ],
-    1: [
-        "At least it's not a zero!",
-        "A 1 is infinitely better than a 0.",
-        "You hit a 1! Better than a splat.",
-        "Thumbs down log out.",
-        "It's a start!",
-        "Lumbridge is calling your name.",
-        "Well, you didn't go home empty-handed!",
-        "The RNG gods are laughing at you.",
-        "Logging out in shame.",
-        "A true noob has appeared."
-    ],
-    2: [
-        "Tomorrow will be better!",
-        "The RNG was not in your favor.",
-        "You're getting there!",
-        "Still stuck in the Al-Kharid gate.",
-        "Try again tomorrow.",
-        "A bronze-tier effort.",
-        "It's progress!",
-        "A couple of lucky guesses?",
-        "Tomorrow is a new day.",
-        "Better than a disconnect, I guess."
-    ],
-    3: [
-        "The grind continues.",
-        "You're still warming up, right?",
-        "Leveling up slowly!",
-        "Three is the number of heads on a KBD.",
-        "Better every day.",
-        "Practice makes perfect.",
-        "Nice try, adventurer.",
-        "Keep your prayer up!",
-        "Keep grinding, you'll get there.",
-        "An iron-tier effort."
-    ],
-    4: [
-        "Getting there!",
-        "Almost halfway!",
-        "A solid effort.",
-        "Not a noob anymore.",
-        "Still in the F2P zone, aren't we?",
-        "Getting the hang of it!",
-        "A silver-tier effort.",
-        "Keep clicking!",
-        "You wouldn't survive the Wilderness like this.",
-        "Consistent gains. Keep at it!"
-    ],
-    5: [
-        "A solid 50%. Perfectly balanced.",
-        "Mid-level performance!",
-        "You've reached the mid-game grind.",
-        "Halfway to 99! (Except not really).",
-        "The big 50!",
-        "A steel-tier effort.",
-        "Halfway to legendary.",
-        "The Wise Old Man thinks you're 'okay'.",
-        "Keep the grind alive!",
-        "Not bad, adventurer."
-    ],
-    6: [
-        "Decent, but not great.",
-        "Above average! Keep it up.",
-        "You know your stuff.",
-        "You're starting to smell like a member.",
-        "More right than wrong!",
-        "A gold-tier effort.",
-        "The Varrock Museum wants your brain.",
-        "A respectable showing, adventurer.",
-        "You're gaining some serious XP now.",
-        "Not quite elite."
-    ],
-    7: [
-        "Nice! You really know your OSRS.",
-        "Solid score! High-scores material.",
-        "Beast of a score.",
-        "A mithril-tier effort.",
-        "Slaying the questions.",
-        "A very smart drop!",
-        "You're efficient, I'll give you that.",
-        "Almost impressive.",
-        "Almost at the top of the ladder.",
-        "You clearly don't bankstand all day."
-    ],
-    8: [
-        "Legendary! You're a walking wiki.",
-        "Almost perfect.",
-        "You've got the fire cape of trivia.",
-        "Absolute unit.",
-        "You're clicking with precision.",
-        "Incredible score!",
-        "An adamant-tier effort.",
-        "Purple chest vibes!",
-        "Ready for the Inferno.",
-        "High-tier gains."
-    ],
-    9: [
-        "Incredible! So close to perfection!",
-        "An elite achievement.",
-        "A rune-tier effort.",
-        "You're a trivia beast.",
-        "Only one question stood in your way.",
-        "One hit from greatness.",
-        "You've reached the final boss.",
-        "Basically a genius.",
-        "So close, you can smell the Max Score.",
-        "Your brain is worth 2,147,483,647 gp."
-    ],
-    10: [
-        "Perfect! A True Completionist!",
-        "Absolute Master of Trivia!",
-        "Zezima is shaking right now.",
-        "Absolute 10/10.",
-        "You are the OSRS Wiki.",
-        "A literal god.",
-        "A flawless Victory. Gz!",
-        "PERFECT SCORE!",
-        "A true Grandmaster.",
-        "Buying your brain for 2147m.",
-        "Total domination.",
-    ]
-};
 
 // This intercepts and silences the "WebSocket is closed before established" error
 (function () {
@@ -1763,6 +1627,9 @@ async function startMultiplayerGame() {
     window.currentLobbyIndex = 0;
     window.nextFetchIndex = 0;
     preloadQueue = [];
+
+    // Reset the score
+    await supabase.rpc('start_new_game_session');
     // Tell the DB: "This is a new game, start my streak at 0"
     await supabase.rpc('reset_my_streak');
     const streakContainer = document.getElementById('dailyStreakContainer');
@@ -1777,10 +1644,6 @@ async function startMultiplayerGame() {
     } else {
         gameStartTime = Number(sessionStorage.getItem('game_start_time'));
     }
-
-    // Calculate how long to wait before the "Starting Gun" fires
-    const now = Date.now();
-    const waitTime = gameStartTime - now;
 
     if (gameStarting) return;
     gameStarting = true;
@@ -1847,24 +1710,14 @@ async function startMultiplayerGame() {
             const roundsDisplay = document.getElementById('rounds-display');
             roundsDisplay.textContent = "Round: 1";
 
+            preloadNextQuestions(5);
+            startTimer();
+
             // Reset HP Bars
             document.getElementById('my-hp-fill').style.width = '100%';
             document.getElementById('opponent-hp-fill').style.width = '100%';
             document.getElementById('my-hp-text').textContent = `${MAX_HP}/${MAX_HP}`;
             document.getElementById('opponent-hp-text').textContent = `${MAX_HP}/${MAX_HP}`;
-
-            // If the start time is in the future, wait for it.
-            // This forces the Host (who gets here early) to wait for the Guest.
-            if (waitTime > 0) {
-                setTimeout(() => {
-                    startTimer();
-                    preloadNextQuestions(5);
-                }, waitTime);
-            } else {
-                // If the network was super slow and we're already past the time, start immediately
-                startTimer();
-                preloadNextQuestions(5);
-            }
 
             gameStarting = false;
         });
@@ -2200,7 +2053,6 @@ async function init() {
             localStorage.removeItem('cachedUsername');
             localStorage.removeItem('lastDailyScore');
             localStorage.removeItem('dailyPlayedDate');
-            localStorage.removeItem('lastDailyMessage');
             localStorage.removeItem('equipped_pet_id');
 
             // Remove Supabase tokens
@@ -2718,7 +2570,6 @@ async function handleAuthChange(event, session) {
                 localStorage.removeItem('dailyPlayedDate');
                 localStorage.removeItem('cached_xp');
                 localStorage.removeItem('cachedUsername');
-                localStorage.removeItem('lastDailyMessage');
                 localStorage.removeItem('cached_level');
             }
         }
@@ -3002,6 +2853,9 @@ async function startGame() {
     usedInThisSession = [];
     normalSessionPool = [];
 
+    // Reset the score
+    await supabase.rpc('start_new_game_session');
+
     // Identify what is already waiting in the queue so we don't pick them again
     const alreadyBufferedIds = preloadQueue.map(q => Number(q.id));
 
@@ -3099,12 +2953,6 @@ async function loadQuestion(isFirst = false) {
             await endGame(result);
             return;
         }
-    } else {
-        // End Game Checks for single player modes
-        if (isWeeklyMode && weeklyQuestionCount >= WEEKLY_LIMIT) { await endGame(); return; }
-        if (isLiteMode && liteQuestionCount >= LITE_LIMIT) { await endGame(); return; }
-        if (isDailyMode && dailyQuestionCount >= DAILY_LIMIT) { await endGame(); return; }
-        if (score === number_of_questions) { await endGame(); return; }
     }
     // conditional cleanup
     if (!isFirst) {
@@ -3244,31 +3092,15 @@ function startTimer() {
 
 async function handleTimeout() {
     stopTickSound();
+    // Disable buttons so user can't click after time is up
     document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
-    playSound(wrongBuffer);
-
-    // Highlight correct answer for the user even if they didn't choose
-    await highlightCorrectAnswer();
-
-    // increment counter for batch modes to keep track, even if they didn't answer
-    if (isWeeklyMode) weeklyQuestionCount++;
-    if (isDailyMode) dailyQuestionCount++;
-    if (isLiteMode) liteQuestionCount++;
-
-    // update the score
-    updateScore();
-
-    if ((isDailyMode && dailyQuestionCount < DAILY_LIMIT) || (isWeeklyMode && weeklyQuestionCount < WEEKLY_LIMIT) || (isLiteMode && liteQuestionCount < LITE_LIMIT)) {
-        setTimeout(loadQuestion, 1300);
-    } else {
-        // If it's Normal mode OR we reached the limit for Daily/Weekly/Lite
-        setTimeout(endGame, 1000);
-    }
+    // Send to checkAnswer as a "Wrong answer"
+    await checkAnswer(null, null);
 }
 
 async function checkAnswer(choiceId, btn) {
     stopTickSound();
-    if (timeLeft <= 0) return;
+    //if (timeLeft <= 0) return;
     // Only stop the timer if we are not in multiplayer.
     // In Multiplayer, we want to see it run down to 0 for the opponent.
     if (!isMultiplayerMode) {
@@ -3280,17 +3112,22 @@ async function checkAnswer(choiceId, btn) {
     if (isWeeklyMode) weeklyQuestionCount++;
     if (isDailyMode) dailyQuestionCount++;
     if (isLiteMode) liteQuestionCount++;
-
+    // 2. Determine the active count to send to the database
+    const activeCount = isDailyMode ? dailyQuestionCount 
+                  : isWeeklyMode ? weeklyQuestionCount 
+                  : isLiteMode ? liteQuestionCount 
+                  : 0;
     // call RPC process answer
-    const { data: res, error: rpcErr } = await supabase.rpc('process_answer', {
+    const { data: res, error: rpcErr } = await supabase.rpc('process_answer_test', {
         input_id: Number(currentQuestion.id), // Ensure it's an integer
         choice: Number(choiceId),             // Ensure it's an integer
         is_daily: Boolean(isDailyMode),       // Ensure it's a boolean
         is_weekly: Boolean(isWeeklyMode),
         is_lite: Boolean(isLiteMode),
         is_multiplayer: Boolean(isMultiplayerMode),
-        current_count: isDailyMode ? dailyQuestionCount : 0,
-        daily_limit: DAILY_LIMIT
+        current_count: activeCount,
+        daily_limit: DAILY_LIMIT,
+        p_time_ms: Math.floor(Date.now() - gameStartTime) // Pass time for PB tracking
     });
 
     if (rpcErr) return console.error("RPC Error:", rpcErr);
@@ -3506,14 +3343,6 @@ async function checkAnswer(choiceId, btn) {
             }
         }
 
-        // next question logic
-        if (isMultiplayerMode) {
-            setTimeout(() => {
-                handleMultiplayerTransition();
-            }, 1000);
-        } else {
-            setTimeout(loadQuestion, 1000); // Standard Solo behavior
-        }
     } else {
         // Wrong answer logic
         updateScore();
@@ -3521,19 +3350,22 @@ async function checkAnswer(choiceId, btn) {
         if (btn) btn.classList.add('wrong');
         highlightCorrectAnswer();
         liveStats.total_wrong = liveStats.total_wrong + 1;
+    }
 
-        // multiplayer
+     // multiplayer
         if (isMultiplayerMode) {
             setTimeout(() => {
                 handleMultiplayerTransition();
             }, 1000);
-        } else if (isDailyMode || isWeeklyMode || isLiteMode) {
-            setTimeout(loadQuestion, 1300);
+        } else if (res.game_over) {
+        // We simply pass the submission results (which include is_pb) to endGame
+        setTimeout(() => {
+            endGame(res.submit_result, false, res.daily_message); // Pass the final stats to endGame
+        }, 1500);
         } else {
             // normal mode (always ends on wrong answer)
-            setTimeout(endGame, 1000);
+            setTimeout(loadQuestion, res.correct ? 1000 : 1300);
         }
-    }
 }
 
 function updateLevelUI() {
@@ -3655,7 +3487,7 @@ async function highlightCorrectAnswer() {
     });
 }
 
-async function endGame(result = null, wasFlawless = false) {
+async function endGame(result = null, wasFlawless = false, dailyMessage = null) {
     if (isMultiplayerMode && isEndGameProcessing) return;
     isEndGameProcessing = true;
     if (isMultiplayerMode && result) {
@@ -3665,7 +3497,7 @@ async function endGame(result = null, wasFlawless = false) {
     }
 
     if (isMultiplayerMode && !result) {
-        console.warn("Race condition blocked: Solo endGame tried to override MP result.");
+        //console.warn("Race condition blocked: Solo endGame tried to override MP result.");
         return;
     }
 
@@ -3830,9 +3662,6 @@ async function endGame(result = null, wasFlawless = false) {
             });
         }
     }
-    const scoreKey = Math.min(Math.max(score, 0), 10);
-    const options = dailyMessages[scoreKey] || ["Game Over!"];
-    const randomMsg = options[Math.floor(Math.random() * options.length)];
     const streakContainer = document.getElementById('dailyStreakContainer');
     const streakCount = document.getElementById('streakCount');
 
@@ -3859,50 +3688,44 @@ async function endGame(result = null, wasFlawless = false) {
 
     const gameOverTitle = document.getElementById('game-over-title');
     const gzTitle = document.getElementById('gz-title');
-
+    // Save Score and Check for PB
+    let isPB = result && result.is_pb;
     // Reset visibility of titles
     if (gameOverTitle) gameOverTitle.classList.add('hidden');
     if (gzTitle) gzTitle.classList.add('hidden');
 
     if (isWeeklyMode) {
-
         // UI Visibility resets
         if (playAgainBtn) playAgainBtn.classList.remove('hidden');
         if (dailyStreakContainer) dailyStreakContainer.style.display = 'none';
 
         displayFinalTime(totalMs);
 
-        // Save Score and Check for PB
-        let isWeeklyPB = session ? await saveScore(session, 'weekly', score, totalMs) : false;
-
         // Update Titles
         if (gameOverTitle) {
-            gameOverTitle.textContent = isWeeklyPB ? "New PB achieved!" : "Weekly Mode Completed!";
+            gameOverTitle.textContent = isPB ? "New PB achieved!" : "Weekly Mode Completed!";
             gameOverTitle.classList.remove('hidden');
         }
     } else if (isDailyMode) {
         if (playAgainBtn) playAgainBtn.classList.add('hidden');
         // Saves the score for the leaderboard
-        let isDailyPB = await saveScore(session, 'daily', score, totalMs, randomMsg);
         displayFinalTime(totalMs);
-
         if (gameOverTitle) {
-            if (isDailyPB) {
-                gameOverTitle.textContent = `${randomMsg}\nNew PB achieved!`;
+            // 1. Ensure we have a message, otherwise use a default OSRS-style fallback
+            const message = dailyMessage || "Game Over!";
+            if (isPB) {
+                gameOverTitle.textContent = `${message}\nNew PB achieved!`;
             } else {
-                gameOverTitle.textContent = randomMsg;
+                gameOverTitle.textContent = message;
             }
             gameOverTitle.classList.remove('hidden');
         }
 
         document.getElementById('dailyEndNote').classList.remove('hidden');
-
         const currentUtcStr = new Date().toISOString().split('T')[0];
         localStorage.setItem('lastDailyScoreDate', currentUtcStr);
-
         localStorage.setItem('lastDailyScore', score);
         localStorage.setItem('dailyPlayedDate', currentUtcStr);
-        localStorage.setItem('lastDailyMessage', randomMsg);
 
         // Show the streak container
         if (streakContainer && streakCount) {
@@ -3923,24 +3746,16 @@ async function endGame(result = null, wasFlawless = false) {
         if (streakContainer) streakContainer.style.display = 'none';
         if (playAgainBtn) playAgainBtn.classList.remove('hidden');
         displayFinalTime(totalMs);
-
         // Lite Mode Specific Logic
         if (isLiteMode) {
-            let isLitePB = session ? await saveScore(session, 'lite', score, totalMs) : false;
             if (gameOverTitle) {
-                gameOverTitle.textContent = isLitePB ? "New PB achieved!" : "Lite Mode Completed!";
+                gameOverTitle.textContent = isPB ? "New PB achieved!" : "Lite Mode Completed!";
                 gameOverTitle.classList.remove('hidden');
             }
 
         } else {
-            // Normal Mode specific logic
-            let isNormalPB = false;
             // Trigger the high-score save
-            if (session && score > 0) {
-                // We pass the current username, and the score achieved
-                isNormalPB = await saveScore(session, 'normal', score, totalMs);
-            }
-            if (isNormalPB) {
+            if (isPB) {
                 liveStats.maxScore = score;
             }
             // check if all questions were answered correctly in normal mode
@@ -3956,7 +3771,7 @@ async function endGame(result = null, wasFlawless = false) {
                 }
                 // Handle the PB/Status text under the Gz
                 if (gameOverTitle) {
-                    if (isNormalPB) {
+                    if (isPB) {
                         gameOverTitle.textContent = "New PB achieved!";
                         gameOverTitle.classList.remove('hidden');
                     } else {
@@ -3970,7 +3785,7 @@ async function endGame(result = null, wasFlawless = false) {
                 // Standard Game Over (Failed/Partial run)
                 if (gzTitle) gzTitle.classList.add('hidden'); // Ensure Gz is hidden
                 if (gameOverTitle) {
-                    gameOverTitle.textContent = isNormalPB ? "New PB achieved!" : "Game Over!";
+                    gameOverTitle.textContent = isPB ? "New PB achieved!" : "Game Over!";
                     gameOverTitle.classList.remove('hidden');
                 }
             }
@@ -4317,6 +4132,9 @@ async function startWeeklyChallenge() {
     score = 0;
     updateScore();
 
+    // Reset the score
+    await supabase.rpc('start_new_game_session');
+
     // Tell the DB: "This is a new game, start my streak at 0"
     await supabase.rpc('reset_my_streak');
 
@@ -4387,6 +4205,8 @@ async function startDailyChallenge(session) {
     score = 0;
     dailyQuestionCount = 0;
     updateScore();
+    // Reset the score
+    await supabase.rpc('start_new_game_session');
 
     const currentUtcStr = new Date().toISOString().split('T')[0];
 
