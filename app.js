@@ -11,7 +11,6 @@ let currentProfileXp = parseInt(localStorage.getItem('cached_xp')) || 0; // Stor
 let currentLevel = parseInt(localStorage.getItem('cached_level')) || 1; // Store the player's current Level locally
 let username = 'Guest';
 let currentMode = 'score';
-let gridPattern = "";
 let gameEnding = false;
 let isShowingNotification = false;
 let gameStarting = false;
@@ -3132,13 +3131,6 @@ async function checkAnswer(choiceId, btn) {
 
     if (rpcErr) return console.error("RPC Error:", rpcErr);
 
-    if (isDailyMode) {
-        // Just update local memory for UI/Share button
-        let patternArray = gridPattern.split('');
-        patternArray[dailyQuestionCount - 1] = res.correct ? "1" : "0";
-        gridPattern = patternArray.join('');
-    }
-
     // local damage & hitsplat logic
     if (isMultiplayerMode) {
         iHaveAnswered = true;
@@ -4149,12 +4141,10 @@ async function startWeeklyChallenge() {
     });
 }
 
-
 async function startDailyChallenge(session) {
     if (gameStarting) return;
     gameStarting = true;
     gameEnding = false;
-    gridPattern = "0000000000";
     isDailyMode = true;
     isWeeklyMode = false;
     isLiteMode = false;
@@ -4167,8 +4157,6 @@ async function startDailyChallenge(session) {
     updateScore();
     // Reset the score
     await supabase.rpc('start_new_game_session');
-
-    const currentUtcStr = new Date().toISOString().split('T')[0];
 
     // burn attempt & fetch daily IDs from RPC
     // Replace your burnRes / questionsRes logic with this:
