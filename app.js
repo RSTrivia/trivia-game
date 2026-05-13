@@ -1529,8 +1529,13 @@ async function subscribeToLobby(lobbyCode, lobbyId) {
             // Mark the opponent as "answered" so syncAndProceed doesn't block
             opponentHasAnswered = true;
 
-            // Force the sync to happen now
-            syncAndProceed(true);
+            // DO NOT call syncAndProceed(true) here if the Host hasn't answered.
+            // Instead, just wait. When the Host finally answers or times out,
+            // their own code will call syncAndProceed(), see that opponentHasAnswered is true,
+            // and move to the end screen.
+            if (iHaveAnswered) {
+                syncAndProceed(true);
+            }
         }
     });
 
@@ -1834,9 +1839,10 @@ function handleMultiplayerTransition() {
 
 async function syncAndProceed(force = false) {
     clearTimeout(window.forceEndTimeout);
-
+    console.log("Sync Check:", { iHaveAnswered, opponentHasAnswered, force });
     // We only proceed if force is true (emergency/timeout) OR both players have answered. 
     if (!force && (!iHaveAnswered || !opponentHasAnswered)) {
+        console.log("Sync Gate: Blocked - Waiting for other player.");
         return;
     }
 
