@@ -1839,10 +1839,8 @@ function handleMultiplayerTransition() {
 
 async function syncAndProceed(force = false) {
     clearTimeout(window.forceEndTimeout);
-    console.log("Sync Check:", { iHaveAnswered, opponentHasAnswered, force });
     // We only proceed if force is true (emergency/timeout) OR both players have answered. 
     if (!force && (!iHaveAnswered || !opponentHasAnswered)) {
-        console.log("Sync Gate: Blocked - Waiting for other player.");
         return;
     }
 
