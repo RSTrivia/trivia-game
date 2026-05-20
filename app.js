@@ -1,5 +1,7 @@
 import { supabase } from './supabase.js';
 import { updateMenuPet, showGoldAlert } from './login.js';
+// FORCE it to be global immediately
+window.supabase = supabase;
 
 // UI & STATE
 const cachedMuted = localStorage.getItem('muted') === 'true';
@@ -1823,15 +1825,8 @@ function triggerHitsplat(target, damage = 20) {
 }
 
 function handleMultiplayerTransition() {
-    // If someone's health is gone, or the opponent already notified us the game is over,
-    // immediately force an instant sync bypass to the end screen.
-    if (myHP <= 0 || opponentHP <= 0 || window.receivedGameOverSync) {
-        clearTimeout(window.multiplayerSyncTimer);
-        syncAndProceed(true); // 'true' bypasses regular round processing and ends the match
-        return;
-    }
-
-    // Standard mid-game waiting gate
+    // If I have answered, but the opponent hasn't yet, 
+    // and there is still time on the clock, we MUST wait for them.
     if (iHaveAnswered && !opponentHasAnswered && timeLeft > 0) {
         return;
     }
@@ -1840,11 +1835,22 @@ function handleMultiplayerTransition() {
     // 1. Both have answered.
     // 2. The timer hit 0 (someone timed out).
     // 3. Someone died (HP <= 0).
-
+    // Now it is safe to check if this was the final terminal round.
+    if (myHP <= 0 || opponentHP <= 0 || window.receivedGameOverSync) {
+        clearTimeout(window.multiplayerSyncTimer);
+        
+        // 1 second buffer for visual splats to play
+        window.multiplayerSyncTimer = setTimeout(() => {
+            syncAndProceed(true); // 'true' triggers the game-over screen routine
+        }, 1000);
+        return;
+    }
+    
+    // Both answered and everyone is still alive -> Advance to next question
     clearTimeout(window.multiplayerSyncTimer);
     window.multiplayerSyncTimer = setTimeout(() => {
-        syncAndProceed(false);
-    }, 1000); // 1 second buffer for visual splats to play
+        syncAndProceed(false); // 'false' moves to the next regular question
+    }, 1000);
 }
 
 
