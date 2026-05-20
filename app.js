@@ -1845,7 +1845,7 @@ function handleMultiplayerTransition() {
         }, 1000);
         return;
     }
-    
+
     // Both answered and everyone is still alive -> Advance to next question
     clearTimeout(window.multiplayerSyncTimer);
     window.multiplayerSyncTimer = setTimeout(() => {
@@ -3181,21 +3181,15 @@ async function checkAnswer(choiceId, btn) {
             }
         });
 
-        // If I've answered but the opponent hasn't, start a 20s fallback
-        if (window.receivedGameOverSync) {
-            syncAndProceed(true);
-        } else {
-            // Fallback safety timeout for standard gameplay rounds
-            if (!opponentHasAnswered) {
-                clearTimeout(window.forceEndTimeout);
-                window.forceEndTimeout = setTimeout(() => {
-                    if (!opponentHasAnswered) {
-                        syncAndProceed(true);
-                    }
-                }, 15000);
-            }
-            handleMultiplayerTransition();
+        if (!opponentHasAnswered) {
+            clearTimeout(window.forceEndTimeout);
+            window.forceEndTimeout = setTimeout(() => {
+                if (!opponentHasAnswered) {
+                    syncAndProceed(true);
+                }
+            }, 15000);
         }
+        handleMultiplayerTransition();
     }
     if (res.correct) {
         playSound(correctBuffer);
