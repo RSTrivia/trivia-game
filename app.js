@@ -1528,6 +1528,7 @@ async function subscribeToLobby(lobbyCode, lobbyId) {
 
             // Mark the opponent as "answered" so syncAndProceed doesn't block
             opponentHasAnswered = true;
+            window.receivedGameOverSync = true; // mark that sync arrived early
 
             // DO NOT call syncAndProceed(true) here if the Host hasn't answered.
             // Instead, just wait. When the Host finally answers or times out,
@@ -1629,6 +1630,7 @@ async function startMultiplayerGame() {
     window.currentLobbyIndex = 0;
     window.nextFetchIndex = 0;
     preloadQueue = [];
+    window.receivedGameOverSync = false;
 
     // Reset the score
     await supabase.rpc('start_new_game_session');
@@ -1821,6 +1823,15 @@ function triggerHitsplat(target, damage = 20) {
 }
 
 function handleMultiplayerTransition() {
+    // If someone's health is gone, or the opponent already notified us the game is over,
+    // immediately force an instant sync bypass to the end screen.
+    if (myHP <= 0 || opponentHP <= 0 || window.receivedGameOverSync) {
+        clearTimeout(window.multiplayerSyncTimer);
+        syncAndProceed(true); // 'true' bypasses regular round processing and ends the match
+        return;
+    }
+
+    // Standard mid-game waiting gate
     if (iHaveAnswered && !opponentHasAnswered && timeLeft > 0) {
         return;
     }
@@ -1839,8 +1850,10 @@ function handleMultiplayerTransition() {
 
 async function syncAndProceed(force = false) {
     clearTimeout(window.forceEndTimeout);
+    console.log("Sync Check:", { iHaveAnswered, opponentHasAnswered, force });
     // We only proceed if force is true (emergency/timeout) OR both players have answered. 
     if (!force && (!iHaveAnswered || !opponentHasAnswered)) {
+        console.log("Sync Gate: Blocked - Waiting for other player.");
         return;
     }
 
@@ -3114,10 +3127,10 @@ async function checkAnswer(choiceId, btn) {
     if (isDailyMode) dailyQuestionCount++;
     if (isLiteMode) liteQuestionCount++;
     // 2. Determine the active count to send to the database
-    const activeCount = isDailyMode ? dailyQuestionCount 
-                  : isWeeklyMode ? weeklyQuestionCount 
-                  : isLiteMode ? liteQuestionCount 
-                  : 0;
+    const activeCount = isDailyMode ? dailyQuestionCount
+        : isWeeklyMode ? weeklyQuestionCount
+            : isLiteMode ? liteQuestionCount
+                : 0;
     // call RPC process answer
     const { data: res, error: rpcErr } = await supabase.rpc('process_answer_test', {
         input_id: Number(currentQuestion.id), // Ensure it's an integer
@@ -3162,22 +3175,22 @@ async function checkAnswer(choiceId, btn) {
             }
         });
 
-        // safety timeout
         // If I've answered but the opponent hasn't, start a 20s fallback
-        if (iHaveAnswered && !opponentHasAnswered) {
-            clearTimeout(window.forceEndTimeout);
-            window.forceEndTimeout = setTimeout(() => {
-                // Double check they still haven't answered before forcing
-                if (!opponentHasAnswered) {
-                    //console.warn("Opponent AFK. Forcing sync...");
-                    syncAndProceed(true); // 'true' bypasses the wait
-                }
-            }, 15000);
+        if (window.receivedGameOverSync) {
+            syncAndProceed(true);
+        } else {
+            // Fallback safety timeout for standard gameplay rounds
+            if (!opponentHasAnswered) {
+                clearTimeout(window.forceEndTimeout);
+                window.forceEndTimeout = setTimeout(() => {
+                    if (!opponentHasAnswered) {
+                        syncAndProceed(true);
+                    }
+                }, 15000);
+            }
+            handleMultiplayerTransition();
         }
-
-        handleMultiplayerTransition();
     }
-
     if (res.correct) {
         playSound(correctBuffer);
         btn.classList.add('correct');
@@ -3336,20 +3349,20 @@ async function checkAnswer(choiceId, btn) {
         liveStats.total_wrong = liveStats.total_wrong + 1;
     }
 
-     // multiplayer
-        if (isMultiplayerMode) {
-            setTimeout(() => {
-                handleMultiplayerTransition();
-            }, 1000);
-        } else if (res.game_over) {
+    // multiplayer
+    if (isMultiplayerMode) {
+        setTimeout(() => {
+            handleMultiplayerTransition();
+        }, 1000);
+    } else if (res.game_over) {
         // We simply pass the submission results (which include is_pb) to endGame
         setTimeout(() => {
             endGame(res.submit_result, false, res.daily_message); // Pass the final stats to endGame
         }, 1500);
-        } else {
-            // normal mode (always ends on wrong answer)
-            setTimeout(loadQuestion, res.correct ? 1000 : 1300);
-        }
+    } else {
+        // normal mode (always ends on wrong answer)
+        setTimeout(loadQuestion, res.correct ? 1000 : 1300);
+    }
 }
 
 function updateLevelUI() {
