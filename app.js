@@ -1827,7 +1827,7 @@ function triggerHitsplat(target, damage = 20) {
 function handleMultiplayerTransition() {
     // If I have answered, but the opponent hasn't yet, 
     // and there is still time on the clock, we MUST wait for them.
-    if (iHaveAnswered && !opponentHasAnswered && timeLeft > 0) {
+    if ((!iHaveAnswered || !opponentHasAnswered) && timeLeft > 0) {
         return;
     }
 
@@ -1856,10 +1856,10 @@ function handleMultiplayerTransition() {
 
 async function syncAndProceed(force = false) {
     clearTimeout(window.forceEndTimeout);
-    console.log("Sync Check:", { iHaveAnswered, opponentHasAnswered, force });
+    //console.log("Sync Check:", { iHaveAnswered, opponentHasAnswered, force });
     // We only proceed if force is true (emergency/timeout) OR both players have answered. 
     if (!force && (!iHaveAnswered || !opponentHasAnswered)) {
-        console.log("Sync Gate: Blocked - Waiting for other player.");
+        //console.log("Sync Gate: Blocked - Waiting for other player.");
         return;
     }
 
@@ -3096,12 +3096,14 @@ function startTimer() {
         if (timeLeft <= 0) {
             clearInterval(timer); // Stop the interval immediately
             if (isMultiplayerMode) {
-                if (iHaveAnswered) {
-                    // syncAndProceed is handling the transition.
-                    return;
+                if (!iHaveAnswered) {
+                    // If I haven't answered, process my timeout/damage right now
+                    handleMultiplayerTimeout(); 
+                } else {
+                    // If I ALREADY answered, but the timer hit 0 anyway, 
+                    // it means the OPPONENT timed out. We must force the state transition.
+                    handleMultiplayerTransition();
                 }
-                // Only trigger the damage/timeout if I haven't answered
-                handleMultiplayerTimeout();
             } else {
                 // Solo modes timeout logic
                 handleTimeout();
