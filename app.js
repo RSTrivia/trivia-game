@@ -1104,7 +1104,6 @@ window.navigateTo = function (viewId) {
 function resetGameEngine() {
     // Clear the data queues
     preloadQueue = [];
-    window.nextFetchIndex = 0;
     window.currentLobbyIndex = 0;
     gameStartTime = null;
 
@@ -1159,7 +1158,7 @@ async function startNewRound() {
     // Save the new IDs locally so the Host's engine sees them
     sessionStorage.setItem('current_lobby_questions', JSON.stringify(allIDs));
     preloadQueue = [];
-    window.nextFetchIndex = 0;
+    window.currentLobbyIndex = 0;
     iAmReadyForRematch = false;
     opponentReadyForRematch = false;
 
@@ -1288,7 +1287,7 @@ async function handleMultiplayerTimeout() {
     handleMultiplayerTransition();
 }
 
-async function fetchNextLobbyQuestion(force = false) {
+async function fetchNextLobbyQuestion(targetIndex = null, force = false) {
     try {
         // Get the latest IDs
         let stored = sessionStorage.getItem('current_lobby_questions');
@@ -1313,16 +1312,12 @@ async function fetchNextLobbyQuestion(force = false) {
 
         if (typeof storedIds === 'string') storedIds = JSON.parse(storedIds);
 
-        // Pointer Logic
-        if (window.nextFetchIndex === undefined) window.nextFetchIndex = 0;
-
-        const currentToFetch = window.nextFetchIndex;
+        // DETERMINISTIC POINTER LOGIC
+        // Use the explicitly requested index. If none provided, look up the current active round.
+        const currentToFetch = targetIndex !== null ? targetIndex : window.currentLobbyIndex;
         const nextId = storedIds[currentToFetch];
 
         if (!nextId) return null;
-
-        // Increment pointer immediately so the next call gets index + 1
-        window.nextFetchIndex++;
 
         // Fetch the actual data
         const data = await fetchDeterministicQuestion(Number(nextId));
@@ -1423,7 +1418,6 @@ async function subscribeToLobby(lobbyCode, lobbyId) {
             // Everyone resets memory
             sessionStorage.removeItem('current_lobby_questions');
             preloadQueue = [];
-            window.nextFetchIndex = 0;
             window.currentLobbyIndex = 0;
 
             // Everyone saves the new IDs from the database payload
@@ -1484,7 +1478,10 @@ async function subscribeToLobby(lobbyCode, lobbyId) {
 
     lobbyChannel.on('broadcast', { event: 'next_question_trigger' }, (envelope) => {
         if (myRole === 'guest') {
-            executeTransition(envelope.payload.nextIndex);
+            // Match the host's transition delay so rendering stays aligned
+            setTimeout(() => {
+                executeTransition(envelope.payload.nextIndex);
+            }, 1000);
         }
     });
 
@@ -1611,7 +1608,6 @@ function handleOpponentLeft() {
     // Cleanup old game data
     sessionStorage.removeItem('current_lobby_questions');
     preloadQueue = [];
-    window.nextFetchIndex = 0;
     sessionStorage.removeItem('game_start_time');
     gameStartTime = null;
 }
@@ -1628,7 +1624,6 @@ async function startMultiplayerGame() {
     opponentHP = MAX_HP;
     opponentHasAnswered = false;
     window.currentLobbyIndex = 0;
-    window.nextFetchIndex = 0;
     preloadQueue = [];
     window.receivedGameOverSync = false;
 
@@ -1655,7 +1650,7 @@ async function startMultiplayerGame() {
     updateHPUI();
 
     try {
-        await fetchNextLobbyQuestion(true);
+        await fetchNextLobbyQuestion(0, true);
         // Now that we have IDs from the DB, load the first one
         await loadQuestion(true);
 
@@ -1787,12 +1782,6 @@ function handleOpponentAction(payload) {
     }
 
     updateHPUI();
-    if (iHaveAnswered) {
-        clearTimeout(window.multiplayerSyncTimer);
-        window.multiplayerSyncTimer = setTimeout(() => {
-            syncAndProceed();
-        }, 1000);
-    }
 }
 
 function triggerHitsplat(target, damage = 20) {
@@ -1909,18 +1898,19 @@ async function syncAndProceed(force = false) {
     if (myRole === 'host') {
         const nextIndex = window.currentLobbyIndex + 1;
 
-        // Wait 1 second before telling the Guest to move.
-        // This gives the Guest time to see their hitsplat if they were last.
+        // Broadcast IMMEDIATELY so the guest locks down at the same time
+        if (lobbyChannel) {
+            lobbyChannel.send({
+                type: 'broadcast',
+                event: 'next_question_trigger',
+                payload: { nextIndex: nextIndex }
+            });
+        }
+        
+        // Allow a small visual padding for hitsplats locally before changing views
         setTimeout(() => {
-            if (lobbyChannel) {
-                lobbyChannel.send({
-                    type: 'broadcast',
-                    event: 'next_question_trigger',
-                    payload: { nextIndex: nextIndex }
-                });
-            }
             executeTransition(nextIndex);
-        }, 1200);
+        }, 1000);
     }
 }
 
@@ -2353,7 +2343,6 @@ async function init() {
                 iAmReadyForRematch = true;
                 // Wipe the old game data
                 preloadQueue = [];
-                window.nextFetchIndex = 0;
                 sessionStorage.removeItem('current_lobby_questions');
 
                 // UI Feedback
@@ -2780,17 +2769,39 @@ async function preloadNextQuestions(targetCount = 6) {
     // Multiplayer parallel logic
     if (isMultiplayerMode) {
         let fetchPromises = [];
+        
+        // Use an explicit baseline tracking variable instead of mutating with array lengths mid-calculation
+        let currentLobbyIndexTracker = window.currentLobbyIndex;
+        
+        // If we are at the very start of a cold boot game, make sure we account for index 0
+        const baseIndex = currentLobbyIndexTracker + 1 + preloadQueue.length;
+
         for (let i = 0; i < needed; i++) {
-            // We call the function multiple times in parallel
-            fetchPromises.push(fetchNextLobbyQuestion());
+            const targetLobbyIndex = baseIndex + i;
+            
+            // Safety check: Prevent duplicate track generation 
+            if (preloadQueue.some(q => q.lobbyIndex === targetLobbyIndex)) continue;
+            
+            fetchPromises.push(fetchNextLobbyQuestion(targetLobbyIndex));
         }
 
-        // Wait for all to finish. results will be [Q1, Q2, Q3...] in order
+        if (fetchPromises.length === 0) return;
+
+        // Wait for all to finish.
         const results = await Promise.all(fetchPromises);
 
-        // Push to queue in the exact order of the results array
+        // Push to queue safely, filtering out nulls and preventing double insertion
         results.forEach(qData => {
-            if (qData) preloadQueue.push(qData);
+            if (!qData) return;
+            
+            // Check if this exact question ID or lobbyIndex is already in the queue
+            const isAlreadyQueued = preloadQueue.some(item => 
+                item.id === qData.id || (qData.lobbyIndex !== undefined && item.lobbyIndex === qData.lobbyIndex)
+            );
+            
+            if (!isAlreadyQueued) {
+                preloadQueue.push(qData);
+            }
         });
         return;
     }
@@ -2991,7 +3002,7 @@ async function loadQuestion(isFirst = false) {
     if (preloadQueue.length === 0) {
         if (isMultiplayerMode) {
             // Force a fetch from the lobby list specifically
-            await fetchNextLobbyQuestion();
+            await fetchNextLobbyQuestion(window.currentLobbyIndex, true);
         } else if (needsRefill) {
             await fetchAndBufferQuestion();
         } else {
