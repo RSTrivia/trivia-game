@@ -1825,7 +1825,7 @@ function handleMultiplayerTransition() {
     // Now it is safe to check if this was the final terminal round.
     if (myHP <= 0 || opponentHP <= 0 || window.receivedGameOverSync) {
         clearTimeout(window.multiplayerSyncTimer);
-        
+
         // 1 second buffer for visual splats to play
         window.multiplayerSyncTimer = setTimeout(() => {
             syncAndProceed(true); // 'true' triggers the game-over screen routine
@@ -1858,7 +1858,7 @@ async function syncAndProceed(force = false) {
     clearInterval(timer);
 
     // Determine if the game is over based on HP
-    const isGameOver = (myHP <= 0 || opponentHP <= 0);
+    const isGameOver = force || (myHP <= 0 || opponentHP <= 0 || window.receivedGameOverSync);
     if (isGameOver) {
         // Final Result Logic (Prioritizing the Draw)
         let result = 'win';
@@ -1866,6 +1866,8 @@ async function syncAndProceed(force = false) {
             result = 'draw';
         } else if (myHP <= 0) {
             result = 'lose';
+        } else if (opponentHP <= 0 || window.receivedGameOverSync) {
+            result = 'win'; // The opponent died or sent a game over sync, so I win!
         }
 
         // check for a flawless victory (win with full HP)
@@ -1906,7 +1908,7 @@ async function syncAndProceed(force = false) {
                 payload: { nextIndex: nextIndex }
             });
         }
-        
+
         // Allow a small visual padding for hitsplats locally before changing views
         setTimeout(() => {
             executeTransition(nextIndex);
@@ -2769,19 +2771,19 @@ async function preloadNextQuestions(targetCount = 6) {
     // Multiplayer parallel logic
     if (isMultiplayerMode) {
         let fetchPromises = [];
-        
+
         // Use an explicit baseline tracking variable instead of mutating with array lengths mid-calculation
         let currentLobbyIndexTracker = window.currentLobbyIndex;
-        
+
         // If we are at the very start of a cold boot game, make sure we account for index 0
         const baseIndex = currentLobbyIndexTracker + 1 + preloadQueue.length;
 
         for (let i = 0; i < needed; i++) {
             const targetLobbyIndex = baseIndex + i;
-            
+
             // Safety check: Prevent duplicate track generation 
             if (preloadQueue.some(q => q.lobbyIndex === targetLobbyIndex)) continue;
-            
+
             fetchPromises.push(fetchNextLobbyQuestion(targetLobbyIndex));
         }
 
@@ -2793,12 +2795,12 @@ async function preloadNextQuestions(targetCount = 6) {
         // Push to queue safely, filtering out nulls and preventing double insertion
         results.forEach(qData => {
             if (!qData) return;
-            
+
             // Check if this exact question ID or lobbyIndex is already in the queue
-            const isAlreadyQueued = preloadQueue.some(item => 
+            const isAlreadyQueued = preloadQueue.some(item =>
                 item.id === qData.id || (qData.lobbyIndex !== undefined && item.lobbyIndex === qData.lobbyIndex)
             );
-            
+
             if (!isAlreadyQueued) {
                 preloadQueue.push(qData);
             }
@@ -3107,7 +3109,7 @@ function startTimer() {
             if (isMultiplayerMode) {
                 if (!iHaveAnswered) {
                     // If I haven't answered, process my timeout/damage right now
-                    handleMultiplayerTimeout(); 
+                    handleMultiplayerTimeout();
                 } else {
                     // If I ALREADY answered, but the timer hit 0 anyway, 
                     // it means the OPPONENT timed out. We must force the state transition.
