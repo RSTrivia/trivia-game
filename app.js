@@ -1,7 +1,5 @@
 import { supabase } from './supabase.js';
 import { updateMenuPet, showGoldAlert } from './login.js';
-// FORCE it to be global immediately
-window.supabase = supabase;
 
 // UI & STATE
 const cachedMuted = localStorage.getItem('muted') === 'true';
@@ -1534,7 +1532,6 @@ async function subscribeToLobby(lobbyCode, lobbyId) {
             // their own code will call syncAndProceed(), see that opponentHasAnswered is true,
             // and move to the end screen.
             if (iHaveAnswered) {
-                isSyncing = false;
                 syncAndProceed(true);
             }
         }
@@ -3365,11 +3362,10 @@ async function checkAnswer(choiceId, btn) {
 
     // multiplayer
     if (isMultiplayerMode) {
-        return;
-    } 
-    
-    // single player modes transitions
-    if (res.game_over) {
+        setTimeout(() => {
+            handleMultiplayerTransition();
+        }, 1000);
+    } else if (res.game_over) {
         // We simply pass the submission results (which include is_pb) to endGame
         setTimeout(() => {
             endGame(res.submit_result, false, res.daily_message); // Pass the final stats to endGame
