@@ -120,6 +120,7 @@ let opponentName = null;
 let isEndGameProcessing = false;
 let isHandlingLobbyClose = false;
 let myRole = ''; // 'host' or 'guest'
+let emojiChannel = null;
 
 // Leaderboard
 const leaderBtn = document.getElementById('btn-leaderboard');
@@ -1363,6 +1364,14 @@ async function subscribeToLobby(lobbyCode, lobbyId) {
         }
     });
 
+    lobbyChannel.on('broadcast', { event: 'emoji_fired' }, (payload) => {
+        const { emoji, sender } = payload.payload;
+        // Don't animate twice if self broadcast returns
+        if (sender !== username) {
+            showEmojiOnScreen(emoji, 'opponent');
+        }
+    });
+
     // reset pointer so we start at question 0 of the lobby list
     window.currentLobbyIndex = 0;
 
@@ -1701,6 +1710,9 @@ async function startMultiplayerGame() {
             // Show Multiplayer Header
             const mpHeader = document.getElementById('multiplayer-header');
             if (mpHeader) mpHeader.classList.remove('hidden');
+            const emojiHeader = document.getElementById('multiplayer-emoji-bar');
+            if (emojiHeader) emojiHeader.classList.remove('hidden');
+            const lobbyId = sessionStorage.getItem('current_lobby_id');
 
             document.getElementById('score').classList.add('hidden');
             document.getElementById('rounds-display').classList.remove('hidden');
@@ -1726,6 +1738,51 @@ async function startMultiplayerGame() {
         console.error("CRITICAL ERROR during game start:", err);
         showGoldAlert("Failed to start: " + err.message);
     }
+}
+
+// HOOK THIS ONCE AT DOM CONTENT LOADED
+function initializeEmojiSystem() {
+    const emojiBar = document.getElementById('multiplayer-emoji-bar');
+    if (!emojiBar) return;
+
+    // Unified Event Delegation: Survives question transitions completely!
+    emojiBar.addEventListener('click', (event) => {
+        const target = event.target.closest('.emoji-btn');
+        if (!target) return;
+
+        const selectedEmoji = target.getAttribute('data-emoji') || target.textContent.trim();
+        
+        // 1. Instantly display locally for zero-latency feel
+        showEmojiOnScreen(selectedEmoji, 'me');
+
+        // 2. Broadcast via the primary lobby channel
+        if (lobbyChannel) {
+            lobbyChannel.send({
+                type: 'broadcast',
+                event: 'emoji_fired',
+                payload: { 
+                    emoji: selectedEmoji, 
+                    sender: username || 'Player' 
+                }
+            });
+        }
+    });
+}
+
+function showEmojiOnScreen(emoji, owner) {
+    const container = document.getElementById('view-home'); // or document.body
+    if (!container) return;
+
+    const bubble = document.createElement('div');
+    bubble.className = `floating-emoji ${owner === 'me' ? 'my-emoji' : 'opponent-emoji'}`;
+    bubble.textContent = emoji;
+
+    container.appendChild(bubble);
+
+    // Remove the element after the CSS animation ends (e.g., 2 seconds)
+    setTimeout(() => {
+        bubble.remove();
+    }, 2000);
 }
 
 function updateHPUI() {
@@ -2742,6 +2799,7 @@ function resetGame() {
     const gzTitle = document.getElementById('gz-title');
     if (gzTitle) gzTitle.classList.add('hidden');
     document.getElementById('multiplayer-header').classList.add('hidden');
+    document.getElementById('multiplayer-emoji-bar').classList.add('hidden');
 
     const scoreRow = document.getElementById('end-score-container');
     const multiRow = document.getElementById('multiplayer-stats-container');
@@ -3596,7 +3654,8 @@ async function endGame(result = null, wasFlawless = false, dailyMessage = null) 
         // Hide Multiplayer Bars so they don't leak into end screen
         const mpHeader = document.getElementById('multiplayer-header');
         if (mpHeader) mpHeader.classList.add('hidden');
-
+        const emojiHeader = document.getElementById('multiplayer-emoji-bar');
+        if (emojiHeader) emojiHeader.classList.add('hidden');
         // End Multiplayer Game and show end screen (This also handles the UI cleanup for multiplayer mode)
         finalizeEndScreen(window.currentLobbyIndex || 0);
 
@@ -4341,12 +4400,16 @@ function updateScore() {
     }
 }
 
-// Mobile tap feedback (Flash)
+
 document.addEventListener('DOMContentLoaded', () => {
     (async () => {
 
         await init();
 
+         // initialize bar listerners
+        initializeEmojiSystem();
+
+        // Mobile tap feedback (Flash)
         // This function applies the flash to any button we give it
         const applyFlash = (el) => {
             el.addEventListener('touchstart', () => {
@@ -4367,7 +4430,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Apply to all buttons currently on the screen
         const staticButtons = document.querySelectorAll('.btn, .btn-small, #authBtn, #muteBtn');
         staticButtons.forEach(applyFlash);
-
 
     })(); // closes the async function AND invokes it
 }); // closes DOMContentLoaded listener
