@@ -1250,7 +1250,7 @@ input.input-field:-webkit-autofill:active {
 
 /* Specifically for multiplayer if it needs to be even higher */
 #view-home:has(#multiplayer-header:not(.hidden)) #game-notifications {
-  top: 140px;
+  top: 185px;
 }
 
 .notif-text {
@@ -1304,7 +1304,7 @@ input.input-field:-webkit-autofill:active {
     font-size: 1.3rem;
   }
   #view-home:has(#multiplayer-header:not(.hidden)) #game-notifications {
-      top: 100px !important;
+      top: 145px !important;
   }
   #rounds-display {
     margin-top: 10px !important;
@@ -3097,7 +3097,7 @@ input.input-field:-webkit-autofill:active {
   gap: 8px;
   background: rgba(18, 18, 18, 0.6);
   border: 1px solid #3d3523; /* OSRS style brown/gold trim */
-  padding: 4px 12px;
+  padding: 4px;
   border-radius: 20px;
   opacity: 0.5; /* Keeps it unobtrusive during gameplay */
   transition: opacity 0.2s ease, transform 0.2s ease;
