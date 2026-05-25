@@ -3078,3 +3078,101 @@ input.input-field:-webkit-autofill:active {
     font-size: 12px;
  }
 }
+
+/* -- MULTIPLAYER EMOJI BAR -- */
+#multiplayer-emoji-bar {
+  display: flex;
+  justify-content: center;
+  margin-top: -10px;    /* Pulls it slightly closer to the health bars */
+  margin-bottom: 15px;  /* Spacing before the Round text */
+}
+
+/* Hide it completely when it has the hidden class */
+#multiplayer-emoji-bar.hidden {
+  display: none !important;
+}
+
+.emoji-tray {
+  display: flex;
+  gap: 8px;
+  background: rgba(18, 18, 18, 0.6);
+  border: 1px solid #3d3523; /* OSRS style brown/gold trim */
+  padding: 4px 12px;
+  border-radius: 20px;
+  opacity: 0.5; /* Keeps it unobtrusive during gameplay */
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* Lights up when the player intends to interact with it */
+.emoji-tray:hover {
+  opacity: 1;
+  transform: scale(1.03);
+}
+
+.emoji-btn {
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  cursor: pointer;
+  padding: 2px;
+  transition: transform 0.1s ease;
+}
+
+.emoji-btn:hover {
+  transform: scale(1.2);
+}
+
+.emoji-btn:active {
+  transform: scale(0.95);
+}
+
+.floating-emoji {
+    position: absolute;
+    font-size: 2rem;
+    bottom: 400px;
+    z-index: 999;
+    pointer-events: none;
+    animation: floatUpFade 2s ease-out forwards;
+}
+
+.my-emoji {
+    left: 15px; /* Position near your local avatar/HP bar */
+}
+
+.opponent-emoji {
+    right: 15px; /* Position near opponent's avatar/HP bar */
+}
+
+@keyframes floatUpFade {
+    0% {
+        transform: translateY(0) scale(0.5);
+        opacity: 0;
+    }
+    15% {
+        transform: translateY(-20px) scale(1.2);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-120px) scale(1);
+        opacity: 0;
+    }
+}
+
+/* Mobile Responsive Adjustments (Screens 768px wide and smaller) */
+@media (max-width: 768px) {
+  .emoji-tray {
+    /* Reduce left/right padding from 12px to 6px (keeps 4px top/bottom height) */
+    padding: 4px 6px; 
+    
+    /* Bring buttons closer together from 8px to 4px */
+    gap: 4px; 
+  }
+
+  .emoji-btn {
+    /* Optional: Slightly reduce individual button padding if needed */
+    padding: 1px; 
+    
+    /* Optional: Scale down the emoji size just a tiny bit if it still feels too wide */
+    font-size: 1.15rem; 
+  }
+}
