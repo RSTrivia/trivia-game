@@ -121,6 +121,7 @@ let isEndGameProcessing = false;
 let isHandlingLobbyClose = false;
 let myRole = ''; // 'host' or 'guest'
 let emojiChannel = null;
+let questionEndTime = 0;
 
 // Leaderboard
 const leaderBtn = document.getElementById('btn-leaderboard');
@@ -3143,27 +3144,38 @@ async function loadQuestion(isFirst = false) {
     if (!isFirst) startTimer();
 }
 
-
 function startTimer() {
     clearInterval(timer);
     if (activeTickSource) { activeTickSource.stop(); activeTickSource = null; }
+
+    const durationMs = 15000; // 15 seconds total
+    questionEndTime = Date.now() + durationMs; 
 
     timeLeft = 15;
     timeDisplay.textContent = timeLeft;
     timeWrap.classList.remove('red-timer');
 
     timer = setInterval(() => {
-        timeLeft--;
-        timeDisplay.textContent = timeLeft;
+        const now = Date.now();
+        
+        const previousTimeLeft = timeLeft;
+        timeLeft = Math.max(0, Math.ceil((questionEndTime - now) / 1000));
 
-        if (timeLeft <= 5 && timeLeft > 0 && !activeTickSource) {
-            activeTickSource = playSound(tickBuffer, true);
+        if (timeLeft !== previousTimeLeft) {
+            timeDisplay.textContent = timeLeft;
         }
-        if (timeLeft <= 5) timeWrap.classList.add('red-timer');
 
-        // round end logic
+        if (timeLeft <= 5 && timeLeft > 0) {
+            timeWrap.classList.add('red-timer');
+            if (!activeTickSource) {
+                activeTickSource = playSound(tickBuffer, true);
+            }
+        }
+
         if (timeLeft <= 0) {
-            clearInterval(timer); // Stop the interval immediately
+            clearInterval(timer); 
+            if (activeTickSource) { activeTickSource.stop(); activeTickSource = null; }
+
             if (isMultiplayerMode) {
                 if (!iHaveAnswered) {
                     // If I haven't answered, process my timeout/damage right now
@@ -3171,14 +3183,13 @@ function startTimer() {
                 } else {
                     // If I ALREADY answered, but the timer hit 0 anyway, 
                     // it means the OPPONENT timed out. We must force the state transition.
-                    handleMultiplayerTransition();
+                    handleMultiplayerTransition(); 
                 }
             } else {
-                // Solo modes timeout logic
-                handleTimeout();
+                handleTimeout(); // Normal solo play block
             }
         }
-    }, 1000);
+    }, 250); 
 }
 
 async function handleTimeout() {
@@ -3208,6 +3219,11 @@ async function checkAnswer(choiceId, btn) {
         : isWeeklyMode ? weeklyQuestionCount
             : isLiteMode ? liteQuestionCount
                 : 0;
+    // Calculate elapsed time safely. 
+    // If gameStartTime is missing, invalid, or zero, fallback to 0ms so it doesn't pass a raw Date.now() timestamp.
+    const elapsedGameTime = (gameStartTime && gameStartTime > 0) 
+        ? Math.floor(Date.now() - gameStartTime) 
+        : 0;
     // call RPC process answer
     const { data: res, error: rpcErr } = await supabase.rpc('process_answer_test', {
         input_id: Number(currentQuestion.id), // Ensure it's an integer
@@ -3218,7 +3234,7 @@ async function checkAnswer(choiceId, btn) {
         is_multiplayer: Boolean(isMultiplayerMode),
         current_count: activeCount,
         daily_limit: DAILY_LIMIT,
-        p_time_ms: Math.floor(Date.now() - gameStartTime) // Pass time for PB tracking
+        p_time_ms: elapsedGameTime // Pass time for PB tracking
     });
 
     if (rpcErr) return console.error("RPC Error:", rpcErr);
