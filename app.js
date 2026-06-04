@@ -3444,7 +3444,7 @@ async function checkAnswer(choiceId, btn) {
     } else if (res.game_over) {
         // We simply pass the submission results (which include is_pb) to endGame
         setTimeout(() => {
-            endGame(res.submit_result, false, res.daily_message); // Pass the final stats to endGame
+            endGame(res.submit_result, false, res.daily_message, elapsedGameTime); // Pass the final stats to endGame
         }, 1500);
     } else {
         // normal mode (always ends on wrong answer)
@@ -3571,7 +3571,7 @@ async function highlightCorrectAnswer() {
     });
 }
 
-async function endGame(result = null, wasFlawless = false, dailyMessage = null) {
+async function endGame(result = null, wasFlawless = false, dailyMessage = null, totalMs = null) {
     if (isMultiplayerMode && isEndGameProcessing) return;
     isEndGameProcessing = true;
     if (isMultiplayerMode && result) {
@@ -3591,10 +3591,10 @@ async function endGame(result = null, wasFlawless = false, dailyMessage = null) 
     stopTickSound();
 
     // Calculate time for the current segment (Solo)
-    const endTime = Date.now();
+    //const endTime = Date.now();
 
     // This covers all modes
-    const totalMs = endTime - gameStartTime;
+    //const totalMs = endTime - gameStartTime;
 
     // multiplayer result handling
     if (isMultiplayerMode && result) {
