@@ -3591,7 +3591,7 @@ async function endGame(result = null, wasFlawless = false, dailyMessage = null, 
     stopTickSound();
 
     // Calculate time for the current segment (Solo)
-    //const endTime = Date.now();
+    const endTime = Date.now();
 
     // This covers all modes
     //const totalMs = endTime - gameStartTime;
